@@ -1080,13 +1080,21 @@ app.post('/api/refund', async (req, res) => {
 // Get all refund requests (protected)
 app.get('/api/admin/refunds', authenticateToken, async (req, res) => {
     try {
-        const result = await pool.query(`
-            SELECT * FROM refund_requests 
-            ORDER BY created_at DESC 
-            LIMIT 100
-        `);
+        const { status } = req.query;
+        
+        let query = `SELECT * FROM refund_requests`;
+        let params = [];
+        
+        if (status) {
+            query += ` WHERE status = $1`;
+            params = [status];
+        }
+        
+        query += ` ORDER BY created_at DESC LIMIT 100`;
+        
+        const result = await pool.query(query, params);
 
-        res.json({ refunds: result.rows });
+        res.json({ refunds: result.rows, total: result.rows.length });
 
     } catch (error) {
         console.error('Error fetching refunds:', error);

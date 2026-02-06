@@ -2003,6 +2003,41 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Refund Requests List -->
+                    <div class="data-panel" style="margin-top: 24px;">
+                        <div class="panel-header">
+                            <div class="panel-title">
+                                <h2>📋 Pedidos de Reembolso</h2>
+                                <span class="lead-count" id="refundRequestsCount">0 pedidos</span>
+                            </div>
+                            <div class="panel-actions">
+                                <select class="filter-select" id="refundStatusFilter" onchange="loadRefundRequests()">
+                                    <option value="">Todos os Status</option>
+                                    <option value="pending">⏳ Pendente</option>
+                                    <option value="approved">✅ Aprovado</option>
+                                    <option value="rejected">❌ Rejeitado</option>
+                                </select>
+                            </div>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Cliente</th>
+                                    <th>Email</th>
+                                    <th>WhatsApp</th>
+                                    <th>Produto</th>
+                                    <th>Motivo</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="refundRequestsTableBody">
+                                <tr><td colspan="8"><div class="loading"><div class="spinner"></div>Carregando...</div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
                 
                 <!-- Tab: Settings -->
@@ -3551,8 +3586,8 @@ Estou aqui para esclarecer tudo! 😊`
                 
                 // API returns { leads: [], pagination: {} } format
                 const leadsCount = leadsData.pagination ? leadsData.pagination.total : (Array.isArray(leadsData) ? leadsData.length : 0);
-                const salesCount = Array.isArray(salesData) ? salesData.length : 0;
-                const refundsCount = Array.isArray(refundsData) ? refundsData.length : 0;
+                const salesCount = salesData.transactions ? salesData.transactions.length : (Array.isArray(salesData) ? salesData.length : 0);
+                const refundsCount = refundsData.total || (refundsData.refunds ? refundsData.refunds.length : 0);
                 
                 document.getElementById('reportLeadsCount').textContent = leadsCount;
                 document.getElementById('reportSalesCount').textContent = salesCount;
@@ -3565,8 +3600,124 @@ Estou aqui para esclarecer tudo! 😊`
                     document.getElementById('exportDateEnd').value = today.toISOString().split('T')[0];
                     document.getElementById('exportDateStart').value = firstDay.toISOString().split('T')[0];
                 }
+                
+                // Load refund requests table
+                loadRefundRequests();
             } catch (error) {
                 console.error('Error loading report stats:', error);
+            }
+        }
+        
+        // Load refund requests for the table
+        async function loadRefundRequests() {
+            try {
+                const statusFilter = document.getElementById('refundStatusFilter')?.value || '';
+                const statusParam = statusFilter ? `?status=${statusFilter}` : '';
+                
+                const response = await fetch(`${API_URL}/api/admin/refunds${statusParam}`, { 
+                    headers: { 'Authorization': `Bearer ${authToken}` } 
+                });
+                
+                if (response.status === 401) { logout(); return; }
+                const data = await response.json();
+                
+                const refunds = data.refunds || [];
+                document.getElementById('refundRequestsCount').textContent = `${refunds.length} pedidos`;
+                
+                renderRefundRequestsTable(refunds);
+            } catch (error) {
+                console.error('Error loading refund requests:', error);
+                document.getElementById('refundRequestsTableBody').innerHTML = `
+                    <tr><td colspan="8"><div class="empty-state"><h3>Erro ao carregar</h3></div></td></tr>
+                `;
+            }
+        }
+        
+        // Render refund requests table
+        function renderRefundRequestsTable(refunds) {
+            if (!refunds || refunds.length === 0) {
+                document.getElementById('refundRequestsTableBody').innerHTML = `
+                    <tr><td colspan="8">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📋</div>
+                            <h3>Nenhum pedido de reembolso</h3>
+                            <p>Os pedidos aparecerão aqui quando clientes solicitarem.</p>
+                        </div>
+                    </td></tr>
+                `;
+                return;
+            }
+            
+            const statusLabels = {
+                'pending': { text: 'Pendente', class: 'badge-new', icon: '⏳' },
+                'approved': { text: 'Aprovado', class: 'badge-converted', icon: '✅' },
+                'rejected': { text: 'Rejeitado', class: 'badge-lost', icon: '❌' }
+            };
+            
+            let html = '';
+            refunds.forEach(refund => {
+                const status = statusLabels[refund.status] || statusLabels['pending'];
+                const date = new Date(refund.created_at).toLocaleDateString('pt-BR', { 
+                    day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' 
+                });
+                const reason = refund.reason || refund.refund_reason || '-';
+                const product = refund.product || refund.product_name || '-';
+                
+                html += `<tr>
+                    <td>${date}</td>
+                    <td><strong>${refund.name || '-'}</strong></td>
+                    <td class="text-primary">${refund.email || '-'}</td>
+                    <td class="mono">${refund.whatsapp || refund.phone || '-'}</td>
+                    <td>${product}</td>
+                    <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${reason}">${reason}</td>
+                    <td><span class="badge ${status.class}"><span class="badge-dot"></span>${status.icon} ${status.text}</span></td>
+                    <td>
+                        <button class="action-btn" onclick="viewRefundDetails(${refund.id})" title="Ver detalhes">👁️</button>
+                        ${refund.status === 'pending' ? `
+                            <button class="action-btn" onclick="updateRefundStatus(${refund.id}, 'approved')" title="Aprovar" style="color: var(--success);">✅</button>
+                            <button class="action-btn" onclick="updateRefundStatus(${refund.id}, 'rejected')" title="Rejeitar" style="color: var(--danger);">❌</button>
+                        ` : ''}
+                    </td>
+                </tr>`;
+            });
+            
+            document.getElementById('refundRequestsTableBody').innerHTML = html;
+        }
+        
+        // View refund details
+        function viewRefundDetails(id) {
+            // For now, just show a toast. Could open a modal with full details
+            showToast('Detalhes', 'Funcionalidade de detalhes em desenvolvimento', 'warning');
+        }
+        
+        // Update refund status
+        async function updateRefundStatus(id, newStatus) {
+            const confirmMsg = newStatus === 'approved' 
+                ? 'Tem certeza que deseja APROVAR este reembolso?' 
+                : 'Tem certeza que deseja REJEITAR este reembolso?';
+            
+            if (!confirm(confirmMsg)) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/api/admin/refunds/${id}`, {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}` 
+                    },
+                    body: JSON.stringify({ status: newStatus, notes: '' })
+                });
+                
+                if (response.ok) {
+                    showToast('Sucesso!', `Reembolso ${newStatus === 'approved' ? 'aprovado' : 'rejeitado'} com sucesso`, 'success');
+                    loadRefundRequests();
+                    loadReportsStats();
+                } else {
+                    showToast('Erro', 'Não foi possível atualizar o status', 'error');
+                }
+            } catch (error) {
+                console.error('Error updating refund:', error);
+                showToast('Erro', 'Falha ao atualizar reembolso', 'error');
             }
         }
         
