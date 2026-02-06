@@ -392,20 +392,19 @@ app.get('/api/admin/funnel', authenticateToken, async (req, res) => {
                     WHEN 'page_view_phone' THEN 2
                     WHEN 'phone_submitted' THEN 3
                     WHEN 'page_view_conversas' THEN 4
-                    WHEN 'page_view_chat' THEN 5
-                    WHEN 'page_view_cta' THEN 6
-                    WHEN 'email_captured' THEN 7
-                    WHEN 'checkout_clicked' THEN 8
-                    WHEN 'upsell_1_view' THEN 9
-                    WHEN 'upsell_1_accepted' THEN 10
-                    WHEN 'upsell_1_declined' THEN 11
-                    WHEN 'upsell_2_view' THEN 12
-                    WHEN 'upsell_2_accepted' THEN 13
-                    WHEN 'upsell_2_declined' THEN 14
-                    WHEN 'upsell_3_view' THEN 15
-                    WHEN 'upsell_3_accepted' THEN 16
-                    WHEN 'upsell_3_declined' THEN 17
-                    WHEN 'thankyou_view' THEN 18
+                    WHEN 'page_view_cta' THEN 5
+                    WHEN 'email_captured' THEN 6
+                    WHEN 'checkout_clicked' THEN 7
+                    WHEN 'upsell_1_view' THEN 8
+                    WHEN 'upsell_1_accepted' THEN 9
+                    WHEN 'upsell_1_declined' THEN 10
+                    WHEN 'upsell_2_view' THEN 11
+                    WHEN 'upsell_2_accepted' THEN 12
+                    WHEN 'upsell_2_declined' THEN 13
+                    WHEN 'upsell_3_view' THEN 14
+                    WHEN 'upsell_3_accepted' THEN 15
+                    WHEN 'upsell_3_declined' THEN 16
+                    WHEN 'thankyou_view' THEN 17
                     ELSE 99
                 END
         `);
