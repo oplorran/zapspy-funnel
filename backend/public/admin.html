@@ -7,6 +7,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -406,6 +409,26 @@
         .btn-secondary { display: inline-flex; align-items: center; gap: 10px; padding: 12px 20px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-secondary); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(10px); }
         .btn-secondary:hover { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.1); color: var(--text-primary); transform: translateY(-1px); }
         .btn-icon { width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center; }
+        
+        /* Export Dropdown */
+        .export-dropdown { position: relative; }
+        .export-dropdown .dropdown-arrow { font-size: 10px; transition: transform 0.2s; }
+        .export-dropdown.open .dropdown-arrow { transform: rotate(180deg); }
+        .export-menu { position: absolute; top: calc(100% + 8px); right: 0; width: 280px; background: var(--bg-card); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); z-index: 1000; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: all 0.2s ease; }
+        .export-dropdown.open .export-menu { opacity: 1; visibility: visible; transform: translateY(0); }
+        .export-menu::before { content: ''; position: absolute; top: -6px; right: 20px; width: 12px; height: 12px; background: var(--bg-card); border-left: 1px solid var(--border); border-top: 1px solid var(--border); transform: rotate(45deg); }
+        .export-menu-header { padding: 16px 20px; background: linear-gradient(135deg, var(--accent-glow), transparent); border-bottom: 1px solid var(--border); font-weight: 700; font-size: 14px; color: var(--text-primary); border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+        .export-menu-section { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+        .export-menu-section:last-child { border-bottom: none; }
+        .export-menu-title { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+        .export-menu-section button { display: block; width: 100%; padding: 10px 14px; margin: 4px 0; background: rgba(255, 255, 255, 0.03); border: 1px solid transparent; border-radius: var(--radius-sm); color: var(--text-secondary); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; text-align: left; }
+        .export-menu-section button:hover { background: var(--accent-glow); border-color: var(--border-accent); color: var(--accent); transform: translateX(4px); }
+        
+        /* Light theme export dropdown */
+        [data-theme="light"] .export-menu { background: #ffffff; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15); }
+        [data-theme="light"] .export-menu::before { background: #ffffff; }
+        [data-theme="light"] .export-menu-section button { background: var(--bg-tertiary); }
+        [data-theme="light"] .export-menu-section button:hover { background: rgba(5, 150, 105, 0.1); color: var(--accent); }
         
         .btn-success { background: linear-gradient(135deg, var(--success), #00c853); border-color: transparent; color: #000; font-weight: 700; }
         .btn-success:hover { box-shadow: 0 8px 24px rgba(0, 230, 118, 0.3); }
@@ -931,7 +954,34 @@
                             <div class="theme-toggle-thumb"></div>
                         </div>
                     </div>
-                    <button class="btn-secondary" onclick="exportLeads()"><span>📥</span> Exportar</button>
+                    <div class="export-dropdown">
+                        <button class="btn-secondary" onclick="toggleExportMenu()"><span>📥</span> Exportar <span class="dropdown-arrow">▼</span></button>
+                        <div class="export-menu" id="exportMenu">
+                            <div class="export-menu-header">Exportar Relatórios</div>
+                            <div class="export-menu-section">
+                                <div class="export-menu-title">📊 Excel (.xlsx)</div>
+                                <button onclick="exportToExcel('leads')">Leads</button>
+                                <button onclick="exportToExcel('sales')">Vendas</button>
+                                <button onclick="exportToExcel('refunds')">Reembolsos</button>
+                                <button onclick="exportToExcel('funnel')">Funil</button>
+                                <button onclick="exportToExcel('all')">Relatório Completo</button>
+                            </div>
+                            <div class="export-menu-section">
+                                <div class="export-menu-title">📄 PDF</div>
+                                <button onclick="exportToPDF('leads')">Leads</button>
+                                <button onclick="exportToPDF('sales')">Vendas</button>
+                                <button onclick="exportToPDF('refunds')">Reembolsos</button>
+                                <button onclick="exportToPDF('funnel')">Funil</button>
+                                <button onclick="exportToPDF('all')">Relatório Completo</button>
+                            </div>
+                            <div class="export-menu-section">
+                                <div class="export-menu-title">📋 CSV</div>
+                                <button onclick="exportToCSV('leads')">Leads</button>
+                                <button onclick="exportToCSV('sales')">Vendas</button>
+                                <button onclick="exportToCSV('refunds')">Reembolsos</button>
+                            </div>
+                        </div>
+                    </div>
                     <button class="btn-secondary btn-icon" onclick="refreshData()" title="Atualizar">🔄</button>
                 </div>
             </header>
@@ -2852,19 +2902,327 @@ Estou aqui para esclarecer tudo! 😊`
             }
         }
         
-        // Export
-        async function exportLeads() {
+        // Export Dropdown Toggle
+        function toggleExportMenu() {
+            const dropdown = document.querySelector('.export-dropdown');
+            dropdown.classList.toggle('open');
+        }
+        
+        // Close export menu when clicking outside
+        document.addEventListener('click', (e) => {
+            const dropdown = document.querySelector('.export-dropdown');
+            if (dropdown && !dropdown.contains(e.target)) {
+                dropdown.classList.remove('open');
+            }
+        });
+        
+        // Get export data
+        async function getExportData(type) {
+            const headers = { 'Authorization': `Bearer ${authToken}` };
+            let data = {};
+            
             try {
-                const response = await fetch(`${API_URL}/api/admin/leads/export`, { headers: { 'Authorization': `Bearer ${authToken}` } });
-                const blob = await response.blob();
+                if (type === 'leads' || type === 'all') {
+                    const res = await fetch(`${API_URL}/api/admin/leads`, { headers });
+                    data.leads = await res.json();
+                }
+                if (type === 'sales' || type === 'all') {
+                    const res = await fetch(`${API_URL}/api/admin/transactions`, { headers });
+                    data.sales = await res.json();
+                }
+                if (type === 'refunds' || type === 'all') {
+                    const res = await fetch(`${API_URL}/api/admin/refunds`, { headers });
+                    data.refunds = await res.json();
+                }
+                if (type === 'funnel' || type === 'all') {
+                    const res = await fetch(`${API_URL}/api/admin/stats`, { headers });
+                    data.funnel = await res.json();
+                }
+                return data;
+            } catch (error) {
+                console.error('Error fetching export data:', error);
+                throw error;
+            }
+        }
+        
+        // Export to Excel
+        async function exportToExcel(type) {
+            try {
+                showToast('Gerando...', 'Preparando arquivo Excel', 'success');
+                toggleExportMenu();
+                
+                const data = await getExportData(type);
+                const wb = XLSX.utils.book_new();
+                const today = new Date().toISOString().split('T')[0];
+                
+                if (data.leads) {
+                    const leadsData = data.leads.map(l => ({
+                        'Nome': l.name || '-',
+                        'Email': l.email,
+                        'WhatsApp': l.whatsapp,
+                        'Alvo': l.target_phone,
+                        'Status': l.status,
+                        'Tags': l.tags || '-',
+                        'Data': new Date(l.created_at).toLocaleString('pt-BR'),
+                        'Observações': l.notes || '-'
+                    }));
+                    const ws = XLSX.utils.json_to_sheet(leadsData);
+                    ws['!cols'] = [{wch:20},{wch:30},{wch:18},{wch:18},{wch:12},{wch:15},{wch:18},{wch:30}];
+                    XLSX.utils.book_append_sheet(wb, ws, 'Leads');
+                }
+                
+                if (data.sales) {
+                    const salesData = data.sales.map(s => ({
+                        'Código': s.transaction_id,
+                        'Produto': s.product_name,
+                        'Valor': `R$ ${parseFloat(s.amount || 0).toFixed(2)}`,
+                        'Status': s.status,
+                        'Cliente': s.customer_name || '-',
+                        'Email': s.customer_email || '-',
+                        'Data': new Date(s.created_at).toLocaleString('pt-BR')
+                    }));
+                    const ws = XLSX.utils.json_to_sheet(salesData);
+                    ws['!cols'] = [{wch:15},{wch:25},{wch:12},{wch:12},{wch:25},{wch:30},{wch:18}];
+                    XLSX.utils.book_append_sheet(wb, ws, 'Vendas');
+                }
+                
+                if (data.refunds) {
+                    const refundsData = data.refunds.map(r => ({
+                        'Protocolo': r.protocol,
+                        'Nome': r.full_name,
+                        'Email': r.email,
+                        'Telefone': r.phone || '-',
+                        'Motivo': r.reason,
+                        'Status': r.status,
+                        'Data Compra': r.purchase_date,
+                        'Data Solicitação': new Date(r.created_at).toLocaleString('pt-BR'),
+                        'Descrição': r.details || '-'
+                    }));
+                    const ws = XLSX.utils.json_to_sheet(refundsData);
+                    ws['!cols'] = [{wch:15},{wch:25},{wch:30},{wch:18},{wch:25},{wch:12},{wch:12},{wch:18},{wch:40}];
+                    XLSX.utils.book_append_sheet(wb, ws, 'Reembolsos');
+                }
+                
+                if (data.funnel) {
+                    const stats = data.funnel;
+                    const funnelData = [
+                        { 'Métrica': 'Total de Leads', 'Valor': stats.totalLeads || 0 },
+                        { 'Métrica': 'Leads Hoje', 'Valor': stats.todayLeads || 0 },
+                        { 'Métrica': 'Taxa de Conversão', 'Valor': `${stats.conversionRate || 0}%` },
+                        { 'Métrica': 'Total de Vendas', 'Valor': stats.totalSales || 0 },
+                        { 'Métrica': 'Receita Total', 'Valor': `R$ ${parseFloat(stats.totalRevenue || 0).toFixed(2)}` },
+                        { 'Métrica': 'Ticket Médio', 'Valor': `R$ ${parseFloat(stats.avgTicket || 0).toFixed(2)}` },
+                    ];
+                    const ws = XLSX.utils.json_to_sheet(funnelData);
+                    ws['!cols'] = [{wch:25},{wch:20}];
+                    XLSX.utils.book_append_sheet(wb, ws, 'Métricas');
+                }
+                
+                const fileName = type === 'all' ? `relatorio-completo-${today}.xlsx` : `${type}-${today}.xlsx`;
+                XLSX.writeFile(wb, fileName);
+                showToast('Sucesso!', 'Arquivo Excel baixado', 'success');
+            } catch (error) {
+                console.error('Excel export error:', error);
+                showToast('Erro', 'Falha ao exportar Excel', 'error');
+            }
+        }
+        
+        // Export to PDF
+        async function exportToPDF(type) {
+            try {
+                showToast('Gerando...', 'Preparando arquivo PDF', 'success');
+                toggleExportMenu();
+                
+                const data = await getExportData(type);
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('l', 'mm', 'a4');
+                const today = new Date().toLocaleDateString('pt-BR');
+                const pageWidth = doc.internal.pageSize.getWidth();
+                let currentPage = 1;
+                
+                // Header function
+                const addHeader = (title) => {
+                    doc.setFillColor(5, 150, 105);
+                    doc.rect(0, 0, pageWidth, 25, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(18);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text('ZapSpy.ai - ' + title, 14, 16);
+                    doc.setFontSize(10);
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(`Gerado em: ${today}`, pageWidth - 50, 16);
+                    doc.setTextColor(0, 0, 0);
+                };
+                
+                // Footer function
+                const addFooter = () => {
+                    doc.setFontSize(8);
+                    doc.setTextColor(128, 128, 128);
+                    doc.text(`Página ${currentPage}`, pageWidth / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
+                };
+                
+                if (data.leads) {
+                    addHeader('Relatório de Leads');
+                    const leadsTable = data.leads.map(l => [
+                        l.name || '-',
+                        l.email,
+                        l.whatsapp || '-',
+                        l.target_phone || '-',
+                        l.status,
+                        new Date(l.created_at).toLocaleDateString('pt-BR')
+                    ]);
+                    doc.autoTable({
+                        head: [['Nome', 'Email', 'WhatsApp', 'Alvo', 'Status', 'Data']],
+                        body: leadsTable,
+                        startY: 35,
+                        theme: 'striped',
+                        headStyles: { fillColor: [5, 150, 105], fontSize: 10 },
+                        bodyStyles: { fontSize: 9 },
+                        alternateRowStyles: { fillColor: [245, 245, 245] },
+                        margin: { left: 14, right: 14 }
+                    });
+                    addFooter();
+                    if (type === 'all' && (data.sales || data.refunds || data.funnel)) {
+                        doc.addPage();
+                        currentPage++;
+                    }
+                }
+                
+                if (data.sales) {
+                    addHeader('Relatório de Vendas');
+                    const salesTable = data.sales.map(s => [
+                        s.transaction_id || '-',
+                        s.product_name || '-',
+                        `R$ ${parseFloat(s.amount || 0).toFixed(2)}`,
+                        s.status,
+                        s.customer_name || '-',
+                        new Date(s.created_at).toLocaleDateString('pt-BR')
+                    ]);
+                    doc.autoTable({
+                        head: [['Código', 'Produto', 'Valor', 'Status', 'Cliente', 'Data']],
+                        body: salesTable,
+                        startY: 35,
+                        theme: 'striped',
+                        headStyles: { fillColor: [5, 150, 105], fontSize: 10 },
+                        bodyStyles: { fontSize: 9 },
+                        alternateRowStyles: { fillColor: [245, 245, 245] },
+                        margin: { left: 14, right: 14 }
+                    });
+                    addFooter();
+                    if (type === 'all' && (data.refunds || data.funnel)) {
+                        doc.addPage();
+                        currentPage++;
+                    }
+                }
+                
+                if (data.refunds) {
+                    addHeader('Relatório de Reembolsos');
+                    const refundsTable = data.refunds.map(r => [
+                        r.protocol,
+                        r.full_name,
+                        r.email,
+                        r.reason,
+                        r.status,
+                        new Date(r.created_at).toLocaleDateString('pt-BR')
+                    ]);
+                    doc.autoTable({
+                        head: [['Protocolo', 'Nome', 'Email', 'Motivo', 'Status', 'Data']],
+                        body: refundsTable,
+                        startY: 35,
+                        theme: 'striped',
+                        headStyles: { fillColor: [5, 150, 105], fontSize: 10 },
+                        bodyStyles: { fontSize: 9 },
+                        alternateRowStyles: { fillColor: [245, 245, 245] },
+                        margin: { left: 14, right: 14 }
+                    });
+                    addFooter();
+                    if (type === 'all' && data.funnel) {
+                        doc.addPage();
+                        currentPage++;
+                    }
+                }
+                
+                if (data.funnel) {
+                    addHeader('Métricas do Funil');
+                    const stats = data.funnel;
+                    const metricsTable = [
+                        ['Total de Leads', String(stats.totalLeads || 0)],
+                        ['Leads Hoje', String(stats.todayLeads || 0)],
+                        ['Taxa de Conversão', `${stats.conversionRate || 0}%`],
+                        ['Total de Vendas', String(stats.totalSales || 0)],
+                        ['Receita Total', `R$ ${parseFloat(stats.totalRevenue || 0).toFixed(2)}`],
+                        ['Ticket Médio', `R$ ${parseFloat(stats.avgTicket || 0).toFixed(2)}`]
+                    ];
+                    doc.autoTable({
+                        head: [['Métrica', 'Valor']],
+                        body: metricsTable,
+                        startY: 35,
+                        theme: 'striped',
+                        headStyles: { fillColor: [5, 150, 105], fontSize: 12 },
+                        bodyStyles: { fontSize: 11 },
+                        alternateRowStyles: { fillColor: [245, 245, 245] },
+                        margin: { left: 14, right: 14 },
+                        columnStyles: { 0: { cellWidth: 80 }, 1: { cellWidth: 60 } }
+                    });
+                    addFooter();
+                }
+                
+                const fileName = type === 'all' ? `relatorio-completo-${new Date().toISOString().split('T')[0]}.pdf` : `${type}-${new Date().toISOString().split('T')[0]}.pdf`;
+                doc.save(fileName);
+                showToast('Sucesso!', 'Arquivo PDF baixado', 'success');
+            } catch (error) {
+                console.error('PDF export error:', error);
+                showToast('Erro', 'Falha ao exportar PDF', 'error');
+            }
+        }
+        
+        // Export to CSV
+        async function exportToCSV(type) {
+            try {
+                showToast('Gerando...', 'Preparando arquivo CSV', 'success');
+                toggleExportMenu();
+                
+                const data = await getExportData(type);
+                let csvContent = '';
+                let fileName = '';
+                
+                if (type === 'leads' && data.leads) {
+                    csvContent = 'Nome,Email,WhatsApp,Alvo,Status,Tags,Data,Observações\n';
+                    data.leads.forEach(l => {
+                        csvContent += `"${l.name || ''}","${l.email}","${l.whatsapp || ''}","${l.target_phone || ''}","${l.status}","${l.tags || ''}","${new Date(l.created_at).toLocaleString('pt-BR')}","${(l.notes || '').replace(/"/g, '""')}"\n`;
+                    });
+                    fileName = `leads-${new Date().toISOString().split('T')[0]}.csv`;
+                }
+                
+                if (type === 'sales' && data.sales) {
+                    csvContent = 'Código,Produto,Valor,Status,Cliente,Email,Data\n';
+                    data.sales.forEach(s => {
+                        csvContent += `"${s.transaction_id}","${s.product_name || ''}","R$ ${parseFloat(s.amount || 0).toFixed(2)}","${s.status}","${s.customer_name || ''}","${s.customer_email || ''}","${new Date(s.created_at).toLocaleString('pt-BR')}"\n`;
+                    });
+                    fileName = `vendas-${new Date().toISOString().split('T')[0]}.csv`;
+                }
+                
+                if (type === 'refunds' && data.refunds) {
+                    csvContent = 'Protocolo,Nome,Email,Telefone,Motivo,Status,Data Compra,Data Solicitação,Descrição\n';
+                    data.refunds.forEach(r => {
+                        csvContent += `"${r.protocol}","${r.full_name}","${r.email}","${r.phone || ''}","${r.reason}","${r.status}","${r.purchase_date}","${new Date(r.created_at).toLocaleString('pt-BR')}","${(r.details || '').replace(/"/g, '""')}"\n`;
+                    });
+                    fileName = `reembolsos-${new Date().toISOString().split('T')[0]}.csv`;
+                }
+                
+                // Create download
+                const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `leads-${new Date().toISOString().split('T')[0]}.csv`;
+                a.download = fileName;
                 a.click();
-                showToast('Exportado!', 'Arquivo CSV baixado', 'success');
+                window.URL.revokeObjectURL(url);
+                
+                showToast('Sucesso!', 'Arquivo CSV baixado', 'success');
             } catch (error) {
-                showToast('Erro', 'Não foi possível exportar', 'error');
+                console.error('CSV export error:', error);
+                showToast('Erro', 'Falha ao exportar CSV', 'error');
             }
         }
         
