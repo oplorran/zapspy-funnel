@@ -2265,6 +2265,8 @@
             localStorage.setItem('userName', name);
             localStorage.setItem('userEmail', email);
             localStorage.setItem('userWhatsApp', country + whatsapp);
+            localStorage.setItem('userCountryCode', country);
+            localStorage.setItem('userPhoneNumber', whatsapp); // Phone number without country code for Monetizze
             
             // Send to backend
             sendLeadToBackend({

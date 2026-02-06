@@ -2284,10 +2284,13 @@
             const userName = localStorage.getItem('userName');
             const userEmail = localStorage.getItem('userEmail');
             const userWhatsApp = localStorage.getItem('userWhatsApp');
+            const userCountryCode = localStorage.getItem('userCountryCode');
+            const userPhoneNumber = localStorage.getItem('userPhoneNumber');
             
             if (userName) checkoutUrl += '&nome=' + encodeURIComponent(userName);
             if (userEmail) checkoutUrl += '&email=' + encodeURIComponent(userEmail);
-            if (userWhatsApp) checkoutUrl += '&telefone=' + encodeURIComponent(userWhatsApp);
+            // Send only the phone number without country code (Monetizze has its own country selector)
+            if (userPhoneNumber) checkoutUrl += '&telefone=' + encodeURIComponent(userPhoneNumber);
             
             // Redirect to checkout
             window.location.href = checkoutUrl;
@@ -2377,11 +2380,12 @@
             // Add user data from localStorage to pre-fill Monetizze checkout
             const userName = localStorage.getItem('userName');
             const userEmail = localStorage.getItem('userEmail');
-            const userWhatsApp = localStorage.getItem('userWhatsApp');
+            const userPhoneNumber = localStorage.getItem('userPhoneNumber');
             
             if (userName) checkoutUrl += '&nome=' + encodeURIComponent(userName);
             if (userEmail) checkoutUrl += '&email=' + encodeURIComponent(userEmail);
-            if (userWhatsApp) checkoutUrl += '&telefone=' + encodeURIComponent(userWhatsApp);
+            // Send only the phone number without country code (Monetizze has its own country selector)
+            if (userPhoneNumber) checkoutUrl += '&telefone=' + encodeURIComponent(userPhoneNumber);
             
             window.location.href = checkoutUrl;
         }
