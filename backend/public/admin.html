@@ -3,221 +3,444 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZapSpy.ai - Painel Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>ZapSpy.ai - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        * {
+        *, *::before, *::after {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
         
         :root {
-            --bg-dark: #0a0f0d;
-            --bg-card: #111b21;
-            --bg-input: #1f2c33;
-            --green: #25d366;
-            --green-dark: #128c7e;
-            --red: #ef4444;
-            --orange: #f59e0b;
-            --text: #e9edef;
-            --text-muted: #8696a0;
-            --border: #2a3942;
+            /* Dark Theme - Premium */
+            --bg-primary: #09090b;
+            --bg-secondary: #18181b;
+            --bg-tertiary: #27272a;
+            --bg-hover: #3f3f46;
+            --bg-card: linear-gradient(145deg, rgba(39, 39, 42, 0.5), rgba(24, 24, 27, 0.8));
+            --bg-glass: rgba(24, 24, 27, 0.7);
+            
+            /* Accent Colors */
+            --accent: #10b981;
+            --accent-light: #34d399;
+            --accent-dark: #059669;
+            --accent-glow: rgba(16, 185, 129, 0.15);
+            
+            /* Status Colors */
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --purple: #a855f7;
+            
+            /* Text */
+            --text-primary: #fafafa;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            
+            /* Borders */
+            --border: rgba(63, 63, 70, 0.5);
+            --border-light: rgba(82, 82, 91, 0.3);
+            
+            /* Shadows */
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+            --shadow-glow: 0 0 40px rgba(16, 185, 129, 0.1);
+            
+            /* Radius */
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            
+            /* Transitions */
+            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-dark);
-            color: var(--text);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
             min-height: 100vh;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
         
-        /* Login Screen */
-        .login-container {
+        /* ==================== LOGIN SCREEN ==================== */
+        .login-wrapper {
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
+            padding: 24px;
+            background: 
+                radial-gradient(ellipse at top, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom right, rgba(168, 85, 247, 0.05) 0%, transparent 50%),
+                var(--bg-primary);
         }
         
-        .login-box {
-            background: var(--bg-card);
-            border-radius: 16px;
-            padding: 40px;
-            max-width: 400px;
+        .login-card {
             width: 100%;
+            max-width: 420px;
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
             border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: 48px 40px;
+            box-shadow: var(--shadow-lg), var(--shadow-glow);
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
         }
         
         .login-logo {
-            text-align: center;
-            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .login-logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.3);
         }
         
         .login-logo h1 {
-            color: var(--green);
             font-size: 28px;
             font-weight: 700;
+            background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
-        .login-logo p {
+        .login-header p {
             color: var(--text-muted);
             font-size: 14px;
-            margin-top: 8px;
         }
         
         .form-group {
             margin-bottom: 20px;
         }
         
-        .form-group label {
+        .form-label {
             display: block;
-            font-size: 14px;
-            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
             margin-bottom: 8px;
         }
         
-        .form-group input {
+        .form-input {
             width: 100%;
             padding: 14px 16px;
-            background: var(--bg-input);
-            border: 2px solid var(--border);
-            border-radius: 10px;
-            color: var(--text);
-            font-size: 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 15px;
+            font-family: inherit;
             outline: none;
-            transition: border-color 0.3s;
+            transition: var(--transition-base);
         }
         
-        .form-group input:focus {
-            border-color: var(--green);
+        .form-input::placeholder {
+            color: var(--text-muted);
         }
         
-        .btn {
+        .form-input:hover {
+            border-color: var(--bg-hover);
+        }
+        
+        .form-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        
+        .btn-primary {
             width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, var(--green), var(--green-dark));
+            padding: 14px 24px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
             border: none;
-            border-radius: 10px;
+            border-radius: var(--radius-md);
             color: white;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
+            font-family: inherit;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: var(--transition-base);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
         }
         
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(37, 211, 102, 0.3);
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
         }
         
-        .error-msg {
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        
+        .error-message {
             background: rgba(239, 68, 68, 0.1);
-            border: 1px solid var(--red);
-            color: var(--red);
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 14px;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
             margin-bottom: 20px;
+            color: var(--danger);
+            font-size: 14px;
             display: none;
         }
         
-        /* Dashboard */
-        .dashboard {
-            display: none;
-        }
-        
-        .dashboard.active {
+        .error-message.visible {
             display: block;
         }
         
-        .header {
-            background: var(--bg-card);
-            border-bottom: 1px solid var(--border);
-            padding: 16px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        /* ==================== DASHBOARD LAYOUT ==================== */
+        .dashboard-wrapper {
+            display: none;
+            min-height: 100vh;
         }
         
-        .header-logo {
+        .dashboard-wrapper.active {
+            display: block;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 260px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+        
+        .sidebar-logo {
             display: flex;
             align-items: center;
             gap: 12px;
+            padding: 0 12px;
+            margin-bottom: 32px;
         }
         
-        .header-logo h1 {
-            color: var(--green);
-            font-size: 22px;
+        .sidebar-logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
         }
         
-        .header-logo span {
-            background: var(--green);
+        .sidebar-logo span {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .sidebar-nav {
+            flex: 1;
+        }
+        
+        .nav-section {
+            margin-bottom: 24px;
+        }
+        
+        .nav-section-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            padding: 0 12px;
+            margin-bottom: 8px;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            margin-bottom: 4px;
+        }
+        
+        .nav-item:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        .nav-item.active {
+            background: var(--accent-glow);
+            color: var(--accent-light);
+        }
+        
+        .nav-item-icon {
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .nav-item-badge {
+            margin-left: auto;
+            background: var(--accent);
             color: white;
             font-size: 11px;
-            padding: 4px 8px;
-            border-radius: 4px;
             font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        
+        .sidebar-footer {
+            border-top: 1px solid var(--border);
+            padding-top: 16px;
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+        
+        .user-menu:hover {
+            background: var(--bg-tertiary);
+        }
+        
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--purple), var(--info));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .user-info {
+            flex: 1;
+        }
+        
+        .user-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .user-role {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            min-height: 100vh;
+            background: var(--bg-primary);
+        }
+        
+        /* Header */
+        .header {
+            position: sticky;
+            top: 0;
+            background: rgba(9, 9, 11, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 50;
+        }
+        
+        .header-title h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .header-title p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 2px;
         }
         
         .header-actions {
             display: flex;
+            align-items: center;
             gap: 12px;
         }
         
         .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
             padding: 10px 16px;
-            background: var(--bg-input);
+            background: var(--bg-secondary);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text);
-            font-size: 14px;
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+            font-family: inherit;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition-fast);
         }
         
         .btn-secondary:hover {
-            border-color: var(--green);
-            color: var(--green);
+            background: var(--bg-tertiary);
+            border-color: var(--bg-hover);
+            color: var(--text-primary);
         }
         
-        .main {
-            padding: 24px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        
-        /* Tab Navigation */
-        .tab-nav {
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            padding: 0;
             display: flex;
-            gap: 4px;
-            background: var(--bg-input);
-            padding: 4px;
-            border-radius: 12px;
-            margin-bottom: 24px;
+            align-items: center;
+            justify-content: center;
         }
         
-        .tab-btn {
-            flex: 1;
-            padding: 12px 20px;
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: all 0.2s;
-        }
-        
-        .tab-btn:hover {
-            color: var(--text);
-        }
-        
-        .tab-btn.active {
-            background: var(--green);
-            color: #000;
+        /* Page Content */
+        .page-content {
+            padding: 32px;
         }
         
         .tab-content {
@@ -228,303 +451,361 @@
             display: block;
         }
         
-        /* Funnel Chart */
-        .funnel-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-            margin-bottom: 24px;
-        }
-        
-        .funnel-chart {
-            background: var(--bg-card);
-            border-radius: 12px;
-            padding: 24px;
-            border: 1px solid var(--border);
-        }
-        
-        .funnel-chart h3 {
-            margin-bottom: 24px;
-            font-size: 16px;
-            color: var(--text-muted);
-        }
-        
-        .funnel-step {
-            position: relative;
-            margin-bottom: 12px;
-        }
-        
-        .funnel-step-bar {
-            height: 40px;
-            background: linear-gradient(90deg, var(--green) 0%, var(--green-dark) 100%);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            padding: 0 16px;
-            transition: all 0.3s;
-        }
-        
-        .funnel-step-bar:hover {
-            transform: translateX(4px);
-        }
-        
-        .funnel-step-name {
-            font-size: 14px;
-            font-weight: 500;
-            color: #000;
-        }
-        
-        .funnel-step-value {
-            margin-left: auto;
-            font-size: 14px;
-            font-weight: 600;
-            color: #000;
-        }
-        
-        .funnel-step-drop {
-            position: absolute;
-            right: -60px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 12px;
-            color: var(--red);
-            font-weight: 500;
-        }
-        
-        /* Journeys Table */
-        .journey-events {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-        
-        .journey-event {
-            font-size: 11px;
-            padding: 4px 8px;
-            border-radius: 4px;
-            background: var(--bg-input);
-            color: var(--text-muted);
-        }
-        
-        .journey-event.completed {
-            background: rgba(37, 211, 102, 0.2);
-            color: var(--green);
-        }
-        
-        .journey-event.checkout {
-            background: rgba(245, 158, 11, 0.2);
-            color: var(--orange);
-        }
-        
-        /* Transaction Status Badges */
-        .status-approved {
-            background: rgba(37, 211, 102, 0.2);
-            color: var(--green);
-        }
-        
-        .status-pending {
-            background: rgba(245, 158, 11, 0.2);
-            color: var(--orange);
-        }
-        
-        .status-cancelled, .status-refunded, .status-chargeback {
-            background: rgba(239, 68, 68, 0.2);
-            color: var(--red);
-        }
-        
-        @media (max-width: 1024px) {
-            .funnel-container {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        /* Stats Cards */
+        /* Stats Grid */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 20px;
-            margin-bottom: 30px;
+            margin-bottom: 32px;
         }
         
         .stat-card {
             background: var(--bg-card);
-            border-radius: 12px;
-            padding: 20px;
+            backdrop-filter: blur(10px);
             border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition-base);
         }
         
-        .stat-card h3 {
-            color: var(--text-muted);
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0;
+            transition: var(--transition-base);
+        }
+        
+        .stat-card:hover {
+            border-color: var(--bg-hover);
+            transform: translateY(-2px);
+        }
+        
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+        
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        
+        .stat-label {
             font-size: 13px;
             font-weight: 500;
+            color: var(--text-muted);
             text-transform: uppercase;
-            margin-bottom: 8px;
+            letter-spacing: 0.3px;
         }
         
-        .stat-card .value {
-            font-size: 36px;
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .stat-icon.green { background: rgba(16, 185, 129, 0.1); }
+        .stat-icon.blue { background: rgba(59, 130, 246, 0.1); }
+        .stat-icon.purple { background: rgba(168, 85, 247, 0.1); }
+        .stat-icon.orange { background: rgba(245, 158, 11, 0.1); }
+        
+        .stat-value {
+            font-size: 32px;
             font-weight: 700;
-            color: var(--text);
+            color: var(--text-primary);
+            font-variant-numeric: tabular-nums;
         }
         
-        .stat-card .value.green {
-            color: var(--green);
-        }
+        .stat-value.green { color: var(--accent-light); }
         
-        .stat-card .change {
+        .stat-change {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
             font-size: 13px;
-            color: var(--green);
+            font-weight: 500;
             margin-top: 8px;
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
         }
         
-        /* Leads Table */
-        .table-container {
-            background: var(--bg-card);
-            border-radius: 12px;
+        .stat-change.up {
+            color: var(--success);
+            background: rgba(34, 197, 94, 0.1);
+        }
+        
+        .stat-change.down {
+            color: var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+        
+        /* Data Table */
+        .data-panel {
+            background: var(--bg-secondary);
             border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
             overflow: hidden;
         }
         
-        .table-header {
+        .panel-header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 16px 20px;
+            justify-content: space-between;
+            padding: 20px 24px;
             border-bottom: 1px solid var(--border);
         }
         
-        .table-header h2 {
-            font-size: 18px;
-            font-weight: 600;
-        }
-        
-        .table-actions {
+        .panel-title {
             display: flex;
+            align-items: center;
             gap: 12px;
         }
         
-        .search-input {
-            padding: 10px 14px;
-            background: var(--bg-input);
+        .panel-title h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .panel-count {
+            background: var(--bg-tertiary);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        
+        .panel-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .search-box input {
+            width: 280px;
+            padding: 10px 16px 10px 40px;
+            background: var(--bg-primary);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text);
-            font-size: 14px;
-            width: 250px;
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 13px;
+            font-family: inherit;
             outline: none;
+            transition: var(--transition-fast);
         }
         
-        .search-input:focus {
-            border-color: var(--green);
+        .search-box input::placeholder {
+            color: var(--text-muted);
         }
         
-        table {
+        .search-box input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        
+        .search-box::before {
+            content: '🔍';
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            opacity: 0.5;
+        }
+        
+        .filter-select {
+            padding: 10px 32px 10px 14px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 13px;
+            font-family: inherit;
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+        }
+        
+        .filter-select:focus {
+            border-color: var(--accent);
+        }
+        
+        .data-table {
             width: 100%;
             border-collapse: collapse;
         }
         
-        th, td {
-            padding: 14px 20px;
+        .data-table th {
+            padding: 14px 24px;
             text-align: left;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            background: var(--bg-primary);
             border-bottom: 1px solid var(--border);
         }
         
-        th {
-            background: var(--bg-input);
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            color: var(--text-muted);
-        }
-        
-        td {
+        .data-table td {
+            padding: 16px 24px;
             font-size: 14px;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-light);
         }
         
-        tr:hover {
-            background: rgba(37, 211, 102, 0.05);
+        .data-table tr:last-child td {
+            border-bottom: none;
         }
         
-        .status-badge {
-            display: inline-block;
-            padding: 4px 10px;
+        .data-table tr:hover td {
+            background: rgba(39, 39, 42, 0.3);
+        }
+        
+        .data-table .mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+        }
+        
+        .data-table .text-primary {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        
+        /* Status Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
             border-radius: 20px;
             font-size: 12px;
             font-weight: 500;
         }
         
-        .status-new {
-            background: rgba(37, 211, 102, 0.15);
-            color: var(--green);
+        .badge-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
         }
         
-        .status-contacted {
-            background: rgba(245, 158, 11, 0.15);
-            color: var(--orange);
+        .badge-new {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--info);
         }
+        .badge-new .badge-dot { background: var(--info); }
         
-        .status-converted {
-            background: rgba(59, 130, 246, 0.15);
-            color: #3b82f6;
+        .badge-contacted {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
         }
+        .badge-contacted .badge-dot { background: var(--warning); }
         
-        .status-lost {
-            background: rgba(239, 68, 68, 0.15);
-            color: var(--red);
+        .badge-converted {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success);
         }
+        .badge-converted .badge-dot { background: var(--success); }
         
+        .badge-lost {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+        .badge-lost .badge-dot { background: var(--danger); }
+        
+        .badge-approved {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+        }
+        .badge-approved .badge-dot { background: var(--success); }
+        
+        .badge-pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+        .badge-pending .badge-dot { background: var(--warning); }
+        
+        .badge-refunded, .badge-cancelled {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+        .badge-refunded .badge-dot, .badge-cancelled .badge-dot { background: var(--danger); }
+        
+        /* Action Buttons */
         .action-btn {
-            padding: 6px 10px;
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             background: transparent;
-            border: 1px solid var(--border);
-            border-radius: 6px;
+            border: 1px solid transparent;
+            border-radius: var(--radius-sm);
             color: var(--text-muted);
             cursor: pointer;
-            margin-right: 6px;
-            transition: all 0.2s;
+            transition: var(--transition-fast);
         }
         
         .action-btn:hover {
-            border-color: var(--green);
-            color: var(--green);
-        }
-        
-        .action-btn.delete:hover {
-            border-color: var(--red);
-            color: var(--red);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
         }
         
         /* Pagination */
         .pagination {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 16px 20px;
+            justify-content: space-between;
+            padding: 16px 24px;
             border-top: 1px solid var(--border);
         }
         
         .pagination-info {
-            font-size: 14px;
+            font-size: 13px;
             color: var(--text-muted);
         }
         
         .pagination-buttons {
             display: flex;
-            gap: 8px;
+            gap: 6px;
         }
         
         .page-btn {
             padding: 8px 14px;
-            background: var(--bg-input);
+            background: transparent;
             border: 1px solid var(--border);
-            border-radius: 6px;
-            color: var(--text);
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-family: inherit;
             cursor: pointer;
-            font-size: 14px;
+            transition: var(--transition-fast);
         }
         
         .page-btn:hover:not(:disabled) {
-            border-color: var(--green);
+            background: var(--bg-tertiary);
+            border-color: var(--bg-hover);
         }
         
         .page-btn:disabled {
@@ -533,44 +814,199 @@
         }
         
         .page-btn.active {
-            background: var(--green);
-            border-color: var(--green);
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
         }
         
-        /* Loading */
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: var(--text-muted);
-        }
-        
-        /* Empty state */
+        /* Empty State */
         .empty-state {
             text-align: center;
             padding: 60px 20px;
+        }
+        
+        .empty-state-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--bg-tertiary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 28px;
+        }
+        
+        .empty-state h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        
+        .empty-state p {
+            font-size: 14px;
             color: var(--text-muted);
         }
         
-        .empty-state svg {
-            width: 60px;
-            height: 60px;
-            color: var(--border);
+        /* Funnel Visualization */
+        .funnel-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .funnel-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+        }
+        
+        .funnel-card h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .funnel-step {
+            margin-bottom: 12px;
+            position: relative;
+        }
+        
+        .funnel-bar {
+            height: 44px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-dark));
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            transition: var(--transition-base);
+            min-width: 80px;
+        }
+        
+        .funnel-bar:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+        
+        .funnel-step-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .funnel-step-value {
+            font-size: 14px;
+            font-weight: 700;
+            color: white;
+        }
+        
+        .funnel-drop {
+            position: absolute;
+            right: -50px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--danger);
+        }
+        
+        /* Journey Events */
+        .journey-events {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        
+        .journey-tag {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+        }
+        
+        .journey-tag.completed {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-light);
+        }
+        
+        .journey-tag.checkout {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+        
+        /* Postback Config Box */
+        .config-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .config-box h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .config-box p {
+            font-size: 13px;
+            color: var(--text-muted);
             margin-bottom: 16px;
+        }
+        
+        .url-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 14px 16px;
+        }
+        
+        .url-box code {
+            flex: 1;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--accent-light);
+            word-break: break-all;
+        }
+        
+        .config-steps {
+            margin-top: 16px;
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.8;
+        }
+        
+        .config-steps strong {
+            color: var(--text-secondary);
         }
         
         /* Modal */
         .modal-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.8);
-            display: flex;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            display: none;
             align-items: center;
             justify-content: center;
             z-index: 1000;
-            display: none;
         }
         
         .modal-overlay.active {
@@ -578,17 +1014,23 @@
         }
         
         .modal {
-            background: var(--bg-card);
-            border-radius: 16px;
-            padding: 24px;
-            max-width: 500px;
-            width: 90%;
+            background: var(--bg-secondary);
             border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: 32px;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: var(--shadow-lg);
         }
         
-        .modal h3 {
-            margin-bottom: 20px;
+        .modal-header {
+            margin-bottom: 24px;
+        }
+        
+        .modal-header h3 {
             font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
         }
         
         .modal-actions {
@@ -597,268 +1039,439 @@
             margin-top: 24px;
         }
         
-        @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                gap: 16px;
-            }
-            
+        .modal-actions .btn-primary {
+            flex: 1;
+        }
+        
+        .modal-actions .btn-secondary {
+            flex: 1;
+            justify-content: center;
+        }
+        
+        /* Loading Spinner */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+        }
+        
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 1200px) {
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
             
-            .table-header {
+            .funnel-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                padding: 16px;
+            }
+            
+            .page-content {
+                padding: 16px;
+            }
+            
+            .panel-header {
                 flex-direction: column;
-                gap: 12px;
+                gap: 16px;
             }
             
-            .search-input {
+            .search-box input {
                 width: 100%;
-            }
-            
-            th, td {
-                padding: 10px;
-                font-size: 12px;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Tela de Login -->
-    <div class="login-container" id="loginScreen">
-        <div class="login-box">
-            <div class="login-logo">
-                <h1>🔒 ZapSpy.ai</h1>
-                <p>Painel Administrativo</p>
+    <!-- Login Screen -->
+    <div class="login-wrapper" id="loginScreen">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-logo">
+                    <div class="login-logo-icon">📱</div>
+                    <h1>ZapSpy.ai</h1>
+                </div>
+                <p>Faça login para acessar o painel</p>
             </div>
             
-            <div class="error-msg" id="loginError"></div>
+            <div class="error-message" id="loginError"></div>
             
             <form id="loginForm">
                 <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="loginEmail" required placeholder="admin@zapspy.ai">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="loginEmail" placeholder="seu@email.com" required>
                 </div>
                 <div class="form-group">
-                    <label>Senha</label>
-                    <input type="password" id="loginPassword" required placeholder="••••••••">
+                    <label class="form-label">Senha</label>
+                    <input type="password" class="form-input" id="loginPassword" placeholder="••••••••" required>
                 </div>
-                <button type="submit" class="btn">Entrar</button>
+                <button type="submit" class="btn-primary">Entrar</button>
             </form>
         </div>
     </div>
     
     <!-- Dashboard -->
-    <div class="dashboard" id="dashboard">
-        <header class="header">
-            <div class="header-logo">
-                <h1>📊 ZapSpy.ai</h1>
-                <span>ADMIN</span>
+    <div class="dashboard-wrapper" id="dashboard">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <div class="sidebar-logo-icon">📱</div>
+                <span>ZapSpy.ai</span>
             </div>
-            <div class="header-actions">
-                <button class="btn-secondary" onclick="exportLeads()">📥 Exportar CSV</button>
-                <button class="btn-secondary" onclick="refreshData()">🔄 Atualizar</button>
-                <button class="btn-secondary" onclick="logout()">🚪 Sair</button>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Principal</div>
+                    <div class="nav-item active" onclick="switchTab('leads')">
+                        <span class="nav-item-icon">👥</span>
+                        Leads
+                        <span class="nav-item-badge" id="navLeadCount">0</span>
+                    </div>
+                    <div class="nav-item" onclick="switchTab('funnel')">
+                        <span class="nav-item-icon">📊</span>
+                        Funil
+                    </div>
+                    <div class="nav-item" onclick="switchTab('sales')">
+                        <span class="nav-item-icon">💰</span>
+                        Vendas
+                    </div>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">Configurações</div>
+                    <div class="nav-item" onclick="switchTab('sales')">
+                        <span class="nav-item-icon">⚙️</span>
+                        Postback
+                    </div>
+                </div>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-menu" onclick="logout()">
+                    <div class="user-avatar">A</div>
+                    <div class="user-info">
+                        <div class="user-name">Admin</div>
+                        <div class="user-role">Sair</div>
+                    </div>
+                </div>
             </div>
-        </header>
+        </aside>
         
-        <main class="main">
-            <!-- Navegação por Abas -->
-            <div class="tab-nav">
-                <button class="tab-btn active" onclick="switchTab('leads')">📋 Leads</button>
-                <button class="tab-btn" onclick="switchTab('funnel')">📊 Funil</button>
-                <button class="tab-btn" onclick="switchTab('sales')">💰 Vendas</button>
-            </div>
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-title">
+                    <h1 id="pageTitle">Leads</h1>
+                    <p id="pageSubtitle">Gerencie seus leads e acompanhe as conversões</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-secondary" onclick="exportLeads()">
+                        <span>📥</span> Exportar
+                    </button>
+                    <button class="btn-secondary btn-icon" onclick="refreshData()">🔄</button>
+                </div>
+            </header>
             
-            <!-- Tab: Leads -->
-            <div class="tab-content active" id="tab-leads">
-                <!-- Estatísticas -->
-                <div class="stats-grid" id="statsGrid">
-                    <div class="stat-card">
-                        <h3>Total de Leads</h3>
-                        <div class="value" id="statTotal">-</div>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Hoje</h3>
-                        <div class="value green" id="statToday">-</div>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Esta Semana</h3>
-                        <div class="value" id="statWeek">-</div>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Taxa de Conversão</h3>
-                        <div class="value" id="statConversion">-</div>
-                    </div>
-                </div>
-                
-                <!-- Tabela de Leads -->
-                <div class="table-container">
-                <div class="table-header">
-                    <h2>📋 Leads</h2>
-                    <div class="table-actions">
-                        <input type="text" class="search-input" id="searchInput" placeholder="Buscar por email, telefone...">
-                        <select class="btn-secondary" id="statusFilter">
-                            <option value="">Todos os Status</option>
-                            <option value="new">Novo</option>
-                            <option value="contacted">Contatado</option>
-                            <option value="converted">Convertido</option>
-                            <option value="lost">Perdido</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div id="leadsTableBody">
-                    <div class="loading">Carregando leads...</div>
-                </div>
-                
-                <div class="pagination" id="pagination">
-                    <div class="pagination-info" id="paginationInfo">Mostrando 0 de 0</div>
-                    <div class="pagination-buttons" id="paginationButtons"></div>
-                </div>
-            </div>
-            </div>
-            
-            <!-- Tab: Funil -->
-            <div class="tab-content" id="tab-funnel">
-                <!-- Estatísticas do Funil -->
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <h3>Visitantes (30 dias)</h3>
-                        <div class="value" id="funnelVisitors">-</div>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Taxa Landing → Phone</h3>
-                        <div class="value green" id="funnelRate1">-</div>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Taxa Phone → CTA</h3>
-                        <div class="value green" id="funnelRate2">-</div>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Taxa CTA → Checkout</h3>
-                        <div class="value" id="funnelRate3">-</div>
-                    </div>
-                </div>
-                
-                <div class="funnel-container">
-                    <!-- Gráfico do Funil -->
-                    <div class="funnel-chart">
-                        <h3>📈 Etapas do Funil (últimos 30 dias)</h3>
-                        <div id="funnelSteps">
-                            <div class="loading">Carregando dados do funil...</div>
+            <!-- Page Content -->
+            <div class="page-content">
+                <!-- Tab: Leads -->
+                <div class="tab-content active" id="tab-leads">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-label">Total de Leads</span>
+                                <div class="stat-icon blue">👥</div>
+                            </div>
+                            <div class="stat-value" id="statTotal">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-label">Hoje</span>
+                                <div class="stat-icon green">📈</div>
+                            </div>
+                            <div class="stat-value green" id="statToday">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-label">Esta Semana</span>
+                                <div class="stat-icon purple">📅</div>
+                            </div>
+                            <div class="stat-value" id="statWeek">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-label">Taxa de Conversão</span>
+                                <div class="stat-icon orange">🎯</div>
+                            </div>
+                            <div class="stat-value" id="statConversion">0%</div>
                         </div>
                     </div>
                     
-                    <!-- Conversões Diárias -->
-                    <div class="funnel-chart">
-                        <h3>📅 Últimos 7 Dias</h3>
-                        <div id="dailyStats">
-                            <div class="loading">Carregando...</div>
+                    <div class="data-panel">
+                        <div class="panel-header">
+                            <div class="panel-title">
+                                <h2>Leads Recentes</h2>
+                                <span class="panel-count" id="panelLeadCount">0 leads</span>
+                            </div>
+                            <div class="panel-actions">
+                                <div class="search-box">
+                                    <input type="text" id="searchInput" placeholder="Buscar por email, telefone...">
+                                </div>
+                                <select class="filter-select" id="statusFilter">
+                                    <option value="">Todos os Status</option>
+                                    <option value="new">Novo</option>
+                                    <option value="contacted">Contatado</option>
+                                    <option value="converted">Convertido</option>
+                                    <option value="lost">Perdido</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div id="leadsTableContainer">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Email</th>
+                                        <th>WhatsApp</th>
+                                        <th>Alvo</th>
+                                        <th>Gênero</th>
+                                        <th>Status</th>
+                                        <th>Data</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="leadsTableBody">
+                                    <tr>
+                                        <td colspan="7">
+                                            <div class="loading">
+                                                <div class="spinner"></div>
+                                                Carregando leads...
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="pagination" id="pagination">
+                            <div class="pagination-info" id="paginationInfo">Mostrando 0 de 0</div>
+                            <div class="pagination-buttons" id="paginationButtons"></div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Jornadas dos Visitantes -->
-                <div class="table-container">
-                    <div class="table-header">
-                        <h2>🚶 Jornadas dos Visitantes</h2>
+                <!-- Tab: Funnel -->
+                <div class="tab-content" id="tab-funnel">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-label">Visitantes (30 dias)</span>
+                                <div class="stat-icon blue">👁️</div>
+                            </div>
+                            <div class="stat-value" id="funnelVisitors">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-label">Landing → Phone</span>
+                                <div class="stat-icon green">📱</div>
+                            </div>
+                            <div class="stat-value green" id="funnelRate1">0%</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-label">Phone → CTA</span>
+                                <div class="stat-icon purple">🎯</div>
+                            </div>
+                            <div class="stat-value" id="funnelRate2">0%</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-label">CTA → Checkout</span>
+                                <div class="stat-icon orange">💳</div>
+                            </div>
+                            <div class="stat-value" id="funnelRate3">0%</div>
+                        </div>
                     </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Visitante</th>
-                                <th>Telefone Alvo</th>
-                                <th>Gênero</th>
-                                <th>Etapas Percorridas</th>
-                                <th>Primeira Visita</th>
-                                <th>Última Atividade</th>
-                            </tr>
-                        </thead>
-                        <tbody id="journeysTable">
-                            <tr>
-                                <td colspan="6" class="loading">Carregando jornadas...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <!-- Tab: Vendas -->
-            <div class="tab-content" id="tab-sales">
-                <!-- Estatísticas de Vendas -->
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <h3>Vendas Aprovadas</h3>
-                        <div class="value green" id="salesApproved">-</div>
+                    
+                    <div class="funnel-grid">
+                        <div class="funnel-card">
+                            <h3>📈 Etapas do Funil</h3>
+                            <div id="funnelSteps">
+                                <div class="loading">
+                                    <div class="spinner"></div>
+                                    Carregando funil...
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="funnel-card">
+                            <h3>📅 Últimos 7 Dias</h3>
+                            <div id="dailyStats">
+                                <div class="loading">
+                                    <div class="spinner"></div>
+                                    Carregando...
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="stat-card">
-                        <h3>Faturamento</h3>
-                        <div class="value" id="salesRevenue">-</div>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Taxa de Conversão</h3>
-                        <div class="value" id="salesConversion">-</div>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Reembolsos/Chargebacks</h3>
-                        <div class="value" style="color: var(--red);" id="salesRefunded">-</div>
+                    
+                    <div class="data-panel">
+                        <div class="panel-header">
+                            <div class="panel-title">
+                                <h2>Jornadas dos Visitantes</h2>
+                            </div>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Visitante</th>
+                                    <th>Alvo</th>
+                                    <th>Gênero</th>
+                                    <th>Etapas</th>
+                                    <th>Primeira Visita</th>
+                                    <th>Última Atividade</th>
+                                </tr>
+                            </thead>
+                            <tbody id="journeysTable">
+                                <tr>
+                                    <td colspan="6">
+                                        <div class="loading">
+                                            <div class="spinner"></div>
+                                            Carregando jornadas...
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
                 
-                <!-- Info do Postback -->
-                <div class="table-container" style="margin-bottom: 24px; padding: 20px;">
-                    <h3 style="margin-bottom: 16px;">⚙️ Configuração do Postback Monetizze</h3>
-                    <p style="color: var(--text-muted); margin-bottom: 12px;">Configure a URL abaixo no painel da Monetizze para receber notificações de vendas:</p>
-                    <div style="background: var(--bg-input); padding: 14px; border-radius: 8px; display: flex; align-items: center; gap: 12px;">
-                        <code style="flex: 1; color: var(--green); word-break: break-all;" id="postbackUrl">-</code>
-                        <button class="btn-secondary" onclick="copyPostbackUrl()" style="white-space: nowrap;">📋 Copiar</button>
+                <!-- Tab: Sales -->
+                <div class="tab-content" id="tab-sales">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-label">Vendas Aprovadas</span>
+                                <div class="stat-icon green">✅</div>
+                            </div>
+                            <div class="stat-value green" id="salesApproved">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-label">Faturamento</span>
+                                <div class="stat-icon blue">💰</div>
+                            </div>
+                            <div class="stat-value" id="salesRevenue">R$ 0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-label">Taxa de Conversão</span>
+                                <div class="stat-icon purple">📊</div>
+                            </div>
+                            <div class="stat-value" id="salesConversion">0%</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-label">Reembolsos</span>
+                                <div class="stat-icon orange">↩️</div>
+                            </div>
+                            <div class="stat-value" style="color: var(--danger);" id="salesRefunded">0</div>
+                        </div>
                     </div>
-                    <p style="color: var(--text-muted); margin-top: 12px; font-size: 13px;">
-                        <strong>Instruções:</strong><br>
-                        1. Acesse Monetizze → Ferramentas → Postback<br>
-                        2. Cole a URL acima no campo "URL a ser executada"<br>
-                        3. Selecione todos os eventos (Finalizada, Cancelada, etc.)<br>
-                        4. Clique em "Testar" para verificar a conexão
-                    </p>
-                </div>
-                
-                <!-- Tabela de Transações -->
-                <div class="table-container">
-                    <div class="table-header">
-                        <h2>📦 Transações Monetizze</h2>
+                    
+                    <div class="config-box">
+                        <h3>⚙️ Configuração do Postback Monetizze</h3>
+                        <p>Configure a URL abaixo no painel da Monetizze para receber notificações automáticas de vendas.</p>
+                        <div class="url-box">
+                            <code id="postbackUrl">-</code>
+                            <button class="btn-secondary" onclick="copyPostbackUrl()">📋 Copiar</button>
+                        </div>
+                        <div class="config-steps">
+                            <strong>Instruções:</strong><br>
+                            1. Acesse Monetizze → Ferramentas → Postback<br>
+                            2. Cole a URL acima no campo "URL a ser executada"<br>
+                            3. Selecione todos os eventos desejados<br>
+                            4. Clique em "Testar" para verificar
+                        </div>
                     </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ID Transação</th>
-                                <th>Cliente</th>
-                                <th>Email</th>
-                                <th>Produto</th>
-                                <th>Valor</th>
-                                <th>Status</th>
-                                <th>Data</th>
-                            </tr>
-                        </thead>
-                        <tbody id="transactionsTable">
-                            <tr>
-                                <td colspan="7" class="loading">Carregando transações...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    
+                    <div class="data-panel">
+                        <div class="panel-header">
+                            <div class="panel-title">
+                                <h2>Transações</h2>
+                            </div>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Cliente</th>
+                                    <th>Email</th>
+                                    <th>Produto</th>
+                                    <th>Valor</th>
+                                    <th>Status</th>
+                                    <th>Data</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactionsTable">
+                                <tr>
+                                    <td colspan="7">
+                                        <div class="empty-state">
+                                            <div class="empty-state-icon">📦</div>
+                                            <h3>Nenhuma transação ainda</h3>
+                                            <p>Configure o postback da Monetizze para começar a receber dados.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </main>
     </div>
     
-    <!-- Modal de Edição -->
+    <!-- Edit Modal -->
     <div class="modal-overlay" id="editModal">
         <div class="modal">
-            <h3>Editar Lead</h3>
+            <div class="modal-header">
+                <h3>Editar Lead</h3>
+            </div>
             <input type="hidden" id="editLeadId">
             <div class="form-group">
-                <label>Status</label>
-                <select id="editStatus" style="width: 100%; padding: 12px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 14px;">
+                <label class="form-label">Status</label>
+                <select class="filter-select" id="editStatus" style="width: 100%;">
                     <option value="new">Novo</option>
                     <option value="contacted">Contatado</option>
                     <option value="converted">Convertido</option>
@@ -866,11 +1479,11 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>Observações</label>
-                <textarea id="editNotes" rows="4" style="width: 100%; padding: 12px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 14px; resize: vertical;" placeholder="Adicione observações sobre este lead..."></textarea>
+                <label class="form-label">Observações</label>
+                <textarea class="form-input" id="editNotes" rows="4" placeholder="Adicione observações..."></textarea>
             </div>
             <div class="modal-actions">
-                <button class="btn" onclick="saveLeadEdit()">Salvar Alterações</button>
+                <button class="btn-primary" onclick="saveLeadEdit()">Salvar</button>
                 <button class="btn-secondary" onclick="closeEditModal()">Cancelar</button>
             </div>
         </div>
@@ -882,7 +1495,6 @@
         let currentPage = 1;
         let searchTimeout;
         
-        // Mapeamento de status para português
         const statusLabels = {
             'new': 'Novo',
             'contacted': 'Contatado',
@@ -890,12 +1502,18 @@
             'lost': 'Perdido'
         };
         
-        // Verificar se está logado
+        const pageTitles = {
+            'leads': { title: 'Leads', subtitle: 'Gerencie seus leads e acompanhe as conversões' },
+            'funnel': { title: 'Funil', subtitle: 'Visualize a jornada dos visitantes' },
+            'sales': { title: 'Vendas', subtitle: 'Acompanhe suas vendas e transações' }
+        };
+        
+        // Check if logged in
         if (authToken) {
             showDashboard();
         }
         
-        // Formulário de login
+        // Login form handler
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -912,21 +1530,21 @@
                 
                 const data = await response.json();
                 
-                if (data.success) {
+                if (response.ok && data.token) {
                     authToken = data.token;
                     localStorage.setItem('adminToken', authToken);
                     showDashboard();
                 } else {
-                    errorEl.textContent = data.error === 'Invalid credentials' ? 'Credenciais inválidas' : (data.error || 'Falha no login');
-                    errorEl.style.display = 'block';
+                    errorEl.textContent = data.error || 'Credenciais inválidas';
+                    errorEl.classList.add('visible');
                 }
             } catch (error) {
                 errorEl.textContent = 'Erro de conexão. Tente novamente.';
-                errorEl.style.display = 'block';
+                errorEl.classList.add('visible');
             }
         });
         
-        // Mostrar dashboard
+        // Show dashboard
         function showDashboard() {
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('dashboard').classList.add('active');
@@ -935,280 +1553,29 @@
             loadFunnelData();
         }
         
-        // Trocar aba
+        // Switch tabs
         function switchTab(tabName) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            // Update nav items
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            document.querySelector(`.nav-item[onclick="switchTab('${tabName}')"]`)?.classList.add('active');
             
-            document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            // Update content
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.getElementById(`tab-${tabName}`).classList.add('active');
             
+            // Update header
+            const pageInfo = pageTitles[tabName];
+            if (pageInfo) {
+                document.getElementById('pageTitle').textContent = pageInfo.title;
+                document.getElementById('pageSubtitle').textContent = pageInfo.subtitle;
+            }
+            
+            // Load data
             if (tabName === 'funnel') {
                 loadFunnelData();
             } else if (tabName === 'sales') {
                 loadSalesData();
             }
-        }
-        
-        // Carregar dados do funil
-        async function loadFunnelData() {
-            try {
-                const response = await fetch(`${API_URL}/api/admin/funnel`, {
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                });
-                
-                if (response.status === 401 || response.status === 403) {
-                    logout();
-                    return;
-                }
-                
-                const data = await response.json();
-                renderFunnelStats(data.funnelStats);
-                renderDailyStats(data.dailyStats);
-                renderJourneys(data.journeys);
-                
-            } catch (error) {
-                console.error('Erro ao carregar dados do funil:', error);
-            }
-        }
-        
-        // Renderizar estatísticas do funil
-        function renderFunnelStats(stats) {
-            const funnelOrder = [
-                { key: 'page_view_landing', label: 'Landing Page' },
-                { key: 'page_view_phone', label: 'Página Telefone' },
-                { key: 'phone_submitted', label: 'Telefone Enviado' },
-                { key: 'page_view_conversas', label: 'Conversas' },
-                { key: 'page_view_chat', label: 'Chat' },
-                { key: 'page_view_cta', label: 'Página CTA' },
-                { key: 'email_captured', label: 'Email Capturado' },
-                { key: 'checkout_clicked', label: 'Checkout' }
-            ];
-            
-            const statsMap = {};
-            stats.forEach(s => statsMap[s.event] = parseInt(s.unique_visitors));
-            
-            const maxVisitors = Math.max(...Object.values(statsMap), 1);
-            const landingVisitors = statsMap['page_view_landing'] || 0;
-            const phoneVisitors = statsMap['page_view_phone'] || 0;
-            const ctaVisitors = statsMap['page_view_cta'] || 0;
-            const checkoutVisitors = statsMap['checkout_clicked'] || 0;
-            
-            // Atualizar estatísticas gerais
-            document.getElementById('funnelVisitors').textContent = landingVisitors.toLocaleString('pt-BR');
-            document.getElementById('funnelRate1').textContent = landingVisitors > 0 
-                ? ((phoneVisitors / landingVisitors) * 100).toFixed(1) + '%' : '-';
-            document.getElementById('funnelRate2').textContent = phoneVisitors > 0 
-                ? ((ctaVisitors / phoneVisitors) * 100).toFixed(1) + '%' : '-';
-            document.getElementById('funnelRate3').textContent = ctaVisitors > 0 
-                ? ((checkoutVisitors / ctaVisitors) * 100).toFixed(1) + '%' : '-';
-            
-            let html = '';
-            let prevValue = null;
-            
-            funnelOrder.forEach((step, idx) => {
-                const value = statsMap[step.key] || 0;
-                const width = maxVisitors > 0 ? Math.max((value / maxVisitors) * 100, 10) : 10;
-                const drop = prevValue !== null && prevValue > 0 
-                    ? (((prevValue - value) / prevValue) * 100).toFixed(0) 
-                    : null;
-                
-                html += `
-                    <div class="funnel-step">
-                        <div class="funnel-step-bar" style="width: ${width}%">
-                            <span class="funnel-step-name">${step.label}</span>
-                            <span class="funnel-step-value">${value.toLocaleString('pt-BR')}</span>
-                        </div>
-                        ${drop !== null && drop > 0 ? `<span class="funnel-step-drop">-${drop}%</span>` : ''}
-                    </div>
-                `;
-                prevValue = value;
-            });
-            
-            document.getElementById('funnelSteps').innerHTML = html || '<div class="empty-state">Nenhum dado de funil ainda</div>';
-        }
-        
-        // Renderizar estatísticas diárias
-        function renderDailyStats(stats) {
-            if (!stats || stats.length === 0) {
-                document.getElementById('dailyStats').innerHTML = '<div class="empty-state">Nenhum dado disponível</div>';
-                return;
-            }
-            
-            // Agrupar por data
-            const byDate = {};
-            stats.forEach(s => {
-                const date = s.date.split('T')[0];
-                if (!byDate[date]) byDate[date] = {};
-                byDate[date][s.event] = parseInt(s.unique_visitors);
-            });
-            
-            let html = '<table style="width:100%; font-size: 13px;"><thead><tr><th style="padding:8px; text-align:left;">Data</th><th style="padding:8px;">Visitas</th><th style="padding:8px;">Checkout</th></tr></thead><tbody>';
-            
-            Object.keys(byDate).sort().reverse().slice(0, 7).forEach(date => {
-                const visits = byDate[date]['page_view_landing'] || 0;
-                const checkout = byDate[date]['checkout_clicked'] || 0;
-                const formattedDate = new Date(date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-                
-                html += `<tr>
-                    <td style="padding:8px; border-bottom:1px solid var(--border);">${formattedDate}</td>
-                    <td style="padding:8px; border-bottom:1px solid var(--border); text-align:center;">${visits}</td>
-                    <td style="padding:8px; border-bottom:1px solid var(--border); text-align:center; color:var(--green);">${checkout}</td>
-                </tr>`;
-            });
-            
-            html += '</tbody></table>';
-            document.getElementById('dailyStats').innerHTML = html;
-        }
-        
-        // Renderizar jornadas
-        function renderJourneys(journeys) {
-            if (!journeys || journeys.length === 0) {
-                document.getElementById('journeysTable').innerHTML = '<tr><td colspan="6" class="empty-state">Nenhuma jornada registrada ainda</td></tr>';
-                return;
-            }
-            
-            const eventLabels = {
-                'page_view_landing': '🏠 Landing',
-                'gender_selected': '👤 Gênero',
-                'page_view_phone': '📱 Phone',
-                'phone_submitted': '✅ Tel. Enviado',
-                'page_view_conversas': '💬 Conversas',
-                'page_view_chat': '📩 Chat',
-                'page_view_cta': '🎯 CTA',
-                'email_captured': '📧 Email',
-                'checkout_clicked': '💰 Checkout',
-                'scroll_50_percent': '📜 50%',
-                'scroll_100_percent': '📜 100%',
-                'time_on_page_30s': '⏱️ 30s',
-                'time_on_page_60s': '⏱️ 60s'
-            };
-            
-            let html = '';
-            journeys.forEach(j => {
-                const events = j.events || [];
-                const hasCheckout = events.includes('checkout_clicked');
-                
-                html += `<tr>
-                    <td style="font-family: monospace; font-size: 12px;">${j.visitor_id.substring(0, 12)}...</td>
-                    <td>${j.target_phone || '-'}</td>
-                    <td>${j.target_gender === 'male' ? '👨 Masc' : j.target_gender === 'female' ? '👩 Fem' : '-'}</td>
-                    <td>
-                        <div class="journey-events">
-                            ${events.slice(0, 8).map(e => {
-                                const isCheckout = e === 'checkout_clicked';
-                                return `<span class="journey-event ${isCheckout ? 'checkout' : 'completed'}">${eventLabels[e] || e}</span>`;
-                            }).join('')}
-                            ${events.length > 8 ? `<span class="journey-event">+${events.length - 8}</span>` : ''}
-                        </div>
-                    </td>
-                    <td>${formatDate(j.first_seen)}</td>
-                    <td>${formatDate(j.last_seen)}</td>
-                </tr>`;
-            });
-            
-            document.getElementById('journeysTable').innerHTML = html;
-        }
-        
-        // ==================== VENDAS ====================
-        
-        // Carregar dados de vendas
-        async function loadSalesData() {
-            try {
-                // Set postback URL
-                document.getElementById('postbackUrl').textContent = `${API_URL}/api/postback/monetizze`;
-                
-                // Load stats and transactions in parallel
-                const [statsResponse, transactionsResponse] = await Promise.all([
-                    fetch(`${API_URL}/api/admin/sales`, {
-                        headers: { 'Authorization': `Bearer ${authToken}` }
-                    }),
-                    fetch(`${API_URL}/api/admin/transactions`, {
-                        headers: { 'Authorization': `Bearer ${authToken}` }
-                    })
-                ]);
-                
-                if (statsResponse.status === 401 || transactionsResponse.status === 401) {
-                    logout();
-                    return;
-                }
-                
-                const stats = await statsResponse.json();
-                const transactionsData = await transactionsResponse.json();
-                
-                renderSalesStats(stats);
-                renderTransactions(transactionsData.transactions);
-                
-            } catch (error) {
-                console.error('Erro ao carregar vendas:', error);
-            }
-        }
-        
-        // Renderizar estatísticas de vendas
-        function renderSalesStats(stats) {
-            document.getElementById('salesApproved').textContent = stats.approved.toLocaleString('pt-BR');
-            document.getElementById('salesRevenue').textContent = 'R$ ' + stats.revenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-            document.getElementById('salesConversion').textContent = stats.conversionRate + '%';
-            document.getElementById('salesRefunded').textContent = stats.refunded.toLocaleString('pt-BR');
-        }
-        
-        // Renderizar transações
-        function renderTransactions(transactions) {
-            if (!transactions || transactions.length === 0) {
-                document.getElementById('transactionsTable').innerHTML = '<tr><td colspan="7" class="empty-state">Nenhuma transação registrada. Configure o postback da Monetizze para começar a receber dados.</td></tr>';
-                return;
-            }
-            
-            const statusLabelsTransaction = {
-                'approved': 'Aprovada',
-                'pending_payment': 'Aguardando',
-                'cancelled': 'Cancelada',
-                'refunded': 'Reembolsada',
-                'chargeback': 'Chargeback',
-                'abandoned_checkout': 'Abandonado',
-                'blocked': 'Bloqueada',
-                'complete': 'Completa',
-                'subscription_active': 'Assinatura Ativa',
-                'subscription_cancelled': 'Assinatura Cancelada',
-                'subscription_overdue': 'Inadimplente',
-                'unknown': 'Desconhecido'
-            };
-            
-            let html = '';
-            transactions.forEach(t => {
-                const statusClass = t.status === 'approved' ? 'status-approved' : 
-                                   t.status === 'pending_payment' ? 'status-pending' : 
-                                   ['cancelled', 'refunded', 'chargeback'].includes(t.status) ? 'status-cancelled' : '';
-                
-                html += `<tr>
-                    <td style="font-family: monospace; font-size: 12px;">${t.transaction_id ? t.transaction_id.substring(0, 15) + '...' : '-'}</td>
-                    <td>${t.name || '-'}</td>
-                    <td>${t.email || '-'}</td>
-                    <td>${t.product || '-'}</td>
-                    <td style="color: var(--green);">R$ ${t.value || '0'}</td>
-                    <td><span class="status-badge ${statusClass}">${statusLabelsTransaction[t.status] || t.status}</span></td>
-                    <td>${formatDate(t.created_at)}</td>
-                </tr>`;
-            });
-            
-            document.getElementById('transactionsTable').innerHTML = html;
-        }
-        
-        // Copiar URL do postback
-        function copyPostbackUrl() {
-            const url = document.getElementById('postbackUrl').textContent;
-            navigator.clipboard.writeText(url).then(() => {
-                alert('URL copiada para a área de transferência!');
-            }).catch(err => {
-                // Fallback for older browsers
-                const textArea = document.createElement('textarea');
-                textArea.value = url;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                alert('URL copiada!');
-            });
         }
         
         // Logout
@@ -1218,14 +1585,21 @@
             location.reload();
         }
         
-        // Carregar estatísticas
+        // Refresh data
+        function refreshData() {
+            loadStats();
+            loadLeads();
+            loadFunnelData();
+        }
+        
+        // Load stats
         async function loadStats() {
             try {
                 const response = await fetch(`${API_URL}/api/admin/stats`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
                 
-                if (response.status === 401 || response.status === 403) {
+                if (response.status === 401) {
                     logout();
                     return;
                 }
@@ -1235,113 +1609,142 @@
                 document.getElementById('statTotal').textContent = data.total.toLocaleString('pt-BR');
                 document.getElementById('statToday').textContent = data.today.toLocaleString('pt-BR');
                 document.getElementById('statWeek').textContent = data.thisWeek.toLocaleString('pt-BR');
+                document.getElementById('navLeadCount').textContent = data.total;
                 
-                // Calcular taxa de conversão
                 const converted = data.byStatus?.find(s => s.status === 'converted')?.count || 0;
                 const rate = data.total > 0 ? ((converted / data.total) * 100).toFixed(1) : 0;
                 document.getElementById('statConversion').textContent = rate + '%';
                 
             } catch (error) {
-                console.error('Erro ao carregar estatísticas:', error);
+                console.error('Error loading stats:', error);
             }
         }
         
-        // Carregar leads
+        // Load leads
         async function loadLeads(page = 1) {
             currentPage = page;
             const search = document.getElementById('searchInput').value;
             const status = document.getElementById('statusFilter').value;
             
             try {
-                const params = new URLSearchParams({ page, limit: 20 });
-                if (search) params.append('search', search);
-                if (status) params.append('status', status);
+                let url = `${API_URL}/api/admin/leads?page=${page}&limit=10`;
+                if (search) url += `&search=${encodeURIComponent(search)}`;
+                if (status) url += `&status=${status}`;
                 
-                const response = await fetch(`${API_URL}/api/admin/leads?${params}`, {
+                const response = await fetch(url, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
                 
-                if (response.status === 401 || response.status === 403) {
+                if (response.status === 401) {
                     logout();
                     return;
                 }
                 
                 const data = await response.json();
-                renderLeads(data.leads, data.pagination);
+                renderLeads(data.leads);
+                renderPagination(data.pagination);
+                
+                document.getElementById('panelLeadCount').textContent = `${data.pagination.total} leads`;
                 
             } catch (error) {
-                console.error('Erro ao carregar leads:', error);
-                document.getElementById('leadsTableBody').innerHTML = '<div class="loading">Erro ao carregar leads</div>';
+                console.error('Error loading leads:', error);
             }
         }
         
-        // Renderizar tabela de leads
-        function renderLeads(leads, pagination) {
-            const container = document.getElementById('leadsTableBody');
-            
-            if (leads.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                            <circle cx="12" cy="7" r="4"/>
-                        </svg>
-                        <p>Nenhum lead encontrado</p>
-                    </div>
+        // Render leads table
+        function renderLeads(leads) {
+            if (!leads || leads.length === 0) {
+                document.getElementById('leadsTableBody').innerHTML = `
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">👥</div>
+                                <h3>Nenhum lead encontrado</h3>
+                                <p>Os leads capturados aparecerão aqui.</p>
+                            </div>
+                        </td>
+                    </tr>
                 `;
                 return;
             }
             
-            const table = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Email</th>
-                            <th>WhatsApp</th>
-                            <th>Alvo</th>
-                            <th>Status</th>
-                            <th>Data</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${leads.map(lead => `
-                            <tr>
-                                <td>#${lead.id}</td>
-                                <td>${escapeHtml(lead.email)}</td>
-                                <td>${escapeHtml(lead.whatsapp)}</td>
-                                <td>${lead.target_phone ? escapeHtml(lead.target_phone) : '-'}</td>
-                                <td><span class="status-badge status-${lead.status || 'new'}">${statusLabels[lead.status] || 'Novo'}</span></td>
-                                <td>${formatDate(lead.created_at)}</td>
-                                <td>
-                                    <button class="action-btn" onclick="editLead(${lead.id}, '${lead.status || 'new'}', '${escapeHtml(lead.notes || '')}')" title="Editar">✏️</button>
-                                    <button class="action-btn delete" onclick="deleteLead(${lead.id})" title="Excluir">🗑️</button>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
+            let html = '';
+            leads.forEach(lead => {
+                const badgeClass = `badge-${lead.status || 'new'}`;
+                const statusText = statusLabels[lead.status] || 'Novo';
+                
+                html += `
+                    <tr>
+                        <td class="text-primary">${lead.email}</td>
+                        <td class="mono">${lead.whatsapp}</td>
+                        <td class="mono">${lead.target_phone || '-'}</td>
+                        <td>${lead.target_gender === 'male' ? '👨 Masc' : lead.target_gender === 'female' ? '👩 Fem' : '-'}</td>
+                        <td>
+                            <span class="badge ${badgeClass}">
+                                <span class="badge-dot"></span>
+                                ${statusText}
+                            </span>
+                        </td>
+                        <td>${formatDate(lead.created_at)}</td>
+                        <td>
+                            <button class="action-btn" onclick="editLead(${lead.id}, '${lead.status || 'new'}', '${(lead.notes || '').replace(/'/g, "\\'")}')">✏️</button>
+                        </td>
+                    </tr>
+                `;
+            });
             
-            container.innerHTML = table;
-            
-            // Atualizar paginação
-            document.getElementById('paginationInfo').textContent = 
-                `Mostrando ${(pagination.page - 1) * pagination.limit + 1}-${Math.min(pagination.page * pagination.limit, pagination.total)} de ${pagination.total}`;
-            
-            const buttonsHtml = [];
-            for (let i = 1; i <= pagination.totalPages; i++) {
-                buttonsHtml.push(`<button class="page-btn ${i === pagination.page ? 'active' : ''}" onclick="loadLeads(${i})">${i}</button>`);
-            }
-            document.getElementById('paginationButtons').innerHTML = buttonsHtml.slice(0, 10).join('');
+            document.getElementById('leadsTableBody').innerHTML = html;
         }
         
-        // Editar lead
+        // Render pagination
+        function renderPagination(pagination) {
+            const { page, total, totalPages } = pagination;
+            const start = (page - 1) * 10 + 1;
+            const end = Math.min(page * 10, total);
+            
+            document.getElementById('paginationInfo').textContent = 
+                total > 0 ? `Mostrando ${start} - ${end} de ${total}` : 'Mostrando 0 de 0';
+            
+            let buttons = '';
+            
+            if (totalPages > 1) {
+                buttons += `<button class="page-btn" onclick="loadLeads(${page - 1})" ${page === 1 ? 'disabled' : ''}>←</button>`;
+                
+                for (let i = 1; i <= Math.min(totalPages, 5); i++) {
+                    buttons += `<button class="page-btn ${i === page ? 'active' : ''}" onclick="loadLeads(${i})">${i}</button>`;
+                }
+                
+                buttons += `<button class="page-btn" onclick="loadLeads(${page + 1})" ${page === totalPages ? 'disabled' : ''}>→</button>`;
+            }
+            
+            document.getElementById('paginationButtons').innerHTML = buttons;
+        }
+        
+        // Format date
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('pt-BR', { 
+                day: '2-digit', 
+                month: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+        
+        // Search handler
+        document.getElementById('searchInput').addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => loadLeads(1), 300);
+        });
+        
+        document.getElementById('statusFilter').addEventListener('change', () => loadLeads(1));
+        
+        // Edit lead
         function editLead(id, status, notes) {
             document.getElementById('editLeadId').value = id;
             document.getElementById('editStatus').value = status;
-            document.getElementById('editNotes').value = notes;
+            document.getElementById('editNotes').value = notes.replace(/\\'/g, "'");
             document.getElementById('editModal').classList.add('active');
         }
         
@@ -1370,63 +1773,289 @@
                     loadStats();
                 }
             } catch (error) {
-                console.error('Erro ao atualizar lead:', error);
+                console.error('Error saving lead:', error);
             }
         }
         
-        // Excluir lead
-        async function deleteLead(id) {
-            if (!confirm('Tem certeza que deseja excluir este lead?')) return;
-            
+        // Export leads
+        async function exportLeads() {
             try {
-                const response = await fetch(`${API_URL}/api/admin/leads/${id}`, {
-                    method: 'DELETE',
+                const response = await fetch(`${API_URL}/api/admin/leads/export`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
                 
-                if (response.ok) {
-                    loadLeads(currentPage);
-                    loadStats();
-                }
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `leads-${new Date().toISOString().split('T')[0]}.csv`;
+                a.click();
             } catch (error) {
-                console.error('Erro ao excluir lead:', error);
+                console.error('Error exporting:', error);
             }
         }
         
-        // Exportar leads
-        function exportLeads() {
-            window.open(`${API_URL}/api/admin/leads/export?token=${authToken}`, '_blank');
+        // ==================== FUNNEL ====================
+        
+        async function loadFunnelData() {
+            try {
+                const response = await fetch(`${API_URL}/api/admin/funnel`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                const data = await response.json();
+                renderFunnelStats(data.funnelStats);
+                renderDailyStats(data.dailyStats);
+                renderJourneys(data.journeys);
+                
+            } catch (error) {
+                console.error('Error loading funnel:', error);
+            }
         }
         
-        // Atualizar dados
-        function refreshData() {
-            loadStats();
-            loadLeads(currentPage);
+        function renderFunnelStats(stats) {
+            const funnelOrder = [
+                { key: 'page_view_landing', label: 'Landing' },
+                { key: 'page_view_phone', label: 'Phone' },
+                { key: 'phone_submitted', label: 'Tel. Enviado' },
+                { key: 'page_view_conversas', label: 'Conversas' },
+                { key: 'page_view_chat', label: 'Chat' },
+                { key: 'page_view_cta', label: 'CTA' },
+                { key: 'email_captured', label: 'Email' },
+                { key: 'checkout_clicked', label: 'Checkout' }
+            ];
+            
+            const statsMap = {};
+            (stats || []).forEach(s => statsMap[s.event] = parseInt(s.unique_visitors));
+            
+            const maxVisitors = Math.max(...Object.values(statsMap), 1);
+            const landingVisitors = statsMap['page_view_landing'] || 0;
+            const phoneVisitors = statsMap['page_view_phone'] || 0;
+            const ctaVisitors = statsMap['page_view_cta'] || 0;
+            const checkoutVisitors = statsMap['checkout_clicked'] || 0;
+            
+            document.getElementById('funnelVisitors').textContent = landingVisitors.toLocaleString('pt-BR');
+            document.getElementById('funnelRate1').textContent = landingVisitors > 0 
+                ? ((phoneVisitors / landingVisitors) * 100).toFixed(1) + '%' : '-';
+            document.getElementById('funnelRate2').textContent = phoneVisitors > 0 
+                ? ((ctaVisitors / phoneVisitors) * 100).toFixed(1) + '%' : '-';
+            document.getElementById('funnelRate3').textContent = ctaVisitors > 0 
+                ? ((checkoutVisitors / ctaVisitors) * 100).toFixed(1) + '%' : '-';
+            
+            let html = '';
+            let prevValue = null;
+            
+            funnelOrder.forEach(step => {
+                const value = statsMap[step.key] || 0;
+                const width = maxVisitors > 0 ? Math.max((value / maxVisitors) * 100, 15) : 15;
+                const drop = prevValue !== null && prevValue > 0 
+                    ? (((prevValue - value) / prevValue) * 100).toFixed(0) 
+                    : null;
+                
+                html += `
+                    <div class="funnel-step">
+                        <div class="funnel-bar" style="width: ${width}%">
+                            <span class="funnel-step-name">${step.label}</span>
+                            <span class="funnel-step-value">${value.toLocaleString('pt-BR')}</span>
+                        </div>
+                        ${drop !== null && drop > 0 ? `<span class="funnel-drop">-${drop}%</span>` : ''}
+                    </div>
+                `;
+                prevValue = value;
+            });
+            
+            document.getElementById('funnelSteps').innerHTML = html || `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📊</div>
+                    <h3>Sem dados ainda</h3>
+                    <p>Os dados do funil aparecerão aqui.</p>
+                </div>
+            `;
         }
         
-        // Busca com debounce
-        document.getElementById('searchInput').addEventListener('input', () => {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => loadLeads(1), 500);
-        });
-        
-        document.getElementById('statusFilter').addEventListener('change', () => loadLeads(1));
-        
-        // Helpers
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+        function renderDailyStats(stats) {
+            if (!stats || stats.length === 0) {
+                document.getElementById('dailyStats').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📅</div>
+                        <h3>Sem dados</h3>
+                    </div>
+                `;
+                return;
+            }
+            
+            const byDate = {};
+            stats.forEach(s => {
+                const date = s.date.split('T')[0];
+                if (!byDate[date]) byDate[date] = {};
+                byDate[date][s.event] = parseInt(s.unique_visitors);
+            });
+            
+            let html = '<table class="data-table"><thead><tr><th>Data</th><th>Visitas</th><th>Checkout</th></tr></thead><tbody>';
+            
+            Object.keys(byDate).sort().reverse().slice(0, 7).forEach(date => {
+                const visits = byDate[date]['page_view_landing'] || 0;
+                const checkout = byDate[date]['checkout_clicked'] || 0;
+                const formattedDate = new Date(date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+                
+                html += `<tr>
+                    <td>${formattedDate}</td>
+                    <td>${visits}</td>
+                    <td style="color: var(--accent-light);">${checkout}</td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table>';
+            document.getElementById('dailyStats').innerHTML = html;
         }
         
-        function formatDate(dateStr) {
-            const date = new Date(dateStr);
-            return date.toLocaleDateString('pt-BR', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
+        function renderJourneys(journeys) {
+            if (!journeys || journeys.length === 0) {
+                document.getElementById('journeysTable').innerHTML = `
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">🚶</div>
+                                <h3>Nenhuma jornada registrada</h3>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            const eventLabels = {
+                'page_view_landing': 'Landing',
+                'gender_selected': 'Gênero',
+                'page_view_phone': 'Phone',
+                'phone_submitted': 'Tel.',
+                'page_view_conversas': 'Conversas',
+                'page_view_chat': 'Chat',
+                'page_view_cta': 'CTA',
+                'email_captured': 'Email',
+                'checkout_clicked': 'Checkout'
+            };
+            
+            let html = '';
+            journeys.forEach(j => {
+                const events = j.events || [];
+                
+                html += `<tr>
+                    <td class="mono">${j.visitor_id.substring(0, 12)}...</td>
+                    <td class="mono">${j.target_phone || '-'}</td>
+                    <td>${j.target_gender === 'male' ? '👨' : j.target_gender === 'female' ? '👩' : '-'}</td>
+                    <td>
+                        <div class="journey-events">
+                            ${events.slice(0, 6).map(e => {
+                                const isCheckout = e === 'checkout_clicked';
+                                return `<span class="journey-tag ${isCheckout ? 'checkout' : 'completed'}">${eventLabels[e] || e}</span>`;
+                            }).join('')}
+                            ${events.length > 6 ? `<span class="journey-tag">+${events.length - 6}</span>` : ''}
+                        </div>
+                    </td>
+                    <td>${formatDate(j.first_seen)}</td>
+                    <td>${formatDate(j.last_seen)}</td>
+                </tr>`;
+            });
+            
+            document.getElementById('journeysTable').innerHTML = html;
+        }
+        
+        // ==================== SALES ====================
+        
+        async function loadSalesData() {
+            document.getElementById('postbackUrl').textContent = `${API_URL}/api/postback/monetizze`;
+            
+            try {
+                const [statsResponse, transactionsResponse] = await Promise.all([
+                    fetch(`${API_URL}/api/admin/sales`, {
+                        headers: { 'Authorization': `Bearer ${authToken}` }
+                    }),
+                    fetch(`${API_URL}/api/admin/transactions`, {
+                        headers: { 'Authorization': `Bearer ${authToken}` }
+                    })
+                ]);
+                
+                if (statsResponse.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                const stats = await statsResponse.json();
+                const transactionsData = await transactionsResponse.json();
+                
+                document.getElementById('salesApproved').textContent = (stats.approved || 0).toLocaleString('pt-BR');
+                document.getElementById('salesRevenue').textContent = 'R$ ' + (stats.revenue || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+                document.getElementById('salesConversion').textContent = (stats.conversionRate || 0) + '%';
+                document.getElementById('salesRefunded').textContent = (stats.refunded || 0).toLocaleString('pt-BR');
+                
+                renderTransactions(transactionsData.transactions);
+                
+            } catch (error) {
+                console.error('Error loading sales:', error);
+            }
+        }
+        
+        function renderTransactions(transactions) {
+            if (!transactions || transactions.length === 0) {
+                document.getElementById('transactionsTable').innerHTML = `
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">📦</div>
+                                <h3>Nenhuma transação ainda</h3>
+                                <p>Configure o postback da Monetizze acima.</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            const statusLabelsT = {
+                'approved': 'Aprovada',
+                'pending_payment': 'Aguardando',
+                'cancelled': 'Cancelada',
+                'refunded': 'Reembolsada',
+                'chargeback': 'Chargeback'
+            };
+            
+            let html = '';
+            transactions.forEach(t => {
+                const badgeClass = t.status === 'approved' ? 'badge-approved' : 
+                                   t.status === 'pending_payment' ? 'badge-pending' : 'badge-cancelled';
+                
+                html += `<tr>
+                    <td class="mono">${t.transaction_id ? t.transaction_id.substring(0, 12) + '...' : '-'}</td>
+                    <td>${t.name || '-'}</td>
+                    <td>${t.email || '-'}</td>
+                    <td>${t.product || '-'}</td>
+                    <td style="color: var(--accent-light);">R$ ${t.value || '0'}</td>
+                    <td><span class="badge ${badgeClass}"><span class="badge-dot"></span>${statusLabelsT[t.status] || t.status}</span></td>
+                    <td>${formatDate(t.created_at)}</td>
+                </tr>`;
+            });
+            
+            document.getElementById('transactionsTable').innerHTML = html;
+        }
+        
+        function copyPostbackUrl() {
+            const url = document.getElementById('postbackUrl').textContent;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('URL copiada!');
+            }).catch(() => {
+                const ta = document.createElement('textarea');
+                ta.value = url;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                alert('URL copiada!');
             });
         }
     </script>
