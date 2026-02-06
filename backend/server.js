@@ -137,15 +137,8 @@ app.post('/api/admin/login', apiLimiter, async (req, res) => {
     try {
         const { email, password } = req.body;
         
-        // Debug logs
-        console.log('Login attempt:', email);
-        console.log('Expected email:', process.env.ADMIN_EMAIL);
-        console.log('Email match:', email === process.env.ADMIN_EMAIL);
-        console.log('Password match:', password === process.env.ADMIN_PASSWORD);
-        
         // Check against environment variables (simple auth)
         if (email !== process.env.ADMIN_EMAIL) {
-            console.log('Email mismatch - login failed');
             return res.status(401).json({ error: 'Invalid credentials' });
         }
         
