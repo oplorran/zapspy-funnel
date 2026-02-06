@@ -1477,15 +1477,30 @@ Estou aqui para esclarecer tudo! 😊`
         }
         
         function renderFunnelStats(stats) {
-            const funnelOrder = [
-                { key: 'page_view_landing', label: 'Landing' },
-                { key: 'page_view_phone', label: 'Phone' },
-                { key: 'phone_submitted', label: 'Tel. Enviado' },
-                { key: 'page_view_conversas', label: 'Conversas' },
-                { key: 'page_view_chat', label: 'Chat' },
-                { key: 'page_view_cta', label: 'CTA' },
-                { key: 'email_captured', label: 'Email' },
-                { key: 'checkout_clicked', label: 'Checkout' }
+            // Main funnel steps
+            const mainFunnelOrder = [
+                { key: 'page_view_landing', label: 'Landing', section: 'main' },
+                { key: 'page_view_phone', label: 'Phone', section: 'main' },
+                { key: 'phone_submitted', label: 'Tel. Enviado', section: 'main' },
+                { key: 'page_view_conversas', label: 'Conversas', section: 'main' },
+                { key: 'page_view_chat', label: 'Chat', section: 'main' },
+                { key: 'page_view_cta', label: 'CTA', section: 'main' },
+                { key: 'email_captured', label: 'Email', section: 'main' },
+                { key: 'checkout_clicked', label: 'Checkout', section: 'main' }
+            ];
+            
+            // Upsell funnel steps
+            const upsellFunnelOrder = [
+                { key: 'upsell_1_view', label: 'Upsell 1 - View', section: 'upsell' },
+                { key: 'upsell_1_accepted', label: 'Upsell 1 - Aceito ✅', section: 'upsell', isConversion: true },
+                { key: 'upsell_1_declined', label: 'Upsell 1 - Recusado', section: 'upsell', isDecline: true },
+                { key: 'upsell_2_view', label: 'Upsell 2 - View', section: 'upsell' },
+                { key: 'upsell_2_accepted', label: 'Upsell 2 - Aceito ✅', section: 'upsell', isConversion: true },
+                { key: 'upsell_2_declined', label: 'Upsell 2 - Recusado', section: 'upsell', isDecline: true },
+                { key: 'upsell_3_view', label: 'Upsell 3 - View', section: 'upsell' },
+                { key: 'upsell_3_accepted', label: 'Upsell 3 - Aceito ✅', section: 'upsell', isConversion: true },
+                { key: 'upsell_3_declined', label: 'Upsell 3 - Recusado', section: 'upsell', isDecline: true },
+                { key: 'thankyou_view', label: 'Obrigado', section: 'upsell' }
             ];
             
             const statsMap = {};
@@ -1496,21 +1511,67 @@ Estou aqui para esclarecer tudo! 😊`
             const phoneVisitors = statsMap['page_view_phone'] || 0;
             const ctaVisitors = statsMap['page_view_cta'] || 0;
             const checkoutVisitors = statsMap['checkout_clicked'] || 0;
+            const upsell1View = statsMap['upsell_1_view'] || 0;
+            const upsell1Accept = statsMap['upsell_1_accepted'] || 0;
+            const thankyouView = statsMap['thankyou_view'] || 0;
             
             document.getElementById('funnelVisitors').textContent = landingVisitors.toLocaleString('pt-BR');
             document.getElementById('funnelRate1').textContent = landingVisitors > 0 ? ((phoneVisitors / landingVisitors) * 100).toFixed(1) + '%' : '-';
             document.getElementById('funnelRate2').textContent = phoneVisitors > 0 ? ((ctaVisitors / phoneVisitors) * 100).toFixed(1) + '%' : '-';
             document.getElementById('funnelRate3').textContent = ctaVisitors > 0 ? ((checkoutVisitors / ctaVisitors) * 100).toFixed(1) + '%' : '-';
             
-            let html = '';
+            // Render main funnel
+            let html = '<h4 style="color: var(--text-secondary); margin-bottom: 12px; font-size: 13px;">📊 FUNIL PRINCIPAL</h4>';
             let prevValue = null;
-            funnelOrder.forEach(step => {
+            mainFunnelOrder.forEach(step => {
                 const value = statsMap[step.key] || 0;
                 const width = maxVisitors > 0 ? Math.max((value / maxVisitors) * 100, 15) : 15;
                 const drop = prevValue !== null && prevValue > 0 ? (((prevValue - value) / prevValue) * 100).toFixed(0) : null;
                 html += `<div class="funnel-step"><div class="funnel-bar" style="width: ${width}%"><span class="funnel-step-name">${step.label}</span><span class="funnel-step-value">${value}</span></div>${drop > 0 ? `<span class="funnel-drop">-${drop}%</span>` : ''}</div>`;
                 prevValue = value;
             });
+            
+            // Render upsell funnel if there's data
+            const hasUpsellData = upsellFunnelOrder.some(step => statsMap[step.key] > 0);
+            if (hasUpsellData) {
+                html += '<h4 style="color: var(--text-secondary); margin: 24px 0 12px 0; font-size: 13px; border-top: 1px solid var(--border); padding-top: 20px;">🚀 UPSELLS</h4>';
+                
+                // Calculate upsell stats
+                const up1Conv = upsell1View > 0 ? ((upsell1Accept / upsell1View) * 100).toFixed(1) : 0;
+                const up2View = statsMap['upsell_2_view'] || 0;
+                const up2Accept = statsMap['upsell_2_accepted'] || 0;
+                const up2Conv = up2View > 0 ? ((up2Accept / up2View) * 100).toFixed(1) : 0;
+                const up3View = statsMap['upsell_3_view'] || 0;
+                const up3Accept = statsMap['upsell_3_accepted'] || 0;
+                const up3Conv = up3View > 0 ? ((up3Accept / up3View) * 100).toFixed(1) : 0;
+                
+                html += `<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
+                    <div style="background: var(--bg-tertiary); padding: 12px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 20px; font-weight: 600; color: var(--accent);">${up1Conv}%</div>
+                        <div style="font-size: 11px; color: var(--text-muted);">Upsell 1</div>
+                    </div>
+                    <div style="background: var(--bg-tertiary); padding: 12px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 20px; font-weight: 600; color: var(--accent);">${up2Conv}%</div>
+                        <div style="font-size: 11px; color: var(--text-muted);">Upsell 2</div>
+                    </div>
+                    <div style="background: var(--bg-tertiary); padding: 12px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 20px; font-weight: 600; color: var(--accent);">${up3Conv}%</div>
+                        <div style="font-size: 11px; color: var(--text-muted);">Upsell 3</div>
+                    </div>
+                </div>`;
+                
+                prevValue = checkoutVisitors; // Start from checkout
+                upsellFunnelOrder.forEach(step => {
+                    const value = statsMap[step.key] || 0;
+                    if (value === 0 && !step.key.includes('view')) return; // Skip empty accept/decline
+                    const width = maxVisitors > 0 ? Math.max((value / maxVisitors) * 100, 15) : 15;
+                    let barColor = '';
+                    if (step.isConversion) barColor = 'background: linear-gradient(90deg, var(--success), #16a34a);';
+                    if (step.isDecline) barColor = 'background: linear-gradient(90deg, var(--danger), #dc2626);';
+                    html += `<div class="funnel-step"><div class="funnel-bar" style="width: ${width}%; ${barColor}"><span class="funnel-step-name">${step.label}</span><span class="funnel-step-value">${value}</span></div></div>`;
+                });
+            }
+            
             document.getElementById('funnelSteps').innerHTML = html || '<div class="empty-state"><h3>Sem dados</h3></div>';
         }
         
@@ -1530,7 +1591,27 @@ Estou aqui para esclarecer tudo! 😊`
         
         function renderJourneys(journeys) {
             if (!journeys?.length) { document.getElementById('journeysTable').innerHTML = '<tr><td colspan="6"><div class="empty-state"><h3>Nenhuma jornada</h3></div></td></tr>'; return; }
-            const eventLabels = { 'page_view_landing': 'Landing', 'gender_selected': 'Gênero', 'page_view_phone': 'Phone', 'phone_submitted': 'Tel.', 'page_view_conversas': 'Conversas', 'page_view_chat': 'Chat', 'page_view_cta': 'CTA', 'email_captured': 'Email', 'checkout_clicked': 'Checkout' };
+            const eventLabels = { 
+                'page_view_landing': 'Landing', 
+                'gender_selected': 'Gênero', 
+                'page_view_phone': 'Phone', 
+                'phone_submitted': 'Tel.', 
+                'page_view_conversas': 'Conversas', 
+                'page_view_chat': 'Chat', 
+                'page_view_cta': 'CTA', 
+                'email_captured': 'Email', 
+                'checkout_clicked': 'Checkout',
+                'upsell_1_view': 'Up1 👁️',
+                'upsell_1_accepted': 'Up1 ✅',
+                'upsell_1_declined': 'Up1 ❌',
+                'upsell_2_view': 'Up2 👁️',
+                'upsell_2_accepted': 'Up2 ✅',
+                'upsell_2_declined': 'Up2 ❌',
+                'upsell_3_view': 'Up3 👁️',
+                'upsell_3_accepted': 'Up3 ✅',
+                'upsell_3_declined': 'Up3 ❌',
+                'thankyou_view': 'Obrigado'
+            };
             let html = '';
             journeys.forEach(j => {
                 const events = j.events || [];
