@@ -536,6 +536,29 @@
         .modal-btn-approve { background: rgba(0, 230, 118, 0.25); color: #69f0ae; border: 1px solid rgba(0, 230, 118, 0.4); }
         .modal-btn-approve:hover { background: rgba(0, 230, 118, 0.4); box-shadow: 0 4px 20px rgba(0, 230, 118, 0.25); }
         
+        /* Enhanced Filters */
+        .filters-card .card-header { display: flex; align-items: center; justify-content: space-between; }
+        .btn-sm { padding: 8px 14px; font-size: 12px; }
+        .filters-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; align-items: end; }
+        .filter-group { display: flex; flex-direction: column; gap: 8px; }
+        .filter-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
+        .filter-input { padding: 12px 16px; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-primary); font-size: 14px; outline: none; transition: all 0.2s; width: 100%; }
+        .filter-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+        .filter-input option { background: var(--bg-secondary); color: var(--text-primary); padding: 8px; }
+        .filter-search { grid-column: span 2; }
+        .search-input-wrapper { position: relative; }
+        .search-input-wrapper .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 14px; opacity: 0.5; pointer-events: none; }
+        .search-input-wrapper .search-input { padding-left: 42px; }
+        .filter-actions { display: flex; align-items: flex-end; }
+        .btn-filter-refresh { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; background: var(--accent-glow); border: 1px solid var(--border-accent); border-radius: var(--radius-md); color: var(--accent-light); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; width: 100%; justify-content: center; }
+        .btn-filter-refresh:hover { background: rgba(0, 212, 170, 0.2); box-shadow: 0 4px 16px rgba(0, 212, 170, 0.2); }
+        .btn-filter-refresh span { font-size: 14px; }
+        
+        @media (max-width: 768px) {
+            .filters-grid { grid-template-columns: 1fr; }
+            .filter-search { grid-column: span 1; }
+        }
+        
         /* Quick Actions */
         .quick-actions { display: flex; gap: 16px; margin-bottom: 28px; }
         .quick-action { flex: 1; display: flex; align-items: center; gap: 16px; padding: 20px 24px; background: var(--bg-glass); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; }
@@ -1201,27 +1224,56 @@
                     </div>
                     
                     <!-- Filters -->
-                    <div class="card" style="margin-bottom: 24px;">
+                    <div class="card filters-card" style="margin-bottom: 24px;">
                         <div class="card-header">
-                            <h3>🔍 Filtros</h3>
+                            <h3>🔍 Filtros e Busca</h3>
+                            <button class="btn-secondary btn-sm" onclick="clearRefundFilters()">Limpar Filtros</button>
                         </div>
-                        <div class="card-body" style="display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end;">
-                            <div class="form-group" style="margin: 0; flex: 1; min-width: 150px;">
-                                <label class="form-label">Status</label>
-                                <select class="form-input" id="refundFilterStatus" onchange="filterRefunds()">
-                                    <option value="">Todos</option>
-                                    <option value="pending">Pendentes</option>
-                                    <option value="handling">Tratando</option>
-                                    <option value="processing">Processando</option>
-                                    <option value="approved">Aprovados</option>
-                                    <option value="rejected">Rejeitados</option>
-                                </select>
+                        <div class="card-body">
+                            <div class="filters-grid">
+                                <div class="filter-group">
+                                    <label class="filter-label">Status</label>
+                                    <select class="filter-input" id="refundFilterStatus" onchange="filterRefunds()">
+                                        <option value="">Todos os status</option>
+                                        <option value="pending">⏳ Pendentes</option>
+                                        <option value="handling">🎯 Tratando</option>
+                                        <option value="processing">🔄 Processando</option>
+                                        <option value="approved">✅ Aprovados</option>
+                                        <option value="rejected">❌ Rejeitados</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label class="filter-label">Período</label>
+                                    <select class="filter-input" id="refundFilterPeriod" onchange="filterRefunds()">
+                                        <option value="">Todo o período</option>
+                                        <option value="today">Hoje</option>
+                                        <option value="yesterday">Ontem</option>
+                                        <option value="week">Últimos 7 dias</option>
+                                        <option value="month">Últimos 30 dias</option>
+                                        <option value="custom">Período personalizado</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group filter-dates" id="customDateFilters" style="display: none;">
+                                    <label class="filter-label">Data Inicial</label>
+                                    <input type="date" class="filter-input" id="refundDateStart" onchange="filterRefunds()">
+                                </div>
+                                <div class="filter-group filter-dates" id="customDateFiltersEnd" style="display: none;">
+                                    <label class="filter-label">Data Final</label>
+                                    <input type="date" class="filter-input" id="refundDateEnd" onchange="filterRefunds()">
+                                </div>
+                                <div class="filter-group filter-search">
+                                    <label class="filter-label">Buscar</label>
+                                    <div class="search-input-wrapper">
+                                        <span class="search-icon">🔍</span>
+                                        <input type="text" class="filter-input search-input" id="refundSearchInput" placeholder="Nome, email, protocolo, telefone..." onkeyup="filterRefunds()">
+                                    </div>
+                                </div>
+                                <div class="filter-group filter-actions">
+                                    <button class="btn-filter-refresh" onclick="loadRefunds()">
+                                        <span>🔄</span> Atualizar
+                                    </button>
+                                </div>
                             </div>
-                            <div class="form-group" style="margin: 0; flex: 2; min-width: 200px;">
-                                <label class="form-label">Buscar</label>
-                                <input type="text" class="form-input" id="refundSearchInput" placeholder="Nome, email, protocolo..." onkeyup="filterRefunds()">
-                            </div>
-                            <button class="btn-secondary" onclick="loadRefunds()">Atualizar</button>
                         </div>
                     </div>
                     
@@ -2262,13 +2314,78 @@ Estou aqui para esclarecer tudo! 😊`
         function filterRefunds() {
             const search = document.getElementById('refundSearchInput').value.toLowerCase();
             const status = document.getElementById('refundFilterStatus').value;
+            const period = document.getElementById('refundFilterPeriod').value;
+            
+            // Show/hide custom date fields
+            const showCustomDates = period === 'custom';
+            document.getElementById('customDateFilters').style.display = showCustomDates ? 'flex' : 'none';
+            document.getElementById('customDateFiltersEnd').style.display = showCustomDates ? 'flex' : 'none';
             
             let filtered = allRefunds;
             
+            // Filter by status
             if (status) {
                 filtered = filtered.filter(r => r.status === status);
             }
             
+            // Filter by period
+            if (period && period !== 'custom') {
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                let startDate, endDate = new Date();
+                
+                switch(period) {
+                    case 'today':
+                        startDate = today;
+                        break;
+                    case 'yesterday':
+                        startDate = new Date(today);
+                        startDate.setDate(startDate.getDate() - 1);
+                        endDate = today;
+                        break;
+                    case 'week':
+                        startDate = new Date(today);
+                        startDate.setDate(startDate.getDate() - 7);
+                        break;
+                    case 'month':
+                        startDate = new Date(today);
+                        startDate.setDate(startDate.getDate() - 30);
+                        break;
+                }
+                
+                if (startDate) {
+                    filtered = filtered.filter(r => {
+                        if (!r.created_at) return false;
+                        const refundDate = new Date(r.created_at);
+                        return refundDate >= startDate && refundDate <= endDate;
+                    });
+                }
+            }
+            
+            // Filter by custom date range
+            if (period === 'custom') {
+                const startDateVal = document.getElementById('refundDateStart').value;
+                const endDateVal = document.getElementById('refundDateEnd').value;
+                
+                if (startDateVal) {
+                    const startDate = new Date(startDateVal);
+                    filtered = filtered.filter(r => {
+                        if (!r.created_at) return false;
+                        return new Date(r.created_at) >= startDate;
+                    });
+                }
+                
+                if (endDateVal) {
+                    const endDate = new Date(endDateVal);
+                    endDate.setHours(23, 59, 59, 999);
+                    filtered = filtered.filter(r => {
+                        if (!r.created_at) return false;
+                        return new Date(r.created_at) <= endDate;
+                    });
+                }
+            }
+            
+            // Filter by search
             if (search) {
                 filtered = filtered.filter(r => 
                     (r.full_name || '').toLowerCase().includes(search) ||
@@ -2279,6 +2396,17 @@ Estou aqui para esclarecer tudo! 😊`
             }
             
             renderRefunds(filtered);
+        }
+        
+        function clearRefundFilters() {
+            document.getElementById('refundFilterStatus').value = '';
+            document.getElementById('refundFilterPeriod').value = '';
+            document.getElementById('refundSearchInput').value = '';
+            document.getElementById('refundDateStart').value = '';
+            document.getElementById('refundDateEnd').value = '';
+            document.getElementById('customDateFilters').style.display = 'none';
+            document.getElementById('customDateFiltersEnd').style.display = 'none';
+            renderRefunds(allRefunds);
         }
         
         function renderRefunds(refunds) {
