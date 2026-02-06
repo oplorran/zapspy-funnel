@@ -31,6 +31,8 @@ const EmailCapture = {
         <option value="+507">🇵🇦 +507</option>
         <option value="+598">🇺🇾 +598</option>
         <option value="+1787">🇵🇷 +1787</option>
+        <!-- Brasil -->
+        <option value="+55">🇧🇷 +55</option>
         <!-- Estados Unidos y Canadá -->
         <option value="+1">🇺🇸 +1</option>
         <option value="+1">🇨🇦 +1</option>
@@ -53,8 +55,6 @@ const EmailCapture = {
         <option value="+7">🇷🇺 +7</option>
         <option value="+90">🇹🇷 +90</option>
         <option value="+380">🇺🇦 +380</option>
-        <!-- Brasil -->
-        <option value="+55">🇧🇷 +55</option>
         <!-- Asia -->
         <option value="+81">🇯🇵 +81</option>
         <option value="+82">🇰🇷 +82</option>
