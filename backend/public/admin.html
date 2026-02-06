@@ -849,6 +849,7 @@
                 
                 <!-- Tab: Sales -->
                 <div class="tab-content" id="tab-sales">
+                    <!-- Main Stats -->
                     <div class="stats-grid">
                         <div class="stat-card">
                             <div class="stat-header">
@@ -859,7 +860,7 @@
                         </div>
                         <div class="stat-card">
                             <div class="stat-header">
-                                <span class="stat-label">Faturamento</span>
+                                <span class="stat-label">Faturamento Total</span>
                                 <div class="stat-icon blue">💰</div>
                             </div>
                             <div class="stat-value" id="salesRevenue">R$ 0</div>
@@ -880,9 +881,70 @@
                         </div>
                     </div>
                     
+                    <!-- Upsell Stats -->
+                    <div class="data-panel" style="margin-bottom: 24px;">
+                        <div class="panel-header">
+                            <div class="panel-title"><h2>🚀 Performance por Produto</h2></div>
+                        </div>
+                        <div style="padding: 20px;">
+                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;" id="productStatsGrid">
+                                <div style="background: var(--bg-tertiary); padding: 20px; border-radius: 12px; border-left: 4px solid var(--accent);">
+                                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">FRONT</div>
+                                    <div style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px;">X Ai - Instant Access</div>
+                                    <div style="font-size: 28px; font-weight: 700; color: var(--accent);" id="frontSales">0</div>
+                                    <div style="font-size: 11px; color: var(--text-muted);">vendas aprovadas</div>
+                                </div>
+                                <div style="background: var(--bg-tertiary); padding: 20px; border-radius: 12px; border-left: 4px solid var(--info);">
+                                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">UPSELL 1</div>
+                                    <div style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px;">X Ai - 360° Tracker</div>
+                                    <div style="display: flex; align-items: baseline; gap: 8px;">
+                                        <div style="font-size: 28px; font-weight: 700; color: var(--info);" id="upsell1Sales">0</div>
+                                        <div style="font-size: 14px; color: var(--success); font-weight: 600;" id="upsell1Rate">0%</div>
+                                    </div>
+                                    <div style="font-size: 11px; color: var(--text-muted);">take rate</div>
+                                </div>
+                                <div style="background: var(--bg-tertiary); padding: 20px; border-radius: 12px; border-left: 4px solid var(--purple);">
+                                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">UPSELL 2</div>
+                                    <div style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px;">X Ai - Message Vault</div>
+                                    <div style="display: flex; align-items: baseline; gap: 8px;">
+                                        <div style="font-size: 28px; font-weight: 700; color: var(--purple);" id="upsell2Sales">0</div>
+                                        <div style="font-size: 14px; color: var(--success); font-weight: 600;" id="upsell2Rate">0%</div>
+                                    </div>
+                                    <div style="font-size: 11px; color: var(--text-muted);">take rate</div>
+                                </div>
+                                <div style="background: var(--bg-tertiary); padding: 20px; border-radius: 12px; border-left: 4px solid var(--warning);">
+                                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">UPSELL 3</div>
+                                    <div style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px;">X AI Monitor</div>
+                                    <div style="display: flex; align-items: baseline; gap: 8px;">
+                                        <div style="font-size: 28px; font-weight: 700; color: var(--warning);" id="upsell3Sales">0</div>
+                                        <div style="font-size: 14px; color: var(--success); font-weight: 600;" id="upsell3Rate">0%</div>
+                                    </div>
+                                    <div style="font-size: 11px; color: var(--text-muted);">take rate</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Products Table -->
+                            <table class="data-table" style="margin-top: 20px;">
+                                <thead>
+                                    <tr>
+                                        <th>Produto</th>
+                                        <th>Aprovadas</th>
+                                        <th>Reembolsos</th>
+                                        <th>Faturamento</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="productStatsTable">
+                                    <tr><td colspan="5"><div class="empty-state"><h3>Aguardando dados...</h3></div></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Transactions -->
                     <div class="data-panel">
                         <div class="panel-header">
-                            <div class="panel-title"><h2>📦 Transações</h2></div>
+                            <div class="panel-title"><h2>📦 Transações Recentes</h2></div>
                         </div>
                         <table class="data-table">
                             <thead>
@@ -897,7 +959,7 @@
                                 </tr>
                             </thead>
                             <tbody id="transactionsTable">
-                                <tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">📦</div><h3>Nenhuma transação</h3><p>Configure o postback abaixo.</p></div></td></tr>
+                                <tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">📦</div><h3>Nenhuma transação</h3><p>Configure o postback nas configurações.</p></div></td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -1632,15 +1694,49 @@ Estou aqui para esclarecer tudo! 😊`
                 const stats = await statsRes.json();
                 const trans = await transRes.json();
                 
+                // Main stats
                 document.getElementById('salesApproved').textContent = (stats.approved || 0).toLocaleString('pt-BR');
                 document.getElementById('salesRevenue').textContent = 'R$ ' + (stats.revenue || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
                 document.getElementById('salesConversion').textContent = (stats.conversionRate || 0) + '%';
                 document.getElementById('salesRefunded').textContent = (stats.refunded || 0).toLocaleString('pt-BR');
                 
+                // Upsell stats
+                if (stats.upsellStats) {
+                    document.getElementById('frontSales').textContent = stats.upsellStats.front || 0;
+                    document.getElementById('upsell1Sales').textContent = stats.upsellStats.upsell1 || 0;
+                    document.getElementById('upsell1Rate').textContent = (stats.upsellStats.takeRate1 || 0) + '%';
+                    document.getElementById('upsell2Sales').textContent = stats.upsellStats.upsell2 || 0;
+                    document.getElementById('upsell2Rate').textContent = (stats.upsellStats.takeRate2 || 0) + '%';
+                    document.getElementById('upsell3Sales').textContent = stats.upsellStats.upsell3 || 0;
+                    document.getElementById('upsell3Rate').textContent = (stats.upsellStats.takeRate3 || 0) + '%';
+                }
+                
+                // Product stats table
+                renderProductStats(stats.byProduct);
+                
                 renderTransactions(trans.transactions);
             } catch (error) {
                 console.error('Error loading sales:', error);
             }
+        }
+        
+        function renderProductStats(products) {
+            if (!products?.length) {
+                document.getElementById('productStatsTable').innerHTML = '<tr><td colspan="5"><div class="empty-state"><h3>Nenhum produto</h3></div></td></tr>';
+                return;
+            }
+            let html = '';
+            products.forEach(p => {
+                const revenue = parseFloat(p.revenue) || 0;
+                html += `<tr>
+                    <td><strong>${p.product || 'Desconhecido'}</strong></td>
+                    <td><span style="color: var(--success); font-weight: 600;">${p.approved || 0}</span></td>
+                    <td><span style="color: var(--danger);">${p.refunded || 0}</span></td>
+                    <td><span style="color: var(--accent-light); font-weight: 600;">R$ ${revenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span></td>
+                    <td>${p.total || 0}</td>
+                </tr>`;
+            });
+            document.getElementById('productStatsTable').innerHTML = html;
         }
         
         function renderTransactions(transactions) {

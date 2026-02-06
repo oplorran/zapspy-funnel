@@ -643,6 +643,58 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
             ? ((parseInt(approvedResult.rows[0].count) / parseInt(leadsCount.rows[0].count)) * 100).toFixed(2)
             : 0;
         
+        // Get stats by product
+        const productStats = await pool.query(`
+            SELECT 
+                product,
+                COUNT(*) FILTER (WHERE status = 'approved') as approved,
+                COUNT(*) FILTER (WHERE status IN ('refunded', 'chargeback')) as refunded,
+                COALESCE(SUM(CAST(value AS DECIMAL)) FILTER (WHERE status = 'approved'), 0) as revenue,
+                COUNT(*) as total
+            FROM transactions
+            WHERE product IS NOT NULL
+            GROUP BY product
+            ORDER BY approved DESC
+        `);
+        
+        // Calculate upsell take rates
+        // Front: X Ai - Instant Access (349243)
+        const frontSales = await pool.query(`
+            SELECT COUNT(DISTINCT email) as count 
+            FROM transactions 
+            WHERE status = 'approved' 
+            AND (product ILIKE '%Instant Access%' OR product ILIKE '%349243%')
+        `);
+        
+        // Upsell 1: X Ai - 360° Tracker (349242)
+        const upsell1Sales = await pool.query(`
+            SELECT COUNT(DISTINCT email) as count 
+            FROM transactions 
+            WHERE status = 'approved' 
+            AND (product ILIKE '%360%' OR product ILIKE '%Tracker%' OR product ILIKE '%349242%')
+        `);
+        
+        // Upsell 2: X Ai - Message Vault (349241)
+        const upsell2Sales = await pool.query(`
+            SELECT COUNT(DISTINCT email) as count 
+            FROM transactions 
+            WHERE status = 'approved' 
+            AND (product ILIKE '%Message Vault%' OR product ILIKE '%349241%')
+        `);
+        
+        // Upsell 3: X AI Monitor (341972)
+        const upsell3Sales = await pool.query(`
+            SELECT COUNT(DISTINCT email) as count 
+            FROM transactions 
+            WHERE status = 'approved' 
+            AND (product ILIKE '%Monitor%' OR product ILIKE '%341972%')
+        `);
+        
+        const frontCount = parseInt(frontSales.rows[0].count) || 0;
+        const up1Count = parseInt(upsell1Sales.rows[0].count) || 0;
+        const up2Count = parseInt(upsell2Sales.rows[0].count) || 0;
+        const up3Count = parseInt(upsell3Sales.rows[0].count) || 0;
+        
         res.json({
             total: parseInt(totalResult.rows[0].count),
             approved: parseInt(approvedResult.rows[0].count),
@@ -650,7 +702,17 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
             revenue: parseFloat(revenueResult.rows[0].total) || 0,
             today: parseInt(todayResult.rows[0].count),
             thisWeek: parseInt(weekResult.rows[0].count),
-            conversionRate: parseFloat(conversionRate)
+            conversionRate: parseFloat(conversionRate),
+            byProduct: productStats.rows,
+            upsellStats: {
+                front: frontCount,
+                upsell1: up1Count,
+                upsell2: up2Count,
+                upsell3: up3Count,
+                takeRate1: frontCount > 0 ? ((up1Count / frontCount) * 100).toFixed(1) : 0,
+                takeRate2: frontCount > 0 ? ((up2Count / frontCount) * 100).toFixed(1) : 0,
+                takeRate3: frontCount > 0 ? ((up3Count / frontCount) * 100).toFixed(1) : 0
+            }
         });
         
     } catch (error) {
