@@ -927,7 +927,7 @@ app.post('/api/refund', async (req, res) => {
         } = req.body;
 
         // Validation
-        if (!email || !fullName || !product || !reason) {
+        if (!email || !fullName || !reason) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
