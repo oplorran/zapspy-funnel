@@ -29,10 +29,26 @@
     t.src=v;s=b.getElementsByTagName(e)[0];
     s.parentNode.insertBefore(t,s)}(window, document,'script',
     'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '955477126807496');
-    fbq('init', '726299943423075');
+    
+    // Advanced Matching - get user data from localStorage
+    var userData = {};
+    try {
+        var em = localStorage.getItem('userEmail');
+        var ph = localStorage.getItem('userWhatsApp');
+        var fn = localStorage.getItem('userName');
+        if (em) userData.em = em.toLowerCase().trim();
+        if (ph) userData.ph = ph.replace(/\D/g, '');
+        if (fn) {
+            var names = fn.trim().split(' ');
+            userData.fn = names[0].toLowerCase();
+            if (names.length > 1) userData.ln = names.slice(1).join(' ').toLowerCase();
+        }
+    } catch(e) {}
+    
+    fbq('init', '955477126807496', userData);
+    fbq('init', '726299943423075', userData);
     fbq('track', 'PageView');
-    fbq('track', 'ViewContent', {content_name: 'Conversations List', content_category: 'Funnel Step'});
+    fbq('track', 'ViewContent', {content_name: 'Conversations List', content_category: 'Funnel Step', value: 0, currency: 'USD'});
     </script>
     <noscript><img height="1" width="1" style="display:none"
     src="https://www.facebook.com/tr?id=955477126807496&ev=PageView&noscript=1"
