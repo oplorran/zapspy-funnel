@@ -1,0 +1,2366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>ZapSpy.ai - Unlock Full Access</title>
+    <meta name="description" content="ZapSpy.ai - The largest WhatsApp monitoring software. Unlock full access now.">
+    <link rel="shortcut icon" href="imagens/icon-site.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Shared CSS -->
+    <link rel="stylesheet" href="css/global.css">
+    
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '955477126807496');
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=955477126807496&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
+
+    <!-- Enhanced Tracking -->
+    <script src="js/tracking.js"></script>
+    
+    <!-- Email Capture Modal -->
+    <script src="js/email-capture.js"></script>
+    
+    <!-- Matrix Effect -->
+    <script src="js/matrix.js"></script>
+
+    <script>
+        // ========== SCREENSHOT BLOCKER ==========
+        let screenshotWarningShown = false;
+        
+        // Detect screenshot attempt via keyboard
+        document.addEventListener('keydown', function(e) {
+            // PrintScreen, Ctrl+P, Ctrl+Shift+S, Command+Shift+4 (Mac)
+            if (e.key === 'PrintScreen' || 
+                (e.ctrlKey && e.key === 'p') || 
+                (e.ctrlKey && e.shiftKey && e.key === 's') ||
+                (e.metaKey && e.shiftKey && (e.key === '3' || e.key === '4'))) {
+                e.preventDefault();
+                showScreenshotWarning();
+            }
+        });
+
+        function showScreenshotWarning() {
+            if (screenshotWarningShown) return;
+            screenshotWarningShown = true;
+            
+            // Vibrate if possible
+            if ('vibrate' in navigator) {
+                navigator.vibrate([200, 100, 200, 100, 200]);
+            }
+            
+            const warning = document.createElement('div');
+            warning.id = 'screenshotWarning';
+            warning.innerHTML = `
+                <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,0,0,0.95); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center;">
+                    <div style="font-size: 80px; margin-bottom: 20px; animation: pulse 1s infinite;">⚠️</div>
+                    <h2 style="color: white; font-size: 24px; margin-bottom: 16px; font-weight: 800;">SCREENSHOT DETECTED!</h2>
+                    <p style="color: rgba(255,255,255,0.9); font-size: 16px; margin-bottom: 24px; max-width: 300px;">For security reasons, this session will be terminated in <span id="screenshotCountdown" style="font-weight: 800; font-size: 24px;">30</span> seconds.</p>
+                    <p style="color: rgba(255,255,255,0.7); font-size: 14px; margin-bottom: 24px;">Complete your purchase NOW to save your access!</p>
+                    <button onclick="handlePurchase(); document.getElementById('screenshotWarning').remove();" style="padding: 16px 40px; background: white; color: #ff0000; border: none; border-radius: 12px; font-size: 18px; font-weight: 700; cursor: pointer; animation: pulse 1s infinite;">🔒 UNLOCK ACCESS NOW</button>
+                    <button onclick="document.getElementById('screenshotWarning').remove(); screenshotWarningShown = false;" style="margin-top: 16px; padding: 10px 20px; background: transparent; color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; font-size: 14px; cursor: pointer;">Continue without saving</button>
+                </div>
+            `;
+            document.body.appendChild(warning);
+            
+            // Countdown
+            let countdown = 30;
+            const countdownEl = document.getElementById('screenshotCountdown');
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                if (countdownEl) countdownEl.textContent = countdown;
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    const warningEl = document.getElementById('screenshotWarning');
+                    if (warningEl) warningEl.remove();
+                    screenshotWarningShown = false;
+                }
+            }, 1000);
+        }
+
+    </script>
+    
+    <!-- Shared Audio & Vibration Systems -->
+    <script src="js/audio-vibration.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            overflow-x: hidden;
+            width: 100%;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: #E9EDEF;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Matrix Canvas */
+        #matrix-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.08;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Live Counter Bar */
+        .live-counter-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, rgba(255, 59, 48, 0.15), rgba(255, 149, 0, 0.1));
+            backdrop-filter: blur(10px);
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border-bottom: 1px solid rgba(255, 59, 48, 0.3);
+            z-index: 101;
+            font-size: 13px;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #FF3B30;
+            border-radius: 50%;
+            animation: pulse-dot 1.5s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        @keyframes typingDot {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-4px); opacity: 1; }
+        }
+
+        .live-counter-bar span {
+            color: #FF9500;
+            font-weight: 600;
+        }
+
+        /* Timer Bar */
+        .timer-bar {
+            position: fixed;
+            top: 36px;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, rgba(37, 211, 102, 0.1), rgba(18, 140, 126, 0.1));
+            backdrop-filter: blur(10px);
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            border-bottom: 1px solid rgba(37, 211, 102, 0.2);
+            z-index: 100;
+        }
+
+        .timer-info {
+            flex: 1;
+        }
+
+        .timer-info p {
+            font-size: 11px;
+            color: #8696A0;
+            line-height: 1.4;
+        }
+
+        .timer-info strong {
+            color: #E9EDEF;
+            font-weight: 700;
+        }
+
+        .timer-countdown {
+            color: #FF3B30;
+            font-weight: 700;
+            font-size: 16px;
+            animation: timer-pulse 1s infinite;
+        }
+
+        @keyframes timer-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .timer-btn {
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            animation: btn-glow 2s infinite;
+        }
+
+        @keyframes btn-glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(37, 211, 102, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(37, 211, 102, 0.6); }
+        }
+
+        /* Container */
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 480px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 130px 20px 140px;
+            box-sizing: border-box;
+        }
+
+        /* Scarcity Banner */
+        .scarcity-banner {
+            background: linear-gradient(135deg, rgba(255, 59, 48, 0.15), rgba(255, 149, 0, 0.1));
+            border: 1px solid rgba(255, 59, 48, 0.3);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin: 0 0 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-sizing: border-box;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .scarcity-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 59, 48, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .scarcity-icon svg {
+            width: 20px;
+            height: 20px;
+            color: #FF3B30;
+        }
+
+        .scarcity-text {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .scarcity-text strong {
+            display: block;
+            color: #FF3B30;
+            font-size: 14px;
+            margin-bottom: 2px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .scarcity-text span {
+            font-size: 12px;
+            color: #8696A0;
+        }
+
+        /* Logo Section */
+        .logo-section {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: #25D366;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .logo svg {
+            width: 36px;
+            height: 36px;
+        }
+
+        .main-title {
+            font-size: clamp(22px, 5vw, 28px);
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        .main-title .gradient {
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Profile Card */
+        .profile-card {
+            background: linear-gradient(135deg, rgba(37, 211, 102, 0.1), rgba(18, 140, 126, 0.05));
+            border: 1px solid rgba(37, 211, 102, 0.2);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .profile-card-content {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .profile-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            padding: 3px;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .profile-avatar::after {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+            border: 2px solid #25D366;
+            border-radius: 50%;
+            animation: profile-ring 2s infinite;
+            opacity: 0;
+        }
+
+        @keyframes profile-ring {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(1.2); opacity: 0; }
+        }
+
+        .profile-avatar-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: #111B21;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            overflow: hidden;
+        }
+
+        .profile-avatar-inner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .profile-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #E9EDEF;
+            margin-bottom: 4px;
+        }
+
+        .profile-phone {
+            font-size: 14px;
+            color: #25D366;
+            margin-bottom: 8px;
+        }
+
+        .profile-stats {
+            display: flex;
+            gap: 16px;
+        }
+
+        .profile-stat {
+            font-size: 12px;
+            color: #8696A0;
+        }
+
+        .profile-stat strong {
+            color: #E9EDEF;
+        }
+
+        /* Success Badge */
+        .success-badge {
+            background: linear-gradient(135deg, rgba(37, 211, 102, 0.2), rgba(18, 140, 126, 0.1));
+            border: 1px solid rgba(37, 211, 102, 0.3);
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .badge-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #25D366;
+            margin-bottom: 8px;
+        }
+
+        .badge-text {
+            font-size: 14px;
+            color: #8696A0;
+        }
+
+        /* Trust Badges */
+        .trust-badges {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .trust-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(31, 44, 51, 0.5);
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            color: #8696A0;
+        }
+
+        .trust-badge svg {
+            width: 14px;
+            height: 14px;
+            color: #25D366;
+        }
+
+        /* Features */
+        .features-section {
+            margin-bottom: 24px;
+        }
+
+        .feature-item {
+            background: rgba(31, 44, 51, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .feature-header {
+            margin-bottom: 12px;
+        }
+
+        .feature-title-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+
+        .feature-icon {
+            width: 22px;
+            height: 22px;
+            color: #25D366;
+        }
+
+        .feature-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #E9EDEF;
+        }
+
+        .feature-desc {
+            font-size: 12px;
+            color: #8696A0;
+            line-height: 1.5;
+        }
+
+        /* Media Grid */
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+
+        .media-item {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            background: #1F2C33;
+        }
+
+        .media-item.large {
+            grid-column: span 2;
+            grid-row: span 2;
+        }
+
+        .media-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: blur(12px);
+        }
+
+        .media-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .media-overlay svg {
+            width: 20px;
+            height: 20px;
+            color: white;
+        }
+
+        /* Map Preview */
+        .map-preview {
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            height: 150px;
+            background: #1F2C33;
+        }
+
+        .map-pin {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -100%);
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
+            animation: map-pulse 2s infinite;
+        }
+
+        @keyframes map-pulse {
+            0%, 100% { transform: translate(-50%, -100%) scale(1); }
+            50% { transform: translate(-50%, -100%) scale(1.1); }
+        }
+
+        .map-pin img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            filter: blur(4px);
+        }
+
+        /* Chat Preview */
+        .chat-preview {
+            background: #111B21;
+            border-radius: 12px;
+            padding: 12px;
+        }
+
+        .chat-message {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            opacity: 0;
+            animation: message-appear 0.5s forwards;
+        }
+
+        .chat-message:nth-child(1) { animation-delay: 0.5s; }
+        .chat-message:nth-child(2) { animation-delay: 1.5s; }
+        .chat-message:nth-child(3) { animation-delay: 2.5s; }
+
+        @keyframes message-appear {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .chat-message.sent {
+            flex-direction: row-reverse;
+        }
+
+        .chat-bubble {
+            max-width: 80%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .chat-message.received .chat-bubble {
+            background: #1F2C33;
+            color: #E9EDEF;
+            border-bottom-left-radius: 4px;
+        }
+
+        .chat-message.sent .chat-bubble {
+            background: #005C4B;
+            color: #E9EDEF;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-bubble.locked {
+            filter: blur(4px);
+            user-select: none;
+        }
+
+        /* Suspicion Detector */
+        .suspicion-detector {
+            background: linear-gradient(135deg, rgba(255, 59, 48, 0.15), rgba(0, 0, 0, 0.3));
+            border: 1px solid rgba(255, 59, 48, 0.3);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .suspicion-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .suspicion-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .suspicion-title svg {
+            width: 20px;
+            height: 20px;
+            color: #FF3B30;
+        }
+
+        .suspicion-title span {
+            font-size: 13px;
+            font-weight: 700;
+            color: #FF3B30;
+            text-transform: uppercase;
+        }
+
+        .suspicion-score {
+            font-size: 28px;
+            font-weight: 800;
+            color: #FF3B30;
+        }
+
+        .suspicion-bar {
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .suspicion-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FF9500, #FF3B30);
+            border-radius: 4px;
+            transition: width 1s ease;
+        }
+
+        .suspicion-details {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .suspicion-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .suspicion-item-label {
+            color: #8696A0;
+        }
+
+        .suspicion-item-value.high {
+            color: #FF3B30;
+            font-weight: 600;
+        }
+
+        /* Frequent Contact */
+        .frequent-contact {
+            background: linear-gradient(135deg, rgba(255, 149, 0, 0.15), rgba(255, 59, 48, 0.1));
+            border: 1px solid rgba(255, 149, 0, 0.3);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .frequent-contact-avatar {
+            position: relative;
+            width: 56px;
+            height: 56px;
+            flex-shrink: 0;
+        }
+
+        .frequent-contact-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            filter: blur(8px);
+        }
+
+        .frequent-contact-avatar::after {
+            content: '🔒';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 20px;
+        }
+
+        .frequent-contact-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .frequent-contact-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: #FF9500;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .frequent-contact-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #E9EDEF;
+            margin-bottom: 4px;
+        }
+
+        .frequent-contact-name .hidden {
+            background: #E9EDEF;
+            color: #E9EDEF;
+            border-radius: 2px;
+            padding: 0 2px;
+            margin-right: 4px;
+        }
+
+        .frequent-contact-stats {
+            font-size: 12px;
+            color: #8696A0;
+        }
+
+        .frequent-contact-stats strong {
+            color: #FF3B30;
+        }
+
+        .frequent-contact-badge {
+            background: #FF3B30;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 6px 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .frequent-contact-badge span {
+            display: block;
+            font-size: 16px;
+            font-weight: 800;
+        }
+
+        /* Deleted Message Reveal */
+        .deleted-message-reveal {
+            background: linear-gradient(135deg, rgba(255, 59, 48, 0.15), rgba(255, 149, 0, 0.1));
+            border: 1px solid rgba(255, 59, 48, 0.3);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .deleted-message-reveal::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .deleted-message-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .deleted-message-header svg {
+            width: 20px;
+            height: 20px;
+            color: #FF3B30;
+        }
+
+        .deleted-message-header span {
+            font-size: 12px;
+            font-weight: 700;
+            color: #FF3B30;
+            text-transform: uppercase;
+        }
+
+        .deleted-message-content {
+            font-size: 15px;
+            color: #E9EDEF;
+            line-height: 1.5;
+            font-style: italic;
+            position: relative;
+            z-index: 1;
+        }
+
+        .deleted-message-content .blocked {
+            background: #E9EDEF;
+            color: #E9EDEF;
+            border-radius: 2px;
+            padding: 0 2px;
+            user-select: none;
+        }
+
+        .deleted-message-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+            z-index: 1;
+        }
+
+        .deleted-message-time {
+            font-size: 11px;
+            color: #667781;
+        }
+
+        .deleted-message-unlock {
+            font-size: 11px;
+            color: #25D366;
+            font-weight: 600;
+        }
+
+        /* Pricing Section */
+        .pricing-section {
+            background: linear-gradient(135deg, rgba(37, 211, 102, 0.15), rgba(18, 140, 126, 0.1));
+            border: 2px solid rgba(37, 211, 102, 0.4);
+            border-radius: 20px;
+            padding: 24px 20px;
+            text-align: center;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pricing-section::before {
+            content: 'BEST VALUE';
+            position: absolute;
+            top: 12px;
+            right: -30px;
+            background: #FF3B30;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 40px;
+            transform: rotate(45deg);
+        }
+
+        .discount-badge {
+            display: inline-block;
+            background: #FF3B30;
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+        }
+
+        .price-original {
+            font-size: 20px;
+            color: #667781;
+            text-decoration: line-through;
+            margin-bottom: 4px;
+        }
+
+        .price-current {
+            font-size: 52px;
+            font-weight: 800;
+            color: #25D366;
+            margin-bottom: 4px;
+        }
+
+        .price-savings {
+            font-size: 14px;
+            color: #25D366;
+            margin-bottom: 12px;
+        }
+
+        .price-info {
+            font-size: 12px;
+            color: #8696A0;
+            margin-bottom: 16px;
+        }
+
+        .cta-button {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-bottom: 12px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(37, 211, 102, 0.3);
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: btn-shimmer 2s infinite;
+        }
+
+        @keyframes btn-shimmer {
+            0% { left: -100%; }
+            100% { left: 200%; }
+        }
+
+        .cta-subtext {
+            font-size: 11px;
+            color: #667781;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .cta-subtext svg {
+            width: 14px;
+            height: 14px;
+            color: #25D366;
+        }
+
+        /* Payment Methods */
+        .payment-methods {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .payment-method {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 10px;
+            color: #8696A0;
+        }
+
+        /* Bonus Section */
+        .bonus-section {
+            background: linear-gradient(135deg, rgba(255, 149, 0, 0.1), rgba(255, 204, 0, 0.05));
+            border: 1px solid rgba(255, 149, 0, 0.3);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .bonus-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #FF9500;
+            margin-bottom: 12px;
+        }
+
+        .bonus-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .bonus-item:last-child {
+            border-bottom: none;
+        }
+
+        .bonus-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 149, 0, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .bonus-icon svg {
+            width: 16px;
+            height: 16px;
+            color: #FF9500;
+        }
+
+        .bonus-info h4 {
+            font-size: 13px;
+            font-weight: 600;
+            color: #E9EDEF;
+            margin-bottom: 2px;
+        }
+
+        .bonus-info p {
+            font-size: 11px;
+            color: #8696A0;
+        }
+
+        .bonus-value {
+            font-size: 12px;
+            color: #FF9500;
+            font-weight: 600;
+        }
+
+        /* Benefits List */
+        .benefits-list {
+            margin-bottom: 24px;
+        }
+
+        .benefit-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .benefit-item svg {
+            width: 18px;
+            height: 18px;
+            color: #25D366;
+            flex-shrink: 0;
+        }
+
+        .benefit-item span {
+            font-size: 13px;
+            color: #E9EDEF;
+        }
+
+        /* Testimonials */
+        .testimonials-section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #E9EDEF;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .testimonial-item {
+            background: rgba(31, 44, 51, 0.5);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 10px;
+        }
+
+        .testimonial-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .testimonial-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667781, #3B4A54);
+            overflow: hidden;
+        }
+
+        .testimonial-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .testimonial-info {
+            flex: 1;
+        }
+
+        .testimonial-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #E9EDEF;
+        }
+
+        .testimonial-verified {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            color: #25D366;
+        }
+
+        .testimonial-verified svg {
+            width: 12px;
+            height: 12px;
+        }
+
+        .testimonial-stars {
+            color: #FFCC00;
+            font-size: 12px;
+        }
+
+        .testimonial-text {
+            font-size: 13px;
+            color: #8696A0;
+            line-height: 1.5;
+        }
+
+        /* FAQ */
+        .faq-section {
+            margin-bottom: 24px;
+        }
+
+        .faq-item {
+            background: rgba(31, 44, 51, 0.5);
+            border-radius: 10px;
+            margin-bottom: 6px;
+            overflow: hidden;
+        }
+
+        .faq-question {
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            color: #E9EDEF;
+        }
+
+        .faq-question svg {
+            width: 18px;
+            height: 18px;
+            color: #667781;
+            transition: transform 0.3s ease;
+        }
+
+        .faq-item.open .faq-question svg {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            padding: 0 14px 14px;
+            font-size: 12px;
+            color: #8696A0;
+            line-height: 1.5;
+            display: none;
+        }
+
+        .faq-item.open .faq-answer {
+            display: block;
+        }
+
+        /* Guarantee */
+        .guarantee-section {
+            background: rgba(37, 211, 102, 0.05);
+            border: 1px solid rgba(37, 211, 102, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .guarantee-icon {
+            width: 48px;
+            height: 48px;
+            color: #25D366;
+            margin-bottom: 12px;
+        }
+
+        .guarantee-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #E9EDEF;
+            margin-bottom: 8px;
+        }
+
+        .guarantee-text {
+            font-size: 12px;
+            color: #8696A0;
+            line-height: 1.5;
+        }
+
+        /* Fixed CTA */
+        .fixed-cta {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 12px 16px;
+            border-top: 1px solid rgba(37, 211, 102, 0.2);
+            z-index: 100;
+        }
+
+        .fixed-cta-content {
+            max-width: 480px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .fixed-cta-info {
+            flex: 1;
+        }
+
+        .fixed-cta-price {
+            font-size: 20px;
+            font-weight: 700;
+            color: #25D366;
+        }
+
+        .fixed-cta-price span {
+            font-size: 12px;
+            color: #667781;
+            text-decoration: line-through;
+            margin-left: 6px;
+        }
+
+        .fixed-cta-slots {
+            font-size: 11px;
+            color: #FF3B30;
+        }
+
+        .fixed-cta button {
+            padding: 14px 24px;
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        /* Activity Notification */
+        .activity-notification {
+            position: fixed;
+            bottom: 80px;
+            left: 16px;
+            right: 16px;
+            max-width: 380px;
+            margin: 0 auto;
+            background: rgba(31, 44, 51, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(37, 211, 102, 0.2);
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 99;
+            transform: translateY(150%);
+            transition: transform 0.4s ease;
+        }
+
+        .activity-notification.show {
+            transform: translateY(0);
+        }
+
+        .activity-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-text {
+            font-size: 13px;
+            color: #E9EDEF;
+        }
+
+        .activity-text strong {
+            color: #25D366;
+        }
+
+        .activity-time {
+            font-size: 11px;
+            color: #667781;
+        }
+
+        /* Security Badges */
+        .security-badges {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            padding: 16px;
+            background: rgba(31, 44, 51, 0.3);
+            border-radius: 12px;
+        }
+
+        .security-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0,0,0,0.3);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            color: #8696A0;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .container {
+                padding: 130px 16px 140px;
+            }
+            .scarcity-banner {
+                padding: 10px 12px;
+                gap: 8px;
+            }
+            .scarcity-icon {
+                width: 32px;
+                height: 32px;
+                min-width: 32px;
+            }
+            .scarcity-text strong {
+                font-size: 13px;
+            }
+            .scarcity-text span {
+                font-size: 11px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .container {
+                padding: 100px 12px 130px;
+            }
+            .price-current {
+                font-size: 42px;
+            }
+            .fixed-cta-content {
+                flex-direction: column;
+                gap: 8px;
+            }
+            .fixed-cta button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Matrix Canvas -->
+    <canvas id="matrix-canvas"></canvas>
+
+    <!-- Live Counter Bar -->
+    <div class="live-counter-bar">
+        <div class="live-dot"></div>
+        <span id="liveViewers">247</span> people viewing this page right now
+    </div>
+
+    <!-- Timer Bar -->
+    <div class="timer-bar">
+        <div class="timer-info">
+            <p><strong>Complete your purchase in <span class="timer-countdown" id="countdown">08:00</span></strong></p>
+            <p style="margin-top: 2px;">When the timer reaches zero, this special promotional price expires.</p>
+        </div>
+        <button class="timer-btn" onclick="scrollToPricing()" aria-label="Scroll to pricing section">Unlock Now</button>
+    </div>
+
+    <div class="container">
+        <!-- Scarcity Banner -->
+        <div class="scarcity-banner">
+            <div class="scarcity-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+            </div>
+            <div class="scarcity-text">
+                <strong>Only <span id="slotsLeft">3</span> slots left for this number!</strong>
+                <span>High demand - Access may be blocked soon</span>
+            </div>
+        </div>
+
+        <!-- Logo Section -->
+        <div class="logo-section">
+            <div class="logo">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                </svg>
+                ZapSpy.ai
+            </div>
+            <h1 class="main-title">
+                Unlock <span class="gradient">Full Access</span> Now
+            </h1>
+        </div>
+
+        <!-- Trust Badges -->
+        <div class="trust-badges">
+            <div class="trust-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                100% Secure
+            </div>
+            <div class="trust-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </svg>
+                100% Invisible
+            </div>
+            <div class="trust-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Verified
+            </div>
+        </div>
+
+        <!-- Profile Card -->
+        <div class="profile-card">
+            <div class="profile-card-content">
+                <div class="profile-avatar">
+                    <div class="profile-avatar-inner">
+                        <img src="imagens/default-avatar.png" alt="Target profile picture" id="targetAvatar" loading="lazy">
+                    </div>
+                </div>
+                <div class="profile-info">
+                    <div class="profile-name">Target Person</div>
+                    <div class="profile-phone" id="targetPhone">+1 (555) 123-4567</div>
+                    <div class="profile-stats">
+                        <span class="profile-stat"><strong id="convCount">47</strong> conversations</span>
+                        <span class="profile-stat"><strong id="msgCount">1.2k</strong> messages</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Badge -->
+        <div class="success-badge">
+            <div class="badge-title">Monitoring 100% completed!</div>
+            <div class="badge-text">Get your VIP access and have immediate access to:</div>
+        </div>
+
+        <!-- Suspicion Detector -->
+        <div class="suspicion-detector">
+            <div class="suspicion-header">
+                <div class="suspicion-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    <span>⚠️ Suspicion Index</span>
+                </div>
+                <div class="suspicion-score" id="suspicionScore">87%</div>
+            </div>
+            <div class="suspicion-bar">
+                <div class="suspicion-bar-fill" id="suspicionBar" style="width: 0%"></div>
+            </div>
+            <div class="suspicion-details">
+                <div class="suspicion-item">
+                    <span class="suspicion-item-label">🌙 Messages deleted at night</span>
+                    <span class="suspicion-item-value high">34%</span>
+                </div>
+                <div class="suspicion-item">
+                    <span class="suspicion-item-label">👤 Conversations with hidden contacts</span>
+                    <span class="suspicion-item-value high">28%</span>
+                </div>
+                <div class="suspicion-item">
+                    <span class="suspicion-item-label">📸 Photos sent and deleted</span>
+                    <span class="suspicion-item-value high">25%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Frequent Contact (dynamically set based on gender) -->
+        <div class="frequent-contact">
+            <div class="frequent-contact-avatar">
+                <img id="frequentContactImg" src="imagens/mulher1.jpg" alt="Frequent contact photo" loading="lazy" onerror="this.src='imagens/default-avatar.png'">
+            </div>
+            <div class="frequent-contact-info">
+                <div class="frequent-contact-label">🔥 Most Frequent Contact</div>
+                <div class="frequent-contact-name" id="frequentContactName"><span class="hidden">Jessica</span><span class="hidden">Smith</span></div>
+                <div class="frequent-contact-stats">247 messages this month • <strong>89 DELETED</strong></div>
+            </div>
+            <div class="frequent-contact-badge">
+                <span>🔒</span>
+                WHO?
+            </div>
+        </div>
+
+        <!-- Deleted Message Reveal -->
+        <div class="deleted-message-reveal">
+            <div class="deleted-message-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 6h18"/>
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                </svg>
+                <span>🚨 Last Deleted Message Recovered</span>
+            </div>
+            <div class="deleted-message-content" id="deletedMessageContent">
+                "Babe, don't tell <span class="blocked">██████</span> that we <span class="blocked">████████</span> yesterday at the <span class="blocked">██████</span>..."
+            </div>
+            <div class="deleted-message-footer">
+                <span class="deleted-message-time">Deleted yesterday at 11:47 PM</span>
+                <span class="deleted-message-unlock">🔓 Unlock to reveal full message</span>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <div class="features-section">
+            <!-- View All Conversations -->
+            <div class="feature-item">
+                <div class="feature-header">
+                    <div class="feature-title-row">
+                        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"></path>
+                        </svg>
+                        <h3 class="feature-title">View All Conversations</h3>
+                    </div>
+                    <p class="feature-desc">Read all messages sent and received, including deleted ones.</p>
+                </div>
+                <div class="chat-preview">
+                    <div class="chat-message received">
+                        <div class="chat-bubble locked">Hey babe, are you coming tonight?</div>
+                    </div>
+                    <div class="chat-message sent">
+                        <div class="chat-bubble locked">Yes! Can't wait to see you again...</div>
+                    </div>
+                    <div class="chat-message received">
+                        <div class="chat-bubble locked">I have a surprise for you</div>
+                    </div>
+                    <div class="chat-message received" id="typingIndicator" style="opacity: 0; transition: opacity 0.3s;">
+                        <div class="chat-bubble" style="background: rgba(37, 211, 102, 0.1); padding: 8px 12px;">
+                            <div class="typing-dots" style="display: flex; gap: 4px;">
+                                <span style="width: 6px; height: 6px; background: #25D366; border-radius: 50%; animation: typingDot 1.4s infinite ease-in-out;"></span>
+                                <span style="width: 6px; height: 6px; background: #25D366; border-radius: 50%; animation: typingDot 1.4s infinite ease-in-out 0.2s;"></span>
+                                <span style="width: 6px; height: 6px; background: #25D366; border-radius: 50%; animation: typingDot 1.4s infinite ease-in-out 0.4s;"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Photos & Videos (dynamically set based on gender) -->
+            <div class="feature-item">
+                <div class="feature-header">
+                    <div class="feature-title-row">
+                        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                            <polyline points="21 15 16 10 5 21"></polyline>
+                        </svg>
+                        <h3 class="feature-title">Photos & Videos</h3>
+                    </div>
+                    <p class="feature-desc">View all media shared, including deleted items.</p>
+                </div>
+                <div class="media-grid" id="mediaGrid">
+                    <!-- Media items will be dynamically inserted based on gender -->
+                </div>
+            </div>
+
+            <!-- Real-time Location -->
+            <div class="feature-item">
+                <div class="feature-header">
+                    <div class="feature-title-row">
+                        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                        <h3 class="feature-title">Real-time Location</h3>
+                    </div>
+                    <p class="feature-desc">See where they are now and the last places visited.</p>
+                </div>
+                <div class="map-preview" id="mapPreview">
+                    <div id="mapContainer" style="width: 100%; height: 100%; border-radius: 8px; overflow: hidden;">
+                        <iframe id="mapFrame" 
+                            width="100%" 
+                            height="100%" 
+                            style="border:0; filter: blur(3px);" 
+                            loading="lazy" 
+                            allowfullscreen 
+                            referrerpolicy="no-referrer-when-downgrade"
+                            src="about:blank">
+                        </iframe>
+                    </div>
+                    <div class="map-pin" id="mapPin">
+                        <img id="mapPinAvatar" src="imagens/default-avatar.png" alt="">
+                    </div>
+                    <div class="location-info" id="locationInfo" style="position: absolute; bottom: 10px; left: 10px; right: 10px; background: rgba(0,0,0,0.8); padding: 8px 12px; border-radius: 8px; font-size: 11px; color: #25D366; display: none;">
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            <span id="locationText">Loading location...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pricing -->
+        <div class="pricing-section" id="pricing">
+            <div class="discount-badge">76% OFF - LIMITED TIME</div>
+            <div class="price-original">$197</div>
+            <div class="price-current">$47</div>
+            <div class="price-savings">You save $150 today!</div>
+            <div class="price-info">One-time payment • Instant access • 30-day guarantee</div>
+            <button class="cta-button" onclick="handlePurchase()" aria-label="Unlock full access to ZapSpy.ai">
+                Unlock Full Access Now
+            </button>
+            <p class="cta-subtext">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0110 0v4"></path>
+                </svg>
+                Secure payment • Access released in up to 2 minutes
+            </p>
+            <div class="payment-methods">
+                <span class="payment-method">Credit Card</span>
+                <span class="payment-method">Debit Card</span>
+                <span class="payment-method">PayPal</span>
+                <span class="payment-method">Apple Pay</span>
+            </div>
+        </div>
+
+        <!-- Bonus Section -->
+        <div class="bonus-section">
+            <div class="bonus-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+                Exclusive Bonuses (FREE)
+            </div>
+            <div class="bonus-item">
+                <div class="bonus-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                </div>
+                <div class="bonus-info">
+                    <h4>Location History Tracker</h4>
+                    <p>See all places visited in the last 30 days</p>
+                </div>
+                <span class="bonus-value">$49 FREE</span>
+            </div>
+            <div class="bonus-item">
+                <div class="bonus-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 01-3.46 0"/>
+                    </svg>
+                </div>
+                <div class="bonus-info">
+                    <h4>Real-time Alerts</h4>
+                    <p>Get notified when they interact with someone new</p>
+                </div>
+                <span class="bonus-value">$39 FREE</span>
+            </div>
+            <div class="bonus-item">
+                <div class="bonus-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                </div>
+                <div class="bonus-info">
+                    <h4>Online Status Monitor</h4>
+                    <p>Track when they're online 24/7</p>
+                </div>
+                <span class="bonus-value">$29 FREE</span>
+            </div>
+        </div>
+
+        <!-- Benefits List -->
+        <div class="benefits-list">
+            <div class="benefit-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>All conversations from the target number</span>
+            </div>
+            <div class="benefit-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>All photos and videos (including deleted)</span>
+            </div>
+            <div class="benefit-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>Real-time location tracking</span>
+            </div>
+            <div class="benefit-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>Lifetime access - No monthly fees</span>
+            </div>
+            <div class="benefit-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>3 exclusive bonuses worth $117</span>
+            </div>
+        </div>
+
+        <!-- Testimonials -->
+        <div class="testimonials-section">
+            <h2 class="section-title">What our users say</h2>
+            <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 16px;">
+                <div style="display: flex; gap: 2px;">
+                    <span style="color: #FFCC00; font-size: 16px;">★</span>
+                    <span style="color: #FFCC00; font-size: 16px;">★</span>
+                    <span style="color: #FFCC00; font-size: 16px;">★</span>
+                    <span style="color: #FFCC00; font-size: 16px;">★</span>
+                    <span style="color: #FFCC00; font-size: 16px;">★</span>
+                </div>
+                <span style="font-size: 14px; font-weight: 600; color: #E9EDEF;">4.9/5</span>
+                <span style="font-size: 12px; color: #8696A0;">based on 4,283 reviews</span>
+            </div>
+            <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 16px; font-size: 12px; color: #8696A0;">
+                <span><strong style="color: #25D366;">127</strong> purchases today</span>
+                <span><strong style="color: #25D366;">98%</strong> satisfaction</span>
+            </div>
+            
+            <div class="testimonial-item">
+                <div class="testimonial-header">
+                    <div class="testimonial-avatar">
+                        <img src="imagens/avatar-depoimento-1.jpg" alt="Marcus Viana testimonial" loading="lazy">
+                    </div>
+                    <div class="testimonial-info">
+                        <div class="testimonial-name">@marcus_viana</div>
+                        <div class="testimonial-verified">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                            </svg>
+                            Verified Purchase
+                        </div>
+                    </div>
+                    <div class="testimonial-stars">★★★★★</div>
+                </div>
+                <p class="testimonial-text">I thought it was a scam but tested it anyway. Paid, and in 3 min I had access. Everything was there: conversations, photos he deleted, even the location worked. Worth every penny.</p>
+            </div>
+
+            <div class="testimonial-item">
+                <div class="testimonial-header">
+                    <div class="testimonial-avatar">
+                        <img src="imagens/avatar-depoimento-2.jpg" alt="Gisele Ferreira testimonial" loading="lazy">
+                    </div>
+                    <div class="testimonial-info">
+                        <div class="testimonial-name">@gisele_ferreira</div>
+                        <div class="testimonial-verified">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                            </svg>
+                            Verified Purchase
+                        </div>
+                    </div>
+                    <div class="testimonial-stars">★★★★★</div>
+                </div>
+                <p class="testimonial-text">Access was super fast. Paid via card and in less than 2 min I was seeing everything. The status he posted hidden from me. The system really works.</p>
+            </div>
+
+            <div class="testimonial-item">
+                <div class="testimonial-header">
+                    <div class="testimonial-avatar">
+                        <img src="imagens/avatar-depoimento-3.jpg" alt="Rodrigo Prozin testimonial" loading="lazy">
+                    </div>
+                    <div class="testimonial-info">
+                        <div class="testimonial-name">@rodrigo_prozin</div>
+                        <div class="testimonial-verified">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                            </svg>
+                            Verified Purchase
+                        </div>
+                    </div>
+                    <div class="testimonial-stars">★★★★★</div>
+                </div>
+                <p class="testimonial-text">In the full version I tested with my partner's number and saw a lot. Location, hidden photos, even deleted conversations. It was exactly as shown.</p>
+            </div>
+        </div>
+
+        <!-- FAQ -->
+        <div class="faq-section">
+            <h2 class="section-title">Frequently Asked Questions</h2>
+            
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Does the tool really work?
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </div>
+                <div class="faq-answer">Yes! We use advanced technology to access WhatsApp data completely invisibly. Over 50,000 users have already used our tool successfully.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Will the person know I spied?
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </div>
+                <div class="faq-answer">No! Access is 100% invisible. The person receives no notification and will never know you accessed their data.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Does it work on any number?
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </div>
+                <div class="faq-answer">Yes! It works on any WhatsApp number worldwide, even with two-step verification enabled.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    How long do I have access?
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </div>
+                <div class="faq-answer">Access is lifetime! Once purchased, you can use it forever with no additional fees.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    What if I'm not satisfied?
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </div>
+                <div class="faq-answer">We offer a 30-day money-back guarantee. If you're not 100% satisfied, we'll refund your purchase in full.</div>
+            </div>
+        </div>
+
+        <!-- Security Badges -->
+        <div class="security-badges">
+            <div class="security-badge">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#25D366" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+                SSL Secure
+            </div>
+            <div class="security-badge">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFCC00" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                Norton Secured
+            </div>
+            <div class="security-badge">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#007AFF" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                256-bit Encryption
+            </div>
+        </div>
+
+        <!-- Guarantee -->
+        <div class="guarantee-section">
+            <svg class="guarantee-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                <polyline points="9 12 11 14 15 10"></polyline>
+            </svg>
+            <h3 class="guarantee-title">30-Day Money-Back Guarantee</h3>
+            <p class="guarantee-text">Test risk-free! If you don't like it, we refund 100% of your money, no questions asked.</p>
+        </div>
+    </div>
+
+    <!-- Fixed CTA -->
+    <div class="fixed-cta">
+        <div class="fixed-cta-content">
+            <div class="fixed-cta-info">
+                <div class="fixed-cta-price">$47 <span>$197</span></div>
+                <div class="fixed-cta-slots">Only <span id="slotsLeftFixed">3</span> slots left!</div>
+            </div>
+            <button onclick="handlePurchase()">Unlock Now</button>
+        </div>
+    </div>
+
+    <!-- Activity Notification -->
+    <div class="activity-notification" id="activityNotification">
+        <div class="activity-avatar" id="activityEmoji">👤</div>
+        <div class="activity-content">
+            <div class="activity-text" id="activityText"><strong>Someone</strong> just unlocked access</div>
+            <div class="activity-time" id="activityTime">2 minutes ago</div>
+        </div>
+    </div>
+
+    <!-- Matrix Effect - Initialized from shared module -->
+    <script>
+        // Initialize Matrix Effect from shared module
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof MatrixEffect !== 'undefined') {
+                MatrixEffect.init('matrix-canvas', { chars: '01', frameInterval: 100 });
+            }
+        });
+    </script>
+
+    <!-- Main Script -->
+    <script>
+        // Detect gender from URL parameter or localStorage
+        function getGender() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const genderParam = urlParams.get('gender');
+            if (genderParam) {
+                localStorage.setItem('targetGender', genderParam);
+                return genderParam;
+            }
+            return localStorage.getItem('targetGender') || 'male'; // default: spying on male
+        }
+
+        const gender = getGender();
+        const utmCampaign = gender === 'female' ? 'cta_female' : (gender === 'male' ? 'cta_male' : 'cta');
+
+        // Set media images based on gender (show opposite gender photos as "suspicious")
+        const mediaGrid = document.getElementById('mediaGrid');
+        const frequentContactImg = document.getElementById('frequentContactImg');
+        const frequentContactName = document.getElementById('frequentContactName');
+
+        if (gender === 'female') {
+            // User spying on female, show male photos
+            frequentContactImg.src = 'imagens/homem1.jpg';
+            frequentContactName.innerHTML = '<span class="hidden">Michael</span><span class="hidden">Johnson</span>';
+            mediaGrid.innerHTML = `
+                <div class="media-item large">
+                    <img src="imagens/blocked-male-1.png" alt="">
+                    <div class="media-overlay">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0110 0v4"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="media-item">
+                    <img src="imagens/blocked-male-2.png" alt="">
+                    <div class="media-overlay">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0110 0v4"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="media-item">
+                    <img src="imagens/blocked-male-3.png" alt="">
+                    <div class="media-overlay">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0110 0v4"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="media-item">
+                    <img src="imagens/blocked-male-5.png" alt="">
+                    <div class="media-overlay">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0110 0v4"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="media-item">
+                    <img src="imagens/blocked-male-4.png" alt="">
+                    <div class="media-overlay">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0110 0v4"></path>
+                        </svg>
+                    </div>
+                </div>
+            `;
+        } else {
+            // User spying on male (default), show female photos
+            frequentContactImg.src = 'imagens/mulher1.jpg';
+            frequentContactName.innerHTML = '<span class="hidden">Jessica</span><span class="hidden">Smith</span>';
+            mediaGrid.innerHTML = `
+                <div class="media-item large">
+                    <img src="imagens/blocked-female-1.png" alt="">
+                    <div class="media-overlay">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0110 0v4"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="media-item">
+                    <img src="imagens/blocked-female-2.png" alt="">
+                    <div class="media-overlay">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0110 0v4"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="media-item">
+                    <img src="imagens/blocked-female-3.png" alt="">
+                    <div class="media-overlay">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0110 0v4"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="media-item">
+                    <img src="imagens/blocked-female-5.png" alt="">
+                    <div class="media-overlay">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0110 0v4"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="media-item">
+                    <img src="imagens/blocked-female-4.png" alt="">
+                    <div class="media-overlay">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0110 0v4"></path>
+                        </svg>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Load target phone from localStorage
+        const targetPhone = localStorage.getItem('targetPhone') || '+1 (555) 123-4567';
+        document.getElementById('targetPhone').textContent = targetPhone;
+
+        // Load target avatar from localStorage
+        const targetAvatar = localStorage.getItem('targetAvatar');
+        const avatarImg = document.getElementById('targetAvatar');
+        if (targetAvatar && targetAvatar !== 'null' && targetAvatar.startsWith('http')) {
+            avatarImg.src = targetAvatar;
+        } else {
+            avatarImg.src = 'imagens/default-avatar.png';
+        }
+        avatarImg.onerror = function() {
+            this.src = 'imagens/default-avatar.png';
+        };
+
+        // Random stats
+        document.getElementById('convCount').textContent = Math.floor(Math.random() * 30) + 35;
+        document.getElementById('msgCount').textContent = (Math.random() * 2 + 0.8).toFixed(1) + 'k';
+
+        // Countdown timer
+        function startCountdown() {
+            let minutes = 8;
+            let seconds = 0;
+            const countdownEl = document.getElementById('countdown');
+
+            setInterval(() => {
+                if (seconds === 0) {
+                    if (minutes === 0) return;
+                    minutes--;
+                    seconds = 59;
+                } else {
+                    seconds--;
+                }
+                countdownEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        // Live viewers counter
+        function updateLiveViewers() {
+            const el = document.getElementById('liveViewers');
+            const current = parseInt(el.textContent);
+            const change = Math.floor(Math.random() * 7) - 3;
+            const newValue = Math.max(180, Math.min(350, current + change));
+            el.textContent = newValue;
+        }
+        setInterval(updateLiveViewers, 3000);
+
+        // Slots countdown
+        let slots = 3;
+        function updateSlots() {
+            if (slots > 1 && Math.random() > 0.7) {
+                slots--;
+                document.getElementById('slotsLeft').textContent = slots;
+                document.getElementById('slotsLeftFixed').textContent = slots;
+            }
+        }
+        setInterval(updateSlots, 45000);
+
+        // Activity notifications
+        const activities = [
+            { emoji: '🇺🇸', name: 'Sarah M.', location: 'New York, USA' },
+            { emoji: '🇺🇸', name: 'John D.', location: 'Los Angeles, USA' },
+            { emoji: '🇬🇧', name: 'Emily R.', location: 'London, UK' },
+            { emoji: '🇨🇦', name: 'Michael S.', location: 'Toronto, Canada' },
+            { emoji: '🇦🇺', name: 'Jessica L.', location: 'Sydney, Australia' },
+            { emoji: '🇧🇷', name: 'Lucas S.', location: 'São Paulo, Brazil' },
+            { emoji: '🇲🇽', name: 'Maria G.', location: 'Mexico City, Mexico' },
+        ];
+
+        const times = ['just now', '1 minute ago', '2 minutes ago', '3 minutes ago', '5 minutes ago'];
+
+        function showActivityNotification() {
+            const activity = activities[Math.floor(Math.random() * activities.length)];
+            const time = times[Math.floor(Math.random() * times.length)];
+            
+            document.getElementById('activityEmoji').textContent = activity.emoji;
+            document.getElementById('activityText').innerHTML = `<strong>${activity.name}</strong> from ${activity.location} just unlocked access`;
+            document.getElementById('activityTime').textContent = time;
+            
+            const notification = document.getElementById('activityNotification');
+            notification.classList.add('show');
+            
+            VibrationSystem.notification();
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
+        }
+
+        setTimeout(showActivityNotification, 5000);
+        setInterval(() => {
+            if (Math.random() > 0.3) showActivityNotification();
+        }, 20000);
+
+        // Scroll to pricing
+        function scrollToPricing() {
+            document.getElementById('pricing').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Toggle FAQ
+        function toggleFaq(element) {
+            element.parentElement.classList.toggle('open');
+        }
+
+        // Handle purchase with email capture
+        function handlePurchase() {
+            // Show email capture modal first
+            if (typeof EmailCapture !== 'undefined') {
+                EmailCapture.show(function(userData) {
+                    // Track InitiateCheckout event
+                    if (typeof fbq !== 'undefined') {
+                        fbq('track', 'InitiateCheckout', {
+                            content_name: 'ZapSpy.ai VIP Access',
+                            currency: 'USD',
+                            value: 47.00
+                        });
+                    }
+                    
+                    // Track AddToCart for granular tracking
+                    if (typeof ZapSpyTracking !== 'undefined') {
+                        ZapSpyTracking.trackStandardEvent('AddToCart', {
+                            content_name: 'ZapSpy.ai VIP Access',
+                            currency: 'USD',
+                            value: 47.00
+                        });
+                    }
+                    
+                    // Redirect to checkout
+                    window.location.href = 'https://pay.monetizze.com.br/KKM446018?utm_source=zapspy&utm_medium=funnel&utm_campaign=' + utmCampaign;
+                });
+            } else {
+                // Fallback if email capture not loaded
+                if (typeof fbq !== 'undefined') {
+                    fbq('track', 'InitiateCheckout', {
+                        content_name: 'ZapSpy.ai VIP Access',
+                        currency: 'USD',
+                        value: 47.00
+                    });
+                }
+                window.location.href = 'https://pay.monetizze.com.br/KKM446018?utm_source=zapspy&utm_medium=funnel&utm_campaign=' + utmCampaign;
+            }
+        }
+
+        // Initialize
+        startCountdown();
+        localStorage.setItem('funnelProgress', 'cta');
+
+        // Geolocation API
+        async function loadGeoLocation() {
+            try {
+                const response = await fetch('https://ip-geo-location.p.rapidapi.com/ip/check?format=json&language=en', {
+                    method: 'GET',
+                    headers: {
+                        'x-rapidapi-host': 'ip-geo-location.p.rapidapi.com',
+                        'x-rapidapi-key': 'd03f07c7c6mshb0e213b53734dcbp1c2ccfjsnc7937b7aa611'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    const lat = data.location.latitude;
+                    const lng = data.location.longitude;
+                    const city = data.city?.name || 'Unknown';
+                    const country = data.country?.name || 'Unknown';
+                    const area = data.area?.name || '';
+                    
+                    const mapFrame = document.getElementById('mapFrame');
+                    mapFrame.src = `https://www.openstreetmap.org/export/embed.html?bbox=${lng-0.02},${lat-0.015},${lng+0.02},${lat+0.015}&layer=mapnik&marker=${lat},${lng}`;
+                    
+                    const locationInfo = document.getElementById('locationInfo');
+                    const locationText = document.getElementById('locationText');
+                    locationText.textContent = `Last seen: ${city}${area ? ', ' + area : ''}, ${country}`;
+                    locationInfo.style.display = 'block';
+                    
+                    const targetAvatarStored = localStorage.getItem('targetAvatar');
+                    const mapPinAvatar = document.getElementById('mapPinAvatar');
+                    if (targetAvatarStored && targetAvatarStored !== 'null' && targetAvatarStored.startsWith('http')) {
+                        mapPinAvatar.src = targetAvatarStored;
+                    }
+                }
+            } catch (error) {
+                console.log('Geolocation error:', error);
+                const mapFrame = document.getElementById('mapFrame');
+                mapFrame.src = 'https://www.openstreetmap.org/export/embed.html?bbox=-43.2,-22.95,-43.15,-22.9&layer=mapnik';
+            }
+        }
+
+        loadGeoLocation();
+
+        // Animate suspicion bar
+        setTimeout(() => {
+            const bar = document.getElementById('suspicionBar');
+            if (bar) bar.style.width = '87%';
+        }, 500);
+
+        // Typing indicator
+        function showTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) {
+                indicator.style.opacity = '1';
+                setTimeout(() => { indicator.style.opacity = '0'; }, 3000);
+            }
+        }
+        setInterval(() => {
+            if (Math.random() > 0.5) showTypingIndicator();
+        }, 15000);
+        setTimeout(showTypingIndicator, 5000);
+
+        // Exit Intent Popup
+        let exitIntentShown = false;
+        document.addEventListener('mouseout', function(e) {
+            if (e.clientY < 10 && !exitIntentShown) {
+                exitIntentShown = true;
+                showExitPopup();
+            }
+        });
+
+        function showExitPopup() {
+            const popup = document.createElement('div');
+            popup.id = 'exitPopup';
+            popup.innerHTML = `
+                <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
+                    <div style="background: linear-gradient(135deg, #1F2C33, #111B21); border-radius: 16px; padding: 24px; max-width: 340px; text-align: center; border: 1px solid rgba(37, 211, 102, 0.3);">
+                        <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
+                        <h3 style="color: #FF3B30; font-size: 20px; margin-bottom: 12px;">WAIT! Don't Leave Yet!</h3>
+                        <p style="color: #E9EDEF; font-size: 14px; margin-bottom: 16px;">You're about to lose this special promotional price for <strong>${targetPhone}</strong>'s monitoring!</p>
+                        <p style="color: #8696A0; font-size: 12px; margin-bottom: 20px;">We found <strong style="color: #FF3B30;">68 deleted messages</strong> that may contain important information.</p>
+                        <button onclick="handlePurchase()" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #25D366, #128C7E); color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 10px;">Get 50% OFF - Unlock Now</button>
+                        <button onclick="document.getElementById('exitPopup').remove()" style="width: 100%; padding: 10px; background: transparent; color: #667781; border: none; font-size: 13px; cursor: pointer;">No thanks, I don't want to know the truth</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(popup);
+        }
+    </script>
+</body>
+</html>
