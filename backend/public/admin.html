@@ -518,7 +518,9 @@
         .refund-label { color: var(--text-muted); font-weight: 500; }
         .refund-value { color: var(--text-primary); font-weight: 600; }
         .refund-reason { color: var(--warning); }
-        .refund-description-box { background: rgba(0, 0, 0, 0.3); border-radius: 10px; padding: 18px; white-space: pre-wrap; line-height: 1.7; font-size: 14px; color: var(--text-secondary); border: 1px solid var(--border); }
+        .refund-description-box { background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(20, 20, 30, 0.3)); border-radius: 12px; padding: 20px 22px; white-space: pre-wrap; line-height: 1.8; font-size: 14px; color: var(--text-primary); border: 1px solid var(--border); position: relative; font-style: italic; min-height: 60px; }
+        .refund-description-box::before { content: '"'; position: absolute; top: 8px; left: 14px; font-size: 32px; color: var(--accent); opacity: 0.3; font-family: Georgia, serif; line-height: 1; }
+        .refund-description-box::after { content: '"'; position: absolute; bottom: 4px; right: 14px; font-size: 32px; color: var(--accent); opacity: 0.3; font-family: Georgia, serif; line-height: 1; }
         .refund-timestamp { font-size: 12px; color: var(--text-muted); text-align: right; padding-top: 8px; }
         
         /* Refund Modal Action Buttons */
