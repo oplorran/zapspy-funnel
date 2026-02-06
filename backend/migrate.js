@@ -1,6 +1,9 @@
 /**
  * Database migration script
- * Run this once to create the leads table
+ * Run this to create/update tables
+ * 
+ * v1: Initial leads table
+ * v2: Added name and funnel_language columns
  */
 
 require('dotenv').config();
@@ -15,7 +18,7 @@ async function migrate() {
     console.log('🔄 Running database migrations...');
     
     try {
-        // Create leads table
+        // Create leads table (v1)
         await pool.query(`
             CREATE TABLE IF NOT EXISTS leads (
                 id SERIAL PRIMARY KEY,
@@ -34,6 +37,22 @@ async function migrate() {
         `);
         console.log('✅ Table "leads" created/verified');
         
+        // Migration v2: Add name column if not exists
+        try {
+            await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS name VARCHAR(255);`);
+            console.log('✅ Column "name" added/verified');
+        } catch (e) {
+            console.log('ℹ️ Column "name" already exists or cannot be added');
+        }
+        
+        // Migration v2: Add funnel_language column if not exists
+        try {
+            await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS funnel_language VARCHAR(10) DEFAULT 'en';`);
+            console.log('✅ Column "funnel_language" added/verified');
+        } catch (e) {
+            console.log('ℹ️ Column "funnel_language" already exists or cannot be added');
+        }
+        
         // Create indexes for better performance
         await pool.query(`
             CREATE INDEX IF NOT EXISTS idx_leads_email ON leads(email);
@@ -43,6 +62,9 @@ async function migrate() {
         `);
         await pool.query(`
             CREATE INDEX IF NOT EXISTS idx_leads_status ON leads(status);
+        `);
+        await pool.query(`
+            CREATE INDEX IF NOT EXISTS idx_leads_funnel_language ON leads(funnel_language);
         `);
         console.log('✅ Indexes created/verified');
         

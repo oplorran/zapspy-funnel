@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Actualización Exclusiva - ZappDetect V2</title>
+    
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    
+    // Advanced Matching - get user data from localStorage
+    var userData = {};
+    try {
+        var em = localStorage.getItem('userEmail');
+        var ph = localStorage.getItem('userWhatsApp');
+        var fn = localStorage.getItem('userName');
+        if (em) userData.em = em.toLowerCase().trim();
+        if (ph) userData.ph = ph.replace(/\D/g, '');
+        if (fn) {
+            var names = fn.trim().split(' ');
+            userData.fn = names[0].toLowerCase();
+            if (names.length > 1) userData.ln = names.slice(1).join(' ').toLowerCase();
+        }
+    } catch(e) {}
+    
+    fbq('init', '534495082571779', userData);
+    fbq('init', '1271198251735428', userData);
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=534495082571779&ev=PageView&noscript=1"
+    /><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=1271198251735428&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
+    
+    <!-- Facebook CAPI Client -->
+    <script src="../../js/facebook-capi.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof FacebookCAPI !== 'undefined') {
+                FacebookCAPI.init('Upsell 2 - 360 Tracker');
+            }
+        });
+    </script>
+    
+    <meta name="description" content="Oferta de actualización exclusiva por tiempo limitado para clientes leales de ZappDetect.">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔓</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../vip-overlay-styles.css?v=8.0">
+    <link rel="stylesheet" href="upsell2-styles.css?v=8.0">
+    <script type="text/javascript" src="https://app.monetizze.com.br/1buyclick.php?u=672011e9dd5b43e8ace04116f781ec60"></script>
+</head>
+<body>
+    <!-- VIP Processing Overlay - Se muestra por ~35 segundos antes del contenido -->
+    <div class="vip-processing-overlay" id="vipProcessingOverlay">
+        <div class="vip-processing-container">
+            <!-- Header -->
+            <div class="vip-header">
+                <div class="vip-badge-icon">📡</div>
+                <h1 class="vip-title">Escaneando Redes Sociales</h1>
+                <p class="vip-subtitle">Por favor espera mientras detectamos datos disponibles en otras plataformas...</p>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="vip-progress-container">
+                <div class="vip-progress-bar">
+                    <div class="vip-progress-fill" id="progressFill"></div>
+                </div>
+                <div class="vip-progress-text">
+                    <span id="progressPercent">0%</span>
+                    <span id="progressStatus">Inicializando...</span>
+                </div>
+            </div>
+
+            <!-- Processing Steps -->
+            <div class="vip-steps" id="vipSteps">
+                <div class="vip-step" data-step="1">
+                    <div class="vip-step-icon">
+                        <span class="step-spinner"></span>
+                    </div>
+                    <div class="vip-step-content">
+                        <div class="vip-step-title">Conectando al dispositivo objetivo</div>
+                        <div class="vip-step-desc">Estableciendo conexión segura...</div>
+                    </div>
+                    <div class="vip-step-status"></div>
+                </div>
+                <div class="vip-step" data-step="2">
+                    <div class="vip-step-icon">
+                        <span class="step-spinner"></span>
+                    </div>
+                    <div class="vip-step-content">
+                        <div class="vip-step-title">Escaneando apps de redes sociales</div>
+                        <div class="vip-step-desc">Instagram, Facebook, TikTok, Snapchat...</div>
+                    </div>
+                    <div class="vip-step-status"></div>
+                </div>
+                <div class="vip-step" data-step="3">
+                    <div class="vip-step-icon">
+                        <span class="step-spinner"></span>
+                    </div>
+                    <div class="vip-step-content">
+                        <div class="vip-step-title">Detectando conversaciones ocultas</div>
+                        <div class="vip-step-desc">Analizando mensajes privados...</div>
+                    </div>
+                    <div class="vip-step-status"></div>
+                </div>
+                <div class="vip-step" data-step="4">
+                    <div class="vip-step-icon">
+                        <span class="step-spinner"></span>
+                    </div>
+                    <div class="vip-step-content">
+                        <div class="vip-step-title">Preparando tu oferta exclusiva</div>
+                        <div class="vip-step-desc">Calculando tu descuento...</div>
+                    </div>
+                    <div class="vip-step-status"></div>
+                </div>
+            </div>
+
+            <!-- Live Discoveries -->
+            <div class="vip-discoveries" id="vipDiscoveries">
+                <div class="discoveries-header">
+                    <span class="pulse-indicator"></span>
+                    <span>Actividad Oculta Detectada</span>
+                </div>
+                <div class="discoveries-grid">
+                    <div class="discovery-item">
+                        <div class="discovery-icon">📷</div>
+                        <div class="discovery-count" id="instaCount">0</div>
+                        <div class="discovery-label">DMs Instagram</div>
+                    </div>
+                    <div class="discovery-item">
+                        <div class="discovery-icon">📘</div>
+                        <div class="discovery-count" id="fbCount">0</div>
+                        <div class="discovery-label">Msgs Facebook</div>
+                    </div>
+                    <div class="discovery-item">
+                        <div class="discovery-icon">🎵</div>
+                        <div class="discovery-count" id="tiktokCount">0</div>
+                        <div class="discovery-label">DMs TikTok</div>
+                    </div>
+                    <div class="discovery-item highlight">
+                        <div class="discovery-icon">👻</div>
+                        <div class="discovery-count" id="snapCount">0</div>
+                        <div class="discovery-label">Snaps Ocultos</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Upgrades Feed -->
+            <div class="vip-live-feed" id="vipLiveFeed">
+                <div class="live-feed-header">
+                    <span class="live-dot"></span>
+                    <span>Activaciones en Vivo</span>
+                    <span class="live-tag">EN VIVO</span>
+                </div>
+                <div class="live-feed-items" id="liveFeedItems">
+                    <!-- Items added dynamically -->
+                </div>
+            </div>
+
+            <!-- Security Footer -->
+            <div class="vip-security">
+                <span class="security-icon">🔒</span>
+                <span>Encriptación SSL 256-bit • No cierres esta página</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay (for purchase click) -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h2 class="loading-title">Procesando Tu Actualización...</h2>
+            <p class="loading-message">Por favor espera mientras activamos tu paquete de monitoreo completo. No cierres ni actualices esta página.</p>
+            
+            <div class="loading-steps">
+                <div class="loading-step">
+                    <span class="loading-step-icon">🔐</span>
+                    <span class="loading-step-text">Asegurando información de pago...</span>
+                </div>
+                <div class="loading-step">
+                    <span class="loading-step-icon">✅</span>
+                    <span class="loading-step-text">Activando redes sociales...</span>
+                </div>
+                <div class="loading-step">
+                    <span class="loading-step-icon">📍</span>
+                    <span class="loading-step-text">Habilitando rastreo GPS...</span>
+                </div>
+            </div>
+            
+            <div class="loading-secure">
+                <span class="loading-secure-icon">🔒</span>
+                <span>Transacción Encriptada SSL 256-bit</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="page">
+        <header class="urgency-section">
+            <!-- Timer de Urgencia -->
+            <div class="timer-bar" role="status" aria-live="polite">
+                <span class="timer-icon" aria-hidden="true">⏰</span>
+                <span class="timer-text">Esta actualización expira en: <strong id="countdown">12:47</strong></span>
+            </div>
+            <div class="scarcity-bar-up2" role="status" aria-live="polite">
+                <span class="fire-icon" aria-hidden="true">🔥</span>
+                <span class="scarcity-text"><strong>32 personas</strong> están viendo esta actualización ahora mismo</span>
+            </div>
+        </header>
+
+        <main class="content">
+            <div class="hero-section">
+                <div class="success-header">
+                    <span class="confetti-icon">⚠️</span>
+                    <h1 class="main-title">¡ESPERA! Solo Estás Viendo el 30% de la Verdad...</h1>
+                    <p class="congratulations">¿Crees que conoces la verdad? Podrían estar teniendo conversaciones secretas enteras en Instagram, Snapchat o TikTok AHORA MISMO — y nunca lo sabrías.</p>
+                </div>
+            </div>
+
+            <section class="product-intro">
+                <div class="intro-card">
+                    <h2 class="product-name">🔓 ACTUALIZACIÓN COMPLETA: Monitorea TODAS las Redes Sociales + GPS</h2>
+                    <p class="product-description">Ya tienes monitoreo de WhatsApp y recuperación de mensajes. Ahora desbloquea la SOLUCIÓN COMPLETA: Monitorea Instagram, Facebook, TikTok, Snapchat, Twitter + Ubicación GPS en tiempo real. Ve TODO lo que están ocultando en TODAS las plataformas.</p>
+                </div>
+            </section>
+
+            <section class="features-section">
+                <div class="features-card">
+                    <h3 class="features-title">🎯 Lo Que Obtienes Con la Actualización Completa:</h3>
+                    <div class="features-grid">
+                        <div class="feature-item">
+                            <span class="check-icon">📱</span>
+                            <span class="feature-text"><strong>Instagram</strong> - DMs, Stories, Posts</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="check-icon">📘</span>
+                            <span class="feature-text"><strong>Facebook</strong> - Mensajes y Actividad</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="check-icon">🎵</span>
+                            <span class="feature-text"><strong>TikTok</strong> - DMs e Interacciones</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="check-icon">👻</span>
+                            <span class="feature-text"><strong>Snapchat</strong> - Mensajes y Snaps</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="check-icon">🐦</span>
+                            <span class="feature-text"><strong>Twitter/X</strong> - DMs y Tweets</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="check-icon">📍</span>
+                            <span class="feature-text"><strong>Rastreo GPS</strong> - Ubicación en Tiempo Real</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="comparison-section">
+                <div class="comparison-card">
+                    <h3 class="comparison-title">⚡ Lo Que Te Estás Perdiendo Ahora Mismo:</h3>
+                    <div class="comparison-grid">
+                        <div class="comparison-item missing">
+                            <span class="comparison-icon">❌</span>
+                            <div class="comparison-text">
+                                <strong>Lo Que Tienes:</strong>
+                                <p>Solo WhatsApp (pueden ocultar en otras apps)</p>
+                            </div>
+                        </div>
+                        <div class="comparison-item complete">
+                            <span class="comparison-icon">✅</span>
+                            <div class="comparison-text">
+                                <strong>Con la Actualización Completa:</strong>
+                                <p>TODAS las redes sociales + ubicación GPS</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="capabilities">
+                <div class="capabilities-text">
+                    <p><strong>La Verdad:</strong> La mayoría de las personas que ocultan conversaciones usan DMs de Instagram, Snapchat o Facebook Messenger. Si solo monitoreas WhatsApp, te estás perdiendo el 70% del panorama. Esta actualización te muestra TODO.</p>
+                </div>
+            </section>
+
+            <!-- Live Activations Feed -->
+            <section class="live-activity-section">
+                <div class="live-activity">
+                    <div class="activity-header">
+                        <span class="pulse-dot"></span>
+                        <span class="activity-title">Activaciones Recientes</span>
+                        <span class="live-badge">EN VIVO</span>
+                    </div>
+                    <div class="activity-items" id="activityFeed">
+                        <!-- Items son generados dinámicamente por JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Testimonios -->
+            <section class="testimonial-section">
+                <div class="testimonial-card">
+                    <div class="testimonial-header">
+                        <span class="rating">⭐⭐⭐⭐⭐</span>
+                        <span class="verified">Usuario Verificado</span>
+                    </div>
+                    <blockquote class="testimonial-quote">
+                        "Solo estaba monitoreando WhatsApp y pensé que todo estaba bien. Luego actualicé y descubrí que tenían conversaciones enteras en DMs de Instagram. Sin el complemento de redes sociales, NUNCA lo habría sabido. Esta actualización salvó mi cordura."
+                    </blockquote>
+                    <div class="testimonial-author">— Jennifer M., Ciudad de México</div>
+                </div>
+                
+                <div class="testimonial-card">
+                    <div class="testimonial-header">
+                        <span class="rating">⭐⭐⭐⭐⭐</span>
+                        <span class="verified">Usuario Verificado</span>
+                    </div>
+                    <blockquote class="testimonial-quote">
+                        "Solo la función de rastreo GPS vale la actualización. Puedo ver exactamente dónde están en tiempo real. Combinado con todas las redes sociales, finalmente tengo el panorama completo. La mejor decisión que tomé."
+                    </blockquote>
+                    <div class="testimonial-author">— Roberto K., Buenos Aires</div>
+                </div>
+            </section>
+
+            <section class="exclusive-offer">
+                <div class="exclusive-card">
+                    <span class="exclusive-icon">⏰</span>
+                    <p class="exclusive-text">OFERTA ÚNICA: Esta actualización completa solo está disponible AHORA MISMO a este precio exclusivo. Si abandonas esta página, perderás esta oportunidad para siempre.</p>
+                </div>
+            </section>
+
+            <section class="final-cta">
+                <div class="cta-card">
+                    <h3 class="cta-title">Ve el Panorama Completo, No Solo WhatsApp</h3>
+                    <p class="cta-text">Pueden ocultar en Instagram, TikTok, Snapchat o Facebook. Sin esta actualización, nunca lo sabrás. No dejes vacíos en tu monitoreo.</p>
+                    
+                    <div class="social-icons" role="img" aria-label="Plataformas soportadas: Instagram, Facebook, TikTok, Snapchat, Twitter y GPS">
+                        <div class="social-icon instagram" aria-hidden="true">📷</div>
+                        <div class="social-icon facebook" aria-hidden="true">📘</div>
+                        <div class="social-icon tiktok" aria-hidden="true">🎵</div>
+                        <div class="social-icon snapchat" aria-hidden="true">👻</div>
+                        <div class="social-icon twitter" aria-hidden="true">🐦</div>
+                        <div class="social-icon gps" aria-hidden="true">📍</div>
+                    </div>
+                    
+                    <!-- Timer en CTA -->
+                    <p class="cta-timer">⏰ La oferta expira en: <strong id="countdown-cta">12:47</strong></p>
+                    
+                    <a href='#monetizzeCompra' data-upsell='672011e9dd5b43e8ace04116f781ec60' class="btn btn-primary btn-upgrade btn-pulse" aria-label="Desbloquear todas las redes sociales y monitoreo GPS ahora" role="button">¡SÍ! Desbloquear TODAS las Redes Sociales + GPS Ahora</a>
+                    <p class="price-tag geo-br-only">Precio regular: <s>$375</s> → Solo hoy: $37 (90% off)</p>
+                    <p class="charge-notice geo-br-only">Al hacer clic se cobrará el precio promocional a tu tarjeta.</p>
+                    
+                    <!-- Link de Rechazo -->
+                    <a href="../up3/" class="decline-link">No gracias, arriesgaré perderme conversaciones ocultas</a>
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="footer">
+            <div class="smallprint">© <span id="year"></span> ZappDetect. Todos los derechos reservados.</div>
+        </footer>
+    </div>
+
+    <script src="../polyfills.js?v=8.0"></script>
+    <script src="upsell2-script.js?v=8.0"></script>
+    <script src="../geo-restriction.js?v=8.0"></script>
+    <script src="../upsell-tracking.js?v=1.0"></script>
+</body>
+</html>

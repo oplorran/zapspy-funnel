@@ -19,19 +19,53 @@ const PORT = process.env.PORT || 3000;
 
 // ==================== FACEBOOK CONVERSIONS API ====================
 
-// Pixel configurations (both pixels)
-const FB_PIXELS = [
-    {
-        id: '955477126807496',
-        token: process.env.FB_PIXEL_TOKEN_1 || 'EAALZCphpZCmcIBQlQHRs2JIRPdsRXG8RYa25OuW5yct9zASVIZAXUyhNPPc0yNdPl7bKNGZBldKM9HXSPuGaj1sggT3Ogco9PfSTDVf6wUNWguVEWLYdtvwpm98Qy0sd5gwvotspZBDyjxserjHVAMGFZAMeYC7aaanSIamK9OUQtRLWwjEpP28Cq5CydGZCoqPDwZDZD',
-        name: 'SPY INGLES 2026 - PABLO'
-    },
-    {
-        id: '726299943423075',
-        token: process.env.FB_PIXEL_TOKEN_2 || 'EAALZCphpZCmcIBQodgl2fJ81kKfOWRmhYmJPBVQSfOuBBbxfjOxg3HH6y03bqp8fAbZCoghz8d9HglfpbBeZBl7wTaBGvIWRqtNgoJCFz5lts434LKD5EhF26KZCFjICN9jwsEdDu4afDUYH8Ld5ZC9D8gRFq3Y884qotjlqIszrQAzZAju7qkt9OgMhX7X093PNQZDZD',
-        name: '[PABLO NOVO] - [SPY INGLES] - [2025]'
+// Pixel configurations by funnel language
+const FB_PIXELS_BY_LANGUAGE = {
+    // English funnel pixels
+    en: [
+        {
+            id: '955477126807496',
+            token: process.env.FB_PIXEL_TOKEN_1 || 'EAALZCphpZCmcIBQlQHRs2JIRPdsRXG8RYa25OuW5yct9zASVIZAXUyhNPPc0yNdPl7bKNGZBldKM9HXSPuGaj1sggT3Ogco9PfSTDVf6wUNWguVEWLYdtvwpm98Qy0sd5gwvotspZBDyjxserjHVAMGFZAMeYC7aaanSIamK9OUQtRLWwjEpP28Cq5CydGZCoqPDwZDZD',
+            name: 'SPY INGLES 2026 - PABLO'
+        },
+        {
+            id: '726299943423075',
+            token: process.env.FB_PIXEL_TOKEN_2 || 'EAALZCphpZCmcIBQodgl2fJ81kKfOWRmhYmJPBVQSfOuBBbxfjOxg3HH6y03bqp8fAbZCoghz8d9HglfpbBeZBl7wTaBGvIWRqtNgoJCFz5lts434LKD5EhF26KZCFjICN9jwsEdDu4afDUYH8Ld5ZC9D8gRFq3Y884qotjlqIszrQAzZAju7qkt9OgMhX7X093PNQZDZD',
+            name: '[PABLO NOVO] - [SPY INGLES] - [2025]'
+        }
+    ],
+    // Spanish funnel pixels
+    es: [
+        {
+            id: '534495082571779',
+            token: process.env.FB_PIXEL_TOKEN_ES_1 || 'EAALZCphpZCmcIBQh5zHSNNj666RUi8XybMe3ZBRE31J9czSE04LBY4nZC9PBNG8SFNL4yCJf6zb9V88JkjNz55nTaIZC2wKSW22OhohIBY0IyYPYXTBFQTBVWUUIYDHhgZBf1CDVye724ekcSA6UbwSqJQPK8XYLEkvUfoJtXq7ktPv7qMOjloAx3jXdjUdJM3TgZDZD',
+            name: 'PIXEL SPY ESPANHOL'
+        },
+        {
+            id: '1271198251735428',
+            token: process.env.FB_PIXEL_TOKEN_ES_2 || 'EAALZCphpZCmcIBQh5zHSNNj666RUi8XybMe3ZBRE31J9czSE04LBY4nZC9PBNG8SFNL4yCJf6zb9V88JkjNz55nTaIZC2wKSW22OhohIBY0IyYPYXTBFQTBVWUUIYDHhgZBf1CDVye724ekcSA6UbwSqJQPK8XYLEkvUfoJtXq7ktPv7qMOjloAx3jXdjUdJM3TgZDZD',
+            name: 'SPY ESPANHOL 2026 - PABLO'
+        }
+    ]
+};
+
+// Default to English pixels for backward compatibility
+const FB_PIXELS = FB_PIXELS_BY_LANGUAGE.en;
+
+// Get pixels by language (or use provided custom pixels)
+function getPixelsForLanguage(language, customPixelIds = null, customAccessToken = null) {
+    // If custom pixels are provided (from frontend), use them
+    if (customPixelIds && customPixelIds.length > 0 && customAccessToken) {
+        return customPixelIds.map(id => ({
+            id: id,
+            token: customAccessToken,
+            name: `Custom Pixel ${id}`
+        }));
     }
-];
+    
+    // Otherwise use the configured pixels for the language
+    return FB_PIXELS_BY_LANGUAGE[language] || FB_PIXELS_BY_LANGUAGE.en;
+}
 
 const FB_API_VERSION = 'v18.0';
 
@@ -51,7 +85,10 @@ function normalizePhone(phone) {
 // Send event to Facebook Conversions API
 // eventId: if provided, use it for deduplication with browser pixel
 // userData.externalId: visitor ID for cross-device tracking
-async function sendToFacebookCAPI(eventName, userData, customData = {}, eventSourceUrl = null, eventId = null) {
+// options.language: 'en' or 'es' to select correct pixels
+// options.pixelIds: array of custom pixel IDs (from frontend)
+// options.accessToken: custom access token (from frontend)
+async function sendToFacebookCAPI(eventName, userData, customData = {}, eventSourceUrl = null, eventId = null, options = {}) {
     const timestamp = Math.floor(Date.now() / 1000);
     // Use provided eventId or generate one
     const finalEventId = eventId || `${eventName}_${timestamp}_${Math.random().toString(36).substr(2, 9)}`;
@@ -109,10 +146,13 @@ async function sendToFacebookCAPI(eventName, userData, customData = {}, eventSou
         eventPayload.custom_data = customData;
     }
     
-    // Send to both pixels
+    // Get pixels for the correct language (or use custom pixels from frontend)
+    const pixels = getPixelsForLanguage(options.language, options.pixelIds, options.accessToken);
+    
+    // Send to all pixels
     const results = [];
     
-    for (const pixel of FB_PIXELS) {
+    for (const pixel of pixels) {
         try {
             const url = `https://graph.facebook.com/${FB_API_VERSION}/${pixel.id}/events?access_token=${pixel.token}`;
             
@@ -229,7 +269,8 @@ app.post('/api/leads', leadLimiter, async (req, res) => {
             referrer,
             userAgent,
             fbc,  // Facebook click ID (from URL param or cookie)
-            fbp   // Facebook browser ID (from cookie)
+            fbp,  // Facebook browser ID (from cookie)
+            funnelLanguage  // 'en' or 'es' - funnel language for pixel selection
         } = req.body;
         
         // Validation
@@ -241,17 +282,20 @@ app.post('/api/leads', leadLimiter, async (req, res) => {
         const ipAddress = req.headers['x-forwarded-for']?.split(',')[0] || req.ip;
         const ua = userAgent || req.headers['user-agent'];
         
-        // Insert lead into database
+        // Determine language (default to 'en' for backward compatibility)
+        const language = funnelLanguage || 'en';
+        
+        // Insert lead into database (with language)
         const result = await pool.query(
-            `INSERT INTO leads (name, email, whatsapp, target_phone, target_gender, ip_address, referrer, user_agent, created_at)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+            `INSERT INTO leads (name, email, whatsapp, target_phone, target_gender, ip_address, referrer, user_agent, funnel_language, created_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
              RETURNING id, created_at`,
-            [name || null, email, whatsapp, targetPhone || null, targetGender || null, ipAddress, referrer || null, ua || null]
+            [name || null, email, whatsapp, targetPhone || null, targetGender || null, ipAddress, referrer || null, ua || null, language]
         );
         
-        console.log(`New lead captured: ${name || 'No name'} - ${email} - ${whatsapp}`);
+        console.log(`New lead captured [${language.toUpperCase()}]: ${name || 'No name'} - ${email} - ${whatsapp}`);
         
-        // Send Lead event to Facebook Conversions API
+        // Send Lead event to Facebook Conversions API (using correct pixels for language)
         try {
             await sendToFacebookCAPI('Lead', {
                 email: email,
@@ -264,7 +308,7 @@ app.post('/api/leads', leadLimiter, async (req, res) => {
             }, {
                 content_name: 'Lead Capture Form',
                 content_category: 'Lead'
-            }, referrer);
+            }, referrer, null, { language: language });
         } catch (capiError) {
             console.error('CAPI Lead error (non-blocking):', capiError.message);
         }
@@ -272,7 +316,8 @@ app.post('/api/leads', leadLimiter, async (req, res) => {
         res.status(201).json({
             success: true,
             message: 'Lead captured successfully',
-            id: result.rows[0].id
+            id: result.rows[0].id,
+            language: language
         });
         
     } catch (error) {
@@ -303,7 +348,11 @@ app.post('/api/capi/event', async (req, res) => {
             numItems,
             fbc,
             fbp,
-            eventSourceUrl
+            eventSourceUrl,
+            // Language and custom pixel support for multi-language funnels
+            funnelLanguage,    // 'en' or 'es'
+            pixelIds,          // Array of custom pixel IDs (from frontend)
+            accessToken        // Custom access token (from frontend)
         } = req.body;
         
         if (!eventName) {
@@ -337,13 +386,21 @@ app.post('/api/capi/event', async (req, res) => {
         if (contentCategory) customData.content_category = contentCategory;
         if (numItems) customData.num_items = parseInt(numItems);
         
+        // Options for pixel selection
+        const options = {
+            language: funnelLanguage || 'en',
+            pixelIds: pixelIds,
+            accessToken: accessToken
+        };
+        
         // Send to Facebook CAPI with eventId for deduplication
-        const results = await sendToFacebookCAPI(eventName, userData, customData, eventSourceUrl, eventId);
+        const results = await sendToFacebookCAPI(eventName, userData, customData, eventSourceUrl, eventId, options);
         
         res.json({ 
             success: true, 
             message: `Event ${eventName} sent to CAPI`,
             eventId: eventId || results[0]?.eventId,
+            language: options.language,
             results 
         });
         
@@ -399,6 +456,7 @@ app.get('/api/admin/leads', authenticateToken, async (req, res) => {
         const offset = (page - 1) * limit;
         const search = req.query.search || '';
         const status = req.query.status || '';
+        const language = req.query.language || '';  // Filter by funnel language (en/es)
         
         let query = `SELECT * FROM leads`;
         let countQuery = `SELECT COUNT(*) FROM leads`;
@@ -406,13 +464,18 @@ app.get('/api/admin/leads', authenticateToken, async (req, res) => {
         let conditions = [];
         
         if (search) {
-            conditions.push(`(email ILIKE $${params.length + 1} OR whatsapp ILIKE $${params.length + 1} OR target_phone ILIKE $${params.length + 1})`);
+            conditions.push(`(email ILIKE $${params.length + 1} OR whatsapp ILIKE $${params.length + 1} OR target_phone ILIKE $${params.length + 1} OR name ILIKE $${params.length + 1})`);
             params.push(`%${search}%`);
         }
         
         if (status) {
             conditions.push(`status = $${params.length + 1}`);
             params.push(status);
+        }
+        
+        if (language) {
+            conditions.push(`funnel_language = $${params.length + 1}`);
+            params.push(language);
         }
         
         if (conditions.length > 0) {
@@ -572,6 +635,7 @@ app.post('/api/track', async (req, res) => {
             page,
             targetPhone,
             targetGender,
+            funnelLanguage,  // 'en' or 'es'
             metadata
         } = req.body;
         
@@ -581,14 +645,21 @@ app.post('/api/track', async (req, res) => {
         
         const ipAddress = req.headers['x-forwarded-for']?.split(',')[0] || req.ip;
         const userAgent = req.headers['user-agent'] || null;
+        const language = funnelLanguage || 'en';
+        
+        // Add language to metadata
+        const enrichedMetadata = {
+            ...(metadata || {}),
+            funnelLanguage: language
+        };
         
         await pool.query(
             `INSERT INTO funnel_events (visitor_id, event, page, target_phone, target_gender, ip_address, user_agent, metadata, created_at)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())`,
-            [visitorId, event, page || null, targetPhone || null, targetGender || null, ipAddress, userAgent, JSON.stringify(metadata || {})]
+            [visitorId, event, page || null, targetPhone || null, targetGender || null, ipAddress, userAgent, JSON.stringify(enrichedMetadata)]
         );
         
-        res.json({ success: true });
+        res.json({ success: true, language });
         
     } catch (error) {
         console.error('Error tracking event:', error);

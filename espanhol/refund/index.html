@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitud de Reembolso - ZapDetect</title>
+    <meta name="description" content="Solicita un reembolso de tu compra de ZapDetect. Procesamiento rápido y seguro.">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '534495082571779');
+    fbq('init', '1271198251735428');
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=534495082571779&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
+</head>
+<body>
+    <div class="page-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">🔍</span>
+                <span class="logo-text">ZapDetect</span>
+            </div>
+            <h1 class="page-title">Solicitud de Reembolso</h1>
+        </header>
+
+        <!-- Progress Steps -->
+        <div class="progress-container">
+            <div class="progress-step active" data-step="1">
+                <div class="step-number">1</div>
+                <span class="step-label">Datos Personales</span>
+            </div>
+            <div class="progress-line"></div>
+            <div class="progress-step" data-step="2">
+                <div class="step-number">2</div>
+                <span class="step-label">Detalles de Compra</span>
+            </div>
+            <div class="progress-line"></div>
+            <div class="progress-step" data-step="3">
+                <div class="step-number">3</div>
+                <span class="step-label">Confirmación</span>
+            </div>
+        </div>
+
+        <!-- Form Container -->
+        <div class="form-container">
+            <!-- Important Notice -->
+            <div class="notice-box">
+                <div class="notice-icon">ℹ</div>
+                <div class="notice-content">
+                    <h3>Importante</h3>
+                    <p>Para procesar tu reembolso, necesitamos validar la información de tu compra. Por favor, completa todos los campos cuidadosamente para asegurar un procesamiento rápido.</p>
+                </div>
+            </div>
+
+            <!-- Step 1: Personal Info -->
+            <form id="refundForm">
+                <div class="form-step active" data-step="1">
+                    <h2 class="section-title">Información Personal</h2>
+                    <p class="section-subtitle">Todos los campos son obligatorios para validar la compra</p>
+
+                    <div class="form-group">
+                        <label for="fullName">Nombre Completo <span class="required">*</span></label>
+                        <input type="text" id="fullName" name="fullName" placeholder="Ingresa tu nombre completo" required>
+                        <span class="error-message" id="fullNameError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Correo de Compra <span class="required">*</span></label>
+                        <input type="email" id="email" name="email" placeholder="Ingresa el correo usado en la compra" required>
+                        <span class="helper-text">Usa el mismo correo registrado en la compra</span>
+                        <span class="error-message" id="emailError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Teléfono/WhatsApp <span class="required">*</span></label>
+                        <div class="phone-input-container">
+                            <div class="country-selector" id="countrySelector">
+                                <span class="selected-country" id="selectedCountry">
+                                    <span class="flag">🇪🇸</span>
+                                    <span class="code">+34</span>
+                                    <span class="arrow">▼</span>
+                                </span>
+                                <div class="country-dropdown" id="countryDropdown">
+                                    <input type="text" class="country-search" placeholder="🔍 Buscar país..." id="countrySearch">
+                                    <div class="country-list" id="countryList"></div>
+                                </div>
+                            </div>
+                            <input type="tel" id="phone" name="phone" placeholder="Número de teléfono" required>
+                        </div>
+                        <span class="helper-text">Para contactarte sobre el reembolso</span>
+                        <span class="error-message" id="phoneError"></span>
+                    </div>
+
+                    <button type="button" class="btn-primary" onclick="nextStep(2)">
+                        Continuar <span class="btn-arrow">→</span>
+                    </button>
+                </div>
+
+                <!-- Step 2: Purchase Details -->
+                <div class="form-step" data-step="2">
+                    <h2 class="section-title">Detalles de la Compra</h2>
+                    <p class="section-subtitle">Ayúdanos a localizar tu compra rápidamente</p>
+
+                    <div class="form-group">
+                        <label for="purchaseDate">Fecha de Compra <span class="required">*</span></label>
+                        <input type="date" id="purchaseDate" name="purchaseDate" required>
+                        <span class="error-message" id="purchaseDateError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reason">Motivo del Reembolso <span class="required">*</span></label>
+                        <select id="reason" name="reason" required>
+                            <option value="">Selecciona el motivo principal</option>
+                            <option value="not_expected">El producto no entregó los resultados esperados</option>
+                            <option value="technical">Dificultad técnica para acceder al producto</option>
+                            <option value="duplicate">Cobro duplicado en la tarjeta</option>
+                            <option value="unauthorized">No autoricé esta compra</option>
+                            <option value="changed_mind">Cambié de opinión sobre la compra</option>
+                            <option value="no_access">No recibí acceso al producto</option>
+                            <option value="other">Otro motivo</option>
+                        </select>
+                        <span class="helper-text">Selecciona el motivo que mejor describa tu situación</span>
+                        <span class="error-message" id="reasonError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="details">Describe los Detalles <span class="required">*</span></label>
+                        <textarea id="details" name="details" placeholder="Por favor, describe tu problema en detalle..." rows="4" required></textarea>
+                        <span class="helper-text">Cuantos más detalles, más rápido procesamos.</span>
+                        <span class="error-message" id="detailsError"></span>
+                    </div>
+
+                    <div class="security-notice">
+                        <span class="lock-icon">🔒</span>
+                        Tu información está protegida y solo se usará para procesar el reembolso
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn-secondary" onclick="prevStep(1)">
+                            <span class="btn-arrow">←</span> Atrás
+                        </button>
+                        <button type="submit" class="btn-primary" id="submitBtn">
+                            Solicitar Reembolso <span class="btn-arrow">→</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Confirmation -->
+                <div class="form-step" data-step="3">
+                    <div class="success-container">
+                        <div class="success-icon">✓</div>
+                        <h2 class="success-title">¡Solicitud Enviada con Éxito!</h2>
+                        
+                        <div class="protocol-box">
+                            <span class="protocol-label">Número de Protocolo</span>
+                            <div class="protocol-number" id="protocolNumber">REF-000000</div>
+                            <div class="protocol-actions">
+                                <button type="button" class="btn-icon" onclick="copyProtocol()">
+                                    📋 Copiar
+                                </button>
+                                <button type="button" class="btn-icon" onclick="downloadPDF()">
+                                    📄 Descargar PDF
+                                </button>
+                            </div>
+                        </div>
+
+                        <p class="success-message">Tu solicitud de reembolso ha sido recibida y está siendo procesada.</p>
+
+                        <div class="summary-box">
+                            <div class="summary-item">
+                                <span class="summary-label">Nombre:</span>
+                                <span class="summary-value" id="summaryName">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Correo:</span>
+                                <span class="summary-value" id="summaryEmail">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Teléfono:</span>
+                                <span class="summary-value" id="summaryPhone">-</span>
+                            </div>
+                        </div>
+
+                        <div class="refund-info">
+                            <h3>💰 ¿Cómo recibirás el reembolso?</h3>
+                            <p>El monto será <strong>devuelto automáticamente</strong> al mismo método de pago utilizado en la compra.</p>
+                        </div>
+
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-icon">✉️</div>
+                                <div class="timeline-content">
+                                    <strong>Próximas 24 horas</strong>
+                                    <span>Correo de confirmación con detalles del procesamiento</span>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-icon">⚡</div>
+                                <div class="timeline-content">
+                                    <strong>Hasta 7 días hábiles</strong>
+                                    <span>Procesamiento del reembolso por el equipo financiero</span>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-icon">💳</div>
+                                <div class="timeline-content">
+                                    <strong>Próximo estado de cuenta</strong>
+                                    <span>El monto aparecerá como crédito o deducido del total</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="note-box">
+                            <strong>ℹ️ Nota:</strong> El plazo puede variar dependiendo de tu banco u operador de tarjeta.
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2026 ZapDetect. Todos los derechos reservados.</p>
+            <div class="footer-links">
+                <a href="../privacy.html">Política de Privacidad</a>
+                <a href="../terms.html">Términos de Servicio</a>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
