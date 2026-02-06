@@ -3026,13 +3026,18 @@ Estou aqui para esclarecer tudo! 😊`
                     fetch(`${API_URL}/api/admin/refunds`, { headers })
                 ]);
                 
-                const leads = await leadsRes.json();
-                const sales = await salesRes.json();
-                const refunds = await refundsRes.json();
+                const leadsData = await leadsRes.json();
+                const salesData = await salesRes.json();
+                const refundsData = await refundsRes.json();
                 
-                document.getElementById('reportLeadsCount').textContent = Array.isArray(leads) ? leads.length : 0;
-                document.getElementById('reportSalesCount').textContent = Array.isArray(sales) ? sales.length : 0;
-                document.getElementById('reportRefundsCount').textContent = Array.isArray(refunds) ? refunds.length : 0;
+                // API returns { leads: [], pagination: {} } format
+                const leadsCount = leadsData.pagination ? leadsData.pagination.total : (Array.isArray(leadsData) ? leadsData.length : 0);
+                const salesCount = Array.isArray(salesData) ? salesData.length : 0;
+                const refundsCount = Array.isArray(refundsData) ? refundsData.length : 0;
+                
+                document.getElementById('reportLeadsCount').textContent = leadsCount;
+                document.getElementById('reportSalesCount').textContent = salesCount;
+                document.getElementById('reportRefundsCount').textContent = refundsCount;
                 
                 // Set default dates
                 const today = new Date();
@@ -3104,8 +3109,10 @@ Estou aqui para esclarecer tudo! 😊`
             
             try {
                 if (type === 'leads' || type === 'all') {
-                    const res = await fetch(`${API_URL}/api/admin/leads`, { headers });
-                    data.leads = await res.json();
+                    const res = await fetch(`${API_URL}/api/admin/leads?limit=10000`, { headers });
+                    const leadsData = await res.json();
+                    // API returns { leads: [], pagination: {} }
+                    data.leads = leadsData.leads || leadsData;
                 }
                 if (type === 'sales' || type === 'all') {
                     const res = await fetch(`${API_URL}/api/admin/transactions`, { headers });
