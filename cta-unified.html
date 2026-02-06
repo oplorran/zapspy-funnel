@@ -2231,54 +2231,54 @@
             element.parentElement.classList.toggle('open');
         }
 
-        // Handle purchase with email capture
+        // Handle purchase - check if already captured lead data
         function handlePurchase() {
-            // Show email capture modal first
+            const existingEmail = localStorage.getItem('userEmail');
+            const existingWhatsApp = localStorage.getItem('userWhatsApp');
+            
+            // If already captured on phone page, go directly to checkout
+            if (existingEmail && existingWhatsApp) {
+                proceedToCheckout();
+                return;
+            }
+            
+            // Otherwise show email capture modal
             if (typeof EmailCapture !== 'undefined') {
                 EmailCapture.show(function(userData) {
-                    // Track InitiateCheckout event
-                    if (typeof fbq !== 'undefined') {
-                        fbq('track', 'InitiateCheckout', {
-                            content_name: 'ZapSpy.ai VIP Access',
-                            currency: 'USD',
-                            value: 47.00
-                        });
-                    }
-                    
-                    // Track AddToCart for granular tracking
-                    if (typeof ZapSpyTracking !== 'undefined') {
-                        ZapSpyTracking.trackStandardEvent('AddToCart', {
-                            content_name: 'ZapSpy.ai VIP Access',
-                            currency: 'USD',
-                            value: 47.00
-                        });
-                    }
-                    
-                    // Track checkout click in funnel
-                    if (typeof FunnelTracker !== 'undefined') {
-                        FunnelTracker.track(FunnelTracker.events.CHECKOUT_CLICKED);
-                    }
-                    
-                    // Redirect to checkout
-                    window.location.href = 'https://pay.monetizze.com.br/KKM446018?utm_source=zapspy&utm_medium=funnel&utm_campaign=' + utmCampaign;
+                    proceedToCheckout();
                 });
             } else {
-                // Fallback if email capture not loaded
-                if (typeof fbq !== 'undefined') {
-                    fbq('track', 'InitiateCheckout', {
-                        content_name: 'ZapSpy.ai VIP Access',
-                        currency: 'USD',
-                        value: 47.00
-                    });
-                }
-                
-                // Track checkout click in funnel
-                if (typeof FunnelTracker !== 'undefined') {
-                    FunnelTracker.track(FunnelTracker.events.CHECKOUT_CLICKED);
-                }
-                
-                window.location.href = 'https://pay.monetizze.com.br/KKM446018?utm_source=zapspy&utm_medium=funnel&utm_campaign=' + utmCampaign;
+                proceedToCheckout();
             }
+        }
+        
+        // Proceed to checkout with all tracking
+        function proceedToCheckout() {
+            // Track InitiateCheckout event
+            if (typeof fbq !== 'undefined') {
+                fbq('track', 'InitiateCheckout', {
+                    content_name: 'ZapSpy.ai VIP Access',
+                    currency: 'USD',
+                    value: 47.00
+                });
+            }
+            
+            // Track AddToCart for granular tracking
+            if (typeof ZapSpyTracking !== 'undefined') {
+                ZapSpyTracking.trackStandardEvent('AddToCart', {
+                    content_name: 'ZapSpy.ai VIP Access',
+                    currency: 'USD',
+                    value: 47.00
+                });
+            }
+            
+            // Track checkout click in funnel
+            if (typeof FunnelTracker !== 'undefined') {
+                FunnelTracker.track(FunnelTracker.events.CHECKOUT_CLICKED);
+            }
+            
+            // Redirect to checkout
+            window.location.href = 'https://pay.monetizze.com.br/KKM446018?utm_source=zapspy&utm_medium=funnel&utm_campaign=' + utmCampaign;
         }
 
         // Initialize

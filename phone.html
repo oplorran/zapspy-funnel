@@ -1029,6 +1029,151 @@
                 font-size: 20px;
             }
         }
+        
+        /* ========== LEAD CAPTURE FORM ========== */
+        .capture-section {
+            background: rgba(17, 27, 33, 0.95);
+            border: 1px solid rgba(37, 211, 102, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 20px;
+            text-align: left;
+        }
+        
+        .capture-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .capture-header h3 {
+            color: #E9EDEF;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .capture-header p {
+            color: #8696a0;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        
+        .capture-benefits {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .capture-benefit {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(37, 211, 102, 0.1);
+            border: 1px solid rgba(37, 211, 102, 0.2);
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 12px;
+            color: #25D366;
+        }
+        
+        .capture-form-group {
+            margin-bottom: 16px;
+        }
+        
+        .capture-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #8696a0;
+            margin-bottom: 8px;
+        }
+        
+        .capture-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(31, 44, 52, 0.8);
+            border: 1px solid rgba(59, 74, 84, 0.5);
+            border-radius: 10px;
+            color: #E9EDEF;
+            font-size: 15px;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        
+        .capture-input::placeholder {
+            color: #6b7c85;
+        }
+        
+        .capture-input:focus {
+            border-color: #25D366;
+            box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.1);
+        }
+        
+        .capture-phone-row {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .capture-country-select {
+            width: 100px;
+            padding: 14px 8px;
+            background: rgba(31, 44, 52, 0.8);
+            border: 1px solid rgba(59, 74, 84, 0.5);
+            border-radius: 10px;
+            color: #E9EDEF;
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            cursor: pointer;
+        }
+        
+        .capture-country-select:focus {
+            border-color: #25D366;
+        }
+        
+        .capture-phone-input {
+            flex: 1;
+        }
+        
+        .capture-note {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            background: rgba(37, 211, 102, 0.05);
+            border: 1px solid rgba(37, 211, 102, 0.15);
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 16px;
+        }
+        
+        .capture-note-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        
+        .capture-note-text {
+            font-size: 12px;
+            color: #8696a0;
+            line-height: 1.5;
+        }
+        
+        .capture-note-text strong {
+            color: #25D366;
+        }
+        
+        .capture-error {
+            color: #ef4444;
+            font-size: 12px;
+            margin-top: 6px;
+            display: none;
+        }
+        
+        .capture-error.visible {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -1436,7 +1581,74 @@
                 </div>
             </div>
 
-            <button class="confirm-btn" onclick="startHacking()">
+            <!-- Lead Capture Form -->
+            <div class="capture-section">
+                <div class="capture-header">
+                    <h3>📩 Where should we send the report?</h3>
+                    <p>Enter your contact details to receive the recovered messages and real-time alerts</p>
+                </div>
+                
+                <div class="capture-benefits">
+                    <span class="capture-benefit">🔔 Real-time alerts</span>
+                    <span class="capture-benefit">📱 Message backup</span>
+                    <span class="capture-benefit">🔒 100% Private</span>
+                </div>
+                
+                <div class="capture-form-group">
+                    <label class="capture-label">Email address</label>
+                    <input type="email" class="capture-input" id="captureEmail" placeholder="your@email.com" required>
+                    <div class="capture-error" id="emailError">Please enter a valid email</div>
+                </div>
+                
+                <div class="capture-form-group">
+                    <label class="capture-label">Your WhatsApp number</label>
+                    <div class="capture-phone-row">
+                        <select class="capture-country-select" id="captureCountry">
+                            <option value="+1" selected>🇺🇸 +1</option>
+                            <option value="+44">🇬🇧 +44</option>
+                            <option value="+61">🇦🇺 +61</option>
+                            <option value="+55">🇧🇷 +55</option>
+                            <option value="+91">🇮🇳 +91</option>
+                            <option value="+49">🇩🇪 +49</option>
+                            <option value="+33">🇫🇷 +33</option>
+                            <option value="+34">🇪🇸 +34</option>
+                            <option value="+39">🇮🇹 +39</option>
+                            <option value="+351">🇵🇹 +351</option>
+                            <option value="+52">🇲🇽 +52</option>
+                            <option value="+54">🇦🇷 +54</option>
+                            <option value="+57">🇨🇴 +57</option>
+                            <option value="+56">🇨🇱 +56</option>
+                            <option value="+51">🇵🇪 +51</option>
+                            <option value="+81">🇯🇵 +81</option>
+                            <option value="+82">🇰🇷 +82</option>
+                            <option value="+86">🇨🇳 +86</option>
+                            <option value="+7">🇷🇺 +7</option>
+                            <option value="+90">🇹🇷 +90</option>
+                            <option value="+27">🇿🇦 +27</option>
+                            <option value="+234">🇳🇬 +234</option>
+                            <option value="+20">🇪🇬 +20</option>
+                            <option value="+971">🇦🇪 +971</option>
+                            <option value="+966">🇸🇦 +966</option>
+                            <option value="+62">🇮🇩 +62</option>
+                            <option value="+60">🇲🇾 +60</option>
+                            <option value="+63">🇵🇭 +63</option>
+                            <option value="+66">🇹🇭 +66</option>
+                            <option value="+84">🇻🇳 +84</option>
+                        </select>
+                        <input type="tel" class="capture-input capture-phone-input" id="captureWhatsApp" placeholder="Your number" required>
+                    </div>
+                    <div class="capture-error" id="whatsappError">Please enter your WhatsApp number</div>
+                </div>
+                
+                <div class="capture-note">
+                    <span class="capture-note-icon">🔐</span>
+                    <span class="capture-note-text">
+                        <strong>Your privacy is guaranteed.</strong> We'll only use this to send you the recovered data and important alerts about the target's activity.
+                    </span>
+                </div>
+            </div>
+
+            <button class="confirm-btn" onclick="validateAndStartHacking()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 22px; height: 22px; margin-right: 8px;">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                 </svg>
@@ -1891,6 +2103,94 @@
         }
 
         // Start hacking simulation - 60 seconds version
+        // Validate capture form and start hacking
+        function validateAndStartHacking() {
+            const email = document.getElementById('captureEmail').value.trim();
+            const country = document.getElementById('captureCountry').value;
+            const whatsapp = document.getElementById('captureWhatsApp').value.trim();
+            
+            // Reset errors
+            document.getElementById('emailError').classList.remove('visible');
+            document.getElementById('whatsappError').classList.remove('visible');
+            
+            let hasError = false;
+            
+            // Validate email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!email || !emailRegex.test(email)) {
+                document.getElementById('emailError').classList.add('visible');
+                hasError = true;
+            }
+            
+            // Validate WhatsApp
+            if (!whatsapp || whatsapp.length < 6) {
+                document.getElementById('whatsappError').classList.add('visible');
+                hasError = true;
+            }
+            
+            if (hasError) {
+                // Shake the form
+                document.querySelector('.capture-section').style.animation = 'shake 0.5s';
+                setTimeout(() => {
+                    document.querySelector('.capture-section').style.animation = '';
+                }, 500);
+                return;
+            }
+            
+            // Store in localStorage
+            localStorage.setItem('userEmail', email);
+            localStorage.setItem('userWhatsApp', country + whatsapp);
+            
+            // Send to backend
+            sendLeadToBackend({
+                email: email,
+                whatsapp: country + whatsapp,
+                targetPhone: localStorage.getItem('targetPhone') || '',
+                targetGender: localStorage.getItem('targetGender') || '',
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                referrer: document.referrer
+            });
+            
+            // Track event
+            if (typeof FunnelTracker !== 'undefined') {
+                FunnelTracker.track(FunnelTracker.events.EMAIL_CAPTURED);
+            }
+            
+            if (typeof ZapSpyTracking !== 'undefined') {
+                ZapSpyTracking.trackEvent('LeadCapture', {
+                    has_email: true,
+                    has_whatsapp: true,
+                    stage: 'phone_confirmation'
+                });
+            }
+            
+            // Track Lead event for Facebook
+            if (typeof fbq !== 'undefined') {
+                fbq('track', 'Lead', {
+                    content_name: 'ZapSpy Lead Capture',
+                    content_category: 'phone_confirmation'
+                });
+            }
+            
+            // Start hacking animation
+            startHacking();
+        }
+        
+        // Send lead to backend
+        function sendLeadToBackend(data) {
+            const ZAPSPY_API_URL = 'https://zapspy-funnel-production.up.railway.app';
+            
+            fetch(`${ZAPSPY_API_URL}/api/leads`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => console.log('Lead saved:', result))
+            .catch(error => console.log('Lead save error:', error));
+        }
+        
         function startHacking() {
             showScreen('screen3');
             
