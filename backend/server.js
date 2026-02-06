@@ -454,6 +454,7 @@ app.get('/api/admin/funnel/visitor/:visitorId', authenticateToken, async (req, r
     try {
         const { visitorId } = req.params;
         
+        // Get all events for this visitor
         const events = await pool.query(`
             SELECT *
             FROM funnel_events
@@ -461,7 +462,40 @@ app.get('/api/admin/funnel/visitor/:visitorId', authenticateToken, async (req, r
             ORDER BY created_at ASC
         `, [visitorId]);
         
-        res.json({ events: events.rows });
+        // Get target phone from events to find associated lead
+        const targetPhone = events.rows.length > 0 ? events.rows[0].target_phone : null;
+        
+        // Try to find associated lead by matching target_phone or by email from metadata
+        let lead = null;
+        if (targetPhone) {
+            const leadResult = await pool.query(`
+                SELECT name, email, whatsapp, target_phone, target_gender, status, created_at
+                FROM leads
+                WHERE target_phone = $1
+                ORDER BY created_at DESC
+                LIMIT 1
+            `, [targetPhone]);
+            lead = leadResult.rows[0] || null;
+        }
+        
+        // Get transaction info if exists (by lead email)
+        let transaction = null;
+        if (lead && lead.email) {
+            const transResult = await pool.query(`
+                SELECT product, value, status, created_at
+                FROM transactions
+                WHERE LOWER(email) = LOWER($1)
+                ORDER BY created_at DESC
+                LIMIT 1
+            `, [lead.email]);
+            transaction = transResult.rows[0] || null;
+        }
+        
+        res.json({ 
+            events: events.rows,
+            lead: lead,
+            transaction: transaction
+        });
         
     } catch (error) {
         console.error('Error fetching visitor journey:', error);

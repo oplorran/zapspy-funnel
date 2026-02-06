@@ -838,10 +838,11 @@
                                     <th>Etapas</th>
                                     <th>Primeira Visita</th>
                                     <th>Última Atividade</th>
+                                    <th>Ações</th>
                                 </tr>
                             </thead>
                             <tbody id="journeysTable">
-                                <tr><td colspan="6"><div class="loading"><div class="spinner"></div>Carregando...</div></td></tr>
+                                <tr><td colspan="7"><div class="loading"><div class="spinner"></div>Carregando...</div></td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -1057,6 +1058,42 @@ Posso ajudar com alguma dúvida?</textarea>
             <div class="modal-actions">
                 <button class="btn-primary btn-success" onclick="sendWhatsApp()">📨 Enviar WhatsApp</button>
                 <button class="btn-secondary" onclick="closeWhatsAppModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Journey Details Modal -->
+    <div class="modal-overlay" id="journeyModal">
+        <div class="modal" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3>🛤️ Jornada do Visitante</h3>
+                <p id="journeyVisitorId">Detalhes completos da jornada</p>
+            </div>
+            
+            <!-- Lead Info -->
+            <div id="journeyLeadInfo" style="background: var(--bg-tertiary); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                <h4 style="color: var(--accent); margin-bottom: 12px; font-size: 14px;">👤 Dados do Lead</h4>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;" id="journeyLeadData">
+                    <p style="color: var(--text-muted);">Carregando...</p>
+                </div>
+            </div>
+            
+            <!-- Transaction Info -->
+            <div id="journeyTransactionInfo" style="background: var(--bg-tertiary); border-radius: 12px; padding: 16px; margin-bottom: 20px; display: none;">
+                <h4 style="color: var(--success); margin-bottom: 12px; font-size: 14px;">💰 Transação</h4>
+                <div id="journeyTransactionData"></div>
+            </div>
+            
+            <!-- Events Timeline -->
+            <div style="background: var(--bg-tertiary); border-radius: 12px; padding: 16px;">
+                <h4 style="color: var(--info); margin-bottom: 12px; font-size: 14px;">📍 Timeline de Eventos</h4>
+                <div id="journeyEventsTimeline" style="max-height: 300px; overflow-y: auto;">
+                    <p style="color: var(--text-muted);">Carregando...</p>
+                </div>
+            </div>
+            
+            <div class="modal-actions" style="margin-top: 20px;">
+                <button class="btn-secondary" onclick="closeJourneyModal()">Fechar</button>
             </div>
         </div>
     </div>
@@ -1651,35 +1688,134 @@ Estou aqui para esclarecer tudo! 😊`
             document.getElementById('dailyStats').innerHTML = html;
         }
         
+        const eventLabelsGlobal = { 
+            'page_view_landing': 'Landing', 
+            'gender_selected': 'Gênero Selecionado', 
+            'page_view_phone': 'Página Phone', 
+            'phone_submitted': 'Telefone Enviado', 
+            'page_view_conversas': 'Página Conversas', 
+            'page_view_cta': 'Página CTA', 
+            'email_captured': 'Email Capturado', 
+            'checkout_clicked': 'Checkout Clicado',
+            'checkout_50off_clicked': 'Checkout 50% OFF',
+            'upsell_1_view': 'Upsell 1 - Visualizou',
+            'upsell_1_accepted': 'Upsell 1 - Aceitou ✅',
+            'upsell_1_declined': 'Upsell 1 - Recusou ❌',
+            'upsell_2_view': 'Upsell 2 - Visualizou',
+            'upsell_2_accepted': 'Upsell 2 - Aceitou ✅',
+            'upsell_2_declined': 'Upsell 2 - Recusou ❌',
+            'upsell_3_view': 'Upsell 3 - Visualizou',
+            'upsell_3_accepted': 'Upsell 3 - Aceitou ✅',
+            'upsell_3_declined': 'Upsell 3 - Recusou ❌',
+            'thankyou_view': 'Página Obrigado'
+        };
+        
         function renderJourneys(journeys) {
-            if (!journeys?.length) { document.getElementById('journeysTable').innerHTML = '<tr><td colspan="6"><div class="empty-state"><h3>Nenhuma jornada</h3></div></td></tr>'; return; }
-            const eventLabels = { 
-                'page_view_landing': 'Landing', 
-                'gender_selected': 'Gênero', 
-                'page_view_phone': 'Phone', 
-                'phone_submitted': 'Tel.', 
-                'page_view_conversas': 'Conversas', 
-                'page_view_cta': 'CTA', 
-                'email_captured': 'Email', 
-                'checkout_clicked': 'Checkout',
-                'upsell_1_view': 'Up1 👁️',
-                'upsell_1_accepted': 'Up1 ✅',
-                'upsell_1_declined': 'Up1 ❌',
-                'upsell_2_view': 'Up2 👁️',
-                'upsell_2_accepted': 'Up2 ✅',
-                'upsell_2_declined': 'Up2 ❌',
-                'upsell_3_view': 'Up3 👁️',
-                'upsell_3_accepted': 'Up3 ✅',
-                'upsell_3_declined': 'Up3 ❌',
+            if (!journeys?.length) { document.getElementById('journeysTable').innerHTML = '<tr><td colspan="7"><div class="empty-state"><h3>Nenhuma jornada</h3></div></td></tr>'; return; }
+            const shortLabels = { 
+                'page_view_landing': 'Landing', 'gender_selected': 'Gênero', 'page_view_phone': 'Phone', 
+                'phone_submitted': 'Tel.', 'page_view_conversas': 'Conversas', 'page_view_cta': 'CTA', 
+                'email_captured': 'Email', 'checkout_clicked': 'Checkout', 'checkout_50off_clicked': '50%OFF',
+                'upsell_1_view': 'Up1 👁️', 'upsell_1_accepted': 'Up1 ✅', 'upsell_1_declined': 'Up1 ❌',
+                'upsell_2_view': 'Up2 👁️', 'upsell_2_accepted': 'Up2 ✅', 'upsell_2_declined': 'Up2 ❌',
+                'upsell_3_view': 'Up3 👁️', 'upsell_3_accepted': 'Up3 ✅', 'upsell_3_declined': 'Up3 ❌',
                 'thankyou_view': 'Obrigado'
             };
             let html = '';
             journeys.forEach(j => {
                 const events = j.events || [];
-                html += `<tr><td class="mono">${j.visitor_id.substring(0, 12)}...</td><td class="mono">${j.target_phone || '-'}</td><td>${j.target_gender === 'male' ? '👨' : j.target_gender === 'female' ? '👩' : '-'}</td><td><div class="journey-events">${events.slice(0, 6).map(e => `<span class="journey-tag ${e === 'checkout_clicked' ? 'checkout' : 'completed'}">${eventLabels[e] || e}</span>`).join('')}${events.length > 6 ? `<span class="journey-tag">+${events.length - 6}</span>` : ''}</div></td><td>${formatDate(j.first_seen)}</td><td>${formatDate(j.last_seen)}</td></tr>`;
+                html += `<tr>
+                    <td class="mono">${j.visitor_id.substring(0, 12)}...</td>
+                    <td class="mono">${j.target_phone || '-'}</td>
+                    <td>${j.target_gender === 'male' ? '👨' : j.target_gender === 'female' ? '👩' : '-'}</td>
+                    <td><div class="journey-events">${events.slice(0, 5).map(e => `<span class="journey-tag ${e === 'checkout_clicked' ? 'checkout' : 'completed'}">${shortLabels[e] || e}</span>`).join('')}${events.length > 5 ? `<span class="journey-tag" style="cursor:pointer" onclick="openJourneyModal('${j.visitor_id}')">+${events.length - 5}</span>` : ''}</div></td>
+                    <td>${formatDate(j.first_seen)}</td>
+                    <td>${formatDate(j.last_seen)}</td>
+                    <td><button class="action-btn" onclick="openJourneyModal('${j.visitor_id}')" title="Ver detalhes">👁️</button></td>
+                </tr>`;
             });
             document.getElementById('journeysTable').innerHTML = html;
         }
+        
+        async function openJourneyModal(visitorId) {
+            document.getElementById('journeyModal').classList.add('active');
+            document.getElementById('journeyVisitorId').textContent = `ID: ${visitorId}`;
+            document.getElementById('journeyLeadData').innerHTML = '<p style="color: var(--text-muted);">Carregando...</p>';
+            document.getElementById('journeyEventsTimeline').innerHTML = '<p style="color: var(--text-muted);">Carregando...</p>';
+            document.getElementById('journeyTransactionInfo').style.display = 'none';
+            
+            try {
+                const response = await fetch(`${API_URL}/api/admin/funnel/visitor/${visitorId}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (response.status === 401) { logout(); return; }
+                const data = await response.json();
+                
+                // Render Lead Info
+                if (data.lead) {
+                    document.getElementById('journeyLeadData').innerHTML = `
+                        <div><span style="color: var(--text-muted); font-size: 12px;">Nome</span><br><strong>${data.lead.name || '-'}</strong></div>
+                        <div><span style="color: var(--text-muted); font-size: 12px;">Email</span><br><strong>${data.lead.email || '-'}</strong></div>
+                        <div><span style="color: var(--text-muted); font-size: 12px;">WhatsApp</span><br><strong>${data.lead.whatsapp || '-'}</strong></div>
+                        <div><span style="color: var(--text-muted); font-size: 12px;">Alvo</span><br><strong>${data.lead.target_phone || '-'}</strong></div>
+                        <div><span style="color: var(--text-muted); font-size: 12px;">Gênero Alvo</span><br><strong>${data.lead.target_gender === 'male' ? '👨 Masculino' : data.lead.target_gender === 'female' ? '👩 Feminino' : '-'}</strong></div>
+                        <div><span style="color: var(--text-muted); font-size: 12px;">Status</span><br><span class="badge badge-${data.lead.status || 'new'}"><span class="badge-dot"></span>${statusLabels[data.lead.status] || 'Novo'}</span></div>
+                    `;
+                } else {
+                    document.getElementById('journeyLeadData').innerHTML = '<p style="color: var(--text-muted);">Lead não encontrado (visitante não preencheu o formulário)</p>';
+                }
+                
+                // Render Transaction Info
+                if (data.transaction) {
+                    document.getElementById('journeyTransactionInfo').style.display = 'block';
+                    const transStatus = data.transaction.status === 'approved' ? '✅ Aprovada' : data.transaction.status === 'refunded' ? '❌ Reembolsada' : data.transaction.status;
+                    document.getElementById('journeyTransactionData').innerHTML = `
+                        <div style="display: flex; gap: 24px;">
+                            <div><span style="color: var(--text-muted); font-size: 12px;">Produto</span><br><strong>${data.transaction.product || '-'}</strong></div>
+                            <div><span style="color: var(--text-muted); font-size: 12px;">Valor</span><br><strong style="color: var(--accent);">R$ ${data.transaction.value || '0'}</strong></div>
+                            <div><span style="color: var(--text-muted); font-size: 12px;">Status</span><br><strong>${transStatus}</strong></div>
+                        </div>
+                    `;
+                }
+                
+                // Render Events Timeline
+                if (data.events?.length) {
+                    let timelineHtml = '<div style="display: flex; flex-direction: column; gap: 8px;">';
+                    data.events.forEach((event, index) => {
+                        const isCheckout = event.event.includes('checkout');
+                        const isAccepted = event.event.includes('accepted');
+                        const isDeclined = event.event.includes('declined');
+                        let dotColor = 'var(--accent)';
+                        if (isCheckout) dotColor = 'var(--success)';
+                        if (isAccepted) dotColor = 'var(--success)';
+                        if (isDeclined) dotColor = 'var(--danger)';
+                        
+                        timelineHtml += `
+                            <div style="display: flex; align-items: center; gap: 12px; padding: 8px 12px; background: var(--bg-secondary); border-radius: 8px;">
+                                <div style="width: 10px; height: 10px; border-radius: 50%; background: ${dotColor}; flex-shrink: 0;"></div>
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 500; font-size: 13px;">${eventLabelsGlobal[event.event] || event.event}</div>
+                                    <div style="font-size: 11px; color: var(--text-muted);">${event.page || '-'}</div>
+                                </div>
+                                <div style="font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">
+                                    ${new Date(event.created_at).toLocaleString('pt-BR')}
+                                </div>
+                            </div>
+                        `;
+                    });
+                    timelineHtml += '</div>';
+                    document.getElementById('journeyEventsTimeline').innerHTML = timelineHtml;
+                } else {
+                    document.getElementById('journeyEventsTimeline').innerHTML = '<p style="color: var(--text-muted);">Nenhum evento encontrado</p>';
+                }
+                
+            } catch (error) {
+                console.error('Error loading journey:', error);
+                document.getElementById('journeyEventsTimeline').innerHTML = '<p style="color: var(--danger);">Erro ao carregar jornada</p>';
+            }
+        }
+        
+        function closeJourneyModal() { document.getElementById('journeyModal').classList.remove('active'); }
         
         // Sales
         async function loadSalesData() {
