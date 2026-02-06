@@ -2347,6 +2347,20 @@
         }, 15000);
         setTimeout(showTypingIndicator, 5000);
 
+        // 50% OFF Checkout URL
+        const CHECKOUT_50_OFF = 'https://pay.monetizze.com.br/KGQ455954';
+        
+        function goToCheckout50Off() {
+            // Track 50% off click
+            if (typeof FunnelTracker !== 'undefined') {
+                FunnelTracker.track('checkout_50off_clicked', { discount: '50%' });
+            }
+            if (typeof fbq !== 'undefined') {
+                fbq('track', 'InitiateCheckout', { content_name: '50% OFF Offer' });
+            }
+            window.location.href = CHECKOUT_50_OFF;
+        }
+        
         // Exit Intent Popup
         let exitIntentShown = false;
         document.addEventListener('mouseout', function(e) {
@@ -2355,19 +2369,40 @@
                 showExitPopup();
             }
         });
+        
+        // Back Button Redirect (popstate)
+        let backRedirectShown = false;
+        history.pushState(null, null, location.href);
+        window.addEventListener('popstate', function(e) {
+            if (!backRedirectShown) {
+                backRedirectShown = true;
+                history.pushState(null, null, location.href);
+                showExitPopup();
+            }
+        });
 
         function showExitPopup() {
             const popup = document.createElement('div');
             popup.id = 'exitPopup';
             popup.innerHTML = `
-                <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
-                    <div style="background: linear-gradient(135deg, #1F2C33, #111B21); border-radius: 16px; padding: 24px; max-width: 340px; text-align: center; border: 1px solid rgba(37, 211, 102, 0.3);">
-                        <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
-                        <h3 style="color: #FF3B30; font-size: 20px; margin-bottom: 12px;">WAIT! Don't Leave Yet!</h3>
-                        <p style="color: #E9EDEF; font-size: 14px; margin-bottom: 16px;">You're about to lose this special promotional price for <strong>${targetPhone}</strong>'s monitoring!</p>
-                        <p style="color: #8696A0; font-size: 12px; margin-bottom: 20px;">We found <strong style="color: #FF3B30;">68 deleted messages</strong> that may contain important information.</p>
-                        <button onclick="handlePurchase()" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #25D366, #128C7E); color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 10px;">Get 50% OFF - Unlock Now</button>
-                        <button onclick="document.getElementById('exitPopup').remove()" style="width: 100%; padding: 10px; background: transparent; color: #667781; border: none; font-size: 13px; cursor: pointer;">No thanks, I don't want to know the truth</button>
+                <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.3s ease;">
+                    <div style="background: linear-gradient(135deg, #1F2C33, #111B21); border-radius: 20px; padding: 32px; max-width: 380px; text-align: center; border: 2px solid rgba(255, 59, 48, 0.5); box-shadow: 0 20px 60px rgba(0,0,0,0.8);">
+                        <div style="font-size: 56px; margin-bottom: 16px;">🔥</div>
+                        <h3 style="color: #FF3B30; font-size: 24px; margin-bottom: 8px; font-weight: 800;">WAIT!</h3>
+                        <h4 style="color: #25D366; font-size: 28px; margin-bottom: 16px; font-weight: 800;">EXCLUSIVE 50% OFF</h4>
+                        <p style="color: #E9EDEF; font-size: 15px; margin-bottom: 12px;">Special discount just for you!</p>
+                        <p style="color: #8696A0; font-size: 13px; margin-bottom: 8px;">Full access to <strong style="color: #25D366;">${targetPhone}</strong>'s WhatsApp:</p>
+                        <ul style="text-align: left; color: #E9EDEF; font-size: 13px; margin: 16px 0; padding-left: 20px; list-style: none;">
+                            <li style="margin-bottom: 8px;">✅ All conversations & messages</li>
+                            <li style="margin-bottom: 8px;">✅ Photos, videos & audios</li>
+                            <li style="margin-bottom: 8px;">✅ <strong style="color: #FF3B30;">68 deleted messages</strong> recovered</li>
+                            <li style="margin-bottom: 8px;">✅ Real-time monitoring</li>
+                        </ul>
+                        <div style="background: rgba(255,59,48,0.1); border-radius: 8px; padding: 12px; margin-bottom: 20px;">
+                            <p style="color: #FF3B30; font-size: 14px; margin: 0;">⏰ This offer expires in <strong>5 minutes</strong></p>
+                        </div>
+                        <button onclick="goToCheckout50Off()" style="width: 100%; padding: 16px; background: linear-gradient(135deg, #25D366, #128C7E); color: white; border: none; border-radius: 12px; font-size: 17px; font-weight: 700; cursor: pointer; margin-bottom: 12px; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4); transition: transform 0.2s;">🎁 GET 50% OFF NOW</button>
+                        <button onclick="document.getElementById('exitPopup').remove()" style="width: 100%; padding: 12px; background: transparent; color: #667781; border: none; font-size: 12px; cursor: pointer;">No thanks, I'll pay full price later</button>
                     </div>
                 </div>
             `;
