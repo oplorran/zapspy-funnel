@@ -205,6 +205,14 @@ app.use(cors({
 app.use(express.json());
 app.use(express.static('public'));
 
+// Serve funnel static files
+// These are placed in public/ingles and public/espanhol after build
+const path = require('path');
+app.use('/ingles', express.static(path.join(__dirname, 'public', 'ingles')));
+app.use('/espanhol', express.static(path.join(__dirname, 'public', 'espanhol')));
+app.use('/en', express.static(path.join(__dirname, 'public', 'ingles')));
+app.use('/es', express.static(path.join(__dirname, 'public', 'espanhol')));
+
 // Rate limiting
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes

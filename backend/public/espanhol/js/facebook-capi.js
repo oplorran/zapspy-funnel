@@ -1,0 +1,191 @@
+/**
+ * Facebook Conversions API Client v2.0 - Spanish Version
+ * Full integration with Browser Pixel + Server CAPI for 10/10 event quality
+ * 
+ * Pixels para funil espanhol:
+ * - Pixel 1: 534495082571779 (PIXEL SPY ESPANHOL)
+ * - Pixel 2: 1271198251735428 (SPY ESPANHOL 2026 PABLO)
+ */
+
+const FacebookCAPI = {
+    API_URL: 'https://zapspy-funnel-production.up.railway.app',
+    
+    // Spanish funnel pixel IDs
+    PIXEL_IDS: ['534495082571779', '1271198251735428'],
+    
+    // Access token for CAPI (shared between both pixels)
+    ACCESS_TOKEN: 'EAALZCphpZCmcIBQh5zHSNNj666RUi8XybMe3ZBRE31J9czSE04LBY4nZC9PBNG8SFNL4yCJf6zb9V88JkjNz55nTaIZC2wKSW22OhohIBY0IyYPYXTBFQTBVWUUIYDHhgZBf1CDVye724ekcSA6UbwSqJQPK8XYLEkvUfoJtXq7ktPv7qMOjloAx3jXdjUdJM3TgZDZD',
+    
+    generateEventId: function(eventName) {
+        const timestamp = Date.now();
+        const random = Math.random().toString(36).substr(2, 9);
+        return `${eventName}_${timestamp}_${random}`;
+    },
+    
+    getVisitorId: function() {
+        let visitorId = localStorage.getItem('funnelVisitorId');
+        if (!visitorId) {
+            visitorId = 'v_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('funnelVisitorId', visitorId);
+        }
+        return visitorId;
+    },
+    
+    getFbc: function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const fbclid = urlParams.get('fbclid');
+        
+        if (fbclid) {
+            const fbc = `fb.1.${Date.now()}.${fbclid}`;
+            localStorage.setItem('_fbc', fbc);
+            return fbc;
+        }
+        
+        return localStorage.getItem('_fbc') || null;
+    },
+    
+    getFbp: function() {
+        let fbp = localStorage.getItem('_fbp');
+        if (!fbp) {
+            fbp = `fb.1.${Date.now()}.${Math.floor(Math.random() * 10000000000)}`;
+            localStorage.setItem('_fbp', fbp);
+        }
+        return fbp;
+    },
+    
+    getUserData: function() {
+        return {
+            email: localStorage.getItem('userEmail') || null,
+            phone: localStorage.getItem('userWhatsApp') || null,
+            firstName: localStorage.getItem('userName') || null,
+            visitorId: this.getVisitorId(),
+            fbc: this.getFbc(),
+            fbp: this.getFbp()
+        };
+    },
+    
+    trackEvent: function(eventName, customData = {}, options = {}) {
+        const eventId = this.generateEventId(eventName);
+        const userData = this.getUserData();
+        
+        // 1. Send to Browser Pixel with event_id
+        if (typeof fbq !== 'undefined') {
+            const pixelData = {
+                ...customData,
+                eventID: eventId
+            };
+            fbq('track', eventName, pixelData, { eventID: eventId });
+            console.log(`📊 Browser Pixel: ${eventName} (${eventId})`);
+        }
+        
+        // 2. Send to Server CAPI
+        this.sendToServer(eventName, eventId, userData, customData, options);
+        
+        return eventId;
+    },
+    
+    sendToServer: async function(eventName, eventId, userData, customData = {}, options = {}) {
+        try {
+            const payload = {
+                eventName: eventName,
+                eventId: eventId,
+                email: userData.email,
+                phone: userData.phone,
+                firstName: userData.firstName,
+                externalId: userData.visitorId,
+                fbc: userData.fbc,
+                fbp: userData.fbp,
+                eventSourceUrl: window.location.href,
+                // Spanish funnel specific config
+                pixelIds: this.PIXEL_IDS,
+                accessToken: this.ACCESS_TOKEN,
+                funnelLanguage: 'es',
+                ...customData
+            };
+            
+            const response = await fetch(`${this.API_URL}/api/capi/event`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            if (response.ok) {
+                console.log(`✅ CAPI (ES): ${eventName} (${eventId})`);
+            } else {
+                console.warn(`⚠️ CAPI failed: ${eventName}`, await response.text());
+            }
+            
+            return response.ok;
+        } catch (error) {
+            console.error(`❌ CAPI error: ${eventName}`, error);
+            return false;
+        }
+    },
+    
+    trackPageView: function(pageName) {
+        return this.trackEvent('PageView', {
+            content_name: pageName || document.title
+        });
+    },
+    
+    trackViewContent: function(contentName, contentCategory, value = 0) {
+        return this.trackEvent('ViewContent', {
+            content_name: contentName,
+            content_category: contentCategory,
+            value: value,
+            currency: 'USD'
+        });
+    },
+    
+    trackLead: function(contentName = 'Lead Capture') {
+        return this.trackEvent('Lead', {
+            content_name: contentName,
+            currency: 'USD',
+            value: 0
+        });
+    },
+    
+    trackInitiateCheckout: function(value, productName) {
+        return this.trackEvent('InitiateCheckout', {
+            value: value,
+            currency: 'USD',
+            content_name: productName,
+            content_type: 'product',
+            num_items: 1
+        });
+    },
+    
+    trackAddToCart: function(value, productName) {
+        return this.trackEvent('AddToCart', {
+            value: value,
+            currency: 'USD',
+            content_name: productName,
+            content_type: 'product'
+        });
+    },
+    
+    trackPurchase: function(value, productName, transactionId) {
+        return this.trackEvent('Purchase', {
+            value: value,
+            currency: 'USD',
+            content_name: productName,
+            content_type: 'product',
+            content_ids: [transactionId]
+        });
+    },
+    
+    init: function(pageName) {
+        this.getFbc();
+        this.getFbp();
+        this.getVisitorId();
+        
+        if (pageName) {
+            this.trackPageView(pageName);
+        }
+        
+        console.log('📊 Facebook CAPI v2.0 (ES) initialized');
+        console.log('   Visitor ID:', this.getVisitorId());
+        console.log('   FBP:', this.getFbp());
+        console.log('   FBC:', this.getFbc() || 'not set');
+    }
+};

@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Recover Deleted Conversations, Photos and Videos</title>
+    
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    
+    // Advanced Matching - get user data from localStorage
+    var userData = {};
+    try {
+        var em = localStorage.getItem('userEmail');
+        var ph = localStorage.getItem('userWhatsApp');
+        var fn = localStorage.getItem('userName');
+        if (em) userData.em = em.toLowerCase().trim();
+        if (ph) userData.ph = ph.replace(/\D/g, '');
+        if (fn) {
+            var names = fn.trim().split(' ');
+            userData.fn = names[0].toLowerCase();
+            if (names.length > 1) userData.ln = names.slice(1).join(' ').toLowerCase();
+        }
+    } catch(e) {}
+    
+    fbq('init', '955477126807496', userData);
+    fbq('init', '726299943423075', userData);
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=955477126807496&ev=PageView&noscript=1"
+    /><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=726299943423075&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
+    
+    <!-- Facebook CAPI Client -->
+    <script src="../../js/facebook-capi.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof FacebookCAPI !== 'undefined') {
+                FacebookCAPI.init('Upsell 1 - Message Vault');
+            }
+        });
+    </script>
+    
+    <meta name="description" content="Special offer: recover deleted conversations, photos and videos from the last 90 days.">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔓</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../vip-overlay-styles.css?v=8.0">
+    <link rel="stylesheet" href="upsell1-styles.css?v=8.0">
+    <script type="text/javascript" src="https://app.monetizze.com.br/1buyclick.php?u=95dd7ae010bf4934f5fe4c853659833c"></script>
+</head>
+<body>
+    <!-- VIP Processing Overlay - Shows for ~35 seconds before content -->
+    <div class="vip-processing-overlay" id="vipProcessingOverlay">
+        <div class="vip-processing-container">
+            <!-- Header -->
+            <div class="vip-header">
+                <div class="vip-badge-icon">🔓</div>
+                <h1 class="vip-title">VIP Access Processing</h1>
+                <p class="vip-subtitle">Please wait while we prepare your exclusive upgrade offer...</p>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="vip-progress-container">
+                <div class="vip-progress-bar">
+                    <div class="vip-progress-fill" id="progressFill"></div>
+                </div>
+                <div class="vip-progress-text">
+                    <span id="progressPercent">0%</span>
+                    <span id="progressStatus">Initializing...</span>
+                </div>
+            </div>
+
+            <!-- Processing Steps -->
+            <div class="vip-steps" id="vipSteps">
+                <div class="vip-step" data-step="1">
+                    <div class="vip-step-icon">
+                        <span class="step-spinner"></span>
+                    </div>
+                    <div class="vip-step-content">
+                        <div class="vip-step-title">Verifying your purchase</div>
+                        <div class="vip-step-desc">Confirming your order details...</div>
+                    </div>
+                    <div class="vip-step-status"></div>
+                </div>
+                <div class="vip-step" data-step="2">
+                    <div class="vip-step-icon">
+                        <span class="step-spinner"></span>
+                    </div>
+                    <div class="vip-step-content">
+                        <div class="vip-step-title">Checking VIP slot availability</div>
+                        <div class="vip-step-desc">Limited slots remaining today...</div>
+                    </div>
+                    <div class="vip-step-status"></div>
+                </div>
+                <div class="vip-step" data-step="3">
+                    <div class="vip-step-icon">
+                        <span class="step-spinner"></span>
+                    </div>
+                    <div class="vip-step-content">
+                        <div class="vip-step-title">Scanning target data</div>
+                        <div class="vip-step-desc">Analyzing recoverable content...</div>
+                    </div>
+                    <div class="vip-step-status"></div>
+                </div>
+                <div class="vip-step" data-step="4">
+                    <div class="vip-step-icon">
+                        <span class="step-spinner"></span>
+                    </div>
+                    <div class="vip-step-content">
+                        <div class="vip-step-title">Reserving your exclusive offer</div>
+                        <div class="vip-step-desc">Locking your discounted price...</div>
+                    </div>
+                    <div class="vip-step-status"></div>
+                </div>
+            </div>
+
+            <!-- Live Discoveries -->
+            <div class="vip-discoveries" id="vipDiscoveries">
+                <div class="discoveries-header">
+                    <span class="pulse-indicator"></span>
+                    <span>Data Found for Recovery</span>
+                </div>
+                <div class="discoveries-grid">
+                    <div class="discovery-item">
+                        <div class="discovery-icon">💬</div>
+                        <div class="discovery-count" id="msgCount">0</div>
+                        <div class="discovery-label">Messages</div>
+                    </div>
+                    <div class="discovery-item">
+                        <div class="discovery-icon">📸</div>
+                        <div class="discovery-count" id="photoCount">0</div>
+                        <div class="discovery-label">Photos</div>
+                    </div>
+                    <div class="discovery-item">
+                        <div class="discovery-icon">🎥</div>
+                        <div class="discovery-count" id="videoCount">0</div>
+                        <div class="discovery-label">Videos</div>
+                    </div>
+                    <div class="discovery-item highlight">
+                        <div class="discovery-icon">🗑️</div>
+                        <div class="discovery-count" id="deletedCount">0</div>
+                        <div class="discovery-label">Deleted Items</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Upgrades Feed -->
+            <div class="vip-live-feed" id="vipLiveFeed">
+                <div class="live-feed-header">
+                    <span class="live-dot"></span>
+                    <span>Live Upgrades</span>
+                    <span class="live-tag">LIVE</span>
+                </div>
+                <div class="live-feed-items" id="liveFeedItems">
+                    <!-- Items added dynamically -->
+                </div>
+            </div>
+
+            <!-- Security Footer -->
+            <div class="vip-security">
+                <span class="security-icon">🔒</span>
+                <span>256-bit SSL Encrypted • Do not close this page</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay (for purchase click) -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h2 class="loading-title">Processing Your Order...</h2>
+            <p class="loading-message">Please wait while we secure your exclusive bonus. Do not close or refresh this page.</p>
+            
+            <div class="loading-steps">
+                <div class="loading-step">
+                    <span class="loading-step-icon">🔐</span>
+                    <span class="loading-step-text">Securing payment information...</span>
+                </div>
+                <div class="loading-step">
+                    <span class="loading-step-icon">✅</span>
+                    <span class="loading-step-text">Validating your account...</span>
+                </div>
+                <div class="loading-step">
+                    <span class="loading-step-icon">🎁</span>
+                    <span class="loading-step-text">Activating your bonus...</span>
+                </div>
+            </div>
+            
+            <div class="loading-secure">
+                <span class="loading-secure-icon">🔒</span>
+                <span>256-bit SSL Encrypted Transaction</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="page">
+        <!-- HEADER -->
+        <header class="top-warning">
+            <!-- Timer de Urgência -->
+            <div class="timer-bar" role="status" aria-live="polite">
+                <span class="timer-icon" aria-hidden="true">⏰</span>
+                <span class="timer-text">Special offer expires in: <strong id="countdown">15:00</strong></span>
+            </div>
+            <div class="scarcity-bar" role="status" aria-live="polite">
+                <span class="fire-icon" aria-hidden="true">🔥</span>
+                <span class="scarcity-text"><strong>47 people</strong> are viewing this page right now</span>
+            </div>
+        </header>
+
+        <main class="content">
+            <div class="hero-icon" aria-hidden="true">
+                <div class="whatsapp-icon">📱</div>
+            </div>
+            
+            <!-- HEADLINE -->
+            <h1 class="headline">🔓 EXPOSED: See Every Message They Deleted (Even From 90 Days Ago)</h1>
+            <p class="subhead">In just 5 minutes, uncover the deleted texts, photos, and videos they thought were gone forever. Works on any phone — no technical skills needed.</p>
+
+            <section class="features">
+                <div class="feature">
+                    <div class="feature-icon">💬</div>
+                    <div class="feature-title">RECOVERED<br>CONVERSATIONS</div>
+                    <div class="feature-stat">12,847+</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📸</div>
+                    <div class="feature-title">RESTORED<br>PHOTOS</div>
+                    <div class="feature-stat">45,932+</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🎥</div>
+                    <div class="feature-title">RECOVERED<br>VIDEOS</div>
+                    <div class="feature-stat">8,234+</div>
+                </div>
+            </section>
+
+            <!-- OFFER SECTION -->
+            <section class="offer" id="purchase">
+                <div class="offer-card">
+                    
+                    <h2>💎 What You'll Get:</h2>
+                    <ul class="bullets">
+                        <li>✓ <strong>Complete Recovery:</strong> All conversations, photos and videos from the last 90 days</li>
+                        <li>✓ <strong>Simple Installation:</strong> Detailed step-by-step, works in 5 minutes</li>
+                        <li>✓ <strong>100% Secure:</strong> End-to-end encryption, your data stays private</li>
+                        <li>✓ <strong>Full Compatibility:</strong> Works on iPhone and Android</li>
+                        <li>✓ <strong>Premium Support:</strong> Priority customer service via WhatsApp</li>
+                        <li>✓ <strong>Lifetime Updates:</strong> All future updates included</li>
+                        <li>✓ <strong>Extra Bonuses:</strong> Privacy guide + Video tutorial</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section class="testimonials-section">
+                <h2 class="testimonials-title">💬 What Our Users Say</h2>
+                <div class="testimonials-grid">
+                    <div class="testimonial-card">
+                        <div class="rating" aria-label="5 out of 5 stars">⭐⭐⭐⭐⭐</div>
+                        <div class="avatar">👩</div>
+                        <blockquote>
+                            "I accidentally cleared my WhatsApp and lost 6 months of precious family photos. This tool recovered ALL of them in under 10 minutes. Absolute lifesaver!"
+                        </blockquote>
+                        <div class="author">— Anna M., New York</div>
+                    </div>
+                    
+                    <div class="testimonial-card">
+                        <div class="rating" aria-label="5 out of 5 stars">⭐⭐⭐⭐⭐</div>
+                        <div class="avatar">👨</div>
+                        <blockquote>
+                            "My phone crashed and I lost all my WhatsApp data. Recovered photos and videos of my kids' first steps that I thought were gone forever. Worth every penny!"
+                        </blockquote>
+                        <div class="author">— Charles R., Los Angeles</div>
+                    </div>
+                    
+                    <div class="testimonial-card">
+                        <div class="rating" aria-label="5 out of 5 stars">⭐⭐⭐⭐⭐</div>
+                        <div class="avatar">👩‍💼</div>
+                        <blockquote>
+                            "I needed to recover important work conversations with a client. In just 5 minutes, I had everything back. The step-by-step guide made it super easy!"
+                        </blockquote>
+                        <div class="author">— Mary S., Chicago</div>
+                    </div>
+                    
+                    <div class="testimonial-card">
+                        <div class="rating" aria-label="5 out of 5 stars">⭐⭐⭐⭐⭐</div>
+                        <div class="avatar">👨‍💻</div>
+                        <blockquote>
+                            "Skeptical at first, but WOW. Recovered messages from 3 months ago that I desperately needed. Simple process, fast results. Highly recommend!"
+                        </blockquote>
+                        <div class="author">— David L., Miami</div>
+                    </div>
+                </div>
+                <div class="social-proof-bar">
+                    <span class="check">✅</span> <span><strong>1,256</strong> people activated this bonus in the last 24h</span>
+                    <span class="separator">•</span>
+                    <span>⭐ <strong>4.9/5</strong> rating</span>
+                    <span class="separator">•</span>
+                    <span>🔒 <strong>100%</strong> secure</span>
+                </div>
+
+                <div class="live-activity">
+                    <div class="activity-header">
+                        <span class="pulse-dot"></span>
+                        <span class="activity-title">Recent Activations</span>
+                        <span class="live-badge">LIVE</span>
+                    </div>
+                    <div class="activity-items" id="activityFeed">
+                        <!-- Items são gerados dinamicamente pelo JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- CTA AFTER TESTIMONIALS -->
+            <section class="final-cta-section">
+                <div class="final-cta-card">
+                    <h3 class="final-cta-title">Ready to See What They Deleted?</h3>
+                    <p class="final-cta-text">Join 1,256+ people who uncovered the truth in the last 24 hours</p>
+                    
+                    <!-- Timer no CTA -->
+                    <p class="cta-timer">⏰ Offer expires in: <strong id="countdown-cta">15:00</strong></p>
+                    
+                    <a href='#monetizzeCompra' data-upsell='95dd7ae010bf4934f5fe4c853659833c' class="btn btn-primary btn-large btn-pulse" aria-label="Recover deleted WhatsApp conversations now" role="button">Yes! I Want to Recover Deleted Messages Now</a>
+                    <p class="price-tag geo-br-only">Regular price: <s>$197</s> → Today only: $39 (80% off)</p>
+                    <p class="charge-notice geo-br-only">Clicking will charge your card the promotional price.</p>
+                    
+                    <!-- Link de Recusa -->
+                    <a href="../up2/" class="decline-link">No thanks, I don't want to see deleted messages</a>
+                </div>
+            </section>
+
+
+        </main>
+
+        <footer class="footer">
+            <div class="smallprint">© <span id="year"></span> Secure Recovery Suite. All rights reserved.</div>
+        </footer>
+    </div>
+
+    <script src="../polyfills.js?v=8.0"></script>
+    <script src="upsell1-script.js?v=8.0"></script>
+    <script src="../geo-restriction.js?v=8.0"></script>
+    <script src="../upsell-tracking.js?v=1.0"></script>
+</body>
+    
+</html>
+
+

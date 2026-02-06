@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>ZapSpy.ai - You Deserve The Truth</title>
+    <meta name="description" content="ZapSpy.ai - Stop living in doubt. Access deleted messages, hidden photos and secret conversations from your partner.">
+    <link rel="shortcut icon" href="imagens/icon-site.png">
+    
+    <!-- Shared CSS -->
+    <link rel="stylesheet" href="css/global.css">
+    
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '955477126807496');
+    fbq('init', '726299943423075');
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=955477126807496&ev=PageView&noscript=1"
+    /><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=726299943423075&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
+    
+    <!-- Enhanced Tracking -->
+    <script src="js/tracking.js"></script>
+    
+    <!-- Facebook CAPI Client -->
+    <script src="js/facebook-capi.js"></script>
+    <script>
+        // Initialize CAPI and track PageView to both browser and server
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof FacebookCAPI !== 'undefined') {
+                FacebookCAPI.init('Landing Page');
+            }
+        });
+    </script>
+    
+    <!-- Funnel Tracking -->
+    <script src="js/funnel-tracking.js"></script>
+    
+    <!-- Matrix Effect -->
+    <script src="js/matrix.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --green-primary: #25d366;
+            --green-dark: #128c7e;
+            --green-light: #34eb7a;
+            --bg-dark: #0a0a0a;
+            --bg-card: rgba(20, 20, 20, 0.95);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --red-alert: #ff3b30;
+        }
+
+        html, body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Matrix Rain Effect */
+        #matrix-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.12;
+            pointer-events: none;
+        }
+
+        /* Main Container */
+        .container {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* Logo */
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            animation: logoFadeIn 0.8s ease-out;
+        }
+
+        .logo svg {
+            width: 44px;
+            height: 44px;
+            color: var(--green-primary);
+            filter: drop-shadow(0 0 15px rgba(37, 211, 102, 0.4));
+        }
+
+        .logo-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--green-primary), var(--green-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        @keyframes logoFadeIn {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Headline */
+        .headline {
+            text-align: center;
+            margin-bottom: 20px;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        .headline h1 {
+            font-size: clamp(28px, 7vw, 36px);
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 12px;
+        }
+
+        .headline h1 span {
+            color: var(--green-primary);
+        }
+
+        .headline p {
+            font-size: 15px;
+            color: var(--text-secondary);
+            max-width: 380px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+
+        .headline p strong {
+            color: var(--red-alert);
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Stats Badge */
+        .stats-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 59, 48, 0.12);
+            border: 1px solid rgba(255, 59, 48, 0.25);
+            padding: 8px 16px;
+            border-radius: 50px;
+            margin-bottom: 24px;
+            animation: pulse 2s infinite, fadeInUp 0.8s ease-out 0.3s both;
+        }
+
+        .stats-badge .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--red-alert);
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+
+        .stats-badge span {
+            font-size: 13px;
+            color: var(--red-alert);
+            font-weight: 500;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.3); }
+            50% { box-shadow: 0 0 0 8px rgba(255, 59, 48, 0); }
+        }
+
+        /* Main Card */
+        .main-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(37, 211, 102, 0.15);
+            border-radius: 20px;
+            padding: 28px 24px;
+            width: 100%;
+            max-width: 400px;
+            animation: fadeInUp 0.8s ease-out 0.4s both;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Features List - Compact */
+        .features {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            background: rgba(37, 211, 102, 0.06);
+            border: 1px solid rgba(37, 211, 102, 0.12);
+            border-radius: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .feature-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--green-primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .feature-icon svg {
+            width: 18px;
+            height: 18px;
+            color: white;
+        }
+
+        .feature-text {
+            flex: 1;
+        }
+
+        .feature-text h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .feature-text p {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .feature-badge {
+            background: var(--red-alert);
+            color: white;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 3px 6px;
+            border-radius: 4px;
+        }
+
+        /* Gender Selection */
+        .gender-section {
+            margin-bottom: 20px;
+        }
+
+        .gender-label {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 14px;
+            text-align: center;
+        }
+
+        .gender-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .gender-btn {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 18px;
+            background: rgba(31, 44, 51, 0.6);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .gender-btn:hover {
+            background: rgba(37, 211, 102, 0.1);
+            border-color: rgba(37, 211, 102, 0.3);
+        }
+
+        .gender-btn.selected {
+            background: rgba(37, 211, 102, 0.15);
+            border-color: var(--green-primary);
+        }
+
+        .gender-btn .icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, rgba(37, 211, 102, 0.2), rgba(18, 140, 126, 0.1));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            flex-shrink: 0;
+        }
+
+        .gender-btn .text-container {
+            flex: 1;
+        }
+
+        .gender-btn .text {
+            font-size: 15px;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .gender-btn .subtext {
+            font-size: 12px;
+            color: var(--text-secondary);
+            display: block;
+        }
+
+        .gender-btn .arrow {
+            color: var(--text-secondary);
+            transition: transform 0.2s ease;
+        }
+
+        .gender-btn:hover .arrow {
+            transform: translateX(3px);
+            color: var(--green-primary);
+        }
+
+        .gender-btn.selected .arrow {
+            color: var(--green-primary);
+        }
+
+        /* CTA Button */
+        .cta-button {
+            width: 100%;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, var(--green-primary), var(--green-dark));
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .cta-button.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .cta-button.active:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(37, 211, 102, 0.4);
+        }
+
+        .cta-button svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Trust Badges */
+        .trust-badges {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 24px;
+            animation: fadeInUp 0.8s ease-out 0.6s both;
+        }
+
+        .trust-badge {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .trust-badge svg {
+            width: 14px;
+            height: 14px;
+            color: var(--green-primary);
+        }
+
+        /* Users Counter */
+        .users-counter {
+            text-align: center;
+            margin-top: 24px;
+            animation: fadeInUp 0.8s ease-out 0.7s both;
+        }
+
+        .users-counter p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .users-counter strong {
+            color: var(--green-primary);
+            font-weight: 600;
+        }
+
+        .users-avatars {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 8px;
+        }
+
+        .users-avatars .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid var(--bg-dark);
+            margin-left: -8px;
+        }
+
+        .users-avatars .avatar:first-child {
+            margin-left: 0;
+        }
+
+        .users-avatars .avatar-more {
+            background: var(--green-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            color: white;
+        }
+
+        /* Responsive */
+        @media (max-height: 700px) {
+            .container {
+                padding: 15px;
+                justify-content: flex-start;
+                padding-top: 15px;
+            }
+            .logo {
+                margin-bottom: 16px;
+            }
+            .headline {
+                margin-bottom: 14px;
+            }
+            .headline h1 {
+                font-size: 24px;
+            }
+            .stats-badge {
+                margin-bottom: 16px;
+            }
+            .main-card {
+                padding: 20px 18px;
+            }
+            .features {
+                gap: 8px;
+                margin-bottom: 18px;
+            }
+            .feature-item {
+                padding: 10px 12px;
+            }
+            .trust-badges, .users-counter {
+                margin-top: 16px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .main-card {
+                padding: 18px 14px;
+            }
+            .trust-badges {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            .gender-btn .icon {
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Matrix Rain Canvas -->
+    <canvas id="matrix-canvas"></canvas>
+
+    <div class="container">
+        <!-- Logo -->
+        <div class="logo">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+            </svg>
+            <span class="logo-text">ZapSpy.ai</span>
+        </div>
+
+        <!-- Headline -->
+        <div class="headline">
+            <h1>You Deserve <span>The Truth</span></h1>
+            <p>Access <strong>deleted messages</strong>, hidden photos and secret conversations. Find out what they're really hiding.</p>
+        </div>
+
+        <!-- Stats Badge -->
+        <div class="stats-badge">
+            <div class="dot"></div>
+            <span id="statsCounter">3,412 suspicious activities detected today</span>
+        </div>
+
+        <!-- Main Card -->
+        <div class="main-card">
+            <!-- Features - Compact -->
+            <div class="features">
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                    </div>
+                    <div class="feature-text">
+                        <h3>Read all messages</h3>
+                        <p>Access conversations in real-time</p>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                    </div>
+                    <div class="feature-text">
+                        <h3>Recover DELETED messages</h3>
+                        <p>Find what they tried to hide</p>
+                    </div>
+                    <span class="feature-badge">NEW</span>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                            <circle cx="8.5" cy="8.5" r="1.5"/>
+                            <polyline points="21 15 16 10 5 21"/>
+                        </svg>
+                    </div>
+                    <div class="feature-text">
+                        <h3>View photos & videos</h3>
+                        <p>Including deleted media</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gender Selection -->
+            <div class="gender-section">
+                <div class="gender-label">I want to spy on a...</div>
+                <div class="gender-buttons">
+                    <div class="gender-btn" id="btnMale" onclick="selectGender('male')" role="button" tabindex="0" aria-label="Spy on a man's WhatsApp">
+                        <div class="icon">👨</div>
+                        <div class="text-container">
+                            <span class="text">Man's WhatsApp</span>
+                            <span class="subtext">Boyfriend, husband, ex...</span>
+                        </div>
+                        <svg class="arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                    </div>
+                    <div class="gender-btn" id="btnFemale" onclick="selectGender('female')" role="button" tabindex="0" aria-label="Spy on a woman's WhatsApp">
+                        <div class="icon">👩</div>
+                        <div class="text-container">
+                            <span class="text">Woman's WhatsApp</span>
+                            <span class="subtext">Girlfriend, wife, ex...</span>
+                        </div>
+                        <svg class="arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA Button -->
+            <button class="cta-button" id="ctaButton" onclick="startSpy()" aria-label="Start spying now">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="M21 21l-4.35-4.35"/>
+                </svg>
+                Start Spying Now
+            </button>
+        </div>
+
+        <!-- Trust Badges -->
+        <div class="trust-badges">
+            <div class="trust-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                <span>100% Anonymous</span>
+            </div>
+            <div class="trust-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                <span>Encrypted</span>
+            </div>
+            <div class="trust-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <span>Undetectable</span>
+            </div>
+        </div>
+
+        <!-- Users Counter -->
+        <div class="users-counter">
+            <div class="users-avatars">
+                <div class="avatar" style="background: linear-gradient(135deg, #667eea, #764ba2);"></div>
+                <div class="avatar" style="background: linear-gradient(135deg, #f093fb, #f5576c);"></div>
+                <div class="avatar" style="background: linear-gradient(135deg, #4facfe, #00f2fe);"></div>
+                <div class="avatar" style="background: linear-gradient(135deg, #43e97b, #38f9d7);"></div>
+                <div class="avatar avatar-more">+2k</div>
+            </div>
+            <p><strong id="liveUsersCount">2,156 people</strong> are using ZapSpy right now</p>
+        </div>
+    </div>
+
+    <script>
+        // Selected gender
+        let selectedGender = null;
+
+        function selectGender(gender) {
+            selectedGender = gender;
+            
+            // Update button states
+            document.getElementById('btnMale').classList.remove('selected');
+            document.getElementById('btnFemale').classList.remove('selected');
+            document.getElementById('btn' + gender.charAt(0).toUpperCase() + gender.slice(1)).classList.add('selected');
+            
+            // Enable CTA button
+            document.getElementById('ctaButton').classList.add('active');
+            
+            // Store gender
+            localStorage.setItem('targetGender', gender);
+            
+            // Track gender selection in funnel
+            if (typeof FunnelTracker !== 'undefined') {
+                FunnelTracker.track(FunnelTracker.events.GENDER_SELECTED, { gender: gender });
+            }
+        }
+
+        function startSpy() {
+            if (!selectedGender) {
+                // Shake the gender buttons if none selected
+                document.querySelector('.gender-buttons').style.animation = 'shake 0.5s';
+                setTimeout(() => {
+                    document.querySelector('.gender-buttons').style.animation = '';
+                }, 500);
+                return;
+            }
+            
+            window.location.href = 'phone.html?gender=' + selectedGender;
+        }
+
+        // Keyboard support for gender buttons
+        document.querySelectorAll('.gender-btn').forEach(btn => {
+            btn.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    btn.click();
+                }
+            });
+        });
+
+        // Check URL params for pre-selected gender
+        const urlParams = new URLSearchParams(window.location.search);
+        const genderParam = urlParams.get('gender');
+        if (genderParam === 'male' || genderParam === 'female') {
+            selectGender(genderParam);
+        }
+
+        // Initialize Matrix Effect from shared module
+        if (typeof MatrixEffect !== 'undefined') {
+            MatrixEffect.init('matrix-canvas');
+        }
+
+        // Dynamic stats update
+        function updateStats() {
+            const base = 3412;
+            const random = Math.floor(Math.random() * 150);
+            document.getElementById('statsCounter').textContent = 
+                (base + random).toLocaleString() + ' suspicious activities detected today';
+        }
+        setInterval(updateStats, 5000);
+
+        // Dynamic live users update
+        function updateLiveUsers() {
+            const base = 2156;
+            const random = Math.floor(Math.random() * 200) - 100;
+            const el = document.getElementById('liveUsersCount');
+            if (el) el.textContent = (base + random).toLocaleString() + ' people';
+        }
+        setInterval(updateLiveUsers, 8000);
+
+        // Shake animation for validation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                20%, 60% { transform: translateX(-5px); }
+                40%, 80% { transform: translateX(5px); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
