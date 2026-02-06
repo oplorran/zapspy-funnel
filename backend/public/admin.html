@@ -410,52 +410,61 @@
         .btn-secondary:hover { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.1); color: var(--text-primary); transform: translateY(-1px); }
         .btn-icon { width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center; }
         
-        /* Reports Page */
-        .reports-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-        .card { background: var(--bg-card); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
-        .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: 0.3; }
-        .card-header { padding: 20px 24px; background: linear-gradient(135deg, var(--accent-glow), transparent); border-bottom: 1px solid var(--border); }
-        .card-header h3 { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
-        .card-header p { font-size: 13px; color: var(--text-muted); }
-        .card-body { padding: 20px 24px; }
+        /* Reports Page - Clean Design */
+        .export-center { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; padding: 40px 20px; }
         
-        .export-buttons-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-        .export-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 16px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s ease; }
-        .export-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-        .export-btn-icon { font-size: 24px; margin-bottom: 8px; }
-        .export-btn-text { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
-        .export-btn.full { grid-column: span 2; }
+        .export-main-card { background: var(--bg-card); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 40px; max-width: 520px; width: 100%; position: relative; overflow: hidden; }
+        .export-main-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--accent-gradient); }
         
-        .export-btn.excel { border-color: rgba(34, 139, 34, 0.3); }
-        .export-btn.excel:hover { background: rgba(34, 139, 34, 0.1); border-color: #228B22; }
-        .export-btn.excel:hover .export-btn-text { color: #228B22; }
+        .export-header { text-align: center; margin-bottom: 32px; }
+        .export-header .export-icon { font-size: 48px; margin-bottom: 16px; }
+        .export-header h2 { font-size: 24px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+        .export-header p { font-size: 14px; color: var(--text-muted); }
         
-        .export-btn.pdf { border-color: rgba(220, 38, 38, 0.3); }
-        .export-btn.pdf:hover { background: rgba(220, 38, 38, 0.1); border-color: var(--danger); }
-        .export-btn.pdf:hover .export-btn-text { color: var(--danger); }
+        .export-form { display: flex; flex-direction: column; gap: 24px; }
+        .export-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .export-form-group { display: flex; flex-direction: column; gap: 8px; }
+        .export-form-group label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
         
-        .export-btn.csv { border-color: rgba(37, 99, 235, 0.3); }
-        .export-btn.csv:hover { background: rgba(37, 99, 235, 0.1); border-color: var(--info); }
-        .export-btn.csv:hover .export-btn-text { color: var(--info); }
+        .export-select, .export-input { width: 100%; padding: 14px 16px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-primary); font-size: 14px; font-weight: 500; transition: all 0.2s; appearance: none; cursor: pointer; }
+        .export-select:focus, .export-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+        .export-select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23888' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; padding-right: 40px; }
         
-        .period-export-form { }
-        .period-export-form .form-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
-        .period-export-form .btn-primary { display: inline-flex; align-items: center; gap: 8px; }
+        .export-format-section { display: flex; flex-direction: column; gap: 12px; }
+        .export-format-section > label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .export-format-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        
+        .export-format-option { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 20px 16px; background: var(--bg-tertiary); border: 2px solid var(--border); border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s ease; }
+        .export-format-option:hover { border-color: var(--text-muted); transform: translateY(-2px); }
+        .export-format-option.selected { border-color: var(--accent); background: var(--accent-glow); }
+        .export-format-option .format-icon { font-size: 28px; }
+        .export-format-option .format-info { text-align: center; }
+        .export-format-option .format-info strong { display: block; font-size: 14px; font-weight: 700; color: var(--text-primary); }
+        .export-format-option .format-info span { font-size: 11px; color: var(--text-muted); }
+        .export-format-option.selected .format-info strong { color: var(--accent); }
+        
+        .export-main-btn { width: 100%; padding: 16px 24px; background: var(--accent-gradient); border: none; border-radius: var(--radius-md); color: #000; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s ease; margin-top: 8px; }
+        .export-main-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-glow); }
+        .export-main-btn span { font-size: 18px; }
+        
+        .export-quick-stats { display: flex; gap: 32px; margin-top: 32px; padding: 20px 32px; background: var(--bg-card); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+        .quick-stat { text-align: center; }
+        .quick-stat-value { display: block; font-size: 24px; font-weight: 800; color: var(--accent); }
+        .quick-stat-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
         
         /* Light theme reports */
-        [data-theme="light"] .card { background: #ffffff; box-shadow: var(--shadow-sm); }
-        [data-theme="light"] .card-header { background: var(--bg-tertiary); }
-        [data-theme="light"] .export-btn { background: var(--bg-tertiary); }
-        [data-theme="light"] .export-btn.excel:hover { background: rgba(34, 139, 34, 0.08); }
-        [data-theme="light"] .export-btn.pdf:hover { background: rgba(220, 38, 38, 0.08); }
-        [data-theme="light"] .export-btn.csv:hover { background: rgba(37, 99, 235, 0.08); }
+        [data-theme="light"] .export-main-card { background: #ffffff; box-shadow: var(--shadow-lg); }
+        [data-theme="light"] .export-select, [data-theme="light"] .export-input { background: var(--bg-tertiary); }
+        [data-theme="light"] .export-format-option { background: var(--bg-tertiary); }
+        [data-theme="light"] .export-format-option.selected { background: rgba(5, 150, 105, 0.08); }
+        [data-theme="light"] .export-quick-stats { background: #ffffff; }
+        [data-theme="light"] .export-main-btn { color: #ffffff; }
         
-        @media (max-width: 1200px) {
-            .reports-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-        @media (max-width: 768px) {
-            .reports-grid { grid-template-columns: 1fr; }
-            .period-export-form .form-row { grid-template-columns: repeat(2, 1fr); }
+        @media (max-width: 600px) {
+            .export-main-card { padding: 28px 20px; }
+            .export-form-row { grid-template-columns: 1fr; }
+            .export-format-options { grid-template-columns: 1fr; }
+            .export-quick-stats { flex-direction: column; gap: 16px; }
         }
         
         .btn-success { background: linear-gradient(135deg, var(--success), #00c853); border-color: transparent; color: #000; font-weight: 700; }
@@ -1605,154 +1614,94 @@
                 
                 <!-- Tab: Reports -->
                 <div class="tab-content" id="tab-reports">
-                    <div class="stats-grid cols-3">
-                        <div class="stat-card">
-                            <div class="stat-header">
-                                <span class="stat-label">Total Leads</span>
-                                <div class="stat-icon blue">👥</div>
+                    <div class="export-center">
+                        <div class="export-main-card">
+                            <div class="export-header">
+                                <div class="export-icon">📥</div>
+                                <h2>Central de Relatórios</h2>
+                                <p>Exporte seus dados em diferentes formatos</p>
                             </div>
-                            <div class="stat-value" id="reportLeadsCount">0</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-header">
-                                <span class="stat-label">Total Vendas</span>
-                                <div class="stat-icon green">💰</div>
-                            </div>
-                            <div class="stat-value green" id="reportSalesCount">0</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-header">
-                                <span class="stat-label">Reembolsos</span>
-                                <div class="stat-icon red">💸</div>
-                            </div>
-                            <div class="stat-value red" id="reportRefundsCount">0</div>
-                        </div>
-                    </div>
-                    
-                    <div class="reports-grid">
-                        <div class="card">
-                            <div class="card-header">
-                                <h3>📊 Excel (.xlsx)</h3>
-                                <p>Exportar planilhas para análise</p>
-                            </div>
-                            <div class="card-body">
-                                <div class="export-buttons-grid">
-                                    <button class="export-btn excel" onclick="exportToExcel('leads')">
-                                        <span class="export-btn-icon">👥</span>
-                                        <span class="export-btn-text">Leads</span>
-                                    </button>
-                                    <button class="export-btn excel" onclick="exportToExcel('sales')">
-                                        <span class="export-btn-icon">💰</span>
-                                        <span class="export-btn-text">Vendas</span>
-                                    </button>
-                                    <button class="export-btn excel" onclick="exportToExcel('refunds')">
-                                        <span class="export-btn-icon">💸</span>
-                                        <span class="export-btn-text">Reembolsos</span>
-                                    </button>
-                                    <button class="export-btn excel" onclick="exportToExcel('funnel')">
-                                        <span class="export-btn-icon">📈</span>
-                                        <span class="export-btn-text">Funil</span>
-                                    </button>
-                                    <button class="export-btn excel full" onclick="exportToExcel('all')">
-                                        <span class="export-btn-icon">📦</span>
-                                        <span class="export-btn-text">Relatório Completo</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="card">
-                            <div class="card-header">
-                                <h3>📄 PDF</h3>
-                                <p>Relatórios formatados para impressão</p>
-                            </div>
-                            <div class="card-body">
-                                <div class="export-buttons-grid">
-                                    <button class="export-btn pdf" onclick="exportToPDF('leads')">
-                                        <span class="export-btn-icon">👥</span>
-                                        <span class="export-btn-text">Leads</span>
-                                    </button>
-                                    <button class="export-btn pdf" onclick="exportToPDF('sales')">
-                                        <span class="export-btn-icon">💰</span>
-                                        <span class="export-btn-text">Vendas</span>
-                                    </button>
-                                    <button class="export-btn pdf" onclick="exportToPDF('refunds')">
-                                        <span class="export-btn-icon">💸</span>
-                                        <span class="export-btn-text">Reembolsos</span>
-                                    </button>
-                                    <button class="export-btn pdf" onclick="exportToPDF('funnel')">
-                                        <span class="export-btn-icon">📈</span>
-                                        <span class="export-btn-text">Funil</span>
-                                    </button>
-                                    <button class="export-btn pdf full" onclick="exportToPDF('all')">
-                                        <span class="export-btn-icon">📦</span>
-                                        <span class="export-btn-text">Relatório Completo</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="card">
-                            <div class="card-header">
-                                <h3>📋 CSV</h3>
-                                <p>Dados brutos para importação</p>
-                            </div>
-                            <div class="card-body">
-                                <div class="export-buttons-grid">
-                                    <button class="export-btn csv" onclick="exportToCSV('leads')">
-                                        <span class="export-btn-icon">👥</span>
-                                        <span class="export-btn-text">Leads</span>
-                                    </button>
-                                    <button class="export-btn csv" onclick="exportToCSV('sales')">
-                                        <span class="export-btn-icon">💰</span>
-                                        <span class="export-btn-text">Vendas</span>
-                                    </button>
-                                    <button class="export-btn csv" onclick="exportToCSV('refunds')">
-                                        <span class="export-btn-icon">💸</span>
-                                        <span class="export-btn-text">Reembolsos</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="card" style="margin-top: 24px;">
-                        <div class="card-header">
-                            <h3>📅 Exportar por Período</h3>
-                            <p>Selecione um período específico para exportar</p>
-                        </div>
-                        <div class="card-body">
-                            <div class="period-export-form">
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label class="form-label">Data Inicial</label>
-                                        <input type="date" class="form-input" id="exportDateStart">
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Data Final</label>
-                                        <input type="date" class="form-input" id="exportDateEnd">
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Tipo de Dados</label>
-                                        <select class="filter-select" id="exportDataType">
-                                            <option value="all">Todos os Dados</option>
-                                            <option value="leads">Leads</option>
-                                            <option value="sales">Vendas</option>
-                                            <option value="refunds">Reembolsos</option>
+                            
+                            <div class="export-form">
+                                <div class="export-form-row">
+                                    <div class="export-form-group">
+                                        <label>Tipo de Dados</label>
+                                        <select class="export-select" id="exportDataType">
+                                            <option value="all">📦 Todos os Dados</option>
+                                            <option value="leads">👥 Leads</option>
+                                            <option value="sales">💰 Vendas</option>
+                                            <option value="refunds">💸 Reembolsos</option>
+                                            <option value="funnel">📈 Métricas do Funil</option>
                                         </select>
                                     </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Formato</label>
-                                        <select class="filter-select" id="exportFormat">
-                                            <option value="excel">Excel (.xlsx)</option>
-                                            <option value="pdf">PDF</option>
-                                            <option value="csv">CSV</option>
+                                    <div class="export-form-group">
+                                        <label>Período</label>
+                                        <select class="export-select" id="exportPeriod" onchange="toggleCustomDates()">
+                                            <option value="all">Todo o período</option>
+                                            <option value="today">Hoje</option>
+                                            <option value="week">Últimos 7 dias</option>
+                                            <option value="month">Últimos 30 dias</option>
+                                            <option value="custom">Personalizado</option>
                                         </select>
                                     </div>
                                 </div>
-                                <button class="btn-primary" onclick="exportByPeriod()">
-                                    <span>📥</span> Exportar Período
+                                
+                                <div class="export-form-row custom-dates" id="customDatesRow" style="display: none;">
+                                    <div class="export-form-group">
+                                        <label>Data Inicial</label>
+                                        <input type="date" class="export-input" id="exportDateStart">
+                                    </div>
+                                    <div class="export-form-group">
+                                        <label>Data Final</label>
+                                        <input type="date" class="export-input" id="exportDateEnd">
+                                    </div>
+                                </div>
+                                
+                                <div class="export-format-section">
+                                    <label>Escolha o formato</label>
+                                    <div class="export-format-options">
+                                        <div class="export-format-option selected" data-format="excel" onclick="selectFormat('excel')">
+                                            <div class="format-icon">📊</div>
+                                            <div class="format-info">
+                                                <strong>Excel</strong>
+                                                <span>.xlsx</span>
+                                            </div>
+                                        </div>
+                                        <div class="export-format-option" data-format="pdf" onclick="selectFormat('pdf')">
+                                            <div class="format-icon">📄</div>
+                                            <div class="format-info">
+                                                <strong>PDF</strong>
+                                                <span>Relatório</span>
+                                            </div>
+                                        </div>
+                                        <div class="export-format-option" data-format="csv" onclick="selectFormat('csv')">
+                                            <div class="format-icon">📋</div>
+                                            <div class="format-info">
+                                                <strong>CSV</strong>
+                                                <span>Dados brutos</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <button class="export-main-btn" onclick="executeExport()">
+                                    <span>📥</span> Exportar Relatório
                                 </button>
+                            </div>
+                        </div>
+                        
+                        <div class="export-quick-stats">
+                            <div class="quick-stat">
+                                <span class="quick-stat-value" id="reportLeadsCount">0</span>
+                                <span class="quick-stat-label">Leads</span>
+                            </div>
+                            <div class="quick-stat">
+                                <span class="quick-stat-value" id="reportSalesCount">0</span>
+                                <span class="quick-stat-label">Vendas</span>
+                            </div>
+                            <div class="quick-stat">
+                                <span class="quick-stat-value" id="reportRefundsCount">0</span>
+                                <span class="quick-stat-label">Reembolsos</span>
                             </div>
                         </div>
                     </div>
@@ -3088,29 +3037,64 @@ Estou aqui para esclarecer tudo! 😊`
                 // Set default dates
                 const today = new Date();
                 const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-                document.getElementById('exportDateEnd').value = today.toISOString().split('T')[0];
-                document.getElementById('exportDateStart').value = firstDay.toISOString().split('T')[0];
+                if (document.getElementById('exportDateEnd')) {
+                    document.getElementById('exportDateEnd').value = today.toISOString().split('T')[0];
+                    document.getElementById('exportDateStart').value = firstDay.toISOString().split('T')[0];
+                }
             } catch (error) {
                 console.error('Error loading report stats:', error);
             }
         }
         
-        // Export by period
-        async function exportByPeriod() {
-            const dateStart = document.getElementById('exportDateStart').value;
-            const dateEnd = document.getElementById('exportDateEnd').value;
+        // Toggle custom dates visibility
+        function toggleCustomDates() {
+            const period = document.getElementById('exportPeriod').value;
+            const customRow = document.getElementById('customDatesRow');
+            customRow.style.display = period === 'custom' ? 'grid' : 'none';
+        }
+        
+        // Select export format
+        let selectedFormat = 'excel';
+        function selectFormat(format) {
+            selectedFormat = format;
+            document.querySelectorAll('.export-format-option').forEach(opt => {
+                opt.classList.toggle('selected', opt.dataset.format === format);
+            });
+        }
+        
+        // Execute export
+        async function executeExport() {
             const dataType = document.getElementById('exportDataType').value;
-            const format = document.getElementById('exportFormat').value;
+            const period = document.getElementById('exportPeriod').value;
             
-            if (!dateStart || !dateEnd) {
-                showToast('Erro', 'Selecione as datas do período', 'error');
-                return;
+            let dateStart = null, dateEnd = null;
+            const today = new Date();
+            
+            if (period === 'today') {
+                dateStart = dateEnd = today.toISOString().split('T')[0];
+            } else if (period === 'week') {
+                dateEnd = today.toISOString().split('T')[0];
+                const weekAgo = new Date(today);
+                weekAgo.setDate(weekAgo.getDate() - 7);
+                dateStart = weekAgo.toISOString().split('T')[0];
+            } else if (period === 'month') {
+                dateEnd = today.toISOString().split('T')[0];
+                const monthAgo = new Date(today);
+                monthAgo.setDate(monthAgo.getDate() - 30);
+                dateStart = monthAgo.toISOString().split('T')[0];
+            } else if (period === 'custom') {
+                dateStart = document.getElementById('exportDateStart').value;
+                dateEnd = document.getElementById('exportDateEnd').value;
+                if (!dateStart || !dateEnd) {
+                    showToast('Erro', 'Selecione as datas do período', 'error');
+                    return;
+                }
             }
             
             // Call the appropriate export function
-            if (format === 'excel') exportToExcel(dataType, dateStart, dateEnd);
-            else if (format === 'pdf') exportToPDF(dataType, dateStart, dateEnd);
-            else if (format === 'csv') exportToCSV(dataType, dateStart, dateEnd);
+            if (selectedFormat === 'excel') exportToExcel(dataType, dateStart, dateEnd);
+            else if (selectedFormat === 'pdf') exportToPDF(dataType, dateStart, dateEnd);
+            else if (selectedFormat === 'csv') exportToCSV(dataType, dateStart, dateEnd);
         }
         
         // Get export data
