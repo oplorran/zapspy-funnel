@@ -188,6 +188,140 @@
             margin: 0 auto;
         }
         
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            gap: 4px;
+            background: var(--bg-input);
+            padding: 4px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 12px 20px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        .tab-btn:hover {
+            color: var(--text);
+        }
+        
+        .tab-btn.active {
+            background: var(--green);
+            color: #000;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Funnel Chart */
+        .funnel-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .funnel-chart {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+        }
+        
+        .funnel-chart h3 {
+            margin-bottom: 24px;
+            font-size: 16px;
+            color: var(--text-muted);
+        }
+        
+        .funnel-step {
+            position: relative;
+            margin-bottom: 12px;
+        }
+        
+        .funnel-step-bar {
+            height: 40px;
+            background: linear-gradient(90deg, var(--green) 0%, var(--green-dark) 100%);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            transition: all 0.3s;
+        }
+        
+        .funnel-step-bar:hover {
+            transform: translateX(4px);
+        }
+        
+        .funnel-step-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #000;
+        }
+        
+        .funnel-step-value {
+            margin-left: auto;
+            font-size: 14px;
+            font-weight: 600;
+            color: #000;
+        }
+        
+        .funnel-step-drop {
+            position: absolute;
+            right: -60px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 12px;
+            color: var(--red);
+            font-weight: 500;
+        }
+        
+        /* Journeys Table */
+        .journey-events {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        
+        .journey-event {
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: var(--bg-input);
+            color: var(--text-muted);
+        }
+        
+        .journey-event.completed {
+            background: rgba(37, 211, 102, 0.2);
+            color: var(--green);
+        }
+        
+        .journey-event.checkout {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--orange);
+        }
+        
+        @media (max-width: 1024px) {
+            .funnel-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
         /* Stats Cards */
         .stats-grid {
             display: grid;
@@ -513,28 +647,36 @@
         </header>
         
         <main class="main">
-            <!-- Estatísticas -->
-            <div class="stats-grid" id="statsGrid">
-                <div class="stat-card">
-                    <h3>Total de Leads</h3>
-                    <div class="value" id="statTotal">-</div>
-                </div>
-                <div class="stat-card">
-                    <h3>Hoje</h3>
-                    <div class="value green" id="statToday">-</div>
-                </div>
-                <div class="stat-card">
-                    <h3>Esta Semana</h3>
-                    <div class="value" id="statWeek">-</div>
-                </div>
-                <div class="stat-card">
-                    <h3>Taxa de Conversão</h3>
-                    <div class="value" id="statConversion">-</div>
-                </div>
+            <!-- Navegação por Abas -->
+            <div class="tab-nav">
+                <button class="tab-btn active" onclick="switchTab('leads')">📋 Leads</button>
+                <button class="tab-btn" onclick="switchTab('funnel')">📊 Funil</button>
             </div>
             
-            <!-- Tabela de Leads -->
-            <div class="table-container">
+            <!-- Tab: Leads -->
+            <div class="tab-content active" id="tab-leads">
+                <!-- Estatísticas -->
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card">
+                        <h3>Total de Leads</h3>
+                        <div class="value" id="statTotal">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Hoje</h3>
+                        <div class="value green" id="statToday">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Esta Semana</h3>
+                        <div class="value" id="statWeek">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Taxa de Conversão</h3>
+                        <div class="value" id="statConversion">-</div>
+                    </div>
+                </div>
+                
+                <!-- Tabela de Leads -->
+                <div class="table-container">
                 <div class="table-header">
                     <h2>📋 Leads</h2>
                     <div class="table-actions">
@@ -556,6 +698,72 @@
                 <div class="pagination" id="pagination">
                     <div class="pagination-info" id="paginationInfo">Mostrando 0 de 0</div>
                     <div class="pagination-buttons" id="paginationButtons"></div>
+                </div>
+            </div>
+            </div>
+            
+            <!-- Tab: Funil -->
+            <div class="tab-content" id="tab-funnel">
+                <!-- Estatísticas do Funil -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Visitantes (30 dias)</h3>
+                        <div class="value" id="funnelVisitors">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Taxa Landing → Phone</h3>
+                        <div class="value green" id="funnelRate1">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Taxa Phone → CTA</h3>
+                        <div class="value green" id="funnelRate2">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Taxa CTA → Checkout</h3>
+                        <div class="value" id="funnelRate3">-</div>
+                    </div>
+                </div>
+                
+                <div class="funnel-container">
+                    <!-- Gráfico do Funil -->
+                    <div class="funnel-chart">
+                        <h3>📈 Etapas do Funil (últimos 30 dias)</h3>
+                        <div id="funnelSteps">
+                            <div class="loading">Carregando dados do funil...</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Conversões Diárias -->
+                    <div class="funnel-chart">
+                        <h3>📅 Últimos 7 Dias</h3>
+                        <div id="dailyStats">
+                            <div class="loading">Carregando...</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Jornadas dos Visitantes -->
+                <div class="table-container">
+                    <div class="table-header">
+                        <h2>🚶 Jornadas dos Visitantes</h2>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Visitante</th>
+                                <th>Telefone Alvo</th>
+                                <th>Gênero</th>
+                                <th>Etapas Percorridas</th>
+                                <th>Primeira Visita</th>
+                                <th>Última Atividade</th>
+                            </tr>
+                        </thead>
+                        <tbody id="journeysTable">
+                            <tr>
+                                <td colspan="6" class="loading">Carregando jornadas...</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </main>
@@ -642,6 +850,180 @@
             document.getElementById('dashboard').classList.add('active');
             loadStats();
             loadLeads();
+            loadFunnelData();
+        }
+        
+        // Trocar aba
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            
+            document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            
+            if (tabName === 'funnel') {
+                loadFunnelData();
+            }
+        }
+        
+        // Carregar dados do funil
+        async function loadFunnelData() {
+            try {
+                const response = await fetch(`${API_URL}/api/admin/funnel`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.status === 401 || response.status === 403) {
+                    logout();
+                    return;
+                }
+                
+                const data = await response.json();
+                renderFunnelStats(data.funnelStats);
+                renderDailyStats(data.dailyStats);
+                renderJourneys(data.journeys);
+                
+            } catch (error) {
+                console.error('Erro ao carregar dados do funil:', error);
+            }
+        }
+        
+        // Renderizar estatísticas do funil
+        function renderFunnelStats(stats) {
+            const funnelOrder = [
+                { key: 'page_view_landing', label: 'Landing Page' },
+                { key: 'page_view_phone', label: 'Página Telefone' },
+                { key: 'phone_submitted', label: 'Telefone Enviado' },
+                { key: 'page_view_conversas', label: 'Conversas' },
+                { key: 'page_view_chat', label: 'Chat' },
+                { key: 'page_view_cta', label: 'Página CTA' },
+                { key: 'email_captured', label: 'Email Capturado' },
+                { key: 'checkout_clicked', label: 'Checkout' }
+            ];
+            
+            const statsMap = {};
+            stats.forEach(s => statsMap[s.event] = parseInt(s.unique_visitors));
+            
+            const maxVisitors = Math.max(...Object.values(statsMap), 1);
+            const landingVisitors = statsMap['page_view_landing'] || 0;
+            const phoneVisitors = statsMap['page_view_phone'] || 0;
+            const ctaVisitors = statsMap['page_view_cta'] || 0;
+            const checkoutVisitors = statsMap['checkout_clicked'] || 0;
+            
+            // Atualizar estatísticas gerais
+            document.getElementById('funnelVisitors').textContent = landingVisitors.toLocaleString('pt-BR');
+            document.getElementById('funnelRate1').textContent = landingVisitors > 0 
+                ? ((phoneVisitors / landingVisitors) * 100).toFixed(1) + '%' : '-';
+            document.getElementById('funnelRate2').textContent = phoneVisitors > 0 
+                ? ((ctaVisitors / phoneVisitors) * 100).toFixed(1) + '%' : '-';
+            document.getElementById('funnelRate3').textContent = ctaVisitors > 0 
+                ? ((checkoutVisitors / ctaVisitors) * 100).toFixed(1) + '%' : '-';
+            
+            let html = '';
+            let prevValue = null;
+            
+            funnelOrder.forEach((step, idx) => {
+                const value = statsMap[step.key] || 0;
+                const width = maxVisitors > 0 ? Math.max((value / maxVisitors) * 100, 10) : 10;
+                const drop = prevValue !== null && prevValue > 0 
+                    ? (((prevValue - value) / prevValue) * 100).toFixed(0) 
+                    : null;
+                
+                html += `
+                    <div class="funnel-step">
+                        <div class="funnel-step-bar" style="width: ${width}%">
+                            <span class="funnel-step-name">${step.label}</span>
+                            <span class="funnel-step-value">${value.toLocaleString('pt-BR')}</span>
+                        </div>
+                        ${drop !== null && drop > 0 ? `<span class="funnel-step-drop">-${drop}%</span>` : ''}
+                    </div>
+                `;
+                prevValue = value;
+            });
+            
+            document.getElementById('funnelSteps').innerHTML = html || '<div class="empty-state">Nenhum dado de funil ainda</div>';
+        }
+        
+        // Renderizar estatísticas diárias
+        function renderDailyStats(stats) {
+            if (!stats || stats.length === 0) {
+                document.getElementById('dailyStats').innerHTML = '<div class="empty-state">Nenhum dado disponível</div>';
+                return;
+            }
+            
+            // Agrupar por data
+            const byDate = {};
+            stats.forEach(s => {
+                const date = s.date.split('T')[0];
+                if (!byDate[date]) byDate[date] = {};
+                byDate[date][s.event] = parseInt(s.unique_visitors);
+            });
+            
+            let html = '<table style="width:100%; font-size: 13px;"><thead><tr><th style="padding:8px; text-align:left;">Data</th><th style="padding:8px;">Visitas</th><th style="padding:8px;">Checkout</th></tr></thead><tbody>';
+            
+            Object.keys(byDate).sort().reverse().slice(0, 7).forEach(date => {
+                const visits = byDate[date]['page_view_landing'] || 0;
+                const checkout = byDate[date]['checkout_clicked'] || 0;
+                const formattedDate = new Date(date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+                
+                html += `<tr>
+                    <td style="padding:8px; border-bottom:1px solid var(--border);">${formattedDate}</td>
+                    <td style="padding:8px; border-bottom:1px solid var(--border); text-align:center;">${visits}</td>
+                    <td style="padding:8px; border-bottom:1px solid var(--border); text-align:center; color:var(--green);">${checkout}</td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table>';
+            document.getElementById('dailyStats').innerHTML = html;
+        }
+        
+        // Renderizar jornadas
+        function renderJourneys(journeys) {
+            if (!journeys || journeys.length === 0) {
+                document.getElementById('journeysTable').innerHTML = '<tr><td colspan="6" class="empty-state">Nenhuma jornada registrada ainda</td></tr>';
+                return;
+            }
+            
+            const eventLabels = {
+                'page_view_landing': '🏠 Landing',
+                'gender_selected': '👤 Gênero',
+                'page_view_phone': '📱 Phone',
+                'phone_submitted': '✅ Tel. Enviado',
+                'page_view_conversas': '💬 Conversas',
+                'page_view_chat': '📩 Chat',
+                'page_view_cta': '🎯 CTA',
+                'email_captured': '📧 Email',
+                'checkout_clicked': '💰 Checkout',
+                'scroll_50_percent': '📜 50%',
+                'scroll_100_percent': '📜 100%',
+                'time_on_page_30s': '⏱️ 30s',
+                'time_on_page_60s': '⏱️ 60s'
+            };
+            
+            let html = '';
+            journeys.forEach(j => {
+                const events = j.events || [];
+                const hasCheckout = events.includes('checkout_clicked');
+                
+                html += `<tr>
+                    <td style="font-family: monospace; font-size: 12px;">${j.visitor_id.substring(0, 12)}...</td>
+                    <td>${j.target_phone || '-'}</td>
+                    <td>${j.target_gender === 'male' ? '👨 Masc' : j.target_gender === 'female' ? '👩 Fem' : '-'}</td>
+                    <td>
+                        <div class="journey-events">
+                            ${events.slice(0, 8).map(e => {
+                                const isCheckout = e === 'checkout_clicked';
+                                return `<span class="journey-event ${isCheckout ? 'checkout' : 'completed'}">${eventLabels[e] || e}</span>`;
+                            }).join('')}
+                            ${events.length > 8 ? `<span class="journey-event">+${events.length - 8}</span>` : ''}
+                        </div>
+                    </td>
+                    <td>${formatDate(j.first_seen)}</td>
+                    <td>${formatDate(j.last_seen)}</td>
+                </tr>`;
+            });
+            
+            document.getElementById('journeysTable').innerHTML = html;
         }
         
         // Logout
