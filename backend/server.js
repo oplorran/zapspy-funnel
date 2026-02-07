@@ -1307,6 +1307,16 @@ app.get('/api/admin/debug/postbacks', authenticateToken, async (req, res) => {
     });
 });
 
+// Simple test endpoint for postback (no DB)
+app.post('/api/postback/test', (req, res) => {
+    console.log('🧪 Test postback received:', req.body);
+    res.json({ 
+        status: 'ok', 
+        received: req.body,
+        keys: Object.keys(req.body || {})
+    });
+});
+
 // Monetizze postback endpoint (public - no auth, uses token validation)
 // Also accepts GET for testing
 app.all('/api/postback/monetizze', async (req, res) => {
