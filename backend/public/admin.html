@@ -980,6 +980,86 @@
             border-radius: var(--radius-sm);
         }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        @keyframes slideInRight { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        @keyframes countUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Skeleton Loaders */
+        .skeleton-loader { position: relative; overflow: hidden; background: var(--bg-tertiary); border-radius: 8px; }
+        .skeleton-loader::after { 
+            content: ''; 
+            position: absolute; 
+            top: 0; left: -100%; 
+            width: 100%; height: 100%; 
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+        .skeleton-text { height: 20px; width: 60%; margin-bottom: 8px; }
+        .skeleton-text.short { width: 40%; }
+        .skeleton-text.full { width: 100%; }
+        .skeleton-card { height: 120px; width: 100%; }
+        .skeleton-chart { height: 300px; width: 100%; }
+        
+        /* Smooth number transitions */
+        .stat-value { transition: all 0.3s ease; }
+        .stat-value.updating { animation: countUp 0.3s ease; }
+        
+        /* Hover effects for cards */
+        .stat-card, .chart-card, .quick-action { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .stat-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg), 0 0 30px rgba(0, 212, 170, 0.1); }
+        .chart-card:hover { border-color: rgba(255,255,255,0.12); }
+        
+        /* Micro-interactions for buttons */
+        .btn-secondary, .btn-primary { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .btn-secondary:active, .btn-primary:active { transform: scale(0.95); }
+        
+        /* Table row animations */
+        .data-table tbody tr { animation: fadeInUp 0.3s ease backwards; transition: background 0.2s ease; }
+        .data-table tbody tr:nth-child(1) { animation-delay: 0.05s; }
+        .data-table tbody tr:nth-child(2) { animation-delay: 0.1s; }
+        .data-table tbody tr:nth-child(3) { animation-delay: 0.15s; }
+        .data-table tbody tr:nth-child(4) { animation-delay: 0.2s; }
+        .data-table tbody tr:nth-child(5) { animation-delay: 0.25s; }
+        
+        /* Badge animations */
+        .badge { transition: all 0.2s ease; }
+        .badge:hover { transform: scale(1.05); }
+        
+        /* Progress ring for loading states */
+        .progress-ring { transform: rotate(-90deg); }
+        .progress-ring-circle { 
+            fill: none; 
+            stroke: var(--accent); 
+            stroke-width: 4; 
+            stroke-linecap: round;
+            stroke-dasharray: 100;
+            stroke-dashoffset: 100;
+            transition: stroke-dashoffset 1s ease;
+        }
+        
+        /* Sparkline container */
+        .sparkline { display: inline-flex; align-items: flex-end; height: 30px; gap: 2px; }
+        .sparkline-bar { width: 4px; background: linear-gradient(180deg, var(--accent), var(--accent-dark)); border-radius: 2px; transition: height 0.3s ease; }
+        
+        /* Notification badge pulse */
+        .nav-item-badge { animation: pulse 2s infinite; }
+        
+        /* Smooth modal backdrop */
+        .modal-overlay { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: opacity 0.3s ease; }
+        .modal-overlay.active .modal-content { animation: scaleIn 0.3s ease; }
+        
+        /* Card glow on hover */
+        .stat-card::after { 
+            content: ''; 
+            position: absolute; 
+            inset: 0; 
+            border-radius: inherit; 
+            opacity: 0; 
+            transition: opacity 0.3s ease;
+            background: radial-gradient(circle at center, var(--accent-glow), transparent);
+        }
+        .stat-card:hover::after { opacity: 1; }
         
         /* Tooltips */
         [data-tooltip] { position: relative; cursor: help; }
@@ -1216,18 +1296,27 @@
                     <p id="pageSubtitle">Acompanhe suas métricas em tempo real</p>
                 </div>
                 <div class="header-actions">
+                    <!-- Real-time indicator -->
+                    <div id="realtimeIndicator">
+                        <span style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 20px; font-size: 11px; font-weight: 600; color: #10b981;"><span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: pulse 2s infinite;"></span>Ao vivo</span>
+                    </div>
                     <!-- Global Funnel Selector -->
                     <select class="funnel-selector" id="globalFunnelFilter" onchange="onGlobalFunnelChange()" title="Filtrar por funil">
                         <option value="">🌍 Todos os Funis</option>
                         <option value="en">🇺🇸 Inglês</option>
                         <option value="es">🇪🇸 Espanhol</option>
                     </select>
+                    <!-- ROI Calculator Button -->
+                    <button class="btn-secondary" onclick="openROICalculator()" title="Calculadora de ROI" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15)); border-color: rgba(139, 92, 246, 0.3);">
+                        <span>📊</span> ROI
+                    </button>
                     <div class="theme-toggle" onclick="toggleTheme()" title="Alternar tema">
                         <div class="theme-toggle-label"><span id="themeIcon">🌙</span></div>
                         <div class="theme-toggle-track">
                             <div class="theme-toggle-thumb"></div>
                         </div>
                     </div>
+                    <button class="btn-secondary btn-icon" id="autoRefreshBtn" onclick="toggleAutoRefresh()" title="Pausar atualização automática">⏸️</button>
                     <button class="btn-secondary btn-icon" onclick="refreshData()" title="Atualizar">🔄</button>
                 </div>
             </header>
@@ -1318,7 +1407,10 @@
                                 <div class="stat-icon blue">👥</div>
                             </div>
                             <div class="stat-value" id="overviewTotal">0</div>
-                            <div class="stat-change up" id="overviewTotalChange">↑ 0% vs ontem</div>
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 12px;">
+                                <div class="stat-change up" id="overviewTotalChange">↑ 0% vs ontem</div>
+                                <div id="sparklineLeads"></div>
+                            </div>
                         </div>
                         <div class="stat-card" data-tooltip="Leads capturados nas últimas 24 horas">
                             <div class="stat-header">
@@ -1326,6 +1418,7 @@
                                 <div class="stat-icon green">📈</div>
                             </div>
                             <div class="stat-value green" id="overviewToday">0</div>
+                            <div style="margin-top: 12px; font-size: 12px; color: var(--text-muted);" id="overviewTodayTime">Última atualização: agora</div>
                         </div>
                         <div class="stat-card" data-tooltip="Leads que se tornaram clientes">
                             <div class="stat-header">
@@ -1333,7 +1426,10 @@
                                 <div class="stat-icon purple">🎯</div>
                             </div>
                             <div class="stat-value" id="overviewConverted">0</div>
-                            <div class="stat-change" id="overviewConvRate">0% taxa</div>
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 12px;">
+                                <div class="stat-change" id="overviewConvRate">0% taxa</div>
+                                <div id="sparklineConversions"></div>
+                            </div>
                         </div>
                         <div class="stat-card" data-tooltip="Receita total aprovada">
                             <div class="stat-header">
@@ -1341,6 +1437,7 @@
                                 <div class="stat-icon orange">💰</div>
                             </div>
                             <div class="stat-value green" id="overviewRevenue">R$ 0</div>
+                            <div style="margin-top: 12px;" id="sparklineRevenue"></div>
                         </div>
                         <div class="stat-card" data-tooltip="Leads que não completaram a compra">
                             <div class="stat-header">
@@ -1348,6 +1445,28 @@
                                 <div class="stat-icon red">🚪</div>
                             </div>
                             <div class="stat-value red" id="overviewAbandoned">0</div>
+                            <div style="margin-top: 12px; font-size: 12px; color: var(--danger);" id="overviewAbandonRate">0% do total</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Period Comparison -->
+                    <div style="margin-bottom: 28px;">
+                        <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
+                            <span>📊</span> Comparativo Semanal
+                        </h3>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+                            <div id="leadsComparison" style="background: var(--bg-glass); border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
+                                <div style="font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 4px;">leads</div>
+                                <div style="font-size: 24px; font-weight: 700; color: #fff;">-</div>
+                            </div>
+                            <div id="salesComparison" style="background: var(--bg-glass); border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
+                                <div style="font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 4px;">vendas</div>
+                                <div style="font-size: 24px; font-weight: 700; color: #fff;">-</div>
+                            </div>
+                            <div id="revenueComparison" style="background: var(--bg-glass); border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
+                                <div style="font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 4px;">faturamento</div>
+                                <div style="font-size: 24px; font-weight: 700; color: #fff;">-</div>
+                            </div>
                         </div>
                     </div>
                     
@@ -1371,6 +1490,59 @@
                             </div>
                             <div class="chart-container">
                                 <canvas id="statusChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Heatmap Section -->
+                    <div class="chart-card" style="margin-bottom: 28px;">
+                        <div class="chart-header">
+                            <span class="chart-title">🔥 Mapa de Calor - Melhores Horários</span>
+                            <button class="btn-secondary" onclick="loadHeatmapData()" style="font-size: 12px; padding: 6px 12px;">🔄 Atualizar</button>
+                        </div>
+                        <div id="heatmapContainer" style="padding: 20px;">
+                            <div style="display: grid; grid-template-columns: 50px repeat(24, 1fr); gap: 2px; font-size: 10px;">
+                                <!-- Header row with hours -->
+                                <div></div>
+                                <div style="text-align: center; color: var(--text-muted);">0</div>
+                                <div style="text-align: center; color: var(--text-muted);">1</div>
+                                <div style="text-align: center; color: var(--text-muted);">2</div>
+                                <div style="text-align: center; color: var(--text-muted);">3</div>
+                                <div style="text-align: center; color: var(--text-muted);">4</div>
+                                <div style="text-align: center; color: var(--text-muted);">5</div>
+                                <div style="text-align: center; color: var(--text-muted);">6</div>
+                                <div style="text-align: center; color: var(--text-muted);">7</div>
+                                <div style="text-align: center; color: var(--text-muted);">8</div>
+                                <div style="text-align: center; color: var(--text-muted);">9</div>
+                                <div style="text-align: center; color: var(--text-muted);">10</div>
+                                <div style="text-align: center; color: var(--text-muted);">11</div>
+                                <div style="text-align: center; color: var(--text-muted);">12</div>
+                                <div style="text-align: center; color: var(--text-muted);">13</div>
+                                <div style="text-align: center; color: var(--text-muted);">14</div>
+                                <div style="text-align: center; color: var(--text-muted);">15</div>
+                                <div style="text-align: center; color: var(--text-muted);">16</div>
+                                <div style="text-align: center; color: var(--text-muted);">17</div>
+                                <div style="text-align: center; color: var(--text-muted);">18</div>
+                                <div style="text-align: center; color: var(--text-muted);">19</div>
+                                <div style="text-align: center; color: var(--text-muted);">20</div>
+                                <div style="text-align: center; color: var(--text-muted);">21</div>
+                                <div style="text-align: center; color: var(--text-muted);">22</div>
+                                <div style="text-align: center; color: var(--text-muted);">23</div>
+                            </div>
+                            <div id="heatmapGrid" style="display: grid; grid-template-columns: 50px repeat(24, 1fr); gap: 2px; margin-top: 4px;">
+                                <!-- Will be populated by JavaScript -->
+                                <div style="text-align: center; padding: 40px; color: var(--text-muted); grid-column: span 25;">Carregando dados...</div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 16px; margin-top: 16px; font-size: 11px; color: var(--text-muted);">
+                                <span>Menos leads</span>
+                                <div style="display: flex; gap: 2px;">
+                                    <div style="width: 20px; height: 12px; background: rgba(16, 185, 129, 0.1); border-radius: 2px;"></div>
+                                    <div style="width: 20px; height: 12px; background: rgba(16, 185, 129, 0.3); border-radius: 2px;"></div>
+                                    <div style="width: 20px; height: 12px; background: rgba(16, 185, 129, 0.5); border-radius: 2px;"></div>
+                                    <div style="width: 20px; height: 12px; background: rgba(16, 185, 129, 0.7); border-radius: 2px;"></div>
+                                    <div style="width: 20px; height: 12px; background: rgba(16, 185, 129, 1); border-radius: 2px;"></div>
+                                </div>
+                                <span>Mais leads</span>
                             </div>
                         </div>
                     </div>
@@ -1889,6 +2061,93 @@
                         </div>
                         <div class="modal-footer" id="refundModalFooter">
                             <!-- Actions loaded dynamically -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ROI Calculator Modal -->
+                <div class="modal-overlay" id="roiCalculatorModal">
+                    <div class="modal-content" style="max-width: 700px;">
+                        <div class="modal-header" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.1));">
+                            <div>
+                                <h3 style="display: flex; align-items: center; gap: 12px;">📊 Calculadora de ROI</h3>
+                                <p style="margin-top: 4px; font-size: 13px; color: var(--text-muted);">Calcule seu retorno sobre investimento</p>
+                            </div>
+                            <button class="modal-close" onclick="closeROICalculator()">×</button>
+                        </div>
+                        <div class="modal-body" style="padding: 28px;">
+                            <!-- Input Section -->
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 28px;">
+                                <div>
+                                    <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">💰 Gasto com Ads (R$)</label>
+                                    <input type="number" id="roiAdSpend" class="form-input" value="0" oninput="calculateROI()" style="font-size: 18px; font-weight: 600;" placeholder="Ex: 1000">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">💵 Faturamento (R$)</label>
+                                    <input type="number" id="roiRevenue" class="form-input" value="0" oninput="calculateROI()" style="font-size: 18px; font-weight: 600;" placeholder="Ex: 5000">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">👥 Total de Leads</label>
+                                    <input type="number" id="roiLeads" class="form-input" value="0" oninput="calculateROI()" placeholder="Ex: 100">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">🛒 Total de Vendas</label>
+                                    <input type="number" id="roiSales" class="form-input" value="0" oninput="calculateROI()" placeholder="Ex: 10">
+                                </div>
+                            </div>
+                            
+                            <button class="btn-secondary" onclick="loadROIFromData()" style="width: 100%; margin-bottom: 28px; justify-content: center;">
+                                <span>📥</span> Carregar dados do painel
+                            </button>
+                            
+                            <!-- Results Section -->
+                            <div style="background: var(--bg-tertiary); border-radius: 16px; padding: 24px; border: 1px solid var(--border);">
+                                <h4 style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px;">📈 Resultados</h4>
+                                
+                                <!-- Main metrics -->
+                                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 24px;">
+                                    <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05)); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; padding: 20px; text-align: center;">
+                                        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">Lucro Líquido</div>
+                                        <div id="roiProfit" style="font-size: 28px; font-weight: 800; color: #10b981;">R$ 0,00</div>
+                                    </div>
+                                    <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.05)); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 12px; padding: 20px; text-align: center;">
+                                        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">ROI</div>
+                                        <div id="roiPercentage" style="font-size: 28px; font-weight: 800; color: #8b5cf6;">0%</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Secondary metrics -->
+                                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">
+                                    <div style="text-align: center; padding: 16px 8px; background: var(--bg-secondary); border-radius: 10px;">
+                                        <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">CPL</div>
+                                        <div id="roiCPL" style="font-size: 16px; font-weight: 700; color: var(--text-primary);">R$ 0</div>
+                                    </div>
+                                    <div style="text-align: center; padding: 16px 8px; background: var(--bg-secondary); border-radius: 10px;">
+                                        <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">CPA</div>
+                                        <div id="roiCPA" style="font-size: 16px; font-weight: 700; color: var(--text-primary);">R$ 0</div>
+                                    </div>
+                                    <div style="text-align: center; padding: 16px 8px; background: var(--bg-secondary); border-radius: 10px;">
+                                        <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">Taxa Conv.</div>
+                                        <div id="roiConvRate" style="font-size: 16px; font-weight: 700; color: var(--text-primary);">0%</div>
+                                    </div>
+                                    <div style="text-align: center; padding: 16px 8px; background: var(--bg-secondary); border-radius: 10px;">
+                                        <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">Ticket Médio</div>
+                                        <div id="roiAvgTicket" style="font-size: 16px; font-weight: 700; color: var(--text-primary);">R$ 0</div>
+                                    </div>
+                                    <div style="text-align: center; padding: 16px 8px; background: var(--bg-secondary); border-radius: 10px;">
+                                        <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">ROAS</div>
+                                        <div id="roiROAS" style="font-size: 16px; font-weight: 700; color: var(--text-primary);">0x</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Legend -->
+                            <div style="margin-top: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 10px; font-size: 11px; color: var(--text-muted); line-height: 1.8;">
+                                <strong style="color: var(--text-secondary);">Legenda:</strong><br>
+                                • <strong>CPL</strong> = Custo por Lead (gasto ÷ leads)<br>
+                                • <strong>CPA</strong> = Custo por Aquisição (gasto ÷ vendas)<br>
+                                • <strong>ROAS</strong> = Retorno sobre Gasto com Ads (faturamento ÷ gasto)
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2448,6 +2707,8 @@ Estou aqui para esclarecer tudo! 😊`
             loadFunnelData();
             loadRecoveryData();
             loadRefunds();
+            loadHeatmapData();
+            loadPeriodComparison();
         }
         
         // Global funnel filter change handler
@@ -2599,6 +2860,12 @@ Estou aqui para esclarecer tudo! 😊`
                 document.getElementById('overviewToday').textContent = stats.today.toLocaleString('pt-BR');
                 document.getElementById('quickLeadsText').textContent = `${stats.today} novos leads`;
                 
+                // Update last update time
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                const todayTimeEl = document.getElementById('overviewTodayTime');
+                if (todayTimeEl) todayTimeEl.textContent = `Última atualização: ${timeStr}`;
+                
                 const converted = stats.byStatus?.find(s => s.status === 'converted')?.count || 0;
                 document.getElementById('overviewConverted').textContent = converted;
                 const rate = stats.total > 0 ? ((converted / stats.total) * 100).toFixed(1) : 0;
@@ -2614,6 +2881,13 @@ Estou aqui para esclarecer tudo! 😊`
                 document.getElementById('quickRecoveryText').textContent = `${abandoned} leads aguardando`;
                 document.getElementById('navRecoveryCount').textContent = abandoned;
                 
+                // Abandon rate
+                const abandonRateEl = document.getElementById('overviewAbandonRate');
+                if (abandonRateEl && stats.total > 0) {
+                    const abandonRate = ((abandoned / stats.total) * 100).toFixed(1);
+                    abandonRateEl.textContent = `${abandonRate}% do total`;
+                }
+                
                 // Update charts
                 if (stats.byDay && leadsChart) {
                     const labels = stats.byDay.map(d => new Date(d.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })).reverse();
@@ -2621,6 +2895,9 @@ Estou aqui para esclarecer tudo! 😊`
                     leadsChart.data.labels = labels;
                     leadsChart.data.datasets[0].data = data;
                     leadsChart.update();
+                    
+                    // Create sparklines from daily data
+                    createSparkline(data.slice(-7), 'sparklineLeads');
                 }
                 
                 if (stats.byStatus && statusChart) {
@@ -4744,6 +5021,459 @@ Estou aqui para esclarecer tudo! 😊`
             document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
             showToast('Carregando...', `Mostrando últimos ${days} dias`, 'success');
+        }
+        
+        // ==================== REAL-TIME DASHBOARD ====================
+        let autoRefreshInterval = null;
+        let lastSalesCount = 0;
+        let lastLeadsCount = 0;
+        let isAutoRefreshEnabled = true;
+        
+        // Request notification permission on load
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+        
+        function startAutoRefresh() {
+            if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+            
+            // Refresh every 30 seconds
+            autoRefreshInterval = setInterval(async () => {
+                if (!isAutoRefreshEnabled || document.hidden) return;
+                
+                try {
+                    const [statsRes, salesRes] = await Promise.all([
+                        fetch(`${API_URL}/api/admin/stats`, { headers: { 'Authorization': `Bearer ${authToken}` } }),
+                        fetch(`${API_URL}/api/admin/sales`, { headers: { 'Authorization': `Bearer ${authToken}` } })
+                    ]);
+                    
+                    if (statsRes.ok && salesRes.ok) {
+                        const stats = await statsRes.json();
+                        const sales = await salesRes.json();
+                        
+                        // Check for new sales
+                        if (lastSalesCount > 0 && sales.approved > lastSalesCount) {
+                            const newSales = sales.approved - lastSalesCount;
+                            showNewSaleNotification(newSales, sales.revenue);
+                        }
+                        
+                        // Check for new leads
+                        if (lastLeadsCount > 0 && stats.total > lastLeadsCount) {
+                            const newLeads = stats.total - lastLeadsCount;
+                            showToast('🆕 Novo Lead!', `${newLeads} novo(s) lead(s) capturado(s)`, 'success');
+                        }
+                        
+                        lastSalesCount = sales.approved || 0;
+                        lastLeadsCount = stats.total || 0;
+                        
+                        // Update real-time indicator
+                        updateRealtimeIndicator(true);
+                        
+                        // Silently update data
+                        loadAllData();
+                    }
+                } catch (error) {
+                    updateRealtimeIndicator(false);
+                }
+            }, 30000); // 30 seconds
+            
+            // Initial count
+            initializeCounts();
+        }
+        
+        async function initializeCounts() {
+            try {
+                const [statsRes, salesRes] = await Promise.all([
+                    fetch(`${API_URL}/api/admin/stats`, { headers: { 'Authorization': `Bearer ${authToken}` } }),
+                    fetch(`${API_URL}/api/admin/sales`, { headers: { 'Authorization': `Bearer ${authToken}` } })
+                ]);
+                
+                if (statsRes.ok) {
+                    const stats = await statsRes.json();
+                    lastLeadsCount = stats.total || 0;
+                }
+                if (salesRes.ok) {
+                    const sales = await salesRes.json();
+                    lastSalesCount = sales.approved || 0;
+                }
+            } catch (e) { console.log('Init counts error:', e); }
+        }
+        
+        function showNewSaleNotification(count, totalRevenue) {
+            // Toast notification
+            showToast('💰 Nova Venda!', `${count} nova(s) venda(s) - Total: R$ ${totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 'success');
+            
+            // Browser notification
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('💰 Nova Venda no ZapSpy!', {
+                    body: `${count} nova(s) venda(s) aprovada(s)!`,
+                    icon: '💰',
+                    tag: 'new-sale'
+                });
+            }
+            
+            // Play sound (optional)
+            try {
+                const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1oa2d0aHNlj5qUqZ6Ws6acoq+el6CmpZmhsKiirqyqoa2npKSop6aprqqmqa6rp6uwrKmtsKyprLGsqq2xrKqtsayqrbGsqq2xrKqtsayqrbCsqa2wrKmtr6yprK+sqaywrKmsr6yprK+sqaywrKmsr6yprK+sqayvq6msr6yprK6sqKuurKitrqyora2sqK2trKitrKynrKysqKysrKesq6ynq6usqKurrKesq6ynq6qsp6uqrKerqqynq6qsp6uqrKerqqunqqmrp6qpq6eqqaunqamrp6mpq6eoqaunqKirp6ioq6enqKunp6irp6eoq6eoqKunqKirp6ioq6eoqKunqKirp6ioq6eoqKunqKirp6ioq6eoqKunqKirp6ioq6eoqKunqKirp6ioq6eoqKunqKirp6ioq6enqKunp6irp6eoq6enqKunp6erp6enq6enp6unp6erp6enq6enp6unp6erp6enq6enp6unp6erp6enq6enp6unp6erp6enq6enp6unp6erp6enq6enp6unp6erp6enq6enp6unp6erp6enq6enp6unp6erp6enq6enp6unp6erp6enq6enp6unp6erp6enq6enp6unp6erp6enq6enp6unp6erp6enq6enp6unp6erp6enq6enp6unp6erp6enqw==');
+                audio.volume = 0.3;
+                audio.play().catch(() => {});
+            } catch (e) {}
+        }
+        
+        function updateRealtimeIndicator(connected) {
+            const indicator = document.getElementById('realtimeIndicator');
+            if (indicator) {
+                indicator.innerHTML = connected 
+                    ? '<span style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 20px; font-size: 11px; font-weight: 600; color: #10b981;"><span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: pulse 2s infinite;"></span>Ao vivo</span>'
+                    : '<span style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 20px; font-size: 11px; font-weight: 600; color: #ef4444;"><span style="width: 8px; height: 8px; background: #ef4444; border-radius: 50%;"></span>Offline</span>';
+            }
+        }
+        
+        function toggleAutoRefresh() {
+            isAutoRefreshEnabled = !isAutoRefreshEnabled;
+            const btn = document.getElementById('autoRefreshBtn');
+            if (btn) {
+                btn.innerHTML = isAutoRefreshEnabled ? '⏸️' : '▶️';
+                btn.title = isAutoRefreshEnabled ? 'Pausar atualização automática' : 'Retomar atualização automática';
+            }
+            showToast(isAutoRefreshEnabled ? 'Auto-refresh ativado' : 'Auto-refresh pausado', '', 'success');
+        }
+        
+        // Start auto-refresh when dashboard loads
+        if (authToken) {
+            startAutoRefresh();
+        }
+        
+        // ==================== ROI CALCULATOR ====================
+        let roiModalVisible = false;
+        
+        function openROICalculator() {
+            document.getElementById('roiCalculatorModal').classList.add('active');
+            roiModalVisible = true;
+            calculateROI();
+        }
+        
+        function closeROICalculator() {
+            document.getElementById('roiCalculatorModal').classList.remove('active');
+            roiModalVisible = false;
+        }
+        
+        function calculateROI() {
+            const adSpend = parseFloat(document.getElementById('roiAdSpend').value) || 0;
+            const revenue = parseFloat(document.getElementById('roiRevenue').value) || 0;
+            const leads = parseInt(document.getElementById('roiLeads').value) || 0;
+            const sales = parseInt(document.getElementById('roiSales').value) || 0;
+            
+            // Calculations
+            const profit = revenue - adSpend;
+            const roi = adSpend > 0 ? ((profit / adSpend) * 100) : 0;
+            const cpl = leads > 0 ? (adSpend / leads) : 0; // Cost per lead
+            const cpa = sales > 0 ? (adSpend / sales) : 0; // Cost per acquisition
+            const convRate = leads > 0 ? ((sales / leads) * 100) : 0;
+            const avgTicket = sales > 0 ? (revenue / sales) : 0;
+            const roas = adSpend > 0 ? (revenue / adSpend) : 0; // Return on ad spend
+            
+            // Update display
+            document.getElementById('roiProfit').textContent = 'R$ ' + profit.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+            document.getElementById('roiProfit').style.color = profit >= 0 ? '#10b981' : '#ef4444';
+            
+            document.getElementById('roiPercentage').textContent = roi.toFixed(1) + '%';
+            document.getElementById('roiPercentage').style.color = roi >= 0 ? '#10b981' : '#ef4444';
+            
+            document.getElementById('roiCPL').textContent = 'R$ ' + cpl.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+            document.getElementById('roiCPA').textContent = 'R$ ' + cpa.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+            document.getElementById('roiConvRate').textContent = convRate.toFixed(1) + '%';
+            document.getElementById('roiAvgTicket').textContent = 'R$ ' + avgTicket.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+            document.getElementById('roiROAS').textContent = roas.toFixed(2) + 'x';
+            document.getElementById('roiROAS').style.color = roas >= 1 ? '#10b981' : '#ef4444';
+        }
+        
+        async function loadROIFromData() {
+            try {
+                const [statsRes, salesRes] = await Promise.all([
+                    fetch(`${API_URL}/api/admin/stats`, { headers: { 'Authorization': `Bearer ${authToken}` } }),
+                    fetch(`${API_URL}/api/admin/sales`, { headers: { 'Authorization': `Bearer ${authToken}` } })
+                ]);
+                
+                if (statsRes.ok && salesRes.ok) {
+                    const stats = await statsRes.json();
+                    const sales = await salesRes.json();
+                    
+                    document.getElementById('roiLeads').value = stats.total || 0;
+                    document.getElementById('roiSales').value = sales.approved || 0;
+                    document.getElementById('roiRevenue').value = (sales.revenue || 0).toFixed(2);
+                    
+                    calculateROI();
+                    showToast('Dados carregados', 'Valores atualizados do painel', 'success');
+                }
+            } catch (e) {
+                showToast('Erro', 'Não foi possível carregar dados', 'error');
+            }
+        }
+        
+        // ==================== PERIOD COMPARISON ====================
+        async function loadPeriodComparison() {
+            try {
+                const response = await fetch(`${API_URL}/api/admin/stats/comparison`, { 
+                    headers: { 'Authorization': `Bearer ${authToken}` } 
+                });
+                
+                if (!response.ok) return;
+                
+                const data = await response.json();
+                
+                if (data.currentWeek && data.previousWeek) {
+                    // Update comparison cards
+                    updateComparisonCard('leadsComparison', data.currentWeek.leads, data.previousWeek.leads, 'leads');
+                    updateComparisonCard('salesComparison', data.currentWeek.sales, data.previousWeek.sales, 'vendas');
+                    updateComparisonCard('revenueComparison', data.currentWeek.revenue, data.previousWeek.revenue, 'faturamento', true);
+                }
+            } catch (e) {
+                console.log('Period comparison not available');
+            }
+        }
+        
+        function updateComparisonCard(elementId, current, previous, label, isCurrency = false) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            
+            const change = previous > 0 ? ((current - previous) / previous * 100) : (current > 0 ? 100 : 0);
+            const isPositive = change >= 0;
+            const arrow = isPositive ? '↑' : '↓';
+            const color = isPositive ? '#10b981' : '#ef4444';
+            
+            const currentDisplay = isCurrency 
+                ? 'R$ ' + current.toLocaleString('pt-BR', { minimumFractionDigits: 2 })
+                : current.toLocaleString('pt-BR');
+            
+            el.innerHTML = `
+                <div style="font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 4px;">${label}</div>
+                <div style="font-size: 24px; font-weight: 700; color: #fff;">${currentDisplay}</div>
+                <div style="display: flex; align-items: center; gap: 4px; margin-top: 4px;">
+                    <span style="color: ${color}; font-weight: 600; font-size: 13px;">${arrow} ${Math.abs(change).toFixed(1)}%</span>
+                    <span style="color: rgba(255,255,255,0.4); font-size: 11px;">vs semana anterior</span>
+                </div>
+            `;
+        }
+        
+        // ==================== HEATMAP ====================
+        async function loadHeatmapData() {
+            try {
+                const response = await fetch(`${API_URL}/api/admin/stats/comparison`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (!response.ok) return;
+                
+                const data = await response.json();
+                
+                // Update comparison cards
+                if (data.currentWeek && data.previousWeek) {
+                    updateComparisonCard('leadsComparison', data.currentWeek.leads, data.previousWeek.leads, 'leads');
+                    updateComparisonCard('salesComparison', data.currentWeek.sales, data.previousWeek.sales, 'vendas');
+                    updateComparisonCard('revenueComparison', data.currentWeek.revenue, data.previousWeek.revenue, 'faturamento', true);
+                }
+                
+                // Render heatmap
+                if (data.hourlyHeatmap) {
+                    renderHeatmap(data.hourlyHeatmap);
+                }
+            } catch (e) {
+                console.log('Heatmap data not available:', e);
+            }
+        }
+        
+        function renderHeatmap(hourlyData) {
+            const grid = document.getElementById('heatmapGrid');
+            if (!grid) return;
+            
+            const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+            
+            // Create a 7x24 matrix
+            const matrix = {};
+            let maxCount = 1;
+            
+            hourlyData.forEach(item => {
+                const key = `${item.day_of_week}-${item.hour}`;
+                matrix[key] = parseInt(item.count);
+                if (matrix[key] > maxCount) maxCount = matrix[key];
+            });
+            
+            let html = '';
+            
+            for (let day = 0; day < 7; day++) {
+                // Day label
+                html += `<div style="display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; font-weight: 600; color: var(--text-secondary); font-size: 11px;">${dayNames[day]}</div>`;
+                
+                // Hours
+                for (let hour = 0; hour < 24; hour++) {
+                    const count = matrix[`${day}-${hour}`] || 0;
+                    const intensity = maxCount > 0 ? (count / maxCount) : 0;
+                    const opacity = 0.1 + (intensity * 0.9);
+                    const bgColor = `rgba(16, 185, 129, ${opacity})`;
+                    
+                    html += `
+                        <div style="
+                            height: 28px;
+                            background: ${count > 0 ? bgColor : 'rgba(255,255,255,0.03)'};
+                            border-radius: 4px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 9px;
+                            color: ${intensity > 0.5 ? '#fff' : 'var(--text-muted)'};
+                            cursor: pointer;
+                            transition: transform 0.15s;
+                        " 
+                        onmouseover="this.style.transform='scale(1.1)'; this.style.zIndex='10';"
+                        onmouseout="this.style.transform='scale(1)'; this.style.zIndex='1';"
+                        title="${dayNames[day]} às ${hour}:00 - ${count} leads"
+                        >${count > 0 ? count : ''}</div>
+                    `;
+                }
+            }
+            
+            grid.innerHTML = html;
+        }
+        
+        // Load heatmap on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            if (authToken) {
+                setTimeout(loadHeatmapData, 1000);
+            }
+        });
+        
+        // ==================== SPARKLINES ====================
+        function createSparkline(data, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container || !data || data.length === 0) return;
+            
+            const maxValue = Math.max(...data, 1);
+            const bars = data.map(value => {
+                const height = Math.max((value / maxValue) * 30, 2);
+                return `<div class="sparkline-bar" style="height: ${height}px;" title="${value}"></div>`;
+            }).join('');
+            
+            container.innerHTML = `<div class="sparkline">${bars}</div>`;
+        }
+        
+        // ==================== SKELETON LOADERS ====================
+        function showSkeletonLoading(elementId, type = 'text') {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            
+            if (type === 'card') {
+                el.innerHTML = '<div class="skeleton-loader skeleton-card"></div>';
+            } else if (type === 'chart') {
+                el.innerHTML = '<div class="skeleton-loader skeleton-chart"></div>';
+            } else if (type === 'table') {
+                el.innerHTML = `
+                    <tr><td colspan="10" style="padding: 16px;">
+                        <div class="skeleton-loader skeleton-text full"></div>
+                        <div class="skeleton-loader skeleton-text" style="margin-top: 12px;"></div>
+                        <div class="skeleton-loader skeleton-text short" style="margin-top: 12px;"></div>
+                    </td></tr>
+                `;
+            } else {
+                el.innerHTML = '<div class="skeleton-loader skeleton-text"></div>';
+            }
+        }
+        
+        function animateValue(elementId, newValue, isCurrency = false, duration = 500) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            
+            const startValue = parseFloat(el.textContent.replace(/[^\d.-]/g, '')) || 0;
+            const endValue = parseFloat(newValue) || 0;
+            const startTime = performance.now();
+            
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Easing function (ease-out)
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+                const currentValue = startValue + (endValue - startValue) * easeOut;
+                
+                if (isCurrency) {
+                    el.textContent = 'R$ ' + currentValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                } else if (Number.isInteger(endValue)) {
+                    el.textContent = Math.round(currentValue).toLocaleString('pt-BR');
+                } else {
+                    el.textContent = currentValue.toFixed(1) + '%';
+                }
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+            
+            el.classList.add('updating');
+            requestAnimationFrame(update);
+            
+            setTimeout(() => el.classList.remove('updating'), duration);
+        }
+        
+        // ==================== VISUAL FUNNEL ====================
+        function renderVisualFunnel(stats) {
+            const container = document.getElementById('visualFunnelContainer');
+            if (!container) return;
+            
+            const stages = [
+                { key: 'page_view_landing', label: 'Landing', icon: '🏠', color: '#6366f1' },
+                { key: 'page_view_phone', label: 'Telefone', icon: '📱', color: '#8b5cf6' },
+                { key: 'phone_submitted', label: 'Tel. Enviado', icon: '✅', color: '#a855f7' },
+                { key: 'page_view_cta', label: 'CTA', icon: '🎯', color: '#ec4899' },
+                { key: 'email_captured', label: 'Email', icon: '📧', color: '#f43f5e' },
+                { key: 'checkout_clicked', label: 'Checkout', icon: '🛒', color: '#10b981' }
+            ];
+            
+            const statsMap = {};
+            (stats || []).forEach(s => statsMap[s.event] = parseInt(s.unique_visitors));
+            
+            const maxValue = Math.max(...stages.map(s => statsMap[s.key] || 0), 1);
+            let previousValue = null;
+            
+            let html = '<div style="display: flex; flex-direction: column; gap: 8px;">';
+            
+            stages.forEach((stage, index) => {
+                const value = statsMap[stage.key] || 0;
+                const width = (value / maxValue) * 100;
+                const dropRate = previousValue !== null && previousValue > 0 
+                    ? Math.round((1 - value / previousValue) * 100) 
+                    : 0;
+                
+                html += `
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <div style="width: 100px; font-size: 12px; color: var(--text-muted); text-align: right; display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
+                            <span>${stage.icon}</span>
+                            <span>${stage.label}</span>
+                        </div>
+                        <div style="flex: 1; position: relative;">
+                            <div style="
+                                height: 36px;
+                                background: linear-gradient(90deg, ${stage.color}, ${stage.color}88);
+                                width: ${Math.max(width, 5)}%;
+                                border-radius: 6px;
+                                display: flex;
+                                align-items: center;
+                                justify-content: flex-end;
+                                padding-right: 12px;
+                                transition: width 0.5s ease;
+                                box-shadow: 0 2px 8px ${stage.color}40;
+                            ">
+                                <span style="font-weight: 700; color: #fff; font-size: 14px;">${value.toLocaleString('pt-BR')}</span>
+                            </div>
+                        </div>
+                        ${dropRate > 0 ? `<div style="width: 60px; font-size: 12px; color: #ef4444; font-weight: 600;">-${dropRate}%</div>` : '<div style="width: 60px;"></div>'}
+                    </div>
+                `;
+                
+                previousValue = value;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
         }
     </script>
 </body>

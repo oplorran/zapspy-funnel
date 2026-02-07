@@ -664,6 +664,68 @@ app.get('/api/admin/stats', authenticateToken, async (req, res) => {
     }
 });
 
+// Get period comparison stats (current week vs previous week)
+app.get('/api/admin/stats/comparison', authenticateToken, async (req, res) => {
+    try {
+        // Current week stats
+        const currentWeekLeads = await pool.query(`
+            SELECT COUNT(*) FROM leads 
+            WHERE created_at >= CURRENT_DATE - INTERVAL '7 days'
+        `);
+        
+        const currentWeekSales = await pool.query(`
+            SELECT COUNT(*), COALESCE(SUM(CAST(value AS DECIMAL)), 0) as revenue
+            FROM transactions 
+            WHERE status = 'approved' AND created_at >= CURRENT_DATE - INTERVAL '7 days'
+        `);
+        
+        // Previous week stats
+        const previousWeekLeads = await pool.query(`
+            SELECT COUNT(*) FROM leads 
+            WHERE created_at >= CURRENT_DATE - INTERVAL '14 days' 
+            AND created_at < CURRENT_DATE - INTERVAL '7 days'
+        `);
+        
+        const previousWeekSales = await pool.query(`
+            SELECT COUNT(*), COALESCE(SUM(CAST(value AS DECIMAL)), 0) as revenue
+            FROM transactions 
+            WHERE status = 'approved' 
+            AND created_at >= CURRENT_DATE - INTERVAL '14 days'
+            AND created_at < CURRENT_DATE - INTERVAL '7 days'
+        `);
+        
+        // Hourly heatmap data (for conversion optimization)
+        const hourlyData = await pool.query(`
+            SELECT 
+                EXTRACT(HOUR FROM created_at) as hour,
+                EXTRACT(DOW FROM created_at) as day_of_week,
+                COUNT(*) as count
+            FROM leads
+            WHERE created_at >= CURRENT_DATE - INTERVAL '30 days'
+            GROUP BY EXTRACT(HOUR FROM created_at), EXTRACT(DOW FROM created_at)
+            ORDER BY day_of_week, hour
+        `);
+        
+        res.json({
+            currentWeek: {
+                leads: parseInt(currentWeekLeads.rows[0].count),
+                sales: parseInt(currentWeekSales.rows[0].count),
+                revenue: parseFloat(currentWeekSales.rows[0].revenue) || 0
+            },
+            previousWeek: {
+                leads: parseInt(previousWeekLeads.rows[0].count),
+                sales: parseInt(previousWeekSales.rows[0].count),
+                revenue: parseFloat(previousWeekSales.rows[0].revenue) || 0
+            },
+            hourlyHeatmap: hourlyData.rows
+        });
+        
+    } catch (error) {
+        console.error('Error fetching comparison stats:', error);
+        res.status(500).json({ error: 'Failed to fetch comparison statistics' });
+    }
+});
+
 // Update lead status (protected)
 app.put('/api/admin/leads/:id', authenticateToken, async (req, res) => {
     try {
