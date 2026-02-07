@@ -482,7 +482,12 @@ app.get('/api/admin/leads', authenticateToken, async (req, res) => {
         }
         
         if (language) {
-            conditions.push(`funnel_language = $${params.length + 1}`);
+            // Treat NULL as 'en' (English is default for legacy leads)
+            if (language === 'en') {
+                conditions.push(`(funnel_language = $${params.length + 1} OR funnel_language IS NULL)`);
+            } else {
+                conditions.push(`funnel_language = $${params.length + 1}`);
+            }
             params.push(language);
         }
         
