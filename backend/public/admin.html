@@ -5405,6 +5405,15 @@ Estou aqui para esclarecer tudo! 😊`
                 const reason = refund.reason || refund.refund_reason || '-';
                 const product = refund.product || refund.product_name || '-';
                 
+                const refundData = {
+                    name: refund.full_name || refund.name,
+                    protocol: refund.protocol,
+                    email: refund.email,
+                    phone: refund.phone || refund.whatsapp,
+                    product: product,
+                    reason: reason
+                };
+                
                 html += `<tr>
                     <td>${date}</td>
                     <td><strong>${refund.name || '-'}</strong></td>
@@ -5414,11 +5423,19 @@ Estou aqui para esclarecer tudo! 😊`
                     <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${reason}">${reason}</td>
                     <td><span class="badge ${status.class}"><span class="badge-dot"></span>${status.icon} ${status.text}</span></td>
                     <td>
-                        <button class="action-btn" onclick="viewRefundDetails(${refund.id})" title="Ver detalhes">👁️</button>
-                        ${refund.status === 'pending' ? `
-                            <button class="action-btn" onclick="updateRefundStatus(${refund.id}, 'approved')" title="Aprovar" style="color: var(--success);">✅</button>
-                            <button class="action-btn" onclick="updateRefundStatus(${refund.id}, 'rejected')" title="Rejeitar" style="color: var(--danger);">❌</button>
-                        ` : ''}
+                        <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                            <button class="action-btn" onclick="viewRefundDetails(${refund.id})" title="Ver detalhes completos">👁️</button>
+                            ${refund.source === 'form' && refund.email ? `
+                                <button class="action-btn" onclick='sendEmailTo(${JSON.stringify(refundData)}, "followUp")' title="Enviar Email" style="color: #3b82f6;">📧</button>
+                            ` : ''}
+                            ${refund.source === 'form' && (refund.phone || refund.whatsapp) ? `
+                                <button class="action-btn" onclick='sendWhatsAppTo(${JSON.stringify(refundData)}, "followUp")' title="Enviar WhatsApp" style="color: #25d366;">💬</button>
+                            ` : ''}
+                            ${refund.status === 'pending' && refund.source === 'form' ? `
+                                <button class="action-btn" onclick="updateRefundStatus(${refund.id}, 'approved')" title="Aprovar" style="color: var(--success);">✅</button>
+                                <button class="action-btn" onclick="updateRefundStatus(${refund.id}, 'rejected')" title="Rejeitar" style="color: var(--danger);">❌</button>
+                            ` : ''}
+                        </div>
                     </td>
                 </tr>`;
             });
@@ -5426,10 +5443,355 @@ Estou aqui para esclarecer tudo! 😊`
             document.getElementById('refundRequestsTableBody').innerHTML = html;
         }
         
-        // View refund details
-        function viewRefundDetails(id) {
-            // For now, just show a toast. Could open a modal with full details
-            showToast('Detalhes', 'Funcionalidade de detalhes em desenvolvimento', 'warning');
+        // Email & WhatsApp Templates
+        const communicationTemplates = {
+            email: {
+                requestInfo: {
+                    subject: 'Solicitação de Reembolso - Protocolo {{protocol}}',
+                    body: `Olá {{name}},
+
+Recebemos sua solicitação de reembolso (Protocolo: {{protocol}}).
+
+Para darmos continuidade ao processo, precisamos de algumas informações adicionais:
+
+1. Motivo detalhado da solicitação
+2. Comprovante de compra (se disponível)
+3. Confirmação do email cadastrado: {{email}}
+
+Aguardamos seu retorno para processar sua solicitação.
+
+Atenciosamente,
+Equipe de Suporte`
+                },
+                approved: {
+                    subject: 'Reembolso Aprovado - Protocolo {{protocol}}',
+                    body: `Olá {{name}},
+
+Ótimas notícias! Seu reembolso foi APROVADO.
+
+📋 Protocolo: {{protocol}}
+💰 Produto: {{product}}
+✅ Status: Aprovado
+
+O valor será estornado em até 7 dias úteis, dependendo da operadora do cartão.
+
+Se tiver alguma dúvida, estamos à disposição.
+
+Atenciosamente,
+Equipe de Suporte`
+                },
+                rejected: {
+                    subject: 'Solicitação de Reembolso - Protocolo {{protocol}}',
+                    body: `Olá {{name}},
+
+Agradecemos por entrar em contato.
+
+Após análise cuidadosa, infelizmente não podemos aprovar sua solicitação de reembolso neste momento.
+
+📋 Protocolo: {{protocol}}
+💰 Produto: {{product}}
+
+Motivo: {{reason}}
+
+Se você acredita que há um erro ou deseja mais esclarecimentos, por favor entre em contato conosco.
+
+Atenciosamente,
+Equipe de Suporte`
+                },
+                followUp: {
+                    subject: 'Acompanhamento - Protocolo {{protocol}}',
+                    body: `Olá {{name}},
+
+Estamos entrando em contato para acompanhar sua solicitação de reembolso.
+
+📋 Protocolo: {{protocol}}
+💰 Produto: {{product}}
+
+Há algo mais que possamos ajudar?
+
+Atenciosamente,
+Equipe de Suporte`
+                }
+            },
+            whatsapp: {
+                requestInfo: `Olá {{name}}! 👋
+
+Recebemos sua solicitação de reembolso (Protocolo: *{{protocol}}*).
+
+Para continuar, precisamos de:
+✅ Motivo detalhado
+✅ Comprovante de compra
+✅ Confirmação do email: {{email}}
+
+Aguardo seu retorno! 😊`,
+                approved: `Olá {{name}}! 🎉
+
+Ótimas notícias! Seu reembolso foi *APROVADO*!
+
+📋 Protocolo: *{{protocol}}*
+💰 Produto: {{product}}
+✅ Status: Aprovado
+
+O valor será estornado em até 7 dias úteis.
+
+Qualquer dúvida, estou aqui! 😊`,
+                rejected: `Olá {{name}},
+
+Após análise, infelizmente não podemos aprovar seu reembolso neste momento.
+
+📋 Protocolo: *{{protocol}}*
+💰 Produto: {{product}}
+
+Se tiver dúvidas, estou à disposição para conversar.`,
+                followUp: `Olá {{name}}! 👋
+
+Passando para acompanhar sua solicitação de reembolso.
+
+📋 Protocolo: *{{protocol}}*
+💰 Produto: {{product}}
+
+Posso ajudar em algo mais? 😊`
+            }
+        };
+
+        // Replace template variables
+        function fillTemplate(template, data) {
+            return template
+                .replace(/\{\{name\}\}/g, data.name || 'Cliente')
+                .replace(/\{\{protocol\}\}/g, data.protocol || 'N/A')
+                .replace(/\{\{email\}\}/g, data.email || '')
+                .replace(/\{\{phone\}\}/g, data.phone || '')
+                .replace(/\{\{product\}\}/g, data.product || 'Produto')
+                .replace(/\{\{reason\}\}/g, data.reason || 'Não especificado');
+        }
+
+        // Open Gmail with pre-filled email
+        function sendEmailTo(refund, templateKey) {
+            const template = communicationTemplates.email[templateKey];
+            if (!template) return;
+            
+            const subject = fillTemplate(template.subject, refund);
+            const body = fillTemplate(template.body, refund);
+            
+            const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(refund.email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            
+            window.open(gmailUrl, '_blank');
+            showToast('Email', 'Gmail aberto com mensagem pronta', 'success');
+        }
+
+        // Open WhatsApp with pre-filled message
+        function sendWhatsAppTo(refund, templateKey) {
+            const template = communicationTemplates.whatsapp[templateKey];
+            if (!template) return;
+            
+            const message = fillTemplate(template, refund);
+            
+            // Clean phone number (remove non-digits)
+            let phone = (refund.phone || refund.whatsapp || '').replace(/\D/g, '');
+            
+            if (!phone) {
+                showToast('Erro', 'Número de telefone não disponível', 'error');
+                return;
+            }
+            
+            // Add country code if not present
+            if (!phone.startsWith('55') && phone.length <= 11) {
+                phone = '55' + phone;
+            }
+            
+            const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+            
+            window.open(whatsappUrl, '_blank');
+            showToast('WhatsApp', 'WhatsApp aberto com mensagem pronta', 'success');
+        }
+
+        // View refund details with quick actions
+        async function viewRefundDetails(id) {
+            try {
+                const response = await fetch(`${API_URL}/api/admin/refunds`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                const refund = data.refunds.find(r => r.id === id);
+                
+                if (!refund) {
+                    showToast('Erro', 'Reembolso não encontrado', 'error');
+                    return;
+                }
+                
+                // Prepare refund data for templates
+                const refundData = {
+                    name: refund.full_name || refund.name,
+                    protocol: refund.protocol,
+                    email: refund.email,
+                    phone: refund.phone || refund.whatsapp,
+                    product: refund.product,
+                    reason: refund.reason
+                };
+                
+                // Build modal content
+                const statusMap = {
+                    'pending': { text: 'Pendente', class: 'warning', icon: '⏳' },
+                    'approved': { text: 'Aprovado', class: 'success', icon: '✅' },
+                    'rejected': { text: 'Rejeitado', class: 'danger', icon: '❌' }
+                };
+                const status = statusMap[refund.status] || statusMap.pending;
+                
+                const sourceMap = {
+                    'form': { text: 'Página de Captura', icon: '📝', color: '#3b82f6' },
+                    'monetizze': { text: 'Monetizze', icon: '💸', color: '#f59e0b' }
+                };
+                const source = sourceMap[refund.source] || sourceMap.form;
+                
+                const typeMap = {
+                    'refund': { text: 'Reembolso', icon: '💸' },
+                    'chargeback': { text: 'Chargeback', icon: '⚠️' }
+                };
+                const type = typeMap[refund.refund_type] || typeMap.refund;
+                
+                document.getElementById('refundModalBody').innerHTML = `
+                    <div style="display: grid; gap: 20px;">
+                        <!-- Header Info -->
+                        <div style="display: flex; justify-content: space-between; align-items: start; padding: 16px; background: var(--bg-tertiary); border-radius: 12px;">
+                            <div>
+                                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">PROTOCOLO</div>
+                                <div style="font-size: 18px; font-weight: 700; color: var(--primary); font-family: monospace;">${refund.protocol}</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <span class="status-badge ${status.class}">${status.icon} ${status.text}</span>
+                                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+                                    ${new Date(refund.created_at).toLocaleString('pt-BR')}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Source & Type -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                            <div style="padding: 12px; background: var(--bg-tertiary); border-radius: 8px; border-left: 3px solid ${source.color};">
+                                <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">ORIGEM</div>
+                                <div style="font-weight: 600; color: var(--text-primary);">${source.icon} ${source.text}</div>
+                            </div>
+                            <div style="padding: 12px; background: var(--bg-tertiary); border-radius: 8px;">
+                                <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">TIPO</div>
+                                <div style="font-weight: 600; color: var(--text-primary);">${type.icon} ${type.text}</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Customer Info -->
+                        <div style="padding: 16px; background: var(--bg-tertiary); border-radius: 12px;">
+                            <h4 style="margin: 0 0 12px 0; color: var(--text-primary); font-size: 14px;">👤 Informações do Cliente</h4>
+                            <div style="display: grid; gap: 8px;">
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="color: var(--text-muted);">Nome:</span>
+                                    <strong style="color: var(--text-primary);">${refund.full_name || refund.name || '-'}</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="color: var(--text-muted);">Email:</span>
+                                    <strong style="color: var(--primary); font-family: monospace; font-size: 13px;">${refund.email || '-'}</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="color: var(--text-muted);">Telefone:</span>
+                                    <strong style="color: var(--text-primary); font-family: monospace;">${refund.phone || refund.whatsapp || '-'}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Product & Value -->
+                        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
+                            <div style="padding: 12px; background: var(--bg-tertiary); border-radius: 8px;">
+                                <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">PRODUTO</div>
+                                <div style="font-weight: 600; color: var(--text-primary);">${refund.product || '-'}</div>
+                            </div>
+                            ${refund.value ? `
+                                <div style="padding: 12px; background: var(--bg-tertiary); border-radius: 8px;">
+                                    <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">VALOR</div>
+                                    <div style="font-weight: 700; color: var(--success); font-size: 16px;">R$ ${parseFloat(refund.value).toFixed(2)}</div>
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        <!-- Reason -->
+                        <div style="padding: 16px; background: var(--bg-tertiary); border-radius: 12px;">
+                            <h4 style="margin: 0 0 8px 0; color: var(--text-primary); font-size: 14px;">💬 Motivo</h4>
+                            <p style="margin: 0; color: var(--text-secondary); line-height: 1.6; white-space: pre-wrap;">${refund.reason || 'Não especificado'}</p>
+                        </div>
+                        
+                        <!-- Quick Actions -->
+                        ${refund.source === 'form' ? `
+                            <div style="padding: 20px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.1)); border-radius: 12px; border: 1px solid rgba(59, 130, 246, 0.2);">
+                                <h4 style="margin: 0 0 16px 0; color: var(--text-primary); font-size: 15px; font-weight: 600;">⚡ Ações Rápidas</h4>
+                                
+                                <!-- Email Actions -->
+                                <div style="margin-bottom: 16px;">
+                                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-weight: 500;">📧 ENVIAR EMAIL</div>
+                                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                                        <button class="btn-secondary" onclick='sendEmailTo(${JSON.stringify(refundData)}, "requestInfo")' style="font-size: 13px; padding: 10px;">
+                                            📝 Solicitar Info
+                                        </button>
+                                        <button class="btn-secondary" onclick='sendEmailTo(${JSON.stringify(refundData)}, "followUp")' style="font-size: 13px; padding: 10px;">
+                                            👋 Acompanhamento
+                                        </button>
+                                        <button class="btn-secondary" onclick='sendEmailTo(${JSON.stringify(refundData)}, "approved")' style="font-size: 13px; padding: 10px; background: rgba(34, 197, 94, 0.1); border-color: rgba(34, 197, 94, 0.3); color: var(--success);">
+                                            ✅ Aprovado
+                                        </button>
+                                        <button class="btn-secondary" onclick='sendEmailTo(${JSON.stringify(refundData)}, "rejected")' style="font-size: 13px; padding: 10px; background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: var(--danger);">
+                                            ❌ Rejeitado
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- WhatsApp Actions -->
+                                ${refund.phone || refund.whatsapp ? `
+                                    <div>
+                                        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-weight: 500;">💬 ENVIAR WHATSAPP</div>
+                                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                                            <button class="btn-secondary" onclick='sendWhatsAppTo(${JSON.stringify(refundData)}, "requestInfo")' style="font-size: 13px; padding: 10px; background: rgba(37, 211, 102, 0.1); border-color: rgba(37, 211, 102, 0.3); color: #25d366;">
+                                                📝 Solicitar Info
+                                            </button>
+                                            <button class="btn-secondary" onclick='sendWhatsAppTo(${JSON.stringify(refundData)}, "followUp")' style="font-size: 13px; padding: 10px; background: rgba(37, 211, 102, 0.1); border-color: rgba(37, 211, 102, 0.3); color: #25d366;">
+                                                👋 Acompanhamento
+                                            </button>
+                                            <button class="btn-secondary" onclick='sendWhatsAppTo(${JSON.stringify(refundData)}, "approved")' style="font-size: 13px; padding: 10px; background: rgba(37, 211, 102, 0.1); border-color: rgba(37, 211, 102, 0.3); color: #25d366;">
+                                                ✅ Aprovado
+                                            </button>
+                                            <button class="btn-secondary" onclick='sendWhatsAppTo(${JSON.stringify(refundData)}, "rejected")' style="font-size: 13px; padding: 10px; background: rgba(37, 211, 102, 0.1); border-color: rgba(37, 211, 102, 0.3); color: #25d366;">
+                                                ❌ Rejeitado
+                                            </button>
+                                        </div>
+                                    </div>
+                                ` : '<p style="font-size: 13px; color: var(--text-muted); text-align: center; margin: 0;">Telefone não disponível para WhatsApp</p>'}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                
+                // Build footer actions
+                let footerHtml = '<div style="display: flex; gap: 12px; justify-content: flex-end;">';
+                
+                if (refund.status === 'pending' && refund.source === 'form') {
+                    footerHtml += `
+                        <button class="btn-secondary" onclick="updateRefundStatus(${id}, 'approved')" style="background: var(--success); color: white; border-color: var(--success);">
+                            ✅ Aprovar Reembolso
+                        </button>
+                        <button class="btn-secondary" onclick="updateRefundStatus(${id}, 'rejected')" style="background: var(--danger); color: white; border-color: var(--danger);">
+                            ❌ Rejeitar
+                        </button>
+                    `;
+                }
+                
+                footerHtml += '<button class="btn-secondary" onclick="closeRefundModal()">Fechar</button></div>';
+                
+                document.getElementById('refundModalFooter').innerHTML = footerHtml;
+                document.getElementById('refundModal').style.display = 'flex';
+                
+            } catch (error) {
+                console.error('Error loading refund details:', error);
+                showToast('Erro', 'Falha ao carregar detalhes', 'error');
+            }
+        }
+        
+        function closeRefundModal() {
+            document.getElementById('refundModal').style.display = 'none';
         }
         
         // Update refund status
