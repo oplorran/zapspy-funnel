@@ -2422,85 +2422,54 @@ Estou aqui para esclarecer tudo! 😊`
         // Load funnel comparison data (EN vs ES)
         async function loadFunnelComparison() {
             try {
-                const [enRes, esRes] = await Promise.all([
-                    fetch(`${API_URL}/api/admin/leads?language=en&limit=1`, { headers: { 'Authorization': `Bearer ${authToken}` } }),
-                    fetch(`${API_URL}/api/admin/leads?language=es&limit=1`, { headers: { 'Authorization': `Bearer ${authToken}` } })
-                ]);
+                // Get all leads to properly count by language (including NULL as 'en')
+                const response = await fetch(`${API_URL}/api/admin/leads?limit=1000`, { 
+                    headers: { 'Authorization': `Bearer ${authToken}` } 
+                });
                 
-                if (enRes.status === 401) { logout(); return; }
+                if (response.status === 401) { logout(); return; }
                 
-                const enData = await enRes.json();
-                const esData = await esRes.json();
+                const data = await response.json();
+                const todayStart = new Date();
+                todayStart.setHours(0, 0, 0, 0);
                 
-                // EN Stats
-                const enTotal = enData.pagination?.total || 0;
+                let enToday = 0, esForoy = 0;
+                let enConverted = 0, esConverted = 0;
+                let enTotal = 0, esTotal = 0;
+                
+                (data.leads || []).forEach(lead => {
+                    const leadDate = new Date(lead.created_at);
+                    // Treat NULL or undefined as 'en' (English is default)
+                    const lang = lead.funnel_language || 'en';
+                    
+                    if (lang === 'en') {
+                        enTotal++;
+                        if (leadDate >= todayStart) enToday++;
+                        if (lead.status === 'converted') enConverted++;
+                    } else if (lang === 'es') {
+                        esTotal++;
+                        if (leadDate >= todayStart) esForoy++;
+                        if (lead.status === 'converted') esConverted++;
+                    }
+                });
+                
+                // Update EN stats
                 document.getElementById('enLeadsTotal').textContent = enTotal.toLocaleString('pt-BR');
+                document.getElementById('enLeadsToday').textContent = enToday.toLocaleString('pt-BR');
+                const enRate = enTotal > 0 ? ((enConverted / enTotal) * 100).toFixed(1) : 0;
+                document.getElementById('enConvRate').textContent = enRate + '%';
                 
-                // ES Stats
-                const esTotal = esData.pagination?.total || 0;
+                // Update ES stats
                 document.getElementById('esLeadsTotal').textContent = esTotal.toLocaleString('pt-BR');
-                
-                // For today's leads, we need separate API call with date filter
-                // For now, estimate based on total
-                document.getElementById('enLeadsToday').textContent = '-';
-                document.getElementById('esLeadsToday').textContent = '-';
-                
-                // Conversion rate (placeholder - would need sales data per language)
-                document.getElementById('enConvRate').textContent = '-';
-                document.getElementById('esConvRate').textContent = '-';
-                
-                // Load today's leads for each funnel
-                loadFunnelTodayStats();
+                document.getElementById('esLeadsToday').textContent = esForoy.toLocaleString('pt-BR');
+                const esRate = esTotal > 0 ? ((esConverted / esTotal) * 100).toFixed(1) : 0;
+                document.getElementById('esConvRate').textContent = esRate + '%';
                 
             } catch (error) {
                 console.error('Error loading funnel comparison:', error);
             }
         }
         
-        async function loadFunnelTodayStats() {
-            try {
-                // Get all leads from today to count by language
-                const today = new Date().toISOString().split('T')[0];
-                const response = await fetch(`${API_URL}/api/admin/leads?limit=500`, { 
-                    headers: { 'Authorization': `Bearer ${authToken}` } 
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    const todayStart = new Date();
-                    todayStart.setHours(0, 0, 0, 0);
-                    
-                    let enToday = 0, esForoy = 0;
-                    let enConverted = 0, esConverted = 0;
-                    let enTotal = 0, esTotal = 0;
-                    
-                    data.leads.forEach(lead => {
-                        const leadDate = new Date(lead.created_at);
-                        const lang = lead.funnel_language || 'en';
-                        
-                        if (lang === 'en') {
-                            enTotal++;
-                            if (leadDate >= todayStart) enToday++;
-                            if (lead.status === 'converted') enConverted++;
-                        } else if (lang === 'es') {
-                            esTotal++;
-                            if (leadDate >= todayStart) esForoy++;
-                            if (lead.status === 'converted') esConverted++;
-                        }
-                    });
-                    
-                    document.getElementById('enLeadsToday').textContent = enToday.toLocaleString('pt-BR');
-                    document.getElementById('esLeadsToday').textContent = esForoy.toLocaleString('pt-BR');
-                    
-                    const enRate = enTotal > 0 ? ((enConverted / enTotal) * 100).toFixed(1) : 0;
-                    const esRate = esTotal > 0 ? ((esConverted / esTotal) * 100).toFixed(1) : 0;
-                    document.getElementById('enConvRate').textContent = enRate + '%';
-                    document.getElementById('esConvRate').textContent = esRate + '%';
-                }
-            } catch (error) {
-                console.error('Error loading today stats:', error);
-            }
-        }
         
         function switchTab(tabName) {
             document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
