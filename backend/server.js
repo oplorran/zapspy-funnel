@@ -756,6 +756,84 @@ app.delete('/api/admin/clear-all-data', authenticateToken, async (req, res) => {
     }
 });
 
+// Enrich geolocation data for existing leads (protected)
+app.post('/api/admin/enrich-geolocation', authenticateToken, async (req, res) => {
+    try {
+        // Get all leads with IP but without country data
+        const leadsToEnrich = await pool.query(
+            `SELECT id, ip_address FROM leads 
+             WHERE ip_address IS NOT NULL 
+             AND ip_address != '' 
+             AND (country IS NULL OR country = '' OR country_code IS NULL OR country_code = 'XX' OR country_code = '')
+             LIMIT 50`
+        );
+        
+        if (leadsToEnrich.rows.length === 0) {
+            return res.json({ 
+                success: true, 
+                message: 'No leads need geolocation enrichment',
+                enriched: 0,
+                remaining: 0
+            });
+        }
+        
+        console.log(`Enriching geolocation for ${leadsToEnrich.rows.length} leads...`);
+        
+        let enrichedCount = 0;
+        let errors = 0;
+        
+        // Process each lead (with delay to avoid rate limiting)
+        for (const lead of leadsToEnrich.rows) {
+            try {
+                const geoData = await getCountryFromIP(lead.ip_address);
+                
+                if (geoData.country && geoData.country_code) {
+                    await pool.query(
+                        `UPDATE leads SET 
+                            country = $1, 
+                            country_code = $2, 
+                            city = $3, 
+                            updated_at = NOW() 
+                         WHERE id = $4`,
+                        [geoData.country, geoData.country_code, geoData.city, lead.id]
+                    );
+                    enrichedCount++;
+                    console.log(`Enriched lead ${lead.id}: ${geoData.country} (${geoData.country_code})`);
+                } else {
+                    console.log(`Could not get geo data for lead ${lead.id} (IP: ${lead.ip_address})`);
+                }
+                
+                // Small delay to avoid rate limiting
+                await new Promise(resolve => setTimeout(resolve, 200));
+                
+            } catch (err) {
+                console.error(`Error enriching lead ${lead.id}:`, err.message);
+                errors++;
+            }
+        }
+        
+        // Count remaining leads needing enrichment
+        const remainingResult = await pool.query(
+            `SELECT COUNT(*) as count FROM leads 
+             WHERE ip_address IS NOT NULL 
+             AND ip_address != '' 
+             AND (country IS NULL OR country = '' OR country_code IS NULL OR country_code = 'XX' OR country_code = '')`
+        );
+        
+        res.json({ 
+            success: true, 
+            message: `Enriched ${enrichedCount} leads`,
+            enriched: enrichedCount,
+            errors: errors,
+            remaining: parseInt(remainingResult.rows[0].count)
+        });
+        
+    } catch (error) {
+        console.error('Error enriching geolocation:', error);
+        res.status(500).json({ error: 'Failed to enrich geolocation data' });
+    }
+});
+
 // Export leads as CSV (protected)
 app.get('/api/admin/leads/export', authenticateToken, async (req, res) => {
     try {

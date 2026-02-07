@@ -1918,7 +1918,7 @@
                 <!-- Tab: Countries - Redesigned -->
                 <div class="tab-content" id="tab-countries">
                     <!-- Header Section -->
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
                         <div>
                             <h2 style="margin: 0; font-size: 24px; font-weight: 700; display: flex; align-items: center; gap: 12px;">
                                 <span style="width: 44px; height: 44px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px;">🌍</span>
@@ -1926,61 +1926,66 @@
                             </h2>
                             <p style="color: var(--text-muted); margin: 8px 0 0 56px; font-size: 14px;">Performance de leads e vendas por país</p>
                         </div>
-                        <button class="btn-primary" onclick="loadCountriesData()" style="display: flex; align-items: center; gap: 8px;">
-                            <span>🔄</span> Atualizar Dados
-                        </button>
+                        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                            <button class="btn-secondary" onclick="enrichGeolocation()" id="enrichGeoBtn" style="display: flex; align-items: center; gap: 8px;" title="Busca dados de país para leads sem localização">
+                                <span>📍</span> Enriquecer Geo
+                            </button>
+                            <button class="btn-primary" onclick="loadCountriesData()" style="display: flex; align-items: center; gap: 8px;">
+                                <span>🔄</span> Atualizar Dados
+                            </button>
+                        </div>
                     </div>
                     
                     <!-- Stats Cards Grid -->
-                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
                         <!-- Card 1: Total Countries -->
-                        <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 16px; padding: 24px; position: relative; overflow: hidden;">
+                        <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.08) 100%); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 16px; padding: 24px; position: relative; overflow: hidden;">
                             <div style="position: absolute; top: -30px; right: -30px; width: 100px; height: 100px; background: rgba(99, 102, 241, 0.1); border-radius: 50%;"></div>
                             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
                                 <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px;">🌍</div>
-                                <span style="color: rgba(255,255,255,0.6); font-size: 13px;">Total de Países</span>
+                                <span style="color: rgba(255,255,255,0.6); font-size: 13px; font-weight: 500;">Total de Países</span>
                             </div>
-                            <div style="font-size: 36px; font-weight: 700; color: #fff;" id="countriesTotal">0</div>
-                            <div style="font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 4px;">países alcançados</div>
+                            <div style="font-size: 42px; font-weight: 700; color: #fff; line-height: 1;" id="countriesTotal">0</div>
+                            <div style="font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 8px;">países alcançados</div>
                         </div>
                         
                         <!-- Card 2: Top Country -->
-                        <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(251, 191, 36, 0.05) 100%); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 16px; padding: 24px; position: relative; overflow: hidden;">
+                        <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(251, 191, 36, 0.08) 100%); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 16px; padding: 24px; position: relative; overflow: hidden;">
                             <div style="position: absolute; top: -30px; right: -30px; width: 100px; height: 100px; background: rgba(245, 158, 11, 0.1); border-radius: 50%;"></div>
                             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
                                 <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px;">🏆</div>
-                                <span style="color: rgba(255,255,255,0.6); font-size: 13px;">País Top em Leads</span>
+                                <span style="color: rgba(255,255,255,0.6); font-size: 13px; font-weight: 500;">País Top em Leads</span>
                             </div>
-                            <div style="font-size: 28px; font-weight: 700; color: #fff;" id="topCountry">-</div>
-                            <div style="font-size: 12px; color: #f59e0b; margin-top: 4px;" id="topCountryLeads">0 leads</div>
+                            <div style="font-size: 28px; font-weight: 700; color: #fff; line-height: 1;" id="topCountry">-</div>
+                            <div style="font-size: 13px; color: #f59e0b; margin-top: 8px; font-weight: 600;" id="topCountryLeads">0 leads</div>
                         </div>
                         
                         <!-- Card 3: Best Conversion -->
-                        <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(52, 211, 153, 0.05) 100%); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 16px; padding: 24px; position: relative; overflow: hidden;">
+                        <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(52, 211, 153, 0.08) 100%); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 16px; padding: 24px; position: relative; overflow: hidden;">
                             <div style="position: absolute; top: -30px; right: -30px; width: 100px; height: 100px; background: rgba(16, 185, 129, 0.1); border-radius: 50%;"></div>
                             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
                                 <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #10b981 0%, #34d399 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px;">📈</div>
-                                <span style="color: rgba(255,255,255,0.6); font-size: 13px;">Melhor Conversão</span>
+                                <span style="color: rgba(255,255,255,0.6); font-size: 13px; font-weight: 500;">Melhor Conversão</span>
                             </div>
-                            <div style="font-size: 28px; font-weight: 700; color: #fff;" id="bestConversionCountry">-</div>
-                            <div style="font-size: 12px; color: #10b981; margin-top: 4px;" id="bestConversionRate">0%</div>
+                            <div style="font-size: 28px; font-weight: 700; color: #fff; line-height: 1;" id="bestConversionCountry">-</div>
+                            <div style="font-size: 13px; color: #10b981; margin-top: 8px; font-weight: 600;" id="bestConversionRate">0%</div>
                         </div>
                         
                         <!-- Card 4: Top Revenue -->
-                        <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(96, 165, 250, 0.05) 100%); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 16px; padding: 24px; position: relative; overflow: hidden;">
+                        <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(96, 165, 250, 0.08) 100%); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 16px; padding: 24px; position: relative; overflow: hidden;">
                             <div style="position: absolute; top: -30px; right: -30px; width: 100px; height: 100px; background: rgba(59, 130, 246, 0.1); border-radius: 50%;"></div>
                             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
                                 <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px;">💰</div>
-                                <span style="color: rgba(255,255,255,0.6); font-size: 13px;">Maior Faturamento</span>
+                                <span style="color: rgba(255,255,255,0.6); font-size: 13px; font-weight: 500;">Maior Faturamento</span>
                             </div>
-                            <div style="font-size: 28px; font-weight: 700; color: #fff;" id="topRevenueCountry">-</div>
-                            <div style="font-size: 12px; color: #3b82f6; margin-top: 4px;" id="topRevenueValue">R$ 0</div>
+                            <div style="font-size: 28px; font-weight: 700; color: #fff; line-height: 1;" id="topRevenueCountry">-</div>
+                            <div style="font-size: 13px; color: #3b82f6; margin-top: 8px; font-weight: 600;" id="topRevenueValue">$0</div>
                         </div>
                     </div>
                     
                     <!-- Countries List -->
-                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; overflow: hidden;">
-                        <div style="padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: space-between;">
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; overflow: hidden;">
+                        <div style="padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between;">
                             <h3 style="margin: 0; font-size: 16px; font-weight: 600;">Ranking de Países</h3>
                             <span style="color: rgba(255,255,255,0.4); font-size: 13px;" id="countriesCount">0 países</span>
                         </div>
@@ -4055,7 +4060,6 @@ Estou aqui para esclarecer tudo! 😊`
             
             // Calculate totals for percentage bars
             const maxLeads = Math.max(...countries.map(c => c.leads));
-            const totalRevenue = countries.reduce((sum, c) => sum + c.revenue, 0);
             
             let html = '';
             countries.forEach((country, index) => {
@@ -4115,6 +4119,43 @@ Estou aqui para esclarecer tudo! 😊`
             });
             
             container.innerHTML = html;
+        }
+        
+        // Enrich geolocation for leads without country data
+        async function enrichGeolocation() {
+            const btn = document.getElementById('enrichGeoBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner" style="width: 16px; height: 16px;"></span> Processando...';
+            btn.disabled = true;
+            
+            try {
+                const response = await fetch(`${API_URL}/api/admin/enrich-geolocation`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('Geolocalização', `${data.enriched} leads atualizados. ${data.remaining} restantes.`, 'success');
+                    
+                    // Reload data
+                    await loadCountriesData();
+                    
+                    // If there are more leads to process, show info
+                    if (data.remaining > 0) {
+                        showToast('Dica', `Clique novamente para processar mais ${data.remaining} leads.`, 'warning');
+                    }
+                } else {
+                    showToast('Erro', data.error || 'Erro ao enriquecer dados', 'error');
+                }
+            } catch (error) {
+                console.error('Error enriching geolocation:', error);
+                showToast('Erro', 'Falha ao conectar com o servidor', 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
         }
         
         // Load reports stats
