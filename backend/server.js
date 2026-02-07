@@ -671,6 +671,43 @@ app.delete('/api/admin/leads/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// Clear all test data (protected) - USE WITH CAUTION
+app.delete('/api/admin/clear-all-data', authenticateToken, async (req, res) => {
+    try {
+        const { confirm } = req.query;
+        
+        if (confirm !== 'yes-delete-everything') {
+            return res.status(400).json({ 
+                error: 'Confirmation required', 
+                message: 'Add ?confirm=yes-delete-everything to confirm deletion' 
+            });
+        }
+        
+        // Delete all data from tables
+        const leadsResult = await pool.query('DELETE FROM leads RETURNING id');
+        const eventsResult = await pool.query('DELETE FROM funnel_events RETURNING id');
+        const transactionsResult = await pool.query('DELETE FROM transactions RETURNING id');
+        const refundsResult = await pool.query('DELETE FROM refund_requests RETURNING id');
+        
+        console.log('⚠️ ALL DATA CLEARED BY ADMIN');
+        
+        res.json({ 
+            success: true, 
+            message: 'All data cleared',
+            deleted: {
+                leads: leadsResult.rowCount,
+                funnel_events: eventsResult.rowCount,
+                transactions: transactionsResult.rowCount,
+                refund_requests: refundsResult.rowCount
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error clearing data:', error);
+        res.status(500).json({ error: 'Failed to clear data' });
+    }
+});
+
 // Export leads as CSV (protected)
 app.get('/api/admin/leads/export', authenticateToken, async (req, res) => {
     try {
