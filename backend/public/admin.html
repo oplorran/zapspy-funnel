@@ -1179,6 +1179,10 @@
                 
                 <div class="nav-section">
                     <div class="nav-section-title">Relatórios</div>
+                    <div class="nav-item" onclick="switchTab('countries')">
+                        <span class="nav-item-icon">🌍</span>
+                        Países
+                    </div>
                     <div class="nav-item" onclick="switchTab('reports')">
                         <span class="nav-item-icon">📥</span>
                         Exportar Dados
@@ -1911,6 +1915,74 @@
                     </div>
                 </div>
                 
+                <!-- Tab: Countries -->
+                <div class="tab-content" id="tab-countries">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h2>📊 Análise por País</h2>
+                                <p style="color: var(--text-muted); margin-top: 4px;">Performance de leads e vendas por localização geográfica</p>
+                            </div>
+                            <button class="btn-primary" onclick="loadCountriesData()">🔄 Atualizar</button>
+                        </div>
+                        
+                        <!-- Countries Summary Cards -->
+                        <div class="stats-row" style="margin-bottom: 24px;">
+                            <div class="stat-card">
+                                <div class="stat-header">
+                                    <span class="stat-label">Total de Países</span>
+                                    <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">🌍</div>
+                                </div>
+                                <div class="stat-value" id="countriesTotal">0</div>
+                                <div class="stat-change positive">Países alcançados</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-header">
+                                    <span class="stat-label">País Top</span>
+                                    <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">🏆</div>
+                                </div>
+                                <div class="stat-value" id="topCountry">-</div>
+                                <div class="stat-change" id="topCountryLeads">0 leads</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-header">
+                                    <span class="stat-label">Melhor Conversão</span>
+                                    <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">📈</div>
+                                </div>
+                                <div class="stat-value" id="bestConversionCountry">-</div>
+                                <div class="stat-change positive" id="bestConversionRate">0%</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-header">
+                                    <span class="stat-label">Maior Faturamento</span>
+                                    <div class="stat-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">💰</div>
+                                </div>
+                                <div class="stat-value" id="topRevenueCountry">-</div>
+                                <div class="stat-change positive" id="topRevenueValue">R$ 0</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Countries Table -->
+                        <table class="data-table" id="countriesTable">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;">#</th>
+                                    <th>País</th>
+                                    <th>Leads</th>
+                                    <th>Convertidos</th>
+                                    <th>Taxa Conversão</th>
+                                    <th>Faturamento</th>
+                                    <th>Ticket Médio</th>
+                                    <th>Tendência</th>
+                                </tr>
+                            </thead>
+                            <tbody id="countriesTableBody">
+                                <tr><td colspan="8"><div class="loading"><div class="spinner"></div>Carregando dados de países...</div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
                 <!-- Tab: Reports -->
                 <div class="tab-content" id="tab-reports">
                     <div class="export-center">
@@ -2200,6 +2272,7 @@ Posso ajudar com alguma dúvida?</textarea>
             'funnel': { title: 'Funil', subtitle: 'Visualize a jornada dos visitantes' },
             'sales': { title: 'Vendas', subtitle: 'Acompanhe suas transações' },
             'refunds': { title: 'Reembolsos', subtitle: 'Gerencie solicitações de reembolso' },
+            'countries': { title: 'Países', subtitle: 'Análise de performance por país' },
             'reports': { title: 'Exportar Dados', subtitle: 'Baixe relatórios em Excel, PDF ou CSV' },
             'settings': { title: 'Configurações', subtitle: 'Configure integrações' }
         };
@@ -2387,6 +2460,7 @@ Estou aqui para esclarecer tudo! 😊`
             else if (tabName === 'sales') loadSalesData();
             else if (tabName === 'recovery') loadRecoveryData();
             else if (tabName === 'refunds') loadRefunds();
+            else if (tabName === 'countries') loadCountriesData();
             else if (tabName === 'reports') loadReportsStats();
             else if (tabName === 'settings') document.getElementById('postbackUrl').textContent = `${API_URL}/api/postback/monetizze`;
         }
@@ -3587,6 +3661,156 @@ Estou aqui para esclarecer tudo! 😊`
                 console.error('Error updating refund:', error);
                 showToast('Erro', 'Falha ao atualizar reembolso', 'error');
             }
+        }
+        
+        // ==================== COUNTRIES REPORT ====================
+        async function loadCountriesData() {
+            try {
+                const headers = { 'Authorization': `Bearer ${authToken}` };
+                
+                // Fetch leads and transactions
+                const [leadsRes, transactionsRes] = await Promise.all([
+                    fetch(`${API_URL}/api/admin/leads?limit=10000`, { headers }),
+                    fetch(`${API_URL}/api/admin/transactions`, { headers })
+                ]);
+                
+                const leadsData = await leadsRes.json();
+                const transactionsData = await transactionsRes.json();
+                
+                const leads = leadsData.leads || [];
+                const transactions = transactionsData.transactions || [];
+                
+                // Group by country
+                const countryStats = {};
+                
+                // Process leads
+                leads.forEach(lead => {
+                    const country = lead.country || 'Desconhecido';
+                    const countryCode = lead.country_code || 'XX';
+                    const key = countryCode;
+                    
+                    if (!countryStats[key]) {
+                        countryStats[key] = {
+                            country: country,
+                            country_code: countryCode,
+                            leads: 0,
+                            converted: 0,
+                            revenue: 0,
+                            emails: new Set()
+                        };
+                    }
+                    
+                    countryStats[key].leads++;
+                    countryStats[key].emails.add(lead.email.toLowerCase());
+                    
+                    if (lead.status === 'converted') {
+                        countryStats[key].converted++;
+                    }
+                });
+                
+                // Process transactions to add revenue
+                transactions.forEach(tx => {
+                    if (tx.status !== 'approved') return;
+                    
+                    const email = (tx.email || '').toLowerCase();
+                    const value = parseFloat(tx.value) || 0;
+                    
+                    // Find which country this transaction belongs to
+                    for (const key in countryStats) {
+                        if (countryStats[key].emails.has(email)) {
+                            countryStats[key].revenue += value;
+                            break;
+                        }
+                    }
+                });
+                
+                // Convert to array and sort by leads
+                const countriesArray = Object.values(countryStats)
+                    .map(c => ({
+                        ...c,
+                        conversionRate: c.leads > 0 ? ((c.converted / c.leads) * 100).toFixed(1) : 0,
+                        avgTicket: c.converted > 0 ? (c.revenue / c.converted).toFixed(2) : 0
+                    }))
+                    .sort((a, b) => b.leads - a.leads);
+                
+                // Update summary cards
+                document.getElementById('countriesTotal').textContent = countriesArray.filter(c => c.country_code !== 'XX').length;
+                
+                if (countriesArray.length > 0) {
+                    const top = countriesArray[0];
+                    document.getElementById('topCountry').innerHTML = `${getCountryFlag(top.country_code)} ${top.country_code}`;
+                    document.getElementById('topCountryLeads').textContent = `${top.leads} leads`;
+                    
+                    // Best conversion (min 3 leads)
+                    const bestConversion = countriesArray
+                        .filter(c => c.leads >= 3)
+                        .sort((a, b) => parseFloat(b.conversionRate) - parseFloat(a.conversionRate))[0];
+                    
+                    if (bestConversion) {
+                        document.getElementById('bestConversionCountry').innerHTML = `${getCountryFlag(bestConversion.country_code)} ${bestConversion.country_code}`;
+                        document.getElementById('bestConversionRate').textContent = `${bestConversion.conversionRate}%`;
+                    }
+                    
+                    // Top revenue
+                    const topRevenue = countriesArray.sort((a, b) => b.revenue - a.revenue)[0];
+                    if (topRevenue && topRevenue.revenue > 0) {
+                        document.getElementById('topRevenueCountry').innerHTML = `${getCountryFlag(topRevenue.country_code)} ${topRevenue.country_code}`;
+                        document.getElementById('topRevenueValue').textContent = `R$ ${topRevenue.revenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+                    }
+                }
+                
+                // Sort back by leads for table
+                countriesArray.sort((a, b) => b.leads - a.leads);
+                
+                // Render table
+                renderCountriesTable(countriesArray);
+                
+            } catch (error) {
+                console.error('Error loading countries data:', error);
+                document.getElementById('countriesTableBody').innerHTML = `
+                    <tr><td colspan="8"><div class="empty-state"><div class="empty-state-icon">❌</div><h3>Erro ao carregar dados</h3></div></td></tr>
+                `;
+            }
+        }
+        
+        function renderCountriesTable(countries) {
+            const tbody = document.getElementById('countriesTableBody');
+            
+            if (!countries || countries.length === 0) {
+                tbody.innerHTML = `
+                    <tr><td colspan="8"><div class="empty-state"><div class="empty-state-icon">🌍</div><h3>Nenhum dado de país</h3><p>Os leads ainda não possuem informação de localização.</p></div></td></tr>
+                `;
+                return;
+            }
+            
+            let html = '';
+            countries.forEach((country, index) => {
+                const conversionClass = parseFloat(country.conversionRate) >= 5 ? 'positive' : parseFloat(country.conversionRate) >= 2 ? '' : 'negative';
+                const trend = country.leads >= 5 ? '📈' : country.leads >= 2 ? '➡️' : '📉';
+                
+                html += `
+                    <tr>
+                        <td style="font-weight: 600; color: var(--text-muted);">${index + 1}</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 20px;">${getCountryFlag(country.country_code)}</span>
+                                <div>
+                                    <div style="font-weight: 600;">${country.country}</div>
+                                    <div style="font-size: 11px; color: var(--text-muted);">${country.country_code}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="badge" style="background: rgba(0,123,255,0.15); color: #448aff;">${country.leads}</span></td>
+                        <td><span class="badge" style="background: rgba(0,230,118,0.15); color: #00e676;">${country.converted}</span></td>
+                        <td><span class="stat-change ${conversionClass}">${country.conversionRate}%</span></td>
+                        <td style="font-weight: 600; color: var(--success);">R$ ${country.revenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                        <td>R$ ${parseFloat(country.avgTicket).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                        <td style="font-size: 18px;">${trend}</td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
         }
         
         // Load reports stats
