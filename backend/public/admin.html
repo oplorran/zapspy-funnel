@@ -2162,12 +2162,9 @@
                                         <input type="text" class="filter-input search-input" id="refundSearchInput" placeholder="Nome, email, protocolo, telefone..." onkeyup="filterRefunds()">
                                     </div>
                                 </div>
-                                <div class="filter-group filter-actions" style="display: flex; gap: 8px;">
+                                <div class="filter-group filter-actions">
                                     <button class="btn-filter-refresh" onclick="loadRefunds()">
                                         <span>🔄</span> Atualizar
-                                    </button>
-                                    <button class="btn-filter-refresh" onclick="syncRefundLanguages()" title="Sincronizar idiomas dos reembolsos com dados dos leads" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
-                                        <span>🔗</span> Sincronizar Idiomas
                                     </button>
                                 </div>
                             </div>
@@ -4857,51 +4854,11 @@ Estou aqui para esclarecer tudo! 😊`
             document.getElementById('refundDateEnd').value = '';
             const sourceFilter = document.getElementById('refundFilterSource');
             const typeFilter = document.getElementById('refundFilterType');
-            const languageFilter = document.getElementById('refundFilterLanguage');
             if (sourceFilter) sourceFilter.value = '';
             if (typeFilter) typeFilter.value = '';
-            if (languageFilter) languageFilter.value = '';
             document.getElementById('customDateFilters').style.display = 'none';
             document.getElementById('customDateFiltersEnd').style.display = 'none';
             renderRefunds(allRefunds);
-        }
-        
-        // Sync refund languages with lead/transaction data
-        async function syncRefundLanguages() {
-            if (!confirm('Isso irá sincronizar os idiomas dos reembolsos com base nos dados dos leads/transações. Continuar?')) {
-                return;
-            }
-            
-            try {
-                showToast('Sincronizando idiomas...', 'info');
-                
-                const response = await fetch(`${API_URL}/api/admin/refunds/sync-languages`, {
-                    method: 'POST',
-                    headers: { 
-                        'Authorization': `Bearer ${authToken}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (response.status === 401 || response.status === 403) {
-                    logout();
-                    return;
-                }
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showToast(`✅ ${data.updated} reembolsos atualizados! (${data.notFound} sem dados de lead)`, 'success');
-                    // Reload refunds to show updated languages
-                    loadRefunds();
-                } else {
-                    showToast('Erro ao sincronizar idiomas', 'error');
-                }
-                
-            } catch (error) {
-                console.error('Error syncing refund languages:', error);
-                showToast('Erro ao sincronizar idiomas', 'error');
-            }
         }
         
         // Theme Toggle
@@ -5055,7 +5012,7 @@ Estou aqui para esclarecer tudo! 😊`
             sendWhatsAppTo(data, 'followUp');
         }
         
-        function openRefundModal(id) {
+        async function openRefundModal(id) {
             const refund = allRefunds.find(r => r.id === id);
             if (!refund) return;
             
@@ -5106,6 +5063,96 @@ Estou aqui para esclarecer tudo! 😊`
                 modalSourceBadge = `<span style="display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; background: ${modalType.color}22; color: ${modalType.color}; border: 1px solid ${modalType.color}44;">${modalType.text}</span>`;
             }
             
+            // Show loading state in modal
+            document.getElementById('refundModalBody').innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <div class="skeleton-line" style="width: 60%; height: 20px; margin: 0 auto 16px;"></div>
+                    <div class="skeleton-line" style="width: 80%; height: 14px; margin: 0 auto 8px;"></div>
+                    <div class="skeleton-line" style="width: 40%; height: 14px; margin: 0 auto;"></div>
+                    <p style="color: var(--text-muted); margin-top: 16px;">Carregando dados cruzados...</p>
+                </div>
+            `;
+            document.getElementById('refundModal').style.display = 'flex';
+            
+            // Fetch enriched data from API
+            let crossRef = null;
+            try {
+                const response = await fetch(`/api/admin/refunds/${id}/details`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.status === 401 || response.status === 403) { logout(); return; }
+                if (response.ok) {
+                    const data = await response.json();
+                    crossRef = data.crossReference || null;
+                }
+            } catch (err) {
+                console.error('Error fetching cross-ref data:', err);
+            }
+            
+            // Build cross-reference section
+            let crossRefHTML = '';
+            if (crossRef && crossRef.summary) {
+                const s = crossRef.summary;
+                const detLang = modalLangLabels[s.detectedLanguage];
+                const detLangText = detLang ? detLang.text : '🌍 Não identificado';
+                
+                crossRefHTML = `
+                    <div class="refund-section" style="margin-top: 16px;">
+                        <h4 class="refund-section-title">🔗 DADOS CRUZADOS DO FUNIL</h4>
+                        <div class="refund-info-box" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(139, 92, 246, 0.05)); border: 1px solid rgba(99, 102, 241, 0.15);">
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 12px;">
+                                <div style="padding: 12px; background: rgba(99, 102, 241, 0.08); border-radius: 10px; text-align: center;">
+                                    <div style="font-size: 20px; font-weight: 700; color: #6366f1;">${s.totalTransactions}</div>
+                                    <div style="font-size: 10px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Transações</div>
+                                </div>
+                                <div style="padding: 12px; background: rgba(34, 197, 94, 0.08); border-radius: 10px; text-align: center;">
+                                    <div style="font-size: 20px; font-weight: 700; color: #22c55e;">R$ ${s.totalSpent.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                                    <div style="font-size: 10px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Total Gasto</div>
+                                </div>
+                            </div>
+                            
+                            <div class="refund-info-row"><span class="refund-label">Idioma detectado:</span> <span class="refund-value">${detLangText}</span></div>
+                            <div class="refund-info-row"><span class="refund-label">Vendas aprovadas:</span> <span class="refund-value">${s.approvedTransactions}</span></div>
+                            <div class="refund-info-row"><span class="refund-label">Etapas no funil:</span> <span class="refund-value">${s.funnelSteps}</span></div>
+                            ${s.productsBought.length > 0 ? `
+                            <div class="refund-info-row"><span class="refund-label">Produtos comprados:</span> <span class="refund-value">${s.productsBought.join(', ')}</span></div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    
+                    ${crossRef.transactions && crossRef.transactions.length > 0 ? `
+                    <div class="refund-section" style="margin-top: 12px;">
+                        <h4 class="refund-section-title">💳 HISTÓRICO DE TRANSAÇÕES</h4>
+                        <div style="max-height: 200px; overflow-y: auto;">
+                            ${crossRef.transactions.map(tx => {
+                                const txDate = tx.created_at ? new Date(tx.created_at).toLocaleDateString('pt-BR') : '-';
+                                const txStatus = tx.status === 'approved' ? '✅' : tx.status === 'refunded' ? '🔄' : tx.status === 'chargeback' ? '⚠️' : '⏳';
+                                const txValue = tx.value ? 'R$ ' + parseFloat(tx.value).toLocaleString('pt-BR', {minimumFractionDigits: 2}) : '-';
+                                return `<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 4px; font-size: 12px;">
+                                    <span style="color: var(--text-secondary);">${txStatus} ${tx.product || 'Produto'}</span>
+                                    <span style="font-weight: 600; color: var(--text-primary);">${txValue}</span>
+                                    <span style="color: var(--text-muted);">${txDate}</span>
+                                </div>`;
+                            }).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    ${crossRef.lead ? `
+                    <div class="refund-section" style="margin-top: 12px;">
+                        <h4 class="refund-section-title">👤 DADOS DO LEAD</h4>
+                        <div class="refund-info-box">
+                            <div class="refund-info-row"><span class="refund-label">Status no funil:</span> <span class="refund-value">${crossRef.lead.status || '-'}</span></div>
+                            <div class="refund-info-row"><span class="refund-label">País:</span> <span class="refund-value">${crossRef.lead.country || '-'}</span></div>
+                            <div class="refund-info-row"><span class="refund-label">Origem:</span> <span class="refund-value">${crossRef.lead.source || '-'}</span></div>
+                            <div class="refund-info-row"><span class="refund-label">Primeira compra:</span> <span class="refund-value">${crossRef.lead.first_purchase_at ? new Date(crossRef.lead.first_purchase_at).toLocaleDateString('pt-BR') : '-'}</span></div>
+                            <div class="refund-info-row"><span class="refund-label">Última compra:</span> <span class="refund-value">${crossRef.lead.last_purchase_at ? new Date(crossRef.lead.last_purchase_at).toLocaleDateString('pt-BR') : '-'}</span></div>
+                        </div>
+                    </div>
+                    ` : '<div style="padding: 12px; background: rgba(245, 158, 11, 0.08); border-radius: 8px; border: 1px solid rgba(245, 158, 11, 0.2); margin-top: 12px; font-size: 12px; color: #f59e0b;">⚠️ Lead não encontrado no funil - este cliente pode ter comprado fora do funil rastreado.</div>'}
+                `;
+            }
+            
             document.getElementById('refundModalBody').innerHTML = `
                 <div class="refund-modal-content">
                     <div class="refund-modal-header-info" style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
@@ -5129,6 +5176,7 @@ Estou aqui para esclarecer tudo! 😊`
                         <div class="refund-info-box">
                             <div class="refund-info-row"><span class="refund-label">Data da Compra:</span> <span class="refund-value">${purchaseDate}</span></div>
                             <div class="refund-info-row"><span class="refund-label">Motivo:</span> <span class="refund-value refund-reason">${reasonLabels[refund.reason] || refund.reason || '-'}</span></div>
+                            ${refund.value ? `<div class="refund-info-row"><span class="refund-label">Valor:</span> <span class="refund-value" style="color: var(--danger); font-weight: 600;">R$ ${parseFloat(refund.value).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span></div>` : ''}
                         </div>
                     </div>
                     
@@ -5147,6 +5195,8 @@ Estou aqui para esclarecer tudo! 😊`
                         </div>
                     </div>
                     ` : ''}
+                    
+                    ${crossRefHTML}
                     
                     <div class="refund-timestamp">
                         Solicitado em: ${date}
