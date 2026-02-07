@@ -4253,8 +4253,8 @@ Estou aqui para esclarecer tudo! 😊`
                 { key: 'page_view_phone', label: 'PHONE' },
                 { key: 'phone_submitted', label: 'TEL ENVIADO' },
                 { key: 'email_captured', label: 'EMAIL' },
-                { key: 'page_view_conversas', label: 'CONVERSAS' },
                 { key: 'page_view_cta', label: 'CTA' },
+                { key: 'page_view_conversas', label: 'CONVERSAS' },
                 { key: 'checkout_clicked', label: 'CHECKOUT' }
             ];
             
@@ -4272,12 +4272,12 @@ Estou aqui para esclarecer tudo! 😊`
                 const drop = prevValue !== null && prevValue > 0 ? (((prevValue - value) / prevValue) * 100).toFixed(0) : null;
                 
                 html += `
-                    <div class="funnel-step" style="margin-bottom: 6px;">
-                        <div class="funnel-bar" style="width: ${width}%; background: linear-gradient(90deg, ${color}, ${color}88);">
+                    <div class="funnel-step" style="margin-bottom: 6px; position: relative;">
+                        <div class="funnel-bar" style="width: ${width}%; background: linear-gradient(90deg, ${color}, ${color}88); position: relative;">
                             <span class="funnel-step-name">${step.label}</span>
                             <span class="funnel-step-value">${value}</span>
+                            ${drop > 0 ? `<span class="funnel-drop" style="position: absolute; right: -45px; top: 50%; transform: translateY(-50%); color: #ef4444; font-size: 12px; font-weight: 600;">-${drop}%</span>` : ''}
                         </div>
-                        ${drop > 0 ? `<span class="funnel-drop">-${drop}%</span>` : ''}
                     </div>
                 `;
                 prevValue = value;
@@ -4306,14 +4306,14 @@ Estou aqui para esclarecer tudo! 😊`
         }
         
         function renderFunnelStats(stats) {
-            // Main funnel steps (ordem corrigida: EMAIL vem antes de CONVERSAS e CTA)
+            // Main funnel steps (ordem corrigida: EMAIL capturado mais cedo, depois CTA e CONVERSAS)
             const mainFunnelOrder = [
                 { key: 'page_view_landing', label: 'LANDING', section: 'main' },
                 { key: 'page_view_phone', label: 'PHONE', section: 'main' },
                 { key: 'phone_submitted', label: 'TEL ENVIADO', section: 'main' },
                 { key: 'email_captured', label: 'EMAIL', section: 'main' },
-                { key: 'page_view_conversas', label: 'CONVERSAS', section: 'main' },
                 { key: 'page_view_cta', label: 'CTA', section: 'main' },
+                { key: 'page_view_conversas', label: 'CONVERSAS', section: 'main' },
                 { key: 'checkout_clicked', label: 'CHECKOUT', section: 'main' }
             ];
             
@@ -4355,7 +4355,7 @@ Estou aqui para esclarecer tudo! 😊`
                 const value = statsMap[step.key] || 0;
                 const width = maxVisitors > 0 ? Math.max((value / maxVisitors) * 100, 15) : 15;
                 const drop = prevValue !== null && prevValue > 0 ? (((prevValue - value) / prevValue) * 100).toFixed(0) : null;
-                html += `<div class="funnel-step"><div class="funnel-bar" style="width: ${width}%"><span class="funnel-step-name">${step.label}</span><span class="funnel-step-value">${value}</span></div>${drop > 0 ? `<span class="funnel-drop">-${drop}%</span>` : ''}</div>`;
+                html += `<div class="funnel-step" style="position: relative; margin-bottom: 6px;"><div class="funnel-bar" style="width: ${width}%; position: relative;"><span class="funnel-step-name">${step.label}</span><span class="funnel-step-value">${value}</span>${drop > 0 ? `<span class="funnel-drop" style="position: absolute; right: -45px; top: 50%; transform: translateY(-50%); color: #ef4444; font-size: 12px; font-weight: 600;">-${drop}%</span>` : ''}</div></div>`;
                 prevValue = value;
             });
             
