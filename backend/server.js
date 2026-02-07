@@ -213,50 +213,79 @@ app.use(express.static('public'));
 const path = require('path');
 
 // ==================== GEOLOCATION HELPER ====================
+const https = require('https');
+
 async function getCountryFromIP(ip) {
-    try {
-        // Skip for localhost/private IPs
-        if (!ip || ip === '::1' || ip.startsWith('127.') || ip.startsWith('192.168.') || ip.startsWith('10.')) {
-            console.log('Geolocation: Skipping private/local IP:', ip);
-            return { country: null, country_code: null, city: null };
+    return new Promise((resolve) => {
+        try {
+            // Skip for localhost/private IPs
+            if (!ip || ip === '::1' || ip.startsWith('127.') || ip.startsWith('192.168.') || ip.startsWith('10.')) {
+                console.log('Geolocation: Skipping private/local IP:', ip);
+                return resolve({ country: null, country_code: null, city: null });
+            }
+            
+            // Clean IP (remove IPv6 prefix if present)
+            let cleanIP = ip;
+            if (ip.startsWith('::ffff:')) {
+                cleanIP = ip.substring(7);
+            }
+            
+            console.log('Geolocation: Looking up IP:', cleanIP);
+            
+            const options = {
+                method: 'GET',
+                hostname: 'ip-geo-location.p.rapidapi.com',
+                port: null,
+                path: `/ip/${cleanIP}?format=json&language=en`,
+                headers: {
+                    'x-rapidapi-key': process.env.RAPIDAPI_KEY || 'd03f07c7d0msh0e23fb53734dctqp1c2c1fjsnc7937b7aa011',
+                    'x-rapidapi-host': 'ip-geo-location.p.rapidapi.com'
+                }
+            };
+            
+            const req = https.request(options, function (res) {
+                const chunks = [];
+                
+                res.on('data', function (chunk) {
+                    chunks.push(chunk);
+                });
+                
+                res.on('end', function () {
+                    try {
+                        const body = Buffer.concat(chunks);
+                        const data = JSON.parse(body.toString());
+                        
+                        console.log('Geolocation: Found -', data.country?.name, data.country?.code, data.city?.name);
+                        resolve({
+                            country: data.country?.name || null,
+                            country_code: data.country?.code || null,
+                            city: data.city?.name || null
+                        });
+                    } catch (parseError) {
+                        console.log('Geolocation parse error:', parseError.message);
+                        resolve({ country: null, country_code: null, city: null });
+                    }
+                });
+            });
+            
+            req.on('error', function (error) {
+                console.log('Geolocation request error:', error.message);
+                resolve({ country: null, country_code: null, city: null });
+            });
+            
+            // Timeout after 5 seconds
+            req.setTimeout(5000, function() {
+                console.log('Geolocation: Request timeout');
+                req.destroy();
+                resolve({ country: null, country_code: null, city: null });
+            });
+            
+            req.end();
+        } catch (error) {
+            console.log('Geolocation error:', error.message);
+            resolve({ country: null, country_code: null, city: null });
         }
-        
-        // Clean IP (remove IPv6 prefix if present)
-        let cleanIP = ip;
-        if (ip.startsWith('::ffff:')) {
-            cleanIP = ip.substring(7);
-        }
-        
-        console.log('Geolocation: Looking up IP:', cleanIP);
-        
-        // Use ip-api.com (free, no key required, 45 requests/min)
-        const response = await fetch(`http://ip-api.com/json/${cleanIP}?fields=status,message,country,countryCode,city`, {
-            method: 'GET',
-            timeout: 5000
-        });
-        
-        if (!response.ok) {
-            console.log('Geolocation: API response not OK:', response.status);
-            return { country: null, country_code: null, city: null };
-        }
-        
-        const data = await response.json();
-        
-        if (data.status === 'fail') {
-            console.log('Geolocation: API returned fail:', data.message);
-            return { country: null, country_code: null, city: null };
-        }
-        
-        console.log('Geolocation: Found -', data.country, data.countryCode, data.city);
-        return {
-            country: data.country || null,
-            country_code: data.countryCode || null,
-            city: data.city || null
-        };
-    } catch (error) {
-        console.log('Geolocation error:', error.message);
-        return { country: null, country_code: null, city: null };
-    }
+    });
 }
 
 app.use('/ingles', express.static(path.join(__dirname, 'public', 'ingles')));
