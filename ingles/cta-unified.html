@@ -1734,10 +1734,10 @@
 
         <!-- Pricing -->
         <div class="pricing-section" id="pricing">
-            <div class="discount-badge">76% OFF - LIMITED TIME</div>
+            <div class="discount-badge">81% OFF - LIMITED TIME</div>
             <div class="price-original">$197</div>
-            <div class="price-current">$47</div>
-            <div class="price-savings">You save $150 today!</div>
+            <div class="price-current">$37</div>
+            <div class="price-savings">You save $160 today!</div>
             <div class="price-info">One-time payment • Instant access • 30-day guarantee</div>
             <button class="cta-button" onclick="handlePurchase()" aria-label="Unlock full access to ZapSpy.ai">
                 Unlock Full Access Now
@@ -2003,7 +2003,7 @@
     <div class="fixed-cta">
         <div class="fixed-cta-content">
             <div class="fixed-cta-info">
-                <div class="fixed-cta-price">$47 <span>$197</span></div>
+                <div class="fixed-cta-price">$37 <span>$197</span></div>
                 <div class="fixed-cta-slots">Only <span id="slotsLeftFixed">3</span> slots left!</div>
             </div>
             <button onclick="handlePurchase()">Unlock Now</button>
@@ -2284,13 +2284,13 @@
         function proceedToCheckout() {
             // Track InitiateCheckout via unified system (Browser + CAPI with same event ID)
             if (typeof FacebookCAPI !== 'undefined') {
-                FacebookCAPI.trackInitiateCheckout(47.00, 'ZapSpy.ai VIP Access');
+                FacebookCAPI.trackInitiateCheckout(37.00, 'ZapSpy.ai VIP Access');
             } else if (typeof fbq !== 'undefined') {
                 // Fallback to browser only
                 fbq('track', 'InitiateCheckout', {
                     content_name: 'ZapSpy.ai VIP Access',
                     currency: 'USD',
-                    value: 47.00
+                    value: 37.00
                 });
             }
             
@@ -2299,7 +2299,7 @@
                 ZapSpyTracking.trackStandardEvent('AddToCart', {
                     content_name: 'ZapSpy.ai VIP Access',
                     currency: 'USD',
-                    value: 47.00
+                    value: 37.00
                 });
             }
             
