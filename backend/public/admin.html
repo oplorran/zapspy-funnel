@@ -2017,6 +2017,10 @@
                                 <span style="color: #f59e0b;" id="refundsFormPending">0 pendentes</span> · 
                                 <span style="color: #22c55e;" id="refundsFormApproved">0 aprovados</span>
                             </div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 6px; display: flex; gap: 8px;">
+                                <span style="padding: 2px 6px; background: rgba(59, 130, 246, 0.1); border-radius: 8px;">🇺🇸 <span id="refundsFormEN">0</span></span>
+                                <span style="padding: 2px 6px; background: rgba(245, 158, 11, 0.1); border-radius: 8px;">🇪🇸 <span id="refundsFormES">0</span></span>
+                            </div>
                         </div>
                         <!-- Monetizze Refunds -->
                         <div class="stat-card" style="border-left: 4px solid #f59e0b;">
@@ -2028,6 +2032,10 @@
                             <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">
                                 Processados automaticamente via postback
                             </div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 6px; display: flex; gap: 8px;">
+                                <span style="padding: 2px 6px; background: rgba(59, 130, 246, 0.1); border-radius: 8px;">🇺🇸 <span id="refundsMonetizzeEN">0</span></span>
+                                <span style="padding: 2px 6px; background: rgba(245, 158, 11, 0.1); border-radius: 8px;">🇪🇸 <span id="refundsMonetizzeES">0</span></span>
+                            </div>
                         </div>
                         <!-- Chargebacks -->
                         <div class="stat-card" style="border-left: 4px solid #ef4444;">
@@ -2038,6 +2046,10 @@
                             <div class="stat-value red" id="refundsChargebackTotal">0</div>
                             <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">
                                 Disputas de cartão de crédito
+                            </div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 6px; display: flex; gap: 8px;">
+                                <span style="padding: 2px 6px; background: rgba(59, 130, 246, 0.1); border-radius: 8px;">🇺🇸 <span id="refundsChargebackEN">0</span></span>
+                                <span style="padding: 2px 6px; background: rgba(245, 158, 11, 0.1); border-radius: 8px;">🇪🇸 <span id="refundsChargebackES">0</span></span>
                             </div>
                         </div>
                     </div>
@@ -2106,6 +2118,14 @@
                                     </select>
                                 </div>
                                 <div class="filter-group">
+                                    <label class="filter-label">Idioma</label>
+                                    <select class="filter-input" id="refundFilterLanguage" onchange="filterRefunds()">
+                                        <option value="">Todos os idiomas</option>
+                                        <option value="en">🇺🇸 Inglês (EN)</option>
+                                        <option value="es">🇪🇸 Espanhol (ES)</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
                                     <label class="filter-label">Status</label>
                                     <select class="filter-input" id="refundFilterStatus" onchange="filterRefunds()">
                                         <option value="">Todos os status</option>
@@ -2163,6 +2183,7 @@
                                     <tr>
                                         <th>Protocolo</th>
                                         <th>Origem</th>
+                                        <th>Idioma</th>
                                         <th>Nome</th>
                                         <th>Email</th>
                                         <th>Motivo</th>
@@ -2173,7 +2194,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="refundsTable">
-                                    <tr><td colspan="9" style="text-align: center; padding: 40px; color: var(--text-muted);">Carregando...</td></tr>
+                                    <tr><td colspan="10" style="text-align: center; padding: 40px; color: var(--text-muted);">Carregando...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -4677,17 +4698,41 @@ Estou aqui para esclarecer tudo! 😊`
                 const monetizzeRefunds = allRefunds.filter(r => r.source === 'monetizze' && r.refund_type !== 'chargeback').length;
                 const chargebacks = allRefunds.filter(r => r.source === 'monetizze' && r.refund_type === 'chargeback').length;
                 
+                // Count by language
+                const formEN = allRefunds.filter(r => (!r.source || r.source === 'form') && r.funnel_language === 'en').length;
+                const formES = allRefunds.filter(r => (!r.source || r.source === 'form') && r.funnel_language === 'es').length;
+                const monetizzeEN = allRefunds.filter(r => r.source === 'monetizze' && r.refund_type !== 'chargeback' && r.funnel_language === 'en').length;
+                const monetizzeES = allRefunds.filter(r => r.source === 'monetizze' && r.refund_type !== 'chargeback' && r.funnel_language === 'es').length;
+                const chargebackEN = allRefunds.filter(r => r.source === 'monetizze' && r.refund_type === 'chargeback' && r.funnel_language === 'en').length;
+                const chargebackES = allRefunds.filter(r => r.source === 'monetizze' && r.refund_type === 'chargeback' && r.funnel_language === 'es').length;
+                
                 const formTotalEl = document.getElementById('refundsFormTotal');
                 const formPendingEl = document.getElementById('refundsFormPending');
                 const formApprovedEl = document.getElementById('refundsFormApproved');
                 const monetizzeTotalEl = document.getElementById('refundsMonetizzeTotal');
                 const chargebackTotalEl = document.getElementById('refundsChargebackTotal');
                 
+                // Language elements
+                const formENEl = document.getElementById('refundsFormEN');
+                const formESEl = document.getElementById('refundsFormES');
+                const monetizzeENEl = document.getElementById('refundsMonetizzeEN');
+                const monetizzeESEl = document.getElementById('refundsMonetizzeES');
+                const chargebackENEl = document.getElementById('refundsChargebackEN');
+                const chargebackESEl = document.getElementById('refundsChargebackES');
+                
                 if (formTotalEl) formTotalEl.textContent = formTotal;
                 if (formPendingEl) formPendingEl.textContent = formPending + ' pendentes';
                 if (formApprovedEl) formApprovedEl.textContent = formApproved + ' aprovados';
                 if (monetizzeTotalEl) monetizzeTotalEl.textContent = monetizzeRefunds;
                 if (chargebackTotalEl) chargebackTotalEl.textContent = chargebacks;
+                
+                // Update language counters
+                if (formENEl) formENEl.textContent = formEN;
+                if (formESEl) formESEl.textContent = formES;
+                if (monetizzeENEl) monetizzeENEl.textContent = monetizzeEN;
+                if (monetizzeESEl) monetizzeESEl.textContent = monetizzeES;
+                if (chargebackENEl) chargebackENEl.textContent = chargebackEN;
+                if (chargebackESEl) chargebackESEl.textContent = chargebackES;
                 
                 renderRefunds(allRefunds);
                 
@@ -4702,6 +4747,7 @@ Estou aqui para esclarecer tudo! 😊`
             const period = document.getElementById('refundFilterPeriod').value;
             const source = document.getElementById('refundFilterSource')?.value || '';
             const type = document.getElementById('refundFilterType')?.value || '';
+            const language = document.getElementById('refundFilterLanguage')?.value || '';
             
             // Show/hide custom date fields
             const showCustomDates = period === 'custom';
@@ -4718,6 +4764,11 @@ Estou aqui para esclarecer tudo! 😊`
             // Filter by type
             if (type) {
                 filtered = filtered.filter(r => (r.refund_type || 'refund') === type);
+            }
+            
+            // Filter by language
+            if (language) {
+                filtered = filtered.filter(r => r.funnel_language === language);
             }
             
             // Filter by status
@@ -4875,6 +4926,13 @@ Estou aqui para esclarecer tudo! 😊`
                 'chargeback': { text: '⚠️ Chargeback', color: '#ef4444' }
             };
             
+            // Language labels
+            const languageLabels = {
+                'en': { text: '🇺🇸 EN', color: '#3b82f6' },
+                'es': { text: '🇪🇸 ES', color: '#f59e0b' }
+            };
+            const defaultLang = { text: '🌍 N/A', color: '#71717a' };
+            
             let html = '';
             refunds.forEach(r => {
                 const status = statusLabels[r.status] || { text: r.status, class: 'status-pending' };
@@ -4884,6 +4942,7 @@ Estou aqui para esclarecer tudo! 😊`
                 const refundType = r.source === 'monetizze' 
                     ? (typeLabels[r.refund_type] || typeLabels['refund'])
                     : null;
+                const lang = languageLabels[r.funnel_language] || defaultLang;
                 
                 // Source/Type badge
                 let sourceBadge = `<span style="display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; background: ${source.color}22; color: ${source.color}; border: 1px solid ${source.color}44;">${source.text}</span>`;
@@ -4891,12 +4950,16 @@ Estou aqui para esclarecer tudo! 😊`
                     sourceBadge = `<span style="display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; background: ${refundType.color}22; color: ${refundType.color}; border: 1px solid ${refundType.color}44;">${refundType.text}</span>`;
                 }
                 
+                // Language badge
+                const langBadge = `<span style="display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; background: ${lang.color}22; color: ${lang.color}; border: 1px solid ${lang.color}44;">${lang.text}</span>`;
+                
                 // Value display
                 const valueDisplay = r.value ? `R$ ${parseFloat(r.value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '-';
                 
                 html += `<tr>
                     <td><code class="protocol-code">${r.protocol || '-'}</code></td>
                     <td>${sourceBadge}</td>
+                    <td>${langBadge}</td>
                     <td class="cell-name">${r.full_name || '-'}</td>
                     <td class="cell-email">${r.email || '-'}</td>
                     <td class="cell-reason" title="${reason}">${reason}</td>
@@ -4975,11 +5038,38 @@ Estou aqui para esclarecer tudo! 😊`
             const purchaseDate = refund.purchase_date ? new Date(refund.purchase_date).toLocaleDateString('pt-BR') : '-';
             const statusInfo = statusLabels[refund.status] || { text: refund.status, class: 'status-pending' };
             
+            // Language badge for modal
+            const modalLangLabels = {
+                'en': { text: '🇺🇸 Inglês', color: '#3b82f6' },
+                'es': { text: '🇪🇸 Espanhol', color: '#f59e0b' }
+            };
+            const modalDefaultLang = { text: '🌍 Não definido', color: '#71717a' };
+            const modalLang = modalLangLabels[refund.funnel_language] || modalDefaultLang;
+            const modalLangBadge = `<span style="display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; background: ${modalLang.color}22; color: ${modalLang.color}; border: 1px solid ${modalLang.color}44;">${modalLang.text}</span>`;
+            
+            // Source/Type badge for modal
+            const modalSourceLabels = {
+                'form': { text: '📝 Formulário', color: '#3b82f6' },
+                'monetizze': { text: '💸 Monetizze', color: '#f59e0b' }
+            };
+            const modalTypeLabels = {
+                'refund': { text: '💸 Monetizze', color: '#f59e0b' },
+                'chargeback': { text: '⚠️ Chargeback', color: '#ef4444' }
+            };
+            const modalSource = modalSourceLabels[refund.source] || modalSourceLabels['form'];
+            let modalSourceBadge = `<span style="display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; background: ${modalSource.color}22; color: ${modalSource.color}; border: 1px solid ${modalSource.color}44;">${modalSource.text}</span>`;
+            if (refund.source === 'monetizze' && refund.refund_type === 'chargeback') {
+                const modalType = modalTypeLabels['chargeback'];
+                modalSourceBadge = `<span style="display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; background: ${modalType.color}22; color: ${modalType.color}; border: 1px solid ${modalType.color}44;">${modalType.text}</span>`;
+            }
+            
             document.getElementById('refundModalBody').innerHTML = `
                 <div class="refund-modal-content">
-                    <div class="refund-modal-header-info">
+                    <div class="refund-modal-header-info" style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
                         <code class="protocol-code">${refund.protocol || '-'}</code>
                         <span class="refund-status ${statusInfo.class}">${statusInfo.text}</span>
+                        ${modalLangBadge}
+                        ${modalSourceBadge}
                     </div>
                     
                     <div class="refund-section">
