@@ -119,7 +119,7 @@ const ZapSpyTracking = {
     /**
      * Track AddToCart event (used before checkout)
      */
-    trackAddToCart: function(value = 47.00, currency = 'USD') {
+    trackAddToCart: function(value = 27.00, currency = 'USD') {
         this.trackEvent('AddToCart', {
             content_name: 'ZapSpy.ai VIP Access',
             content_category: 'Subscription',
