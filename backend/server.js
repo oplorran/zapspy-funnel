@@ -217,25 +217,41 @@ async function getCountryFromIP(ip) {
     try {
         // Skip for localhost/private IPs
         if (!ip || ip === '::1' || ip.startsWith('127.') || ip.startsWith('192.168.') || ip.startsWith('10.')) {
+            console.log('Geolocation: Skipping private/local IP:', ip);
             return { country: null, country_code: null, city: null };
         }
         
-        // Use RapidAPI IP Geo Location
-        const response = await fetch(`https://ip-geo-location.p.rapidapi.com/ip/${ip}?format=json`, {
+        // Clean IP (remove IPv6 prefix if present)
+        let cleanIP = ip;
+        if (ip.startsWith('::ffff:')) {
+            cleanIP = ip.substring(7);
+        }
+        
+        console.log('Geolocation: Looking up IP:', cleanIP);
+        
+        // Use ip-api.com (free, no key required, 45 requests/min)
+        const response = await fetch(`http://ip-api.com/json/${cleanIP}?fields=status,message,country,countryCode,city`, {
             method: 'GET',
-            headers: {
-                'x-rapidapi-key': process.env.RAPIDAPI_KEY || 'd0310fc7b9tnah0e23b53734dctqb1c2cc1jerc7937b7aa611',
-                'x-rapidapi-host': 'ip-geo-location.p.rapidapi.com'
-            }
+            timeout: 5000
         });
         
-        if (!response.ok) return { country: null, country_code: null, city: null };
+        if (!response.ok) {
+            console.log('Geolocation: API response not OK:', response.status);
+            return { country: null, country_code: null, city: null };
+        }
         
         const data = await response.json();
+        
+        if (data.status === 'fail') {
+            console.log('Geolocation: API returned fail:', data.message);
+            return { country: null, country_code: null, city: null };
+        }
+        
+        console.log('Geolocation: Found -', data.country, data.countryCode, data.city);
         return {
-            country: data.country?.name || null,
-            country_code: data.country?.code || null,
-            city: data.city?.name || null
+            country: data.country || null,
+            country_code: data.countryCode || null,
+            city: data.city || null
         };
     } catch (error) {
         console.log('Geolocation error:', error.message);
