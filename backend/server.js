@@ -1264,8 +1264,18 @@ app.get('/api/admin/customer/:leadId/journey', authenticateToken, async (req, re
 app.use(express.urlencoded({ extended: true }));
 
 // Monetizze postback endpoint (public - no auth, uses token validation)
-app.post('/api/postback/monetizze', async (req, res) => {
+// Also accepts GET for testing
+app.all('/api/postback/monetizze', async (req, res) => {
     try {
+        // Handle GET request for testing
+        if (req.method === 'GET') {
+            return res.json({ 
+                status: 'ok', 
+                message: 'Postback endpoint is working! Use POST to send transaction data.',
+                timestamp: new Date().toISOString()
+            });
+        }
+        
         console.log('📥 Monetizze Postback received:', JSON.stringify(req.body, null, 2));
         
         // Monetizze sends data as form-urlencoded
