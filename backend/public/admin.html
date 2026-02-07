@@ -3192,7 +3192,15 @@ Estou aqui para esclarecer tudo! 😊`
         
         // Get date range from global filter
         function getGlobalDateRange() {
-            const filter = document.getElementById('globalDateFilter')?.value || 'all';
+            const filterElement = document.getElementById('globalDateFilter');
+            if (!filterElement) {
+                console.warn('⚠️ globalDateFilter element not found');
+                return null;
+            }
+            
+            const filter = filterElement.value || 'all';
+            console.log('📅 Date filter value:', filter);
+            
             if (filter === 'all') return null;
             
             const now = new Date();
@@ -3245,12 +3253,15 @@ Estou aqui para esclarecer tudo! 😊`
                     return null;
             }
             
-            return {
+            const result = {
                 start: startDate.toISOString(),
                 end: endDate.toISOString(),
                 startDate: startDate.toISOString().split('T')[0],
                 endDate: endDate.toISOString().split('T')[0]
             };
+            
+            console.log('📊 Date range:', result);
+            return result;
         }
         
         function loadAllData() {
@@ -3269,10 +3280,15 @@ Estou aqui para esclarecer tudo! 😊`
         
         // Global filter change handler (language + date)
         function onGlobalFilterChange() {
-            const globalLangFilter = document.getElementById('globalFunnelFilter').value;
+            console.log('🔄 Global filter changed');
+            const globalLangFilter = document.getElementById('globalFunnelFilter')?.value || '';
+            const globalDateFilter = document.getElementById('globalDateFilter')?.value || 'all';
+            console.log('📊 Language:', globalLangFilter, 'Date:', globalDateFilter);
+            
             // Sync with leads page filter
             const languageFilter = document.getElementById('languageFilter');
             if (languageFilter) languageFilter.value = globalLangFilter;
+            
             // Reload all data
             loadAllData();
         }
