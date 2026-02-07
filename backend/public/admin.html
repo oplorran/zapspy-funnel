@@ -2390,6 +2390,29 @@
                     </div>
                     
                     <div class="config-box">
+                        <h3>🔍 Debug de Postbacks</h3>
+                        <p>Veja os últimos postbacks recebidos da Monetizze e os valores de cada campo.</p>
+                        <div style="margin-top: 16px; display: flex; gap: 12px; flex-wrap: wrap;">
+                            <button class="btn-secondary" onclick="viewPostbackDebug()">📊 Ver Últimos Postbacks</button>
+                            <button class="btn-secondary" onclick="testPostbackEndpoint()">🧪 Testar Endpoint</button>
+                        </div>
+                        <div id="postbackDebugResult" style="margin-top: 16px; display: none;">
+                            <div style="background: var(--bg-tertiary); border-radius: 12px; padding: 20px; border: 1px solid var(--border); max-height: 400px; overflow-y: auto;">
+                                <pre id="postbackDebugContent" style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-secondary); white-space: pre-wrap; word-break: break-all;"></pre>
+                            </div>
+                        </div>
+                        <div style="margin-top: 12px; padding: 12px; background: rgba(255, 171, 0, 0.1); border-radius: 8px; border: 1px solid rgba(255, 171, 0, 0.2);">
+                            <strong style="color: var(--warning);">ℹ️ Ordem de prioridade dos valores:</strong>
+                            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+                                1. <code>comissao</code> - Comissão líquida do produtor<br>
+                                2. <code>valorLiquido</code> - Valor após taxas<br>
+                                3. <code>valorRecebido</code> - Valor a receber<br>
+                                4. <code>valor</code> - Valor bruto (fallback)
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="config-box">
                         <h3>🔔 Webhook de Notificações</h3>
                         <p>Receba notificações externas quando novos leads entrarem.</p>
                         <div class="form-group" style="margin-top: 16px;">
@@ -4977,6 +5000,73 @@ Estou aqui para esclarecer tudo! 😊`
         function copyPostbackUrl() {
             navigator.clipboard.writeText(document.getElementById('postbackUrl').textContent);
             showToast('Copiado!', 'URL na área de transferência', 'success');
+        }
+        
+        async function viewPostbackDebug() {
+            try {
+                showToast('Carregando...', 'Buscando postbacks recentes', 'success');
+                
+                const response = await fetch(`${API_URL}/api/admin/debug/postbacks`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (!response.ok) throw new Error('Falha ao buscar dados');
+                
+                const data = await response.json();
+                
+                const resultDiv = document.getElementById('postbackDebugResult');
+                const contentPre = document.getElementById('postbackDebugContent');
+                
+                if (data.count === 0) {
+                    contentPre.textContent = '❌ Nenhum postback recebido ainda.\n\nFaça uma venda de teste na Monetizze para ver os dados aqui.';
+                } else {
+                    let output = `📊 ${data.count} postback(s) recebido(s)\n`;
+                    output += `ℹ️ ${data.info}\n\n`;
+                    output += '─'.repeat(60) + '\n\n';
+                    
+                    data.postbacks.forEach((p, i) => {
+                        output += `🔹 POSTBACK #${i + 1}\n`;
+                        output += `   Timestamp: ${p.timestamp}\n`;
+                        output += `   Transação: ${p.chave_unica || 'N/A'}\n`;
+                        output += `   Produto: ${p.produto || 'N/A'}\n`;
+                        output += `   Status: ${p.status || 'N/A'}\n`;
+                        output += `   Email: ${p.comprador || 'N/A'}\n\n`;
+                        output += `   💰 CAMPOS DE VALOR:\n`;
+                        Object.entries(p.valores || {}).forEach(([key, val]) => {
+                            const marker = val !== 'N/A' ? '✅' : '  ';
+                            output += `   ${marker} ${key}: ${val}\n`;
+                        });
+                        output += '\n' + '─'.repeat(60) + '\n\n';
+                    });
+                    
+                    contentPre.textContent = output;
+                }
+                
+                resultDiv.style.display = 'block';
+                showToast('Sucesso!', `${data.count} postback(s) encontrado(s)`, 'success');
+                
+            } catch (error) {
+                console.error('Error loading postback debug:', error);
+                showToast('Erro', 'Falha ao carregar postbacks', 'error');
+            }
+        }
+        
+        async function testPostbackEndpoint() {
+            try {
+                const response = await fetch(`${API_URL}/api/postback/monetizze`, {
+                    method: 'GET'
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'ok') {
+                    showToast('✅ Endpoint OK!', data.message, 'success');
+                } else {
+                    showToast('⚠️ Resposta', JSON.stringify(data), 'warning');
+                }
+            } catch (error) {
+                showToast('❌ Erro', 'Endpoint não está respondendo', 'error');
+            }
         }
         
         function saveWebhook() {

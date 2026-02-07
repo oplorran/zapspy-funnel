@@ -1433,9 +1433,32 @@ const recentPostbacks = [];
 
 // Debug endpoint to see recent postbacks
 app.get('/api/admin/debug/postbacks', authenticateToken, async (req, res) => {
+    // Extract value fields from each postback for easy viewing
+    const postbacksWithValueInfo = recentPostbacks.map(p => {
+        const venda = p.body?.venda || {};
+        return {
+            timestamp: p.timestamp,
+            chave_unica: p.body?.chave_unica || venda.codigo,
+            status: p.body?.tipoEvento?.codigo,
+            produto: p.body?.produto?.nome,
+            // All value fields for debugging
+            valores: {
+                'body.comissao': p.body?.comissao || 'N/A',
+                'venda.comissao': venda.comissao || 'N/A',
+                'venda.valorLiquido': venda.valorLiquido || 'N/A',
+                'venda.valorRecebido': venda.valorRecebido || 'N/A',
+                'venda.valor': venda.valor || 'N/A',
+                'body.valor': p.body?.valor || 'N/A'
+            },
+            comprador: p.body?.comprador?.email
+        };
+    });
+    
     res.json({
         count: recentPostbacks.length,
-        postbacks: recentPostbacks
+        info: 'Mostrando campos de valor para debug. O campo usado será: comissao > valorLiquido > valorRecebido > valor',
+        postbacks: postbacksWithValueInfo,
+        fullPostbacks: recentPostbacks
     });
 });
 
@@ -1497,8 +1520,27 @@ app.all('/api/postback/monetizze', async (req, res) => {
         // tipoEvento.codigo: 1=Aguardando, 2=Aprovada, 3=Cancelada, 4=Reembolso, etc.
         const statusCode = tipoEvento.codigo || body.status || '2';
         
-        // Value from venda.valor or venda.valorRecebido
-        const valor = venda.valorRecebido || venda.valor || body.valor || '0';
+        // Value - prioritize commission value (valor líquido/comissão) over gross value
+        // Monetizze fields: 
+        //   venda.comissao or comissao - comissão líquida do produtor/afiliado
+        //   venda.valorLiquido - valor líquido após taxas
+        //   venda.valorRecebido - valor que será recebido
+        //   venda.valor - valor bruto da venda
+        const comissao = body.comissao || venda.comissao || null;
+        const valorLiquido = venda.valorLiquido || null;
+        const valorRecebido = venda.valorRecebido || null;
+        const valorBruto = venda.valor || body.valor || '0';
+        
+        // Use commission value if available, otherwise fall back to other values
+        const valor = comissao || valorLiquido || valorRecebido || valorBruto;
+        
+        console.log('💰 Value breakdown:', { 
+            comissao: comissao || 'N/A', 
+            valorLiquido: valorLiquido || 'N/A', 
+            valorRecebido: valorRecebido || 'N/A', 
+            valorBruto,
+            finalValue: valor 
+        });
         
         // Buyer info from comprador object
         const email = comprador.email || body.email || null;
