@@ -1310,23 +1310,23 @@ app.all('/api/postback/monetizze', async (req, res) => {
         }
         
         console.log('📥 Monetizze Postback received:', JSON.stringify(req.body, null, 2));
+        console.log('📥 Postback keys:', Object.keys(req.body));
         
-        // Monetizze sends data as form-urlencoded
-        const {
-            chave_unica,        // Unique transaction key
-            produto,            // Product info
-            venda,              // Sale info
-            comprador,          // Buyer info
-            comissao,           // Commission info
-            tipo_pagamento,     // Payment type
-            status,             // Transaction status code
-            data_compra,        // Purchase date
-            data_atualizacao,   // Update date
-            valor,              // Value
-            email,              // Buyer email
-            telefone,           // Buyer phone
-            nome                // Buyer name
-        } = req.body;
+        // Monetizze sends data in various formats - handle all cases
+        const body = req.body;
+        
+        // Extract data - Monetizze can send nested or flat structure
+        const chave_unica = body.chave_unica || body.venda?.codigo || body.transacao || body.transaction_id;
+        const produto = body.produto || body.product;
+        const venda = body.venda || body.sale;
+        const comprador = body.comprador || body.buyer;
+        const status = body.status || body['venda.status'] || (venda && venda.status);
+        const valor = body.valor || body['venda.valor'] || (venda && venda.valor) || body.value;
+        const email = body.email || body['comprador.email'] || (comprador && comprador.email);
+        const telefone = body.telefone || body['comprador.telefone'] || (comprador && comprador.telefone);
+        const nome = body.nome || body['comprador.nome'] || (comprador && comprador.nome);
+        
+        console.log('📥 Extracted data:', { chave_unica, status, valor, email, nome, produto: typeof produto });
         
         // Validate postback (optional: check chave_unica against your secret)
         const postbackToken = process.env.MONETIZZE_POSTBACK_TOKEN;
@@ -1373,13 +1373,15 @@ app.all('/api/postback/monetizze', async (req, res) => {
             '16': 'recovery_cancelled'
         };
         
-        const mappedStatus = statusMap[status] || 'unknown';
-        const buyerEmail = email || comprador?.email;
-        const buyerPhone = telefone || comprador?.telefone;
-        const buyerName = nome || comprador?.nome;
-        const productName = typeof produto === 'object' ? produto.nome : produto;
-        const productCode = typeof produto === 'object' ? (produto.codigo || produto.id) : null;
-        const transactionValue = valor || venda?.valor;
+        const mappedStatus = statusMap[String(status)] || 'unknown';
+        const buyerEmail = email || (comprador && comprador.email) || body['comprador.email'];
+        const buyerPhone = telefone || (comprador && comprador.telefone) || body['comprador.telefone'];
+        const buyerName = nome || (comprador && comprador.nome) || body['comprador.nome'];
+        const productName = typeof produto === 'object' ? (produto.nome || produto.name) : (produto || body['produto.nome']);
+        const productCode = typeof produto === 'object' ? (produto.codigo || produto.code || produto.id) : (body['produto.codigo'] || body['produto.code']);
+        const transactionValue = valor || (venda && venda.valor) || body['venda.valor'];
+        
+        console.log('📥 Mapped values:', { mappedStatus, buyerEmail, buyerName, productName, productCode, transactionValue });
         
         // Determine funnel language based on product code
         // Spanish product codes (Monetizze IDs):
@@ -1424,6 +1426,16 @@ app.all('/api/postback/monetizze', async (req, res) => {
         
         console.log(`🌐 Funnel language detected: ${funnelLanguage} (product: ${productName}, code: ${productCode}, type: ${productType})`);
         
+        // Generate a transaction ID if none provided
+        const transactionId = chave_unica || `monetizze_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        
+        if (!buyerEmail) {
+            console.log('⚠️ No buyer email found in postback, skipping...');
+            return res.json({ status: 'ok', message: 'No email found, skipped' });
+        }
+        
+        console.log(`💾 Saving transaction: ${transactionId} for ${buyerEmail}`);
+        
         // Store transaction in database with funnel_language
         await pool.query(`
             INSERT INTO transactions (
@@ -1438,13 +1450,13 @@ app.all('/api/postback/monetizze', async (req, res) => {
                 funnel_language = $10,
                 updated_at = NOW()
         `, [
-            chave_unica,
+            transactionId,
             buyerEmail,
             buyerPhone,
             buyerName,
             productName,
             transactionValue,
-            status,
+            String(status),
             mappedStatus,
             JSON.stringify(req.body),
             funnelLanguage
