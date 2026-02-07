@@ -1639,8 +1639,8 @@
         const allConversations = [
             // ==================== REALISTIC CONTACTS - NO OBVIOUS EMOJIS ====================
             // Pinned normal contacts (always shown)
-            { name: 'Sar**', avatar: 'imagens/mulher4.jpg', message: '✓✓ You: Love you t**!', time: '09:19', pinned: true, blur: 'semi', tags: [], suspectGender: 'female' },
-            { name: 'Mom', avatar: 'imagens/mulher1.jpg', message: '✓✓ You: Call you lat**!', time: '10:45', pinned: true, blur: 'semi', tags: [], suspectGender: 'female' },
+            { name: '❤️ My Love', avatar: 'imagens/mulher4.jpg', message: '✓✓ You: Love you t**!', time: '09:19', pinned: true, blur: 'semi', tags: [] },
+            { name: 'Best Friend', avatar: 'imagens/mulher1.jpg', message: '✓✓ You: Call you lat**!', time: '10:45', pinned: true, blur: 'semi', tags: [] },
             
             // ===== SUSPICIOUS - Unknown numbers (neutral - always shown) =====
             { name: '+1 (555) ***-**47', avatar: 'imagens/default-avatar.png', message: 'Delete this after rea***...', time: '01:22', unread: 12, blur: 'full', lateNight: true, tags: ['deleted', 'suspicious'], deleted: true, suspectGender: 'neutral' },
@@ -1658,7 +1658,7 @@
             { name: 'Emi**', avatar: 'imagens/mulher2.jpg', message: '✓✓ You: See you lat**!', time: '10:15', blur: 'semi', tags: [] },
             
             // Group 1
-            { name: 'Family Group', avatar: null, message: '✓✓ You: Good mor**!', time: '09:30', blur: 'semi', isGroup: true, tags: [] },
+            { name: 'Weekend Plans 🎉', avatar: null, message: '✓✓ You: Good mor**!', time: '09:30', blur: 'semi', isGroup: true, tags: [] },
             
             // Suspicious - first name only (intimate)
             { name: 'J', avatar: 'imagens/mulher7.jpg', message: 'I miss y**...', time: '03:12', unread: 15, blur: 'full', lateNight: true, tags: ['deleted', 'evidence'], deleted: true },
@@ -1701,22 +1701,22 @@
             { name: 'Chris** (New)', avatar: 'imagens/homem4.jpg', message: 'Workout and th** din***?', time: '22:00', unread: 4, blur: 'full', tags: ['suspicious'] },
             
             // Normal
-            { name: 'Doctor', avatar: 'imagens/default-avatar.png', message: 'Appointment conf*** for...', time: 'Yesterday', blur: 'semi', tags: [] },
-            { name: 'Personal Trainer', avatar: 'imagens/homem1.jpg', message: '✓✓ You: See you at 6!', time: 'Monday', blur: 'semi', tags: [] },
+            { name: 'Clinic', avatar: 'imagens/default-avatar.png', message: 'Appointment conf*** for...', time: 'Yesterday', blur: 'semi', tags: [] },
+            { name: 'Gym', avatar: 'imagens/default-avatar.png', message: '✓✓ You: See you at 6!', time: 'Monday', blur: 'semi', tags: [] },
             
             // Suspicious
             { name: 'Tay*** (Work)', avatar: 'imagens/mulher5.jpg', message: 'Private sess*** ton***?', time: '21:30', unread: 3, blur: 'full', tags: ['suspicious'] },
             { name: 'New Contact', avatar: 'imagens/homem1.jpg', message: 'Lunch in my off***?', time: '12:45', unread: 2, blur: 'full', tags: ['suspicious'] },
             
             // Normal
-            { name: 'Hair Salon', avatar: 'imagens/mulher5.jpg', message: 'Your appt is conf***!', time: 'Tuesday', blur: 'semi', tags: [] },
+            { name: 'Beauty Salon', avatar: 'imagens/default-avatar.png', message: 'Your appt is conf***!', time: 'Tuesday', blur: 'semi', tags: [] },
             
             // Suspicious - dating app matches (no names, just initials)
             { name: 'L', avatar: 'imagens/mulher7.jpg', message: '📷 Photo', time: '00:30', unread: 9, blur: 'full', lateNight: true, tags: ['deleted', 'evidence'], deleted: true },
             { name: 'K', avatar: 'imagens/homem2.jpg', message: '📷 Photo', time: '00:15', unread: 7, blur: 'full', lateNight: true, tags: ['deleted', 'evidence'], deleted: true },
             
             // Normal
-            { name: 'Landlord', avatar: 'imagens/homem2.jpg', message: 'Rent due on the 1**', time: 'Wednesday', blur: 'semi', tags: [] },
+            { name: 'Building Admin', avatar: 'imagens/default-avatar.png', message: 'Rent due on the 1**', time: 'Wednesday', blur: 'semi', tags: [] },
             
             // Group 4
             { name: 'Work Project', avatar: null, message: '~ Boss: Deadline is tom***...', time: '14:22', blur: 'semi', isGroup: true, unread: 23, tags: [] },
@@ -1761,16 +1761,16 @@
             { name: '(Deleted)', avatar: 'imagens/default-avatar.png', message: 'I know you saw my mess***...', time: '01:00', unread: 8, blur: 'full', lateNight: true, tags: ['deleted', 'evidence'], deleted: true },
             
             // Normal services
-            { name: 'Pet Sitter', avatar: 'imagens/mulher9.jpg', message: 'Max is doing gre**!', time: '2 weeks ago', blur: 'semi', tags: [] },
-            { name: 'Mechanic', avatar: 'imagens/homem1.jpg', message: 'Oil change rem***', time: '2 weeks ago', blur: 'semi', tags: [] },
+            { name: 'Pet Shop', avatar: 'imagens/default-avatar.png', message: 'Your pet is doing gre**!', time: '2 weeks ago', blur: 'semi', tags: [] },
+            { name: 'Auto Shop', avatar: 'imagens/default-avatar.png', message: 'Oil change rem***', time: '2 weeks ago', blur: 'semi', tags: [] },
             
             // Suspicious - private number
             { name: 'Private Number', avatar: 'imagens/default-avatar.png', message: '🎤 Audio (5:23)', time: '02:00', unread: 1, blur: 'full', lateNight: true, tags: ['deleted', 'suspicious'], deleted: true },
             
             // Normal
-            { name: 'Plumber', avatar: 'imagens/homem2.jpg', message: 'Available this Sat***?', time: '2 weeks ago', blur: 'semi', tags: [] },
-            { name: 'Electrician', avatar: 'imagens/homem3.jpg', message: '✓✓ You: Thanks for fix***!', time: '3 weeks ago', blur: 'semi', tags: [] },
-            { name: 'Old Neighbor', avatar: 'imagens/mulher1.jpg', message: 'How\'s the new pla**?', time: '3 weeks ago', blur: 'semi', tags: [] },
+            { name: 'Home Services', avatar: 'imagens/default-avatar.png', message: 'Available this Sat***?', time: '2 weeks ago', blur: 'semi', tags: [] },
+            { name: 'Repairs Co.', avatar: 'imagens/default-avatar.png', message: '✓✓ You: Thanks for fix***!', time: '3 weeks ago', blur: 'semi', tags: [] },
+            { name: '+1 (555) ***-**22', avatar: 'imagens/default-avatar.png', message: 'How\'s the new pla**?', time: '3 weeks ago', blur: 'semi', tags: [] },
             { name: 'Travel Agency', avatar: 'imagens/default-avatar.png', message: 'Trip itinerary att***', time: '1 month ago', blur: 'semi', tags: [] },
             { name: 'Real Estate', avatar: 'imagens/default-avatar.png', message: 'New listings avail***!', time: '1 month ago', blur: 'semi', muted: true, tags: [] }
         ];
