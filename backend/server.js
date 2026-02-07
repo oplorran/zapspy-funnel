@@ -206,6 +206,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 // Serve funnel static files
@@ -1292,9 +1293,6 @@ app.get('/api/admin/customer/:leadId/journey', authenticateToken, async (req, re
 });
 
 // ==================== MONETIZZE POSTBACK API ====================
-
-// Middleware to parse URL-encoded postback data
-app.use(express.urlencoded({ extended: true }));
 
 // Store last 20 postbacks for debugging
 const recentPostbacks = [];
