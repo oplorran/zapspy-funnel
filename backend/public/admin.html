@@ -1689,6 +1689,20 @@
                             </div>
                             <div class="stat-value red" id="salesRefunded">0</div>
                         </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-label">Ticket Médio</span>
+                                <div class="stat-icon blue">🎫</div>
+                            </div>
+                            <div class="stat-value blue" id="salesAvgTicket">R$ 0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-label">Vendas/Cliente</span>
+                                <div class="stat-icon purple">👥</div>
+                            </div>
+                            <div class="stat-value purple" id="salesPerCustomer">0</div>
+                        </div>
                     </div>
                     
                     <!-- Products Performance -->
@@ -3386,10 +3400,26 @@ Estou aqui para esclarecer tudo! 😊`
                 updateSalesHeader(stats.language);
                 
                 // Main stats
-                document.getElementById('salesApproved').textContent = (stats.approved || 0).toLocaleString('pt-BR');
-                document.getElementById('salesRevenue').textContent = 'R$ ' + (stats.revenue || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+                const approved = stats.approved || 0;
+                const revenue = stats.revenue || 0;
+                const refunded = stats.refunded || 0;
+                
+                document.getElementById('salesApproved').textContent = approved.toLocaleString('pt-BR');
+                document.getElementById('salesRevenue').textContent = 'R$ ' + revenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
                 document.getElementById('salesConversion').textContent = (stats.conversionRate || 0) + '%';
-                document.getElementById('salesRefunded').textContent = (stats.refunded || 0).toLocaleString('pt-BR');
+                document.getElementById('salesRefunded').textContent = refunded.toLocaleString('pt-BR');
+                
+                // Calculate unique customers from transactions
+                const approvedTransactions = (trans.transactions || []).filter(t => t.status === 'approved');
+                const uniqueCustomers = [...new Set(approvedTransactions.map(t => (t.email || '').toLowerCase()))].filter(e => e).length;
+                
+                // Ticket Médio (revenue / approved transactions)
+                const avgTicket = approved > 0 ? (revenue / approved) : 0;
+                document.getElementById('salesAvgTicket').textContent = 'R$ ' + avgTicket.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+                
+                // Vendas por Cliente (approved transactions / unique customers)
+                const salesPerCustomer = uniqueCustomers > 0 ? (approved / uniqueCustomers).toFixed(1) : '0';
+                document.getElementById('salesPerCustomer').textContent = salesPerCustomer;
                 
                 // Product stats are now shown only in the table
                 
