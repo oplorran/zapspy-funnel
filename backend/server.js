@@ -1724,6 +1724,9 @@ async function initDatabase() {
         await pool.query(`CREATE INDEX IF NOT EXISTS idx_leads_created_at ON leads(created_at DESC);`);
         await pool.query(`CREATE INDEX IF NOT EXISTS idx_leads_status ON leads(status);`);
         
+        // Add funnel_language to transactions if not exists
+        await pool.query(`ALTER TABLE transactions ADD COLUMN IF NOT EXISTS funnel_language VARCHAR(10);`);
+        
         // Create indexes for transactions
         await pool.query(`CREATE INDEX IF NOT EXISTS idx_transactions_email ON transactions(email);`);
         await pool.query(`CREATE INDEX IF NOT EXISTS idx_transactions_status ON transactions(status);`);
