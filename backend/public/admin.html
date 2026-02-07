@@ -1758,47 +1758,118 @@
                 <div class="tab-content" id="tab-funnel">
                     <div class="funnel-page-header">
                         <h2>📊 Análise do Funil</h2>
-                        <div id="funnelLangIndicator"><span class="lang-badge all">🌍 Todos</span></div>
-                    </div>
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-header">
-                                <span class="stat-label">Visitantes (30d)</span>
-                                <div class="stat-icon blue">👁️</div>
-                            </div>
-                            <div class="stat-value" id="funnelVisitors">0</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-header">
-                                <span class="stat-label">Landing → Phone</span>
-                                <div class="stat-icon green">📱</div>
-                            </div>
-                            <div class="stat-value green" id="funnelRate1">0%</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-header">
-                                <span class="stat-label">Phone → CTA</span>
-                                <div class="stat-icon purple">🎯</div>
-                            </div>
-                            <div class="stat-value" id="funnelRate2">0%</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-header">
-                                <span class="stat-label">CTA → Checkout</span>
-                                <div class="stat-icon orange">💳</div>
-                            </div>
-                            <div class="stat-value" id="funnelRate3">0%</div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <select id="funnelLanguageFilter" onchange="loadFunnelData()" class="funnel-selector" style="min-width: 160px;">
+                                <option value="">🌍 Comparar Funis</option>
+                                <option value="en">🇺🇸 Inglês</option>
+                                <option value="es">🇪🇸 Espanhol</option>
+                            </select>
                         </div>
                     </div>
                     
-                    <div class="funnel-grid">
-                        <div class="funnel-card">
-                            <h3>📈 Etapas do Funil</h3>
-                            <div id="funnelSteps"><div class="loading"><div class="spinner"></div>Carregando...</div></div>
+                    <!-- Comparison View (when "Todos" selected) -->
+                    <div id="funnelComparisonView" style="display: none;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                            <!-- English Funnel -->
+                            <div class="funnel-card" style="border-left: 4px solid #3b82f6;">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+                                    <span style="font-size: 24px;">🇺🇸</span>
+                                    <div>
+                                        <h3 style="margin: 0; color: #3b82f6;">Funil Inglês</h3>
+                                        <span style="font-size: 12px; color: var(--text-muted);">English Funnel</span>
+                                    </div>
+                                </div>
+                                <div id="funnelStepsEN"><div class="loading"><div class="spinner"></div>Carregando...</div></div>
+                            </div>
+                            
+                            <!-- Spanish Funnel -->
+                            <div class="funnel-card" style="border-left: 4px solid #f59e0b;">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+                                    <span style="font-size: 24px;">🇪🇸</span>
+                                    <div>
+                                        <h3 style="margin: 0; color: #f59e0b;">Funil Espanhol</h3>
+                                        <span style="font-size: 12px; color: var(--text-muted);">Embudo Español</span>
+                                    </div>
+                                </div>
+                                <div id="funnelStepsES"><div class="loading"><div class="spinner"></div>Carregando...</div></div>
+                            </div>
                         </div>
-                        <div class="funnel-card">
-                            <h3>📅 Últimos 7 Dias</h3>
-                            <div id="dailyStats"><div class="loading"><div class="spinner"></div>Carregando...</div></div>
+                        
+                        <!-- Comparison Stats -->
+                        <div class="stats-grid" style="margin-bottom: 24px;">
+                            <div class="stat-card" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));">
+                                <div class="stat-header">
+                                    <span class="stat-label">🇺🇸 Visitantes EN</span>
+                                    <div class="stat-icon blue">👁️</div>
+                                </div>
+                                <div class="stat-value" id="funnelVisitorsEN" style="color: #3b82f6;">0</div>
+                            </div>
+                            <div class="stat-card" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05));">
+                                <div class="stat-header">
+                                    <span class="stat-label">🇪🇸 Visitantes ES</span>
+                                    <div class="stat-icon orange">👁️</div>
+                                </div>
+                                <div class="stat-value" id="funnelVisitorsES" style="color: #f59e0b;">0</div>
+                            </div>
+                            <div class="stat-card" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));">
+                                <div class="stat-header">
+                                    <span class="stat-label">🇺🇸 Conversão EN</span>
+                                    <div class="stat-icon blue">📱</div>
+                                </div>
+                                <div class="stat-value green" id="funnelConvEN">0%</div>
+                            </div>
+                            <div class="stat-card" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05));">
+                                <div class="stat-header">
+                                    <span class="stat-label">🇪🇸 Conversão ES</span>
+                                    <div class="stat-icon orange">📱</div>
+                                </div>
+                                <div class="stat-value green" id="funnelConvES">0%</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Single Funnel View (when EN or ES selected) -->
+                    <div id="funnelSingleView">
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-header">
+                                    <span class="stat-label">Visitantes (30d)</span>
+                                    <div class="stat-icon blue">👁️</div>
+                                </div>
+                                <div class="stat-value" id="funnelVisitors">0</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-header">
+                                    <span class="stat-label">Landing → Phone</span>
+                                    <div class="stat-icon green">📱</div>
+                                </div>
+                                <div class="stat-value green" id="funnelRate1">0%</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-header">
+                                    <span class="stat-label">Phone → CTA</span>
+                                    <div class="stat-icon purple">🎯</div>
+                                </div>
+                                <div class="stat-value" id="funnelRate2">0%</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-header">
+                                    <span class="stat-label">CTA → Checkout</span>
+                                    <div class="stat-icon orange">💳</div>
+                                </div>
+                                <div class="stat-value" id="funnelRate3">0%</div>
+                            </div>
+                        </div>
+                        
+                        <div class="funnel-grid">
+                            <div class="funnel-card">
+                                <h3>📈 Etapas do Funil</h3>
+                                <div id="funnelSteps"><div class="loading"><div class="spinner"></div>Carregando...</div></div>
+                            </div>
+                            <div class="funnel-card">
+                                <h3>📅 Últimos 7 Dias</h3>
+                                <div id="dailyStats"><div class="loading"><div class="spinner"></div>Carregando...</div></div>
+                            </div>
                         </div>
                     </div>
                     
@@ -1810,6 +1881,7 @@
                             <thead>
                                 <tr>
                                     <th>Visitante</th>
+                                    <th>Funil</th>
                                     <th>Alvo</th>
                                     <th>Gênero</th>
                                     <th>Etapas</th>
@@ -1819,7 +1891,7 @@
                                 </tr>
                             </thead>
                             <tbody id="journeysTable">
-                                <tr><td colspan="7"><div class="loading"><div class="spinner"></div>Carregando...</div></td></tr>
+                                <tr><td colspan="8"><div class="loading"><div class="spinner"></div>Carregando...</div></td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -3243,33 +3315,137 @@ Estou aqui para esclarecer tudo! 😊`
         // Funnel
         async function loadFunnelData() {
             try {
-                const globalFilter = document.getElementById('globalFunnelFilter')?.value || '';
-                const langParam = globalFilter ? `?language=${globalFilter}` : '';
-                const response = await fetch(`${API_URL}/api/admin/funnel${langParam}`, { headers: { 'Authorization': `Bearer ${authToken}` } });
-                if (response.status === 401) { logout(); return; }
-                const data = await response.json();
+                // Use the funnel-specific filter instead of global filter
+                const funnelFilter = document.getElementById('funnelLanguageFilter')?.value || '';
                 
-                // Update header indicator to show current filter
-                updateFunnelHeader(data.language);
-                
-                renderFunnelStats(data.funnelStats);
-                renderDailyStats(data.dailyStats);
-                renderJourneys(data.journeys);
+                if (!funnelFilter) {
+                    // No filter = show comparison view with both funnels side by side
+                    await loadFunnelComparison();
+                } else {
+                    // Specific filter = show single funnel view
+                    await loadSingleFunnel(funnelFilter);
+                }
             } catch (error) {
                 console.error('Error loading funnel:', error);
             }
         }
         
-        function updateFunnelHeader(lang) {
-            const indicator = document.getElementById('funnelLangIndicator');
-            if (!indicator) return;
-            if (lang === 'en') {
-                indicator.innerHTML = '<span class="lang-badge en">🇺🇸 English</span>';
-            } else if (lang === 'es') {
-                indicator.innerHTML = '<span class="lang-badge es">🇪🇸 Español</span>';
-            } else {
-                indicator.innerHTML = '<span class="lang-badge all">🌍 Todos</span>';
+        async function loadFunnelComparison() {
+            // Show comparison view, hide single view
+            document.getElementById('funnelComparisonView').style.display = 'block';
+            document.getElementById('funnelSingleView').style.display = 'none';
+            
+            try {
+                // Load both funnels in parallel
+                const [enResponse, esResponse] = await Promise.all([
+                    fetch(`${API_URL}/api/admin/funnel?language=en`, { headers: { 'Authorization': `Bearer ${authToken}` } }),
+                    fetch(`${API_URL}/api/admin/funnel?language=es`, { headers: { 'Authorization': `Bearer ${authToken}` } })
+                ]);
+                
+                if (enResponse.status === 401 || esResponse.status === 401) { logout(); return; }
+                
+                const [enData, esData] = await Promise.all([enResponse.json(), esResponse.json()]);
+                
+                // Render English funnel
+                renderFunnelStepsForLanguage(enData.funnelStats, 'funnelStepsEN', '#3b82f6');
+                const enStats = calculateFunnelMetrics(enData.funnelStats);
+                document.getElementById('funnelVisitorsEN').textContent = enStats.visitors.toLocaleString('pt-BR');
+                document.getElementById('funnelConvEN').textContent = enStats.conversionRate + '%';
+                
+                // Render Spanish funnel
+                renderFunnelStepsForLanguage(esData.funnelStats, 'funnelStepsES', '#f59e0b');
+                const esStats = calculateFunnelMetrics(esData.funnelStats);
+                document.getElementById('funnelVisitorsES').textContent = esStats.visitors.toLocaleString('pt-BR');
+                document.getElementById('funnelConvES').textContent = esStats.conversionRate + '%';
+                
+                // Combine journeys from both funnels
+                const allJourneys = [
+                    ...(enData.journeys || []).map(j => ({ ...j, language: 'en' })),
+                    ...(esData.journeys || []).map(j => ({ ...j, language: 'es' }))
+                ].sort((a, b) => new Date(b.last_seen) - new Date(a.last_seen)).slice(0, 50);
+                
+                renderJourneys(allJourneys, true);
+                
+            } catch (error) {
+                console.error('Error loading funnel comparison:', error);
             }
+        }
+        
+        async function loadSingleFunnel(language) {
+            // Show single view, hide comparison view
+            document.getElementById('funnelComparisonView').style.display = 'none';
+            document.getElementById('funnelSingleView').style.display = 'block';
+            
+            try {
+                const response = await fetch(`${API_URL}/api/admin/funnel?language=${language}`, { 
+                    headers: { 'Authorization': `Bearer ${authToken}` } 
+                });
+                if (response.status === 401) { logout(); return; }
+                const data = await response.json();
+                
+                renderFunnelStats(data.funnelStats);
+                renderDailyStats(data.dailyStats);
+                renderJourneys(data.journeys.map(j => ({ ...j, language })), true);
+            } catch (error) {
+                console.error('Error loading single funnel:', error);
+            }
+        }
+        
+        function calculateFunnelMetrics(stats) {
+            const statsMap = {};
+            (stats || []).forEach(s => statsMap[s.event] = parseInt(s.unique_visitors));
+            
+            const visitors = statsMap['page_view_landing'] || 0;
+            const checkout = statsMap['checkout_clicked'] || 0;
+            const conversionRate = visitors > 0 ? ((checkout / visitors) * 100).toFixed(1) : '0.0';
+            
+            return { visitors, checkout, conversionRate };
+        }
+        
+        function renderFunnelStepsForLanguage(stats, containerId, color) {
+            const mainFunnelOrder = [
+                { key: 'page_view_landing', label: 'Landing' },
+                { key: 'page_view_phone', label: 'Phone' },
+                { key: 'phone_submitted', label: 'Tel. Enviado' },
+                { key: 'page_view_conversas', label: 'Conversas' },
+                { key: 'page_view_cta', label: 'CTA' },
+                { key: 'email_captured', label: 'Email' },
+                { key: 'checkout_clicked', label: 'Checkout' }
+            ];
+            
+            const statsMap = {};
+            (stats || []).forEach(s => statsMap[s.event] = parseInt(s.unique_visitors));
+            
+            const maxVisitors = Math.max(...Object.values(statsMap), 1);
+            
+            let html = '';
+            let prevValue = null;
+            
+            mainFunnelOrder.forEach(step => {
+                const value = statsMap[step.key] || 0;
+                const width = maxVisitors > 0 ? Math.max((value / maxVisitors) * 100, 15) : 15;
+                const drop = prevValue !== null && prevValue > 0 ? (((prevValue - value) / prevValue) * 100).toFixed(0) : null;
+                
+                html += `
+                    <div class="funnel-step" style="margin-bottom: 6px;">
+                        <div class="funnel-bar" style="width: ${width}%; background: linear-gradient(90deg, ${color}, ${color}88);">
+                            <span class="funnel-step-name">${step.label}</span>
+                            <span class="funnel-step-value">${value}</span>
+                        </div>
+                        ${drop > 0 ? `<span class="funnel-drop">-${drop}%</span>` : ''}
+                    </div>
+                `;
+                prevValue = value;
+            });
+            
+            const container = document.getElementById(containerId);
+            if (container) {
+                container.innerHTML = html || '<div class="empty-state"><p>Sem dados</p></div>';
+            }
+        }
+        
+        function updateFunnelHeader(lang) {
+            // Legacy function - kept for compatibility
         }
         
         function updateRecoveryHeader(lang) {
@@ -3418,8 +3594,12 @@ Estou aqui para esclarecer tudo! 😊`
             'thankyou_view': 'Página Obrigado'
         };
         
-        function renderJourneys(journeys) {
-            if (!journeys?.length) { document.getElementById('journeysTable').innerHTML = '<tr><td colspan="7"><div class="empty-state"><h3>Nenhuma jornada</h3></div></td></tr>'; return; }
+        function renderJourneys(journeys, showLanguage = false) {
+            const colspan = showLanguage ? 8 : 7;
+            if (!journeys?.length) { 
+                document.getElementById('journeysTable').innerHTML = `<tr><td colspan="${colspan}"><div class="empty-state"><h3>Nenhuma jornada</h3></div></td></tr>`; 
+                return; 
+            }
             const shortLabels = { 
                 'page_view_landing': 'Landing', 'gender_selected': 'Gênero', 'page_view_phone': 'Phone', 
                 'phone_submitted': 'Tel.', 'page_view_conversas': 'Conversas', 'page_view_cta': 'CTA', 
@@ -3432,8 +3612,15 @@ Estou aqui para esclarecer tudo! 😊`
             let html = '';
             journeys.forEach(j => {
                 const events = j.events || [];
+                const langBadge = j.language === 'en' 
+                    ? '<span style="background: rgba(59, 130, 246, 0.15); color: #3b82f6; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">🇺🇸 EN</span>'
+                    : j.language === 'es'
+                    ? '<span style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">🇪🇸 ES</span>'
+                    : '<span style="background: rgba(107, 114, 128, 0.15); color: #6b7280; padding: 2px 8px; border-radius: 12px; font-size: 11px;">-</span>';
+                
                 html += `<tr>
                     <td class="mono">${j.visitor_id.substring(0, 12)}...</td>
+                    ${showLanguage ? `<td>${langBadge}</td>` : ''}
                     <td class="mono">${j.target_phone || '-'}</td>
                     <td>${j.target_gender === 'male' ? '👨' : j.target_gender === 'female' ? '👩' : '-'}</td>
                     <td><div class="journey-events">${events.slice(0, 5).map(e => `<span class="journey-tag ${e === 'checkout_clicked' ? 'checkout' : 'completed'}">${shortLabels[e] || e}</span>`).join('')}${events.length > 5 ? `<span class="journey-tag" style="cursor:pointer" onclick="openJourneyModal('${j.visitor_id}')">+${events.length - 5}</span>` : ''}</div></td>
