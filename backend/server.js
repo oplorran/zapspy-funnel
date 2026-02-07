@@ -562,38 +562,46 @@ app.post('/api/admin/login', apiLimiter, async (req, res) => {
             return res.status(400).json({ error: 'Email/username and password are required' });
         }
         
-        // Try to find user in database first
-        const userResult = await pool.query(
-            'SELECT * FROM admin_users WHERE (email = $1 OR username = $1) AND is_active = true',
-            [loginIdentifier]
-        );
-        
         let user = null;
         let validPassword = false;
         
-        if (userResult.rows.length > 0) {
-            // User found in database
-            user = userResult.rows[0];
-            validPassword = await bcrypt.compare(password, user.password_hash);
-            
-            if (validPassword) {
-                // Update last login
-                await pool.query('UPDATE admin_users SET last_login = NOW() WHERE id = $1', [user.id]);
-            }
-        } else {
-            // Fallback to environment variables for backward compatibility
-            const envEmail = process.env.ADMIN_EMAIL || 'admin@zapspy.ai';
-            const envPassword = process.env.ADMIN_PASSWORD || 'zapspy2024';
-            
-            if (loginIdentifier === envEmail || loginIdentifier === 'admin') {
+        // First, check environment variables for master admin (backward compatibility)
+        const envEmail = process.env.ADMIN_EMAIL;
+        const envPassword = process.env.ADMIN_PASSWORD;
+        
+        if (envEmail && envPassword) {
+            if (loginIdentifier === envEmail || loginIdentifier.toLowerCase() === envEmail.toLowerCase()) {
                 validPassword = password === envPassword;
                 if (validPassword) {
-                    user = { email: envEmail, role: 'admin', name: 'Administrador', id: 0 };
+                    user = { email: envEmail, role: 'admin', name: 'Administrador Master', id: 0, username: 'admin' };
+                    console.log(`✅ Master admin login: ${envEmail}`);
+                }
+            }
+        }
+        
+        // If not master admin, try database users
+        if (!validPassword) {
+            const userResult = await pool.query(
+                'SELECT * FROM admin_users WHERE (LOWER(email) = LOWER($1) OR LOWER(username) = LOWER($1)) AND is_active = true',
+                [loginIdentifier]
+            );
+            
+            if (userResult.rows.length > 0) {
+                // User found in database
+                const dbUser = userResult.rows[0];
+                validPassword = await bcrypt.compare(password, dbUser.password_hash);
+                
+                if (validPassword) {
+                    user = dbUser;
+                    // Update last login
+                    await pool.query('UPDATE admin_users SET last_login = NOW() WHERE id = $1', [dbUser.id]);
+                    console.log(`✅ Database user login: ${dbUser.email} (${dbUser.role})`);
                 }
             }
         }
         
         if (!validPassword || !user) {
+            console.log(`❌ Failed login attempt for: ${loginIdentifier}`);
             return res.status(401).json({ error: 'Invalid credentials' });
         }
         
