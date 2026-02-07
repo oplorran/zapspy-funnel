@@ -2201,13 +2201,64 @@ app.post('/api/refund', async (req, res) => {
         const ipAddress = req.headers['x-forwarded-for']?.split(',')[0] || req.ip;
         const userAgent = req.headers['user-agent'] || null;
 
-        // Store refund request
+        // Try to find funnel_language from existing lead or transaction data
+        let funnelLanguage = null;
+        
+        // First, try to find from leads table
+        const leadResult = await pool.query(`
+            SELECT metadata->>'funnelLanguage' as funnel_language 
+            FROM leads 
+            WHERE LOWER(email) = LOWER($1) 
+            ORDER BY created_at DESC 
+            LIMIT 1
+        `, [email]);
+        
+        if (leadResult.rows.length > 0 && leadResult.rows[0].funnel_language) {
+            funnelLanguage = leadResult.rows[0].funnel_language;
+            console.log(`🔍 Found funnel language from lead: ${funnelLanguage}`);
+        }
+        
+        // If not found in leads, try transactions table
+        if (!funnelLanguage) {
+            const transactionResult = await pool.query(`
+                SELECT funnel_language 
+                FROM transactions 
+                WHERE LOWER(email) = LOWER($1) 
+                ORDER BY created_at DESC 
+                LIMIT 1
+            `, [email]);
+            
+            if (transactionResult.rows.length > 0 && transactionResult.rows[0].funnel_language) {
+                funnelLanguage = transactionResult.rows[0].funnel_language;
+                console.log(`🔍 Found funnel language from transaction: ${funnelLanguage}`);
+            }
+        }
+        
+        // If not found in transactions, try funnel_events
+        if (!funnelLanguage) {
+            const eventResult = await pool.query(`
+                SELECT metadata->>'funnelLanguage' as funnel_language 
+                FROM funnel_events 
+                WHERE LOWER(email) = LOWER($1) 
+                ORDER BY created_at DESC 
+                LIMIT 1
+            `, [email]);
+            
+            if (eventResult.rows.length > 0 && eventResult.rows[0].funnel_language) {
+                funnelLanguage = eventResult.rows[0].funnel_language;
+                console.log(`🔍 Found funnel language from funnel_events: ${funnelLanguage}`);
+            }
+        }
+        
+        console.log(`🌐 Final funnel language for refund: ${funnelLanguage || 'not found'}`);
+
+        // Store refund request with funnel_language
         await pool.query(`
             INSERT INTO refund_requests (
                 protocol, full_name, email, phone, country_code,
                 purchase_date, product, reason, details,
-                ip_address, user_agent, status, created_at
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'pending', NOW())
+                ip_address, user_agent, status, source, funnel_language, created_at
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'pending', 'form', $12, NOW())
         `, [
             protocol,
             fullName,
@@ -2219,10 +2270,11 @@ app.post('/api/refund', async (req, res) => {
             reason,
             details,
             ipAddress,
-            userAgent
+            userAgent,
+            funnelLanguage
         ]);
 
-        console.log(`📥 Refund request received: ${protocol} - ${email} - ${product}`);
+        console.log(`📥 Refund request received: ${protocol} - ${email} - ${product} - Language: ${funnelLanguage || 'N/A'}`);
 
         res.status(201).json({
             success: true,
@@ -2306,6 +2358,97 @@ app.get('/api/admin/refunds', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('Error fetching refunds:', error);
         res.status(500).json({ error: 'Failed to fetch refund requests' });
+    }
+});
+
+// Sync refund languages with lead/transaction data (protected)
+app.post('/api/admin/refunds/sync-languages', authenticateToken, async (req, res) => {
+    try {
+        console.log('🔄 Starting refund language sync...');
+        
+        // Get all refunds without funnel_language
+        const refundsToSync = await pool.query(`
+            SELECT id, email, phone 
+            FROM refund_requests 
+            WHERE funnel_language IS NULL AND email IS NOT NULL
+        `);
+        
+        let updated = 0;
+        let notFound = 0;
+        
+        for (const refund of refundsToSync.rows) {
+            let funnelLanguage = null;
+            
+            // Try leads table first
+            const leadResult = await pool.query(`
+                SELECT metadata->>'funnelLanguage' as funnel_language 
+                FROM leads 
+                WHERE LOWER(email) = LOWER($1) 
+                ORDER BY created_at DESC 
+                LIMIT 1
+            `, [refund.email]);
+            
+            if (leadResult.rows.length > 0 && leadResult.rows[0].funnel_language) {
+                funnelLanguage = leadResult.rows[0].funnel_language;
+            }
+            
+            // Try transactions table if not found
+            if (!funnelLanguage) {
+                const transactionResult = await pool.query(`
+                    SELECT funnel_language 
+                    FROM transactions 
+                    WHERE LOWER(email) = LOWER($1) 
+                    ORDER BY created_at DESC 
+                    LIMIT 1
+                `, [refund.email]);
+                
+                if (transactionResult.rows.length > 0 && transactionResult.rows[0].funnel_language) {
+                    funnelLanguage = transactionResult.rows[0].funnel_language;
+                }
+            }
+            
+            // Try funnel_events table if still not found
+            if (!funnelLanguage) {
+                const eventResult = await pool.query(`
+                    SELECT metadata->>'funnelLanguage' as funnel_language 
+                    FROM funnel_events 
+                    WHERE LOWER(email) = LOWER($1) 
+                    ORDER BY created_at DESC 
+                    LIMIT 1
+                `, [refund.email]);
+                
+                if (eventResult.rows.length > 0 && eventResult.rows[0].funnel_language) {
+                    funnelLanguage = eventResult.rows[0].funnel_language;
+                }
+            }
+            
+            // Update refund with found language
+            if (funnelLanguage) {
+                await pool.query(`
+                    UPDATE refund_requests 
+                    SET funnel_language = $1, updated_at = NOW() 
+                    WHERE id = $2
+                `, [funnelLanguage, refund.id]);
+                updated++;
+                console.log(`✅ Updated refund #${refund.id} (${refund.email}) -> ${funnelLanguage}`);
+            } else {
+                notFound++;
+            }
+        }
+        
+        console.log(`🔄 Sync complete: ${updated} updated, ${notFound} not found`);
+        
+        res.json({ 
+            success: true, 
+            message: `Sincronização concluída`,
+            updated,
+            notFound,
+            total: refundsToSync.rows.length
+        });
+        
+    } catch (error) {
+        console.error('Error syncing refund languages:', error);
+        res.status(500).json({ error: 'Failed to sync refund languages' });
     }
 });
 

@@ -2162,9 +2162,12 @@
                                         <input type="text" class="filter-input search-input" id="refundSearchInput" placeholder="Nome, email, protocolo, telefone..." onkeyup="filterRefunds()">
                                     </div>
                                 </div>
-                                <div class="filter-group filter-actions">
+                                <div class="filter-group filter-actions" style="display: flex; gap: 8px;">
                                     <button class="btn-filter-refresh" onclick="loadRefunds()">
                                         <span>🔄</span> Atualizar
+                                    </button>
+                                    <button class="btn-filter-refresh" onclick="syncRefundLanguages()" title="Sincronizar idiomas dos reembolsos com dados dos leads" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                                        <span>🔗</span> Sincronizar Idiomas
                                     </button>
                                 </div>
                             </div>
@@ -4854,11 +4857,51 @@ Estou aqui para esclarecer tudo! 😊`
             document.getElementById('refundDateEnd').value = '';
             const sourceFilter = document.getElementById('refundFilterSource');
             const typeFilter = document.getElementById('refundFilterType');
+            const languageFilter = document.getElementById('refundFilterLanguage');
             if (sourceFilter) sourceFilter.value = '';
             if (typeFilter) typeFilter.value = '';
+            if (languageFilter) languageFilter.value = '';
             document.getElementById('customDateFilters').style.display = 'none';
             document.getElementById('customDateFiltersEnd').style.display = 'none';
             renderRefunds(allRefunds);
+        }
+        
+        // Sync refund languages with lead/transaction data
+        async function syncRefundLanguages() {
+            if (!confirm('Isso irá sincronizar os idiomas dos reembolsos com base nos dados dos leads/transações. Continuar?')) {
+                return;
+            }
+            
+            try {
+                showToast('Sincronizando idiomas...', 'info');
+                
+                const response = await fetch(`${API_URL}/api/admin/refunds/sync-languages`, {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.status === 401 || response.status === 403) {
+                    logout();
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast(`✅ ${data.updated} reembolsos atualizados! (${data.notFound} sem dados de lead)`, 'success');
+                    // Reload refunds to show updated languages
+                    loadRefunds();
+                } else {
+                    showToast('Erro ao sincronizar idiomas', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error syncing refund languages:', error);
+                showToast('Erro ao sincronizar idiomas', 'error');
+            }
         }
         
         // Theme Toggle
