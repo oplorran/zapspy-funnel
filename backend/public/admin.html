@@ -2798,7 +2798,7 @@ Estou aqui para esclarecer tudo! 😊`
             loadStats();
             loadLeads();
             loadOverviewData();
-            loadFunnelComparison();
+            loadOverviewFunnelComparison();
             loadFunnelData();
             loadRecoveryData();
             loadRefunds();
@@ -2816,8 +2816,8 @@ Estou aqui para esclarecer tudo! 😊`
             loadAllData();
         }
         
-        // Load funnel comparison data (EN vs ES)
-        async function loadFunnelComparison() {
+        // Load funnel comparison data for Overview (EN vs ES stats in header)
+        async function loadOverviewFunnelComparison() {
             try {
                 // Get all leads to properly count by language (including NULL as 'en')
                 const response = await fetch(`${API_URL}/api/admin/leads?limit=1000`, { 
@@ -2851,19 +2851,25 @@ Estou aqui para esclarecer tudo! 😊`
                 });
                 
                 // Update EN stats
-                document.getElementById('enLeadsTotal').textContent = enTotal.toLocaleString('pt-BR');
-                document.getElementById('enLeadsToday').textContent = enToday.toLocaleString('pt-BR');
+                const enTotalEl = document.getElementById('enLeadsTotal');
+                const enTodayEl = document.getElementById('enLeadsToday');
+                const enRateEl = document.getElementById('enConvRate');
+                if (enTotalEl) enTotalEl.textContent = enTotal.toLocaleString('pt-BR');
+                if (enTodayEl) enTodayEl.textContent = enToday.toLocaleString('pt-BR');
                 const enRate = enTotal > 0 ? ((enConverted / enTotal) * 100).toFixed(1) : 0;
-                document.getElementById('enConvRate').textContent = enRate + '%';
+                if (enRateEl) enRateEl.textContent = enRate + '%';
                 
                 // Update ES stats
-                document.getElementById('esLeadsTotal').textContent = esTotal.toLocaleString('pt-BR');
-                document.getElementById('esLeadsToday').textContent = esForoy.toLocaleString('pt-BR');
+                const esTotalEl = document.getElementById('esLeadsTotal');
+                const esTodayEl = document.getElementById('esLeadsToday');
+                const esRateEl = document.getElementById('esConvRate');
+                if (esTotalEl) esTotalEl.textContent = esTotal.toLocaleString('pt-BR');
+                if (esTodayEl) esTodayEl.textContent = esForoy.toLocaleString('pt-BR');
                 const esRate = esTotal > 0 ? ((esConverted / esTotal) * 100).toFixed(1) : 0;
-                document.getElementById('esConvRate').textContent = esRate + '%';
+                if (esRateEl) esRateEl.textContent = esRate + '%';
                 
             } catch (error) {
-                console.error('Error loading funnel comparison:', error);
+                console.error('Error loading overview funnel comparison:', error);
             }
         }
         
