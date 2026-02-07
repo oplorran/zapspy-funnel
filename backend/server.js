@@ -311,6 +311,71 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
+// Permission levels and what they can access
+const PERMISSIONS = {
+    admin: {
+        // Full access to everything
+        all: true
+    },
+    support: {
+        // Can view leads, refunds, and manage refund requests
+        view_leads: true,
+        view_refunds: true,
+        manage_refunds: true,
+        view_dashboard: true,
+        view_funnel: true
+    },
+    viewer: {
+        // Read-only access
+        view_leads: true,
+        view_refunds: true,
+        view_dashboard: true,
+        view_funnel: true
+    }
+};
+
+// Check if user has required permission
+const hasPermission = (user, requiredPermission) => {
+    if (!user) return false;
+    
+    // Admin has all permissions
+    if (user.role === 'admin') return true;
+    if (user.permissions && user.permissions.all) return true;
+    
+    // Check specific permission
+    const rolePerms = PERMISSIONS[user.role] || {};
+    if (rolePerms.all || rolePerms[requiredPermission]) return true;
+    
+    // Check user-specific permissions
+    if (user.permissions && user.permissions[requiredPermission]) return true;
+    
+    return false;
+};
+
+// Middleware to require specific permission
+const requirePermission = (permission) => {
+    return (req, res, next) => {
+        if (!hasPermission(req.user, permission)) {
+            return res.status(403).json({ 
+                error: 'Access denied',
+                message: `You don't have permission to ${permission.replace(/_/g, ' ')}`
+            });
+        }
+        next();
+    };
+};
+
+// Middleware to require admin role
+const requireAdmin = (req, res, next) => {
+    if (req.user.role !== 'admin' && !(req.user.permissions && req.user.permissions.all)) {
+        return res.status(403).json({ 
+            error: 'Access denied',
+            message: 'This action requires admin privileges'
+        });
+    }
+    next();
+};
+
 // ==================== PUBLIC API ROUTES ====================
 
 // Health check
@@ -552,39 +617,373 @@ app.post('/api/capi/event', async (req, res) => {
 
 // ==================== ADMIN API ROUTES ====================
 
-// Admin login
+// Helper function to log activity
+async function logActivity(userId, username, action, entityType, entityId, details, req) {
+    try {
+        await pool.query(`
+            INSERT INTO activity_logs (user_id, username, action, entity_type, entity_id, details, ip_address, user_agent)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        `, [userId, username, action, entityType, entityId, JSON.stringify(details), req.ip, req.headers['user-agent']]);
+    } catch (error) {
+        console.error('Error logging activity:', error.message);
+    }
+}
+
+// Admin login - supports both legacy (env vars) and new multi-user system
 app.post('/api/admin/login', apiLimiter, async (req, res) => {
     try {
         const { email, password } = req.body;
         
-        // Check against environment variables (simple auth)
-        if (email !== process.env.ADMIN_EMAIL) {
-            return res.status(401).json({ error: 'Invalid credentials' });
+        // First, try to authenticate with the new multi-user system
+        try {
+            // Try by username or email
+            const userResult = await pool.query(`
+                SELECT id, username, password_hash, full_name, email, role, permissions, is_active 
+                FROM admin_users 
+                WHERE (username = $1 OR email = $1) AND is_active = true
+            `, [email]);
+            
+            if (userResult.rows.length > 0) {
+                const user = userResult.rows[0];
+                const validPassword = await bcrypt.compare(password, user.password_hash);
+                
+                if (validPassword) {
+                    // Update last login
+                    await pool.query(`UPDATE admin_users SET last_login = NOW() WHERE id = $1`, [user.id]);
+                    
+                    // Generate JWT token with user info
+                    const token = jwt.sign(
+                        { 
+                            userId: user.id,
+                            username: user.username,
+                            email: user.email,
+                            role: user.role,
+                            permissions: user.permissions,
+                            fullName: user.full_name
+                        },
+                        process.env.JWT_SECRET,
+                        { expiresIn: '24h' }
+                    );
+                    
+                    // Log the login
+                    await logActivity(user.id, user.username, 'login', 'user', user.id.toString(), { ip: req.ip }, req);
+                    
+                    return res.json({
+                        success: true,
+                        token,
+                        user: {
+                            id: user.id,
+                            username: user.username,
+                            fullName: user.full_name,
+                            email: user.email,
+                            role: user.role,
+                            permissions: user.permissions
+                        },
+                        expiresIn: '24h'
+                    });
+                }
+            }
+        } catch (dbError) {
+            // Table might not exist yet, continue to legacy auth
+            console.log('Multi-user auth failed, trying legacy:', dbError.message);
         }
         
-        // For first login, compare plain text; in production use hashed password
-        const validPassword = password === process.env.ADMIN_PASSWORD;
-        
-        if (!validPassword) {
-            return res.status(401).json({ error: 'Invalid credentials' });
+        // Fallback to legacy auth (environment variables)
+        if (email === process.env.ADMIN_EMAIL) {
+            const validPassword = password === process.env.ADMIN_PASSWORD;
+            
+            if (validPassword) {
+                const token = jwt.sign(
+                    { email, role: 'admin', userId: 0, username: 'admin' },
+                    process.env.JWT_SECRET,
+                    { expiresIn: '24h' }
+                );
+                
+                return res.json({
+                    success: true,
+                    token,
+                    user: {
+                        id: 0,
+                        username: 'admin',
+                        fullName: 'Administrador (Legacy)',
+                        email: process.env.ADMIN_EMAIL,
+                        role: 'admin',
+                        permissions: { all: true }
+                    },
+                    expiresIn: '24h'
+                });
+            }
         }
         
-        // Generate JWT token
-        const token = jwt.sign(
-            { email, role: 'admin' },
-            process.env.JWT_SECRET,
-            { expiresIn: '24h' }
-        );
-        
-        res.json({
-            success: true,
-            token,
-            expiresIn: '24h'
-        });
+        // No valid authentication found
+        return res.status(401).json({ error: 'Invalid credentials' });
         
     } catch (error) {
         console.error('Login error:', error);
         res.status(500).json({ error: 'Login failed' });
+    }
+});
+
+// ==================== USER MANAGEMENT API ====================
+
+// Get current user info
+app.get('/api/admin/me', authenticateToken, async (req, res) => {
+    try {
+        if (req.user.userId === 0) {
+            // Legacy user
+            return res.json({
+                id: 0,
+                username: 'admin',
+                fullName: 'Administrador (Legacy)',
+                email: process.env.ADMIN_EMAIL,
+                role: 'admin',
+                permissions: { all: true }
+            });
+        }
+        
+        const result = await pool.query(`
+            SELECT id, username, full_name, email, role, permissions, last_login, created_at
+            FROM admin_users WHERE id = $1
+        `, [req.user.userId]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Get user error:', error);
+        res.status(500).json({ error: 'Failed to get user info' });
+    }
+});
+
+// List all users (admin only)
+app.get('/api/admin/users', authenticateToken, requireAdmin, async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT id, username, full_name, email, role, permissions, is_active, last_login, created_at
+            FROM admin_users
+            ORDER BY created_at DESC
+        `);
+        
+        res.json(result.rows);
+    } catch (error) {
+        console.error('List users error:', error);
+        res.status(500).json({ error: 'Failed to list users' });
+    }
+});
+
+// Create new user (admin only)
+app.post('/api/admin/users', authenticateToken, requireAdmin, async (req, res) => {
+    try {
+        const { username, password, fullName, email, role, permissions } = req.body;
+        
+        if (!username || !password || !fullName) {
+            return res.status(400).json({ error: 'Username, password and full name are required' });
+        }
+        
+        // Check if username already exists
+        const existing = await pool.query('SELECT id FROM admin_users WHERE username = $1', [username]);
+        if (existing.rows.length > 0) {
+            return res.status(400).json({ error: 'Username already exists' });
+        }
+        
+        // Hash password
+        const passwordHash = await bcrypt.hash(password, 10);
+        
+        // Create user
+        const result = await pool.query(`
+            INSERT INTO admin_users (username, password_hash, full_name, email, role, permissions, created_by)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            RETURNING id, username, full_name, email, role, permissions, is_active, created_at
+        `, [username, passwordHash, fullName, email || null, role || 'support', permissions || {}, req.user.userId]);
+        
+        // Log activity
+        await logActivity(req.user.userId, req.user.username, 'create_user', 'user', result.rows[0].id.toString(), 
+            { created_username: username, role: role || 'support' }, req);
+        
+        res.json({ success: true, user: result.rows[0] });
+    } catch (error) {
+        console.error('Create user error:', error);
+        res.status(500).json({ error: 'Failed to create user' });
+    }
+});
+
+// Update user (admin only)
+app.put('/api/admin/users/:id', authenticateToken, requireAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { fullName, email, role, permissions, isActive, password } = req.body;
+        
+        // Check if user exists
+        const existing = await pool.query('SELECT username FROM admin_users WHERE id = $1', [id]);
+        if (existing.rows.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        
+        let updateQuery = `UPDATE admin_users SET updated_at = NOW()`;
+        const params = [];
+        let paramIndex = 1;
+        
+        if (fullName !== undefined) {
+            updateQuery += `, full_name = $${paramIndex++}`;
+            params.push(fullName);
+        }
+        if (email !== undefined) {
+            updateQuery += `, email = $${paramIndex++}`;
+            params.push(email);
+        }
+        if (role !== undefined) {
+            updateQuery += `, role = $${paramIndex++}`;
+            params.push(role);
+        }
+        if (permissions !== undefined) {
+            updateQuery += `, permissions = $${paramIndex++}`;
+            params.push(JSON.stringify(permissions));
+        }
+        if (isActive !== undefined) {
+            updateQuery += `, is_active = $${paramIndex++}`;
+            params.push(isActive);
+        }
+        if (password) {
+            const passwordHash = await bcrypt.hash(password, 10);
+            updateQuery += `, password_hash = $${paramIndex++}`;
+            params.push(passwordHash);
+        }
+        
+        params.push(id);
+        updateQuery += ` WHERE id = $${paramIndex} RETURNING id, username, full_name, email, role, permissions, is_active`;
+        
+        const result = await pool.query(updateQuery, params);
+        
+        // Log activity
+        await logActivity(req.user.userId, req.user.username, 'update_user', 'user', id, 
+            { updated_user: existing.rows[0].username, changes: Object.keys(req.body) }, req);
+        
+        res.json({ success: true, user: result.rows[0] });
+    } catch (error) {
+        console.error('Update user error:', error);
+        res.status(500).json({ error: 'Failed to update user' });
+    }
+});
+
+// Delete user (admin only)
+app.delete('/api/admin/users/:id', authenticateToken, requireAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        // Can't delete yourself
+        if (parseInt(id) === req.user.userId) {
+            return res.status(400).json({ error: 'Cannot delete your own account' });
+        }
+        
+        // Check if user exists
+        const existing = await pool.query('SELECT username FROM admin_users WHERE id = $1', [id]);
+        if (existing.rows.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        
+        // Soft delete - just deactivate
+        await pool.query('UPDATE admin_users SET is_active = false, updated_at = NOW() WHERE id = $1', [id]);
+        
+        // Log activity
+        await logActivity(req.user.userId, req.user.username, 'delete_user', 'user', id, 
+            { deleted_user: existing.rows[0].username }, req);
+        
+        res.json({ success: true, message: 'User deactivated' });
+    } catch (error) {
+        console.error('Delete user error:', error);
+        res.status(500).json({ error: 'Failed to delete user' });
+    }
+});
+
+// Get activity logs (admin only)
+app.get('/api/admin/activity-logs', authenticateToken, requireAdmin, async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 50;
+        const offset = (page - 1) * limit;
+        const userId = req.query.userId;
+        const action = req.query.action;
+        
+        let query = `SELECT * FROM activity_logs`;
+        let countQuery = `SELECT COUNT(*) FROM activity_logs`;
+        const params = [];
+        const conditions = [];
+        
+        if (userId) {
+            conditions.push(`user_id = $${params.length + 1}`);
+            params.push(userId);
+        }
+        if (action) {
+            conditions.push(`action ILIKE $${params.length + 1}`);
+            params.push(`%${action}%`);
+        }
+        
+        if (conditions.length > 0) {
+            query += ` WHERE ${conditions.join(' AND ')}`;
+            countQuery += ` WHERE ${conditions.join(' AND ')}`;
+        }
+        
+        query += ` ORDER BY created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+        
+        const countResult = await pool.query(countQuery, params);
+        const result = await pool.query(query, [...params, limit, offset]);
+        
+        res.json({
+            logs: result.rows,
+            pagination: {
+                page,
+                limit,
+                total: parseInt(countResult.rows[0].count),
+                totalPages: Math.ceil(parseInt(countResult.rows[0].count) / limit)
+            }
+        });
+    } catch (error) {
+        console.error('Get activity logs error:', error);
+        res.status(500).json({ error: 'Failed to get activity logs' });
+    }
+});
+
+// Change own password
+app.post('/api/admin/change-password', authenticateToken, async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ error: 'Current and new password are required' });
+        }
+        
+        if (newPassword.length < 6) {
+            return res.status(400).json({ error: 'New password must be at least 6 characters' });
+        }
+        
+        if (req.user.userId === 0) {
+            return res.status(400).json({ error: 'Cannot change password for legacy admin account' });
+        }
+        
+        // Verify current password
+        const userResult = await pool.query('SELECT password_hash FROM admin_users WHERE id = $1', [req.user.userId]);
+        if (userResult.rows.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        
+        const validPassword = await bcrypt.compare(currentPassword, userResult.rows[0].password_hash);
+        if (!validPassword) {
+            return res.status(400).json({ error: 'Current password is incorrect' });
+        }
+        
+        // Update password
+        const newHash = await bcrypt.hash(newPassword, 10);
+        await pool.query('UPDATE admin_users SET password_hash = $1, updated_at = NOW() WHERE id = $2', [newHash, req.user.userId]);
+        
+        // Log activity
+        await logActivity(req.user.userId, req.user.username, 'change_password', 'user', req.user.userId.toString(), {}, req);
+        
+        res.json({ success: true, message: 'Password changed successfully' });
+    } catch (error) {
+        console.error('Change password error:', error);
+        res.status(500).json({ error: 'Failed to change password' });
     }
 });
 
@@ -767,6 +1166,21 @@ app.put('/api/admin/leads/:id', authenticateToken, async (req, res) => {
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Lead not found' });
         }
+        
+        // Log activity
+        await logActivity(
+            req.user.userId, 
+            req.user.username || req.user.email, 
+            'update_lead', 
+            'lead', 
+            id, 
+            { 
+                email: result.rows[0].email,
+                status,
+                notes
+            }, 
+            req
+        );
         
         res.json({ success: true, lead: result.rows[0] });
         
@@ -2040,6 +2454,23 @@ app.put('/api/admin/refunds/:id', authenticateToken, async (req, res) => {
             return res.status(404).json({ error: 'Refund request not found' });
         }
 
+        // Log activity
+        const actionType = status === 'approved' ? 'approve_refund' : status === 'rejected' ? 'reject_refund' : 'update_refund';
+        await logActivity(
+            req.user.userId, 
+            req.user.username || req.user.email, 
+            actionType, 
+            'refund', 
+            id, 
+            { 
+                protocol: result.rows[0].protocol, 
+                email: result.rows[0].email,
+                status,
+                previous_status: result.rows[0].status
+            }, 
+            req
+        );
+
         res.json({ success: true, refund: result.rows[0] });
 
     } catch (error) {
@@ -2371,6 +2802,56 @@ async function initDatabase() {
         await pool.query(`ALTER TABLE refund_requests ADD COLUMN IF NOT EXISTS transaction_id VARCHAR(100);`);
         await pool.query(`ALTER TABLE refund_requests ADD COLUMN IF NOT EXISTS value DECIMAL(10,2);`);
         await pool.query(`ALTER TABLE refund_requests ADD COLUMN IF NOT EXISTS funnel_language VARCHAR(10);`);
+        
+        // Create admin_users table for multi-user support
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS admin_users (
+                id SERIAL PRIMARY KEY,
+                username VARCHAR(50) UNIQUE NOT NULL,
+                password_hash VARCHAR(255) NOT NULL,
+                full_name VARCHAR(255) NOT NULL,
+                email VARCHAR(255),
+                role VARCHAR(50) DEFAULT 'support',
+                permissions JSONB DEFAULT '{}',
+                is_active BOOLEAN DEFAULT true,
+                last_login TIMESTAMP WITH TIME ZONE,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                created_by INTEGER,
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+        
+        // Create activity_logs table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS activity_logs (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES admin_users(id),
+                username VARCHAR(50),
+                action VARCHAR(100) NOT NULL,
+                entity_type VARCHAR(50),
+                entity_id VARCHAR(100),
+                details JSONB DEFAULT '{}',
+                ip_address VARCHAR(45),
+                user_agent TEXT,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+        
+        // Create indexes for activity_logs
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_activity_user ON activity_logs(user_id);`);
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_activity_action ON activity_logs(action);`);
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_activity_created ON activity_logs(created_at DESC);`);
+        
+        // Insert default admin user if not exists
+        const adminExists = await pool.query(`SELECT id FROM admin_users WHERE username = 'admin'`);
+        if (adminExists.rows.length === 0) {
+            const hashedPassword = await bcrypt.hash('zapspy2024', 10);
+            await pool.query(`
+                INSERT INTO admin_users (username, password_hash, full_name, email, role, permissions)
+                VALUES ('admin', $1, 'Administrador', 'admin@zapspy.ai', 'admin', '{"all": true}')
+            `, [hashedPassword]);
+            console.log('👤 Default admin user created');
+        }
         
         console.log('✅ Database ready');
     } catch (error) {

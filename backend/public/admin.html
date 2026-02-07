@@ -376,6 +376,47 @@
         .user-name { font-size: 14px; font-weight: 600; }
         .user-role { font-size: 12px; color: var(--text-muted); }
         
+        .user-dropdown { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 8px; margin-top: 8px; }
+        .user-dropdown .dropdown-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius-sm); cursor: pointer; color: var(--text-secondary); font-size: 13px; transition: all 0.2s; }
+        .user-dropdown .dropdown-item:hover { background: rgba(255, 255, 255, 0.05); color: var(--text-primary); }
+        .user-dropdown .dropdown-item span { font-size: 16px; }
+        
+        /* User Management Styles */
+        .users-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
+        .user-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; transition: all 0.3s; }
+        .user-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3); }
+        .user-card-header { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+        .user-card-avatar { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; color: white; }
+        .user-card-avatar.admin { background: linear-gradient(135deg, var(--purple), var(--info)); }
+        .user-card-avatar.support { background: linear-gradient(135deg, var(--accent), var(--info)); }
+        .user-card-avatar.viewer { background: linear-gradient(135deg, var(--warning), var(--orange)); }
+        .user-card-info h4 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+        .user-card-info span { font-size: 13px; color: var(--text-muted); }
+        .user-card-role { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 16px; }
+        .user-card-role.admin { background: rgba(179, 136, 255, 0.15); color: #b388ff; }
+        .user-card-role.support { background: rgba(0, 212, 170, 0.15); color: var(--accent); }
+        .user-card-role.viewer { background: rgba(255, 171, 0, 0.15); color: var(--warning); }
+        .user-card-meta { display: flex; flex-direction: column; gap: 8px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-muted); }
+        .user-card-actions { display: flex; gap: 10px; margin-top: 16px; }
+        .user-card-actions button { flex: 1; padding: 10px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s; border: 1px solid var(--border); background: var(--bg-tertiary); color: var(--text-secondary); }
+        .user-card-actions button:hover { border-color: var(--accent); color: var(--accent); }
+        .user-card-actions button.danger:hover { border-color: var(--danger); color: var(--danger); }
+        .user-card.inactive { opacity: 0.6; }
+        .user-card.inactive::after { content: 'INATIVO'; position: absolute; top: 12px; right: 12px; background: var(--danger); color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+        
+        /* Activity Log Styles */
+        .activity-timeline { margin-top: 20px; }
+        .activity-item { display: flex; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--border); }
+        .activity-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+        .activity-icon.login { background: rgba(0, 212, 170, 0.15); }
+        .activity-icon.create { background: rgba(0, 191, 255, 0.15); }
+        .activity-icon.update { background: rgba(255, 171, 0, 0.15); }
+        .activity-icon.delete { background: rgba(255, 82, 82, 0.15); }
+        .activity-content { flex: 1; }
+        .activity-content h4 { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+        .activity-content p { font-size: 12px; color: var(--text-muted); }
+        .activity-time { font-size: 12px; color: var(--text-muted); }
+        
         .main-content { margin-left: 280px; min-height: 100vh; }
         
         .header {
@@ -1275,15 +1316,31 @@
                         <span class="nav-item-icon">⚙️</span>
                         Integrações
                     </div>
+                    <div class="nav-item admin-only" id="navUsers" onclick="switchTab('users')" style="display: none;">
+                        <span class="nav-item-icon">👥</span>
+                        Usuários
+                    </div>
+                    <div class="nav-item admin-only" id="navActivity" onclick="switchTab('activity')" style="display: none;">
+                        <span class="nav-item-icon">📋</span>
+                        Atividades
+                    </div>
                 </div>
             </nav>
             
             <div class="sidebar-footer">
-                <div class="user-menu" onclick="logout()">
-                    <div class="user-avatar">A</div>
+                <div class="user-menu" onclick="toggleUserDropdown()">
+                    <div class="user-avatar" id="userAvatar">A</div>
                     <div class="user-info">
-                        <div class="user-name">Admin</div>
-                        <div class="user-role">Sair</div>
+                        <div class="user-name" id="currentUserName">Admin</div>
+                        <div class="user-role" id="currentUserRole">Administrador</div>
+                    </div>
+                </div>
+                <div class="user-dropdown" id="userDropdown" style="display: none;">
+                    <div class="dropdown-item" onclick="showChangePasswordModal()">
+                        <span>🔑</span> Alterar Senha
+                    </div>
+                    <div class="dropdown-item" onclick="logout()">
+                        <span>🚪</span> Sair
                     </div>
                 </div>
             </div>
@@ -2549,7 +2606,7 @@
                         <button class="btn-secondary" onclick="saveWebhook()">Salvar Webhook</button>
                     </div>
                     
-                    <div class="config-box" style="border-color: var(--danger); background: rgba(244,67,54,0.05);">
+                    <div class="config-box admin-only" id="dangerZone" style="border-color: var(--danger); background: rgba(244,67,54,0.05); display: none;">
                         <h3>⚠️ Zona de Perigo</h3>
                         <p style="color: var(--danger);">Ações irreversíveis. Use com cuidado!</p>
                         <div style="margin-top: 16px;">
@@ -2558,8 +2615,175 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Tab: Users (Admin Only) -->
+                <div class="tab-content" id="tab-users" style="display: none;">
+                    <div class="data-panel">
+                        <div class="panel-header">
+                            <div class="panel-title">
+                                <h2>👥 Gerenciamento de Usuários</h2>
+                                <span id="usersCount">0 usuários</span>
+                            </div>
+                            <div class="panel-actions">
+                                <button class="btn-primary" onclick="showCreateUserModal()">
+                                    <span>➕</span> Novo Usuário
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="users-grid" id="usersGrid">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                Carregando usuários...
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- User Roles Info -->
+                    <div class="data-panel" style="margin-top: 24px;">
+                        <div class="panel-header">
+                            <div class="panel-title">
+                                <h2>🔐 Níveis de Acesso</h2>
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; padding: 20px 0;">
+                            <div style="background: var(--bg-tertiary); border-radius: var(--radius-md); padding: 20px; border-left: 4px solid #b388ff;">
+                                <h4 style="color: #b388ff; margin-bottom: 10px;">👑 Administrador</h4>
+                                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Acesso total ao sistema</p>
+                                <ul style="font-size: 12px; color: var(--text-secondary); list-style: none; padding: 0;">
+                                    <li>✓ Ver todos os dados</li>
+                                    <li>✓ Gerenciar usuários</li>
+                                    <li>✓ Configurações do sistema</li>
+                                    <li>✓ Exportar relatórios</li>
+                                    <li>✓ Limpar dados</li>
+                                </ul>
+                            </div>
+                            <div style="background: var(--bg-tertiary); border-radius: var(--radius-md); padding: 20px; border-left: 4px solid var(--accent);">
+                                <h4 style="color: var(--accent); margin-bottom: 10px;">🛠️ Suporte</h4>
+                                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Ideal para equipe de atendimento</p>
+                                <ul style="font-size: 12px; color: var(--text-secondary); list-style: none; padding: 0;">
+                                    <li>✓ Ver leads e vendas</li>
+                                    <li>✓ Gerenciar reembolsos</li>
+                                    <li>✓ Ver funil e países</li>
+                                    <li>✗ Gerenciar usuários</li>
+                                    <li>✗ Configurações do sistema</li>
+                                </ul>
+                            </div>
+                            <div style="background: var(--bg-tertiary); border-radius: var(--radius-md); padding: 20px; border-left: 4px solid var(--warning);">
+                                <h4 style="color: var(--warning); margin-bottom: 10px;">👁️ Visualizador</h4>
+                                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Acesso apenas leitura</p>
+                                <ul style="font-size: 12px; color: var(--text-secondary); list-style: none; padding: 0;">
+                                    <li>✓ Ver leads e vendas</li>
+                                    <li>✓ Ver reembolsos</li>
+                                    <li>✓ Ver funil e países</li>
+                                    <li>✗ Editar qualquer dado</li>
+                                    <li>✗ Exportar relatórios</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tab: Activity Logs (Admin Only) -->
+                <div class="tab-content" id="tab-activity" style="display: none;">
+                    <div class="data-panel">
+                        <div class="panel-header">
+                            <div class="panel-title">
+                                <h2>📋 Log de Atividades</h2>
+                                <span id="activityCount">0 registros</span>
+                            </div>
+                            <div class="panel-actions">
+                                <select class="filter-select" id="activityUserFilter" onchange="loadActivityLogs()">
+                                    <option value="">Todos os usuários</option>
+                                </select>
+                                <select class="filter-select" id="activityActionFilter" onchange="loadActivityLogs()">
+                                    <option value="">Todas as ações</option>
+                                    <option value="login">Login</option>
+                                    <option value="create">Criações</option>
+                                    <option value="update">Atualizações</option>
+                                    <option value="delete">Exclusões</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="activity-timeline" id="activityTimeline">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                Carregando atividades...
+                            </div>
+                        </div>
+                        
+                        <div class="pagination" id="activityPagination" style="margin-top: 20px;"></div>
+                    </div>
+                </div>
             </div>
         </main>
+    </div>
+    
+    <!-- Create/Edit User Modal -->
+    <div class="modal-overlay" id="userModal">
+        <div class="modal" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 id="userModalTitle">➕ Novo Usuário</h3>
+                <p id="userModalSubtitle">Crie um novo acesso ao painel</p>
+            </div>
+            <input type="hidden" id="editUserId">
+            <div class="form-group">
+                <label class="form-label">Nome de Usuário *</label>
+                <input type="text" class="form-input" id="userUsername" placeholder="ex: joao.suporte" style="width: 100%;">
+                <small style="color: var(--text-muted);">Usado para login</small>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Nome Completo *</label>
+                <input type="text" class="form-input" id="userFullName" placeholder="ex: João Silva" style="width: 100%;">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-input" id="userEmail" placeholder="ex: joao@empresa.com" style="width: 100%;">
+            </div>
+            <div class="form-group" id="userPasswordGroup">
+                <label class="form-label">Senha *</label>
+                <input type="password" class="form-input" id="userPassword" placeholder="Mínimo 6 caracteres" style="width: 100%;">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Nível de Acesso</label>
+                <select class="filter-select" id="userRole" style="width: 100%;">
+                    <option value="support">🛠️ Suporte</option>
+                    <option value="viewer">👁️ Visualizador</option>
+                    <option value="admin">👑 Administrador</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-primary" onclick="saveUser()">💾 Salvar</button>
+                <button class="btn-secondary" onclick="closeUserModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Change Password Modal -->
+    <div class="modal-overlay" id="changePasswordModal">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>🔑 Alterar Senha</h3>
+                <p>Digite sua senha atual e a nova senha</p>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Senha Atual</label>
+                <input type="password" class="form-input" id="currentPassword" style="width: 100%;">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Nova Senha</label>
+                <input type="password" class="form-input" id="newPassword" placeholder="Mínimo 6 caracteres" style="width: 100%;">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Confirmar Nova Senha</label>
+                <input type="password" class="form-input" id="confirmNewPassword" style="width: 100%;">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-primary" onclick="changePassword()">🔐 Alterar Senha</button>
+                <button class="btn-secondary" onclick="closeChangePasswordModal()">Cancelar</button>
+            </div>
+        </div>
     </div>
     
     <!-- Edit Modal -->
@@ -2782,7 +3006,9 @@ Posso ajudar com alguma dúvida?</textarea>
             'refunds': { title: 'Reembolsos', subtitle: 'Gerencie solicitações de reembolso' },
             'countries': { title: 'Países', subtitle: 'Análise de performance por país' },
             'reports': { title: 'Exportar Dados', subtitle: 'Baixe relatórios em Excel, PDF ou CSV' },
-            'settings': { title: 'Configurações', subtitle: 'Configure integrações' }
+            'settings': { title: 'Configurações', subtitle: 'Configure integrações' },
+            'users': { title: 'Usuários', subtitle: 'Gerencie acessos ao painel' },
+            'activity': { title: 'Atividades', subtitle: 'Histórico de ações no sistema' }
         };
         
         const templates = {
@@ -5891,6 +6117,496 @@ Estou aqui para esclarecer tudo! 😊`
             html += '</div>';
             container.innerHTML = html;
         }
+        
+        // ==================== USER MANAGEMENT ====================
+        
+        let currentUser = null;
+        
+        // Initialize user info on page load
+        async function initUserInfo() {
+            try {
+                const response = await fetch('/api/admin/me', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    currentUser = await response.json();
+                    updateUserUI();
+                }
+            } catch (error) {
+                console.error('Failed to get user info:', error);
+            }
+        }
+        
+        function updateUserUI() {
+            if (!currentUser) return;
+            
+            // Update sidebar user info
+            const nameEl = document.getElementById('currentUserName');
+            const roleEl = document.getElementById('currentUserRole');
+            const avatarEl = document.getElementById('userAvatar');
+            
+            if (nameEl) nameEl.textContent = currentUser.fullName || currentUser.full_name || 'Admin';
+            if (roleEl) {
+                const roleLabels = { admin: 'Administrador', support: 'Suporte', viewer: 'Visualizador' };
+                roleEl.textContent = roleLabels[currentUser.role] || currentUser.role;
+            }
+            if (avatarEl) {
+                avatarEl.textContent = (currentUser.fullName || currentUser.full_name || 'A')[0].toUpperCase();
+            }
+            
+            // Check permission levels
+            const isAdmin = currentUser.role === 'admin' || (currentUser.permissions && currentUser.permissions.all);
+            const isSupport = currentUser.role === 'support';
+            const isViewer = currentUser.role === 'viewer';
+            
+            // Show/hide admin-only elements
+            document.querySelectorAll('.admin-only').forEach(el => {
+                el.style.display = isAdmin ? (el.classList.contains('nav-item') ? 'flex' : 'block') : 'none';
+            });
+            
+            // For viewers, hide edit buttons
+            if (isViewer) {
+                // Hide edit buttons in leads table
+                document.querySelectorAll('.btn-edit, .btn-whatsapp').forEach(el => {
+                    el.style.display = 'none';
+                });
+            }
+            
+            // Show settings tab only for admin
+            const settingsNav = document.querySelector('[onclick="switchTab(\'settings\')"]');
+            if (settingsNav && !isAdmin) {
+                settingsNav.style.display = 'none';
+            }
+        }
+        
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('userDropdown');
+            const userMenu = document.querySelector('.user-menu');
+            if (dropdown && !userMenu.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+        
+        // Load users list
+        async function loadUsers() {
+            const grid = document.getElementById('usersGrid');
+            if (!grid) return;
+            
+            grid.innerHTML = '<div class="loading"><div class="spinner"></div>Carregando usuários...</div>';
+            
+            try {
+                const response = await fetch('/api/admin/users', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load users');
+                }
+                
+                const users = await response.json();
+                renderUsers(users);
+                
+                const countEl = document.getElementById('usersCount');
+                if (countEl) countEl.textContent = `${users.length} usuário${users.length !== 1 ? 's' : ''}`;
+                
+            } catch (error) {
+                console.error('Error loading users:', error);
+                grid.innerHTML = '<div class="empty-state">Erro ao carregar usuários</div>';
+            }
+        }
+        
+        function renderUsers(users) {
+            const grid = document.getElementById('usersGrid');
+            if (!grid) return;
+            
+            if (users.length === 0) {
+                grid.innerHTML = '<div class="empty-state">Nenhum usuário cadastrado</div>';
+                return;
+            }
+            
+            const roleLabels = { admin: '👑 Administrador', support: '🛠️ Suporte', viewer: '👁️ Visualizador' };
+            
+            grid.innerHTML = users.map(user => `
+                <div class="user-card ${!user.is_active ? 'inactive' : ''}" style="position: relative;">
+                    <div class="user-card-header">
+                        <div class="user-card-avatar ${user.role}">${(user.full_name || user.username)[0].toUpperCase()}</div>
+                        <div class="user-card-info">
+                            <h4>${user.full_name || user.username}</h4>
+                            <span>@${user.username}</span>
+                        </div>
+                    </div>
+                    <div class="user-card-role ${user.role}">${roleLabels[user.role] || user.role}</div>
+                    ${user.email ? `<div style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">📧 ${user.email}</div>` : ''}
+                    <div class="user-card-meta">
+                        <span>📅 Criado em: ${formatDate(user.created_at)}</span>
+                        <span>🕐 Último acesso: ${user.last_login ? formatDate(user.last_login) : 'Nunca'}</span>
+                    </div>
+                    <div class="user-card-actions">
+                        <button onclick="editUser(${user.id})">✏️ Editar</button>
+                        ${user.is_active ? 
+                            `<button class="danger" onclick="toggleUserStatus(${user.id}, false)">🚫 Desativar</button>` :
+                            `<button onclick="toggleUserStatus(${user.id}, true)">✅ Ativar</button>`
+                        }
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function showCreateUserModal() {
+            document.getElementById('userModalTitle').textContent = '➕ Novo Usuário';
+            document.getElementById('userModalSubtitle').textContent = 'Crie um novo acesso ao painel';
+            document.getElementById('editUserId').value = '';
+            document.getElementById('userUsername').value = '';
+            document.getElementById('userUsername').disabled = false;
+            document.getElementById('userFullName').value = '';
+            document.getElementById('userEmail').value = '';
+            document.getElementById('userPassword').value = '';
+            document.getElementById('userRole').value = 'support';
+            document.getElementById('userPasswordGroup').style.display = 'block';
+            document.getElementById('userModal').style.display = 'flex';
+        }
+        
+        async function editUser(userId) {
+            try {
+                const response = await fetch('/api/admin/users', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                const users = await response.json();
+                const user = users.find(u => u.id === userId);
+                
+                if (!user) {
+                    showToast('Usuário não encontrado', 'error');
+                    return;
+                }
+                
+                document.getElementById('userModalTitle').textContent = '✏️ Editar Usuário';
+                document.getElementById('userModalSubtitle').textContent = `Editando: ${user.full_name}`;
+                document.getElementById('editUserId').value = userId;
+                document.getElementById('userUsername').value = user.username;
+                document.getElementById('userUsername').disabled = true;
+                document.getElementById('userFullName').value = user.full_name || '';
+                document.getElementById('userEmail').value = user.email || '';
+                document.getElementById('userPassword').value = '';
+                document.getElementById('userRole').value = user.role;
+                document.getElementById('userPasswordGroup').querySelector('label').textContent = 'Nova Senha (deixe vazio para manter)';
+                document.getElementById('userModal').style.display = 'flex';
+                
+            } catch (error) {
+                console.error('Error loading user:', error);
+                showToast('Erro ao carregar usuário', 'error');
+            }
+        }
+        
+        function closeUserModal() {
+            document.getElementById('userModal').style.display = 'none';
+        }
+        
+        async function saveUser() {
+            const userId = document.getElementById('editUserId').value;
+            const username = document.getElementById('userUsername').value.trim();
+            const fullName = document.getElementById('userFullName').value.trim();
+            const email = document.getElementById('userEmail').value.trim();
+            const password = document.getElementById('userPassword').value;
+            const role = document.getElementById('userRole').value;
+            
+            if (!username || !fullName) {
+                showToast('Nome de usuário e nome completo são obrigatórios', 'error');
+                return;
+            }
+            
+            if (!userId && !password) {
+                showToast('Senha é obrigatória para novos usuários', 'error');
+                return;
+            }
+            
+            if (password && password.length < 6) {
+                showToast('A senha deve ter pelo menos 6 caracteres', 'error');
+                return;
+            }
+            
+            try {
+                const isEdit = !!userId;
+                const url = isEdit ? `/api/admin/users/${userId}` : '/api/admin/users';
+                const method = isEdit ? 'PUT' : 'POST';
+                
+                const body = { fullName, email, role };
+                if (!isEdit) body.username = username;
+                if (password) body.password = password;
+                
+                const response = await fetch(url, {
+                    method,
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(body)
+                });
+                
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(result.error || 'Failed to save user');
+                }
+                
+                showToast(isEdit ? 'Usuário atualizado!' : 'Usuário criado!', 'success');
+                closeUserModal();
+                loadUsers();
+                
+            } catch (error) {
+                console.error('Error saving user:', error);
+                showToast(error.message || 'Erro ao salvar usuário', 'error');
+            }
+        }
+        
+        async function toggleUserStatus(userId, activate) {
+            if (!confirm(activate ? 'Deseja ativar este usuário?' : 'Deseja desativar este usuário?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/admin/users/${userId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ isActive: activate })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to update user');
+                }
+                
+                showToast(activate ? 'Usuário ativado!' : 'Usuário desativado!', 'success');
+                loadUsers();
+                
+            } catch (error) {
+                console.error('Error updating user:', error);
+                showToast('Erro ao atualizar usuário', 'error');
+            }
+        }
+        
+        // ==================== ACTIVITY LOGS ====================
+        
+        let activityPage = 1;
+        
+        async function loadActivityLogs() {
+            const timeline = document.getElementById('activityTimeline');
+            if (!timeline) return;
+            
+            timeline.innerHTML = '<div class="loading"><div class="spinner"></div>Carregando atividades...</div>';
+            
+            const userId = document.getElementById('activityUserFilter')?.value || '';
+            const action = document.getElementById('activityActionFilter')?.value || '';
+            
+            try {
+                let url = `/api/admin/activity-logs?page=${activityPage}&limit=30`;
+                if (userId) url += `&userId=${userId}`;
+                if (action) url += `&action=${action}`;
+                
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load activity logs');
+                }
+                
+                const data = await response.json();
+                renderActivityLogs(data.logs);
+                renderActivityPagination(data.pagination);
+                
+                const countEl = document.getElementById('activityCount');
+                if (countEl) countEl.textContent = `${data.pagination.total} registro${data.pagination.total !== 1 ? 's' : ''}`;
+                
+            } catch (error) {
+                console.error('Error loading activity logs:', error);
+                timeline.innerHTML = '<div class="empty-state">Erro ao carregar atividades</div>';
+            }
+        }
+        
+        function renderActivityLogs(logs) {
+            const timeline = document.getElementById('activityTimeline');
+            if (!timeline) return;
+            
+            if (logs.length === 0) {
+                timeline.innerHTML = '<div class="empty-state">Nenhuma atividade registrada</div>';
+                return;
+            }
+            
+            const actionLabels = {
+                'login': { icon: '🔑', label: 'Fez login', class: 'login' },
+                'create_user': { icon: '👤', label: 'Criou usuário', class: 'create' },
+                'update_user': { icon: '✏️', label: 'Atualizou usuário', class: 'update' },
+                'delete_user': { icon: '🗑️', label: 'Desativou usuário', class: 'delete' },
+                'change_password': { icon: '🔐', label: 'Alterou senha', class: 'update' },
+                'approve_refund': { icon: '✅', label: 'Aprovou reembolso', class: 'create' },
+                'reject_refund': { icon: '❌', label: 'Rejeitou reembolso', class: 'delete' },
+                'update_lead': { icon: '📝', label: 'Atualizou lead', class: 'update' }
+            };
+            
+            timeline.innerHTML = logs.map(log => {
+                const actionInfo = actionLabels[log.action] || { icon: '📌', label: log.action, class: 'update' };
+                const details = typeof log.details === 'string' ? JSON.parse(log.details) : log.details;
+                
+                return `
+                    <div class="activity-item">
+                        <div class="activity-icon ${actionInfo.class}">${actionInfo.icon}</div>
+                        <div class="activity-content">
+                            <h4><strong>${log.username || 'Sistema'}</strong> ${actionInfo.label}</h4>
+                            <p>${formatActivityDetails(log.action, details)}</p>
+                        </div>
+                        <div class="activity-time">${formatTimeAgo(log.created_at)}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function formatActivityDetails(action, details) {
+            if (!details || typeof details !== 'object') return '';
+            
+            switch (action) {
+                case 'login':
+                    return `IP: ${details.ip || 'N/A'}`;
+                case 'create_user':
+                    return `Usuário: ${details.created_username || 'N/A'} (${details.role || 'N/A'})`;
+                case 'update_user':
+                    return `Usuário: ${details.updated_user || 'N/A'} - Campos: ${(details.changes || []).join(', ')}`;
+                case 'delete_user':
+                    return `Usuário: ${details.deleted_user || 'N/A'}`;
+                default:
+                    return JSON.stringify(details);
+            }
+        }
+        
+        function formatTimeAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+            
+            if (diffMins < 1) return 'Agora';
+            if (diffMins < 60) return `${diffMins}min atrás`;
+            if (diffHours < 24) return `${diffHours}h atrás`;
+            if (diffDays < 7) return `${diffDays}d atrás`;
+            
+            return formatDate(dateString);
+        }
+        
+        function renderActivityPagination(pagination) {
+            const container = document.getElementById('activityPagination');
+            if (!container) return;
+            
+            if (pagination.totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            let html = '';
+            
+            if (pagination.page > 1) {
+                html += `<button class="pagination-btn" onclick="goToActivityPage(${pagination.page - 1})">« Anterior</button>`;
+            }
+            
+            html += `<span style="padding: 0 16px; color: var(--text-muted);">Página ${pagination.page} de ${pagination.totalPages}</span>`;
+            
+            if (pagination.page < pagination.totalPages) {
+                html += `<button class="pagination-btn" onclick="goToActivityPage(${pagination.page + 1})">Próxima »</button>`;
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        function goToActivityPage(page) {
+            activityPage = page;
+            loadActivityLogs();
+        }
+        
+        // ==================== CHANGE PASSWORD ====================
+        
+        function showChangePasswordModal() {
+            document.getElementById('userDropdown').style.display = 'none';
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmNewPassword').value = '';
+            document.getElementById('changePasswordModal').style.display = 'flex';
+        }
+        
+        function closeChangePasswordModal() {
+            document.getElementById('changePasswordModal').style.display = 'none';
+        }
+        
+        async function changePassword() {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmNewPassword').value;
+            
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                showToast('Preencha todos os campos', 'error');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                showToast('As senhas não conferem', 'error');
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                showToast('A nova senha deve ter pelo menos 6 caracteres', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/change-password', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ currentPassword, newPassword })
+                });
+                
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(result.error || 'Failed to change password');
+                }
+                
+                showToast('Senha alterada com sucesso!', 'success');
+                closeChangePasswordModal();
+                
+            } catch (error) {
+                console.error('Error changing password:', error);
+                showToast(error.message || 'Erro ao alterar senha', 'error');
+            }
+        }
+        
+        // Load user info on page load
+        if (authToken) {
+            initUserInfo();
+        }
+        
+        // Update switchTab to load users/activity
+        const originalSwitchTab = switchTab;
+        switchTab = function(tabName) {
+            originalSwitchTab(tabName);
+            
+            if (tabName === 'users') {
+                loadUsers();
+            } else if (tabName === 'activity') {
+                loadActivityLogs();
+            }
+        };
     </script>
 </body>
 </html>
