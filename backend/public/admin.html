@@ -2253,60 +2253,93 @@ Posso ajudar com alguma dúvida?</textarea>
         </div>
     </div>
     
-    <!-- Customer Journey Modal (Complete) -->
+    <!-- Customer Journey Modal (Complete) - Redesigned -->
     <div class="modal-overlay" id="customerJourneyModal">
-        <div class="modal" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
-            <div class="modal-header">
-                <h3>🎯 Jornada Completa do Cliente</h3>
-                <p id="customerJourneySubtitle">Timeline completa de interações</p>
-            </div>
+        <div class="modal" style="max-width: 900px; max-height: 90vh; overflow-y: auto; border-radius: 20px; background: linear-gradient(145deg, #0d1117 0%, #161b22 100%); border: 1px solid rgba(99, 102, 241, 0.2);">
             
-            <!-- Customer Summary Cards -->
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px;" id="customerSummaryCards">
-                <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 12px; text-align: center;">
-                    <div style="font-size: 20px; margin-bottom: 4px;" id="summaryVisits">0</div>
-                    <div style="font-size: 11px; color: var(--text-muted);">Visitas</div>
-                </div>
-                <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 12px; text-align: center;">
-                    <div style="font-size: 20px; margin-bottom: 4px;" id="summaryEvents">0</div>
-                    <div style="font-size: 11px; color: var(--text-muted);">Eventos</div>
-                </div>
-                <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 12px; text-align: center;">
-                    <div style="font-size: 20px; margin-bottom: 4px; color: var(--success);" id="summaryPurchases">0</div>
-                    <div style="font-size: 11px; color: var(--text-muted);">Compras</div>
-                </div>
-                <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 12px; text-align: center;">
-                    <div style="font-size: 20px; margin-bottom: 4px; color: var(--success);" id="summarySpent">R$ 0</div>
-                    <div style="font-size: 11px; color: var(--text-muted);">Total Gasto</div>
+            <!-- Header with gradient -->
+            <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(16, 185, 129, 0.1) 100%); padding: 24px; border-radius: 20px 20px 0 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <div style="width: 56px; height: 56px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 8px 32px rgba(99, 102, 241, 0.3);">
+                            🎯
+                        </div>
+                        <div>
+                            <h3 style="margin: 0; font-size: 22px; font-weight: 700; color: #fff;">Jornada do Cliente</h3>
+                            <p id="customerJourneySubtitle" style="margin: 4px 0 0 0; color: rgba(255,255,255,0.6); font-size: 14px;">Nome • País</p>
+                        </div>
+                    </div>
+                    <button onclick="closeCustomerJourneyModal()" style="width: 40px; height: 40px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                    </button>
                 </div>
             </div>
             
-            <!-- Customer Info -->
-            <div style="background: var(--bg-tertiary); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
-                <h4 style="color: var(--accent); margin-bottom: 12px; font-size: 14px;">👤 Informações do Cliente</h4>
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;" id="customerInfoData">
-                    <p style="color: var(--text-muted);">Carregando...</p>
+            <div style="padding: 24px;">
+                <!-- Stats Cards Row -->
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;" id="customerSummaryCards">
+                    <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 16px; padding: 20px; text-align: center; position: relative; overflow: hidden;">
+                        <div style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: rgba(99, 102, 241, 0.1); border-radius: 50%;"></div>
+                        <div style="font-size: 32px; font-weight: 700; color: #6366f1; margin-bottom: 4px;" id="summaryVisits">0</div>
+                        <div style="font-size: 12px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px;">Visitas</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 16px; padding: 20px; text-align: center; position: relative; overflow: hidden;">
+                        <div style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: rgba(59, 130, 246, 0.1); border-radius: 50%;"></div>
+                        <div style="font-size: 32px; font-weight: 700; color: #3b82f6; margin-bottom: 4px;" id="summaryEvents">0</div>
+                        <div style="font-size: 12px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px;">Eventos</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 16px; padding: 20px; text-align: center; position: relative; overflow: hidden;">
+                        <div style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: rgba(16, 185, 129, 0.1); border-radius: 50%;"></div>
+                        <div style="font-size: 32px; font-weight: 700; color: #10b981; margin-bottom: 4px;" id="summaryPurchases">0</div>
+                        <div style="font-size: 12px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px;">Compras</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 16px; padding: 20px; text-align: center; position: relative; overflow: hidden;">
+                        <div style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: rgba(245, 158, 11, 0.1); border-radius: 50%;"></div>
+                        <div style="font-size: 24px; font-weight: 700; color: #f59e0b; margin-bottom: 4px;" id="summarySpent">R$ 0</div>
+                        <div style="font-size: 12px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px;">Total Gasto</div>
+                    </div>
+                </div>
+                
+                <!-- Two Column Layout -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <!-- Customer Info Card -->
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 20px;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+                            <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px;">👤</div>
+                            <h4 style="margin: 0; color: #fff; font-size: 15px; font-weight: 600;">Informações do Cliente</h4>
+                        </div>
+                        <div id="customerInfoData" style="display: flex; flex-direction: column; gap: 12px;">
+                            <p style="color: var(--text-muted);">Carregando...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Products Card -->
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 20px;" id="productsSection">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+                            <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px;">🛒</div>
+                            <h4 style="margin: 0; color: #fff; font-size: 15px; font-weight: 600;">Produtos Comprados</h4>
+                        </div>
+                        <div id="productsPurchasedList" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                            <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 8px 12px; color: rgba(255,255,255,0.4); font-size: 13px;">Nenhuma compra ainda</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Timeline Card -->
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 20px;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+                        <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px;">📍</div>
+                        <h4 style="margin: 0; color: #fff; font-size: 15px; font-weight: 600;">Timeline Completa</h4>
+                    </div>
+                    <div id="customerTimeline" style="max-height: 350px; overflow-y: auto; padding-right: 8px;">
+                        <p style="color: var(--text-muted);">Carregando...</p>
+                    </div>
                 </div>
             </div>
             
-            <!-- Products Purchased -->
-            <div style="background: var(--bg-tertiary); border-radius: 12px; padding: 16px; margin-bottom: 20px;" id="productsSection">
-                <h4 style="color: var(--success); margin-bottom: 12px; font-size: 14px;">🛒 Produtos Comprados</h4>
-                <div id="productsPurchasedList" style="display: flex; flex-wrap: wrap; gap: 8px;">
-                    <p style="color: var(--text-muted);">Nenhuma compra ainda</p>
-                </div>
-            </div>
-            
-            <!-- Complete Timeline -->
-            <div style="background: var(--bg-tertiary); border-radius: 12px; padding: 16px;">
-                <h4 style="color: var(--info); margin-bottom: 12px; font-size: 14px;">📍 Timeline Completa</h4>
-                <div id="customerTimeline" style="max-height: 400px; overflow-y: auto;">
-                    <p style="color: var(--text-muted);">Carregando...</p>
-                </div>
-            </div>
-            
-            <div class="modal-actions" style="margin-top: 20px;">
-                <button class="btn-secondary" onclick="closeCustomerJourneyModal()">Fechar</button>
+            <!-- Footer -->
+            <div style="padding: 16px 24px 24px; display: flex; justify-content: flex-end;">
+                <button class="btn-secondary" onclick="closeCustomerJourneyModal()" style="padding: 12px 32px; border-radius: 12px; font-weight: 600;">Fechar</button>
             </div>
         </div>
     </div>
@@ -3218,7 +3251,8 @@ Estou aqui para esclarecer tudo! 😊`
             const { lead, timeline, transactions, summary } = data;
             
             // Update subtitle
-            document.getElementById('customerJourneySubtitle').textContent = `${lead.name || lead.email} • ${lead.country || 'País desconhecido'}`;
+            const countryFlag = lead.country_code ? getCountryFlag(lead.country_code) : '🌍';
+            document.getElementById('customerJourneySubtitle').textContent = `${lead.name || lead.email} • ${countryFlag} ${lead.country || 'País desconhecido'}`;
             
             // Update summary cards
             document.getElementById('summaryVisits').textContent = summary.visitCount || 1;
@@ -3226,17 +3260,42 @@ Estou aqui para esclarecer tudo! 😊`
             document.getElementById('summaryPurchases').textContent = transactions.filter(t => t.status === 'approved').length;
             document.getElementById('summarySpent').textContent = `R$ ${parseFloat(summary.totalSpent || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
             
-            // Update customer info
-            const countryFlag = lead.country_code ? getCountryFlag(lead.country_code) : '🌍';
+            // Update customer info with better styling
+            const statusBadge = lead.status === 'customer' 
+                ? '<span style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;">Cliente</span>'
+                : lead.status === 'contacted'
+                ? '<span style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;">Contactado</span>'
+                : '<span style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;">Novo</span>';
+            
+            const funnelBadge = lead.funnel_language === 'es' 
+                ? '<span style="background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 4px 10px; border-radius: 6px; font-size: 11px;">🇪🇸 Espanhol</span>'
+                : '<span style="background: rgba(59, 130, 246, 0.15); color: #3b82f6; padding: 4px 10px; border-radius: 6px; font-size: 11px;">🇺🇸 Inglês</span>';
+            
             document.getElementById('customerInfoData').innerHTML = `
-                <div><strong>Nome:</strong> ${lead.name || '-'}</div>
-                <div><strong>Email:</strong> ${lead.email}</div>
-                <div><strong>WhatsApp:</strong> ${lead.whatsapp}</div>
-                <div><strong>País:</strong> ${countryFlag} ${lead.country || '-'} ${lead.city ? `(${lead.city})` : ''}</div>
-                <div><strong>Funil:</strong> ${lead.funnel_language === 'es' ? '🇪🇸 Espanhol' : '🇺🇸 Inglês'}</div>
-                <div><strong>Status:</strong> <span class="badge badge-${lead.status || 'new'}">${statusLabels[lead.status] || 'Novo'}</span></div>
-                <div><strong>Primeira visita:</strong> ${formatDate(summary.firstSeen)}</div>
-                <div><strong>Última atividade:</strong> ${formatDate(summary.lastActivity)}</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <span style="color: rgba(255,255,255,0.5); font-size: 13px;">Nome</span>
+                    <span style="color: #fff; font-weight: 500;">${lead.name || '-'}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <span style="color: rgba(255,255,255,0.5); font-size: 13px;">Email</span>
+                    <span style="color: #fff; font-weight: 500; font-size: 12px;">${lead.email}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <span style="color: rgba(255,255,255,0.5); font-size: 13px;">WhatsApp</span>
+                    <span style="color: #10b981; font-weight: 500; font-family: monospace;">${lead.whatsapp}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <span style="color: rgba(255,255,255,0.5); font-size: 13px;">País</span>
+                    <span style="color: #fff;">${countryFlag} ${lead.country || '-'} ${lead.city ? `<span style="color: rgba(255,255,255,0.4);">(${lead.city})</span>` : ''}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <span style="color: rgba(255,255,255,0.5); font-size: 13px;">Funil</span>
+                    ${funnelBadge}
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0;">
+                    <span style="color: rgba(255,255,255,0.5); font-size: 13px;">Status</span>
+                    ${statusBadge}
+                </div>
             `;
             
             // Update products purchased
@@ -3257,49 +3316,61 @@ Estou aqui para esclarecer tudo! 😊`
             
             // Render timeline
             if (timeline.length === 0) {
-                document.getElementById('customerTimeline').innerHTML = '<p style="color: var(--text-muted);">Nenhum evento registrado</p>';
+                document.getElementById('customerTimeline').innerHTML = `
+                    <div style="text-align: center; padding: 40px 20px; color: rgba(255,255,255,0.4);">
+                        <div style="font-size: 40px; margin-bottom: 12px; opacity: 0.5;">📭</div>
+                        <p style="margin: 0;">Nenhum evento registrado ainda</p>
+                    </div>
+                `;
                 return;
             }
             
-            let html = '<div style="position: relative; padding-left: 24px;">';
-            html += '<div style="position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: var(--border);"></div>';
+            let html = '<div style="position: relative; padding-left: 32px;">';
+            html += '<div style="position: absolute; left: 11px; top: 12px; bottom: 12px; width: 2px; background: linear-gradient(180deg, #6366f1 0%, #10b981 50%, #3b82f6 100%); border-radius: 2px;"></div>';
             
             timeline.forEach((item, index) => {
-                const isLast = index === timeline.length - 1;
+                const isFirst = index === 0;
                 const date = new Date(item.timestamp);
                 const timeStr = date.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
                 
-                let bgColor = 'var(--info)';
+                let bgColor = '#3b82f6';
                 let icon = '📍';
+                let glowColor = 'rgba(59, 130, 246, 0.3)';
                 
                 if (item.type === 'lead_captured') {
-                    bgColor = 'var(--accent)';
+                    bgColor = '#6366f1';
+                    glowColor = 'rgba(99, 102, 241, 0.4)';
                     icon = '🎉';
                 } else if (item.type === 'transaction') {
                     if (item.event === 'approved') {
-                        bgColor = 'var(--success)';
+                        bgColor = '#10b981';
+                        glowColor = 'rgba(16, 185, 129, 0.4)';
                         icon = '✅';
                     } else if (item.event === 'refunded' || item.event === 'chargeback') {
-                        bgColor = 'var(--danger)';
+                        bgColor = '#ef4444';
+                        glowColor = 'rgba(239, 68, 68, 0.4)';
                         icon = '💸';
                     } else {
-                        bgColor = 'var(--warning)';
+                        bgColor = '#f59e0b';
+                        glowColor = 'rgba(245, 158, 11, 0.4)';
                         icon = '⏳';
                     }
                 }
                 
                 html += `
-                    <div style="position: relative; padding-bottom: 16px; ${isLast ? '' : 'border-left: none;'}">
-                        <div style="position: absolute; left: -20px; top: 0; width: 16px; height: 16px; background: ${bgColor}; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px;">${icon}</div>
-                        <div style="background: var(--bg-secondary); border-radius: 8px; padding: 10px 12px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                                <strong style="font-size: 13px;">${item.label}</strong>
-                                <span style="font-size: 11px; color: var(--text-muted);">${timeStr}</span>
+                    <div style="position: relative; padding-bottom: 12px;">
+                        <div style="position: absolute; left: -26px; top: 4px; width: 24px; height: 24px; background: ${bgColor}; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; box-shadow: 0 0 12px ${glowColor}; border: 2px solid rgba(255,255,255,0.1);">${icon}</div>
+                        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 14px 16px; transition: all 0.2s; ${isFirst ? 'border-color: rgba(99, 102, 241, 0.3);' : ''}">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
+                                <div style="flex: 1;">
+                                    <strong style="font-size: 13px; color: #fff; display: block; margin-bottom: 2px;">${item.label}</strong>
+                                    ${item.details ? `<div style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 4px;">
+                                        ${item.type === 'transaction' ? `<span style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 2px 8px; border-radius: 4px; font-size: 11px;">${item.details.productType}</span> <span style="color: #10b981; font-weight: 600;">R$ ${parseFloat(item.details.value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>` : ''}
+                                        ${item.page ? `<span style="color: rgba(255,255,255,0.4);">📄 ${item.page}</span>` : ''}
+                                    </div>` : ''}
+                                </div>
+                                <span style="font-size: 11px; color: rgba(255,255,255,0.35); white-space: nowrap; padding: 4px 8px; background: rgba(255,255,255,0.03); border-radius: 6px;">${timeStr}</span>
                             </div>
-                            ${item.details ? `<div style="font-size: 12px; color: var(--text-muted);">
-                                ${item.type === 'transaction' ? `${item.details.productType} - R$ ${parseFloat(item.details.value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : ''}
-                                ${item.page ? `Página: ${item.page}` : ''}
-                            </div>` : ''}
                         </div>
                     </div>
                 `;
