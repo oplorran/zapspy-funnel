@@ -1145,11 +1145,13 @@ app.get('/api/admin/funnel', authenticateToken, async (req, res) => {
         
         // Build language filter condition
         // The metadata column stores JSON with funnelLanguage field
+        // For 'en': include events where funnelLanguage='en' OR funnelLanguage is NULL/missing (legacy data)
+        // For 'es': include only events where funnelLanguage='es'
         let langCondition = '';
-        let langParams = [];
-        if (language === 'en' || language === 'es') {
-            langCondition = `AND (metadata->>'funnelLanguage' = $1 OR (metadata->>'funnelLanguage' IS NULL AND $1 = 'en'))`;
-            langParams = [language];
+        if (language === 'en') {
+            langCondition = `AND (metadata->>'funnelLanguage' = 'en' OR metadata->>'funnelLanguage' IS NULL OR metadata IS NULL OR metadata::text = '{}' OR metadata::text = 'null')`;
+        } else if (language === 'es') {
+            langCondition = `AND metadata->>'funnelLanguage' = 'es'`;
         }
         
         // Get funnel stats by step
@@ -1183,7 +1185,7 @@ app.get('/api/admin/funnel', authenticateToken, async (req, res) => {
                     WHEN 'thankyou_view' THEN 17
                     ELSE 99
                 END
-        `, langParams);
+        `);
         
         // Get daily funnel data
         const dailyStats = await pool.query(`
@@ -1196,7 +1198,7 @@ app.get('/api/admin/funnel', authenticateToken, async (req, res) => {
             ${langCondition}
             GROUP BY DATE(created_at), event
             ORDER BY date DESC, event
-        `, langParams);
+        `);
         
         // Get visitor journeys (last 50)
         const journeys = await pool.query(`
@@ -1213,7 +1215,7 @@ app.get('/api/admin/funnel', authenticateToken, async (req, res) => {
             GROUP BY visitor_id, target_phone, target_gender
             ORDER BY MAX(created_at) DESC
             LIMIT 50
-        `, langParams);
+        `);
         
         res.json({
             funnelStats: funnelStats.rows,
