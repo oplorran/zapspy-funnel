@@ -1492,7 +1492,6 @@ app.all('/api/postback/monetizze', async (req, res) => {
             '4': 'refunded',
             '5': 'blocked',
             '6': 'approved',        // Completa (also counts as approved)
-            '7': 'complete',
             '7': 'abandoned_checkout',
             '70': 'tickets',
             '101': 'subscription_active',
