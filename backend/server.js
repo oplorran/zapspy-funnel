@@ -1892,27 +1892,23 @@ app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (re
     try {
         const { startDate, endDate, productCodes } = req.body;
         
-        // Monetizze API credentials from env
+        // Monetizze API credentials from env (API 2.1 uses only X_CONSUMER_KEY)
         const consumerKey = process.env.MONETIZZE_CONSUMER_KEY;
-        const consumerSecret = process.env.MONETIZZE_CONSUMER_SECRET;
         
-        if (!consumerKey || !consumerSecret) {
+        if (!consumerKey) {
             return res.status(500).json({ 
                 error: 'Monetizze API credentials not configured',
-                message: 'Configure MONETIZZE_CONSUMER_KEY and MONETIZZE_CONSUMER_SECRET in environment variables'
+                message: 'Configure MONETIZZE_CONSUMER_KEY in environment variables'
             });
         }
         
         console.log('🔄 Starting Monetizze sync...');
         console.log('📅 Date range:', startDate || 'today', 'to', endDate || 'today');
         
-        // Monetizze API endpoint for sales
-        // https://api.monetizze.com.br/2.0/sales
-        const baseUrl = 'https://api.monetizze.com.br/2.0/sales';
-        const params = new URLSearchParams({
-            consumer_key: consumerKey,
-            consumer_secret: consumerSecret
-        });
+        // Monetizze API 2.1 endpoint for sales
+        // https://api.monetizze.com.br/2.1/sales
+        const baseUrl = 'https://api.monetizze.com.br/2.1/sales';
+        const params = new URLSearchParams();
         
         if (startDate) params.append('data_inicio', startDate); // Format: YYYY-MM-DD
         if (endDate) params.append('data_fim', endDate);
@@ -1920,13 +1916,14 @@ app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (re
             productCodes.forEach(code => params.append('produto_codigo[]', code));
         }
         
-        const url = `${baseUrl}?${params.toString()}`;
-        console.log('🌐 Fetching from Monetizze API...');
+        const url = `${baseUrl}${params.toString() ? '?' + params.toString() : ''}`;
+        console.log('🌐 Fetching from Monetizze API 2.1...');
         
         const response = await fetch(url, {
             method: 'GET',
             headers: {
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'X-Consumer-Key': consumerKey
             }
         });
         
