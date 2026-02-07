@@ -665,7 +665,21 @@
         .funnel-bar:hover { transform: translateX(6px) scale(1.01); box-shadow: 0 8px 24px rgba(0, 212, 170, 0.3); }
         .funnel-step-name { font-size: 13px; font-weight: 700; color: #000; text-transform: uppercase; letter-spacing: 0.5px; }
         .funnel-step-value { font-size: 16px; font-weight: 800; color: #000; }
-        .funnel-drop { position: absolute; right: -55px; top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: 700; color: var(--danger); text-shadow: 0 0 10px rgba(255, 82, 82, 0.3); }
+        .funnel-step { position: relative; padding-right: 60px; } /* Add padding to prevent overflow */
+        .funnel-drop { 
+            position: absolute; 
+            right: 5px; 
+            top: 50%; 
+            transform: translateY(-50%); 
+            background: rgba(239, 68, 68, 0.15); 
+            color: #ef4444; 
+            padding: 3px 10px; 
+            border-radius: 6px; 
+            font-size: 11px; 
+            font-weight: 700; 
+            white-space: nowrap;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
         
         /* Journey Events */
         .journey-events { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -4235,13 +4249,13 @@ Estou aqui para esclarecer tudo! 😊`
         
         function renderFunnelStepsForLanguage(stats, containerId, color) {
             const mainFunnelOrder = [
-                { key: 'page_view_landing', label: 'Landing' },
-                { key: 'page_view_phone', label: 'Phone' },
-                { key: 'phone_submitted', label: 'Tel. Enviado' },
-                { key: 'page_view_conversas', label: 'Conversas' },
+                { key: 'page_view_landing', label: 'LANDING' },
+                { key: 'page_view_phone', label: 'PHONE' },
+                { key: 'phone_submitted', label: 'TEL ENVIADO' },
+                { key: 'email_captured', label: 'EMAIL' },
+                { key: 'page_view_conversas', label: 'CONVERSAS' },
                 { key: 'page_view_cta', label: 'CTA' },
-                { key: 'email_captured', label: 'Email' },
-                { key: 'checkout_clicked', label: 'Checkout' }
+                { key: 'checkout_clicked', label: 'CHECKOUT' }
             ];
             
             const statsMap = {};
@@ -4292,15 +4306,15 @@ Estou aqui para esclarecer tudo! 😊`
         }
         
         function renderFunnelStats(stats) {
-            // Main funnel steps
+            // Main funnel steps (ordem corrigida: EMAIL vem antes de CONVERSAS e CTA)
             const mainFunnelOrder = [
-                { key: 'page_view_landing', label: 'Landing', section: 'main' },
-                { key: 'page_view_phone', label: 'Phone', section: 'main' },
-                { key: 'phone_submitted', label: 'Tel. Enviado', section: 'main' },
-                { key: 'page_view_conversas', label: 'Conversas', section: 'main' },
+                { key: 'page_view_landing', label: 'LANDING', section: 'main' },
+                { key: 'page_view_phone', label: 'PHONE', section: 'main' },
+                { key: 'phone_submitted', label: 'TEL ENVIADO', section: 'main' },
+                { key: 'email_captured', label: 'EMAIL', section: 'main' },
+                { key: 'page_view_conversas', label: 'CONVERSAS', section: 'main' },
                 { key: 'page_view_cta', label: 'CTA', section: 'main' },
-                { key: 'email_captured', label: 'Email', section: 'main' },
-                { key: 'checkout_clicked', label: 'Checkout', section: 'main' }
+                { key: 'checkout_clicked', label: 'CHECKOUT', section: 'main' }
             ];
             
             // Upsell funnel steps
