@@ -3332,16 +3332,10 @@ Estou aqui para esclarecer tudo! 😊`
                     salesUrl += `source=${sourceFilter}&`;
                 }
                 
-                // DEBUG: Log URLs being fetched
-                console.log('🔍 DEBUG loadOverviewFunnelComparison:');
-                console.log('  dateRange:', dateRange);
-                console.log('  dateParams:', dateParams);
-                console.log('  salesUrl:', salesUrl);
-                
                 // Fetch all data in parallel
                 const [leadsRes, salesRes, mainSalesRes, affSalesRes, refundsRes] = await Promise.all([
                     fetch(leadsUrl, { headers: { 'Authorization': `Bearer ${authToken}` } }),
-                    fetch(salesUrl, { headers: { 'Authorization': `Bearer ${authToken}` } }).catch((e) => { console.error('❌ Sales fetch error:', e); return null; }),
+                    fetch(salesUrl, { headers: { 'Authorization': `Bearer ${authToken}` } }).catch(() => null),
                     fetch(`${API_URL}/api/admin/sales?source=main&${langFilter ? `language=${langFilter}&` : ''}${dateParams}`, { headers: { 'Authorization': `Bearer ${authToken}` } }).catch(() => null),
                     fetch(`${API_URL}/api/admin/sales?source=affiliate&${langFilter ? `language=${langFilter}&` : ''}${dateParams}`, { headers: { 'Authorization': `Bearer ${authToken}` } }).catch(() => null),
                     fetch(refundsUrl, { headers: { 'Authorization': `Bearer ${authToken}` } }).catch(() => null)
@@ -3349,14 +3343,8 @@ Estou aqui para esclarecer tudo! 😊`
                 
                 if (leadsRes.status === 401 || leadsRes.status === 403) { logout(); return; }
                 
-                // DEBUG: Log response status
-                console.log('  salesRes status:', salesRes?.status, 'ok:', salesRes?.ok);
-                
                 const leadsData = await leadsRes.json();
                 const salesData = salesRes?.ok ? await salesRes.json() : { approved: 0, revenue: 0, upsellStats: {} };
-                
-                // DEBUG: Log parsed sales data
-                console.log('  salesData:', JSON.stringify(salesData));
                 const mainSalesData = mainSalesRes?.ok ? await mainSalesRes.json() : { approved: 0 };
                 const affSalesData = affSalesRes?.ok ? await affSalesRes.json() : { approved: 0 };
                 const refundsData = refundsRes?.ok ? await refundsRes.json() : { refunds: [] };
