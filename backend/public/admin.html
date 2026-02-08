@@ -4667,6 +4667,123 @@ Estou aqui para esclarecer tudo! 😊`
                 }
             }
             
+            // =====================================================
+            // DIAGNÓSTICO DE UPSELLS - Comparativo Tracking vs Vendas
+            // Ajuda a entender onde estão os gargalos no funil de upsell
+            // =====================================================
+            const up1View = statsMap['upsell_1_view'] || 0;
+            const up1Accept = statsMap['upsell_1_accepted'] || 0;
+            const up1Decline = statsMap['upsell_1_declined'] || 0;
+            const up2View = statsMap['upsell_2_view'] || 0;
+            const up2Accept = statsMap['upsell_2_accepted'] || 0;
+            const up2Decline = statsMap['upsell_2_declined'] || 0;
+            const up3View = statsMap['upsell_3_view'] || 0;
+            const up3Accept = statsMap['upsell_3_accepted'] || 0;
+            const up3Decline = statsMap['upsell_3_declined'] || 0;
+            const thankyouView = statsMap['thankyou_view'] || 0;
+            
+            // Only show diagnostic if there's tracking data
+            if (up1View > 0 || up2View > 0 || up3View > 0) {
+                html += '<h4 style="color: var(--text-secondary); margin: 24px 0 12px 0; font-size: 13px; border-top: 1px solid var(--border); padding-top: 20px;">🔍 DIAGNÓSTICO DE UPSELLS (Eventos de Tracking)</h4>';
+                html += '<p style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;">⚠️ Estes números vêm do tracking JavaScript e podem incluir acessos inválidos. Use para diagnóstico, não como métrica oficial.</p>';
+                
+                // Diagnostic table
+                html += `<table style="width: 100%; font-size: 12px; border-collapse: collapse; margin-bottom: 16px;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid var(--border);">
+                            <th style="text-align: left; padding: 8px 4px; color: var(--text-muted);">Upsell</th>
+                            <th style="text-align: center; padding: 8px 4px; color: var(--text-muted);">👀 Views</th>
+                            <th style="text-align: center; padding: 8px 4px; color: var(--text-muted);">✅ Clicou Aceitar</th>
+                            <th style="text-align: center; padding: 8px 4px; color: var(--text-muted);">❌ Recusou</th>
+                            <th style="text-align: center; padding: 8px 4px; color: var(--text-muted);">💰 Vendas Reais</th>
+                            <th style="text-align: center; padding: 8px 4px; color: var(--text-muted);">📊 Conv. Click→Venda</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+                
+                // Upsell 1 row
+                const up1ClickToSale = up1Accept > 0 ? ((up1Sales / up1Accept) * 100).toFixed(0) : 0;
+                const up1Problem = up1Accept > 0 && up1Sales < up1Accept ? 'color: #ef4444;' : 'color: #10b981;';
+                html += `<tr style="border-bottom: 1px solid var(--border);">
+                    <td style="padding: 8px 4px; font-weight: 600;">Upsell 1</td>
+                    <td style="text-align: center; padding: 8px 4px;">${up1View}</td>
+                    <td style="text-align: center; padding: 8px 4px; color: #10b981;">${up1Accept}</td>
+                    <td style="text-align: center; padding: 8px 4px; color: #ef4444;">${up1Decline}</td>
+                    <td style="text-align: center; padding: 8px 4px; color: #8b5cf6; font-weight: 600;">${up1Sales}</td>
+                    <td style="text-align: center; padding: 8px 4px; ${up1Problem} font-weight: 600;">${up1ClickToSale}%</td>
+                </tr>`;
+                
+                // Upsell 2 row
+                const up2ClickToSale = up2Accept > 0 ? ((up2Sales / up2Accept) * 100).toFixed(0) : 0;
+                const up2Problem = up2Accept > 0 && up2Sales < up2Accept ? 'color: #ef4444;' : 'color: #10b981;';
+                html += `<tr style="border-bottom: 1px solid var(--border);">
+                    <td style="padding: 8px 4px; font-weight: 600;">Upsell 2</td>
+                    <td style="text-align: center; padding: 8px 4px;">${up2View}</td>
+                    <td style="text-align: center; padding: 8px 4px; color: #10b981;">${up2Accept}</td>
+                    <td style="text-align: center; padding: 8px 4px; color: #ef4444;">${up2Decline}</td>
+                    <td style="text-align: center; padding: 8px 4px; color: #6366f1; font-weight: 600;">${up2Sales}</td>
+                    <td style="text-align: center; padding: 8px 4px; ${up2Problem} font-weight: 600;">${up2ClickToSale}%</td>
+                </tr>`;
+                
+                // Upsell 3 row
+                const up3ClickToSale = up3Accept > 0 ? ((up3Sales / up3Accept) * 100).toFixed(0) : 0;
+                const up3Problem = up3Accept > 0 && up3Sales < up3Accept ? 'color: #ef4444;' : 'color: #10b981;';
+                html += `<tr style="border-bottom: 1px solid var(--border);">
+                    <td style="padding: 8px 4px; font-weight: 600;">Upsell 3</td>
+                    <td style="text-align: center; padding: 8px 4px;">${up3View}</td>
+                    <td style="text-align: center; padding: 8px 4px; color: #10b981;">${up3Accept}</td>
+                    <td style="text-align: center; padding: 8px 4px; color: #ef4444;">${up3Decline}</td>
+                    <td style="text-align: center; padding: 8px 4px; color: #3b82f6; font-weight: 600;">${up3Sales}</td>
+                    <td style="text-align: center; padding: 8px 4px; ${up3Problem} font-weight: 600;">${up3ClickToSale}%</td>
+                </tr>`;
+                
+                html += `</tbody></table>`;
+                
+                // Add insights/warnings
+                html += '<div style="background: var(--bg-tertiary); padding: 12px; border-radius: 8px; font-size: 11px;">';
+                html += '<strong style="color: var(--text-primary);">💡 Insights:</strong><ul style="margin: 8px 0 0 0; padding-left: 16px; color: var(--text-muted);">';
+                
+                // Insight 1: Views vs Front Sales discrepancy
+                if (up1View > frontSales && frontSales > 0) {
+                    const viewsExtra = up1View - frontSales;
+                    html += `<li style="margin-bottom: 4px;"><span style="color: #f59e0b;">⚠️</span> ${viewsExtra} views de Upsell 1 sem compra do Front - possíveis acessos diretos, bots ou reloads</li>`;
+                }
+                
+                // Insight 2: Click to Sale rate problems
+                if (up1Accept > 0 && up1Sales < up1Accept * 0.5) {
+                    const lostSales = up1Accept - up1Sales;
+                    html += `<li style="margin-bottom: 4px;"><span style="color: #ef4444;">🚨</span> ${lostSales} cliques em "Aceitar" Upsell 1 não viraram venda - possível problema no 1-click do Monetizze</li>`;
+                }
+                if (up2Accept > 0 && up2Sales < up2Accept * 0.5) {
+                    const lostSales = up2Accept - up2Sales;
+                    html += `<li style="margin-bottom: 4px;"><span style="color: #ef4444;">🚨</span> ${lostSales} cliques em "Aceitar" Upsell 2 não viraram venda - possível problema no 1-click</li>`;
+                }
+                if (up3Accept > 0 && up3Sales < up3Accept * 0.5) {
+                    const lostSales = up3Accept - up3Sales;
+                    html += `<li style="margin-bottom: 4px;"><span style="color: #ef4444;">🚨</span> ${lostSales} cliques em "Aceitar" Upsell 3 não viraram venda - possível problema no 1-click</li>`;
+                }
+                
+                // Insight 3: Decline rate analysis
+                const totalUp1Actions = up1Accept + up1Decline;
+                if (totalUp1Actions > 0 && up1Decline > up1Accept) {
+                    const declineRate = ((up1Decline / totalUp1Actions) * 100).toFixed(0);
+                    html += `<li style="margin-bottom: 4px;"><span style="color: #f59e0b;">📉</span> Taxa de recusa do Upsell 1: ${declineRate}% - considere melhorar a oferta ou copy</li>`;
+                }
+                
+                // Insight 4: Thank you page analysis
+                if (thankyouView > 0) {
+                    const totalRealSales = frontSales + up1Sales + up2Sales + up3Sales;
+                    html += `<li style="margin-bottom: 4px;"><span style="color: #10b981;">✅</span> ${thankyouView} pessoas viram a página de obrigado</li>`;
+                }
+                
+                // Insight 5: Good performance
+                if (up1Accept > 0 && up1Sales >= up1Accept * 0.8) {
+                    html += `<li style="margin-bottom: 4px;"><span style="color: #10b981;">✅</span> Upsell 1 com boa conversão de clique para venda (${up1ClickToSale}%)</li>`;
+                }
+                
+                html += '</ul></div>';
+            }
+            
             document.getElementById('funnelSteps').innerHTML = html || '<div class="empty-state"><h3>Sem dados</h3></div>';
         }
         
