@@ -6730,33 +6730,72 @@ Posso ajudar em algo mais? 😊`
                 const resultDiv = document.getElementById('postbackDebugResult');
                 const contentPre = document.getElementById('postbackDebugContent');
                 
-                if (data.count === 0) {
+                const memoryCount = data.memoryCount || 0;
+                const dbLogCount = data.dbLogCount || 0;
+                const totalCount = memoryCount + dbLogCount;
+                
+                if (totalCount === 0) {
                     contentPre.textContent = '❌ Nenhum postback recebido ainda.\n\nFaça uma venda de teste na Monetizze para ver os dados aqui.';
                 } else {
-                    let output = `📊 ${data.count} postback(s) recebido(s)\n`;
+                    let output = `📊 Postbacks: ${memoryCount} em memória, ${dbLogCount} salvos no banco\n`;
                     output += `ℹ️ ${data.info}\n\n`;
-                    output += '─'.repeat(60) + '\n\n';
                     
-                    data.postbacks.forEach((p, i) => {
-                        output += `🔹 POSTBACK #${i + 1}\n`;
-                        output += `   Timestamp: ${p.timestamp}\n`;
-                        output += `   Transação: ${p.chave_unica || 'N/A'}\n`;
-                        output += `   Produto: ${p.produto || 'N/A'}\n`;
-                        output += `   Status: ${p.status || 'N/A'}\n`;
-                        output += `   Email: ${p.comprador || 'N/A'}\n\n`;
-                        output += `   💰 CAMPOS DE VALOR:\n`;
-                        Object.entries(p.valores || {}).forEach(([key, val]) => {
-                            const marker = val !== 'N/A' ? '✅' : '  ';
-                            output += `   ${marker} ${key}: ${val}\n`;
+                    // Show recent transactions first
+                    if (data.recentTransactions && data.recentTransactions.length > 0) {
+                        output += '═══════════════════════════════════════════════════════════\n';
+                        output += '💾 TRANSAÇÕES RECENTES (salvas no banco):\n';
+                        output += '═══════════════════════════════════════════════════════════\n\n';
+                        data.recentTransactions.forEach((tx, i) => {
+                            output += `🔸 TX #${i + 1}: ${tx.transaction_id}\n`;
+                            output += `   Email: ${tx.email}\n`;
+                            output += `   Produto: ${tx.product}\n`;
+                            output += `   Valor: R$ ${tx.value}\n`;
+                            output += `   Status: ${tx.status} (Monetizze: ${tx.monetizze_status})\n`;
+                            output += `   Data: ${new Date(tx.created_at).toLocaleString('pt-BR')}\n\n`;
                         });
-                        output += '\n' + '─'.repeat(60) + '\n\n';
-                    });
+                    }
+                    
+                    // Show memory postbacks
+                    if (data.postbacks && data.postbacks.length > 0) {
+                        output += '═══════════════════════════════════════════════════════════\n';
+                        output += '📥 POSTBACKS EM MEMÓRIA (perdidos ao reiniciar servidor):\n';
+                        output += '═══════════════════════════════════════════════════════════\n\n';
+                        data.postbacks.forEach((p, i) => {
+                            output += `🔹 POSTBACK #${i + 1}\n`;
+                            output += `   Timestamp: ${p.timestamp}\n`;
+                            output += `   Transação: ${p.chave_unica || 'N/A'}\n`;
+                            output += `   Produto: ${p.produto || 'N/A'}\n`;
+                            output += `   Status: ${p.status || 'N/A'}\n`;
+                            output += `   Email: ${p.comprador || 'N/A'}\n\n`;
+                            output += `   💰 CAMPOS DE VALOR:\n`;
+                            Object.entries(p.valores || {}).forEach(([key, val]) => {
+                                const marker = val !== 'N/A' ? '✅' : '  ';
+                                output += `   ${marker} ${key}: ${val}\n`;
+                            });
+                            output += '\n─────────────────────────────────────────\n\n';
+                        });
+                    }
+                    
+                    // Show DB logs (raw postbacks)
+                    if (data.dbLogs && data.dbLogs.length > 0) {
+                        output += '═══════════════════════════════════════════════════════════\n';
+                        output += '📋 LOGS DE POSTBACK (banco de dados):\n';
+                        output += '═══════════════════════════════════════════════════════════\n\n';
+                        data.dbLogs.slice(0, 10).forEach((log, i) => {
+                            const body = typeof log.body === 'string' ? JSON.parse(log.body) : log.body;
+                            output += `📝 LOG #${i + 1} (${new Date(log.created_at).toLocaleString('pt-BR')})\n`;
+                            output += `   Content-Type: ${log.content_type}\n`;
+                            output += `   Produto: ${body?.produto?.nome || body?.['produto.nome'] || 'N/A'}\n`;
+                            output += `   Email: ${body?.comprador?.email || body?.['comprador.email'] || 'N/A'}\n`;
+                            output += `   Keys: ${Object.keys(body || {}).slice(0, 10).join(', ')}...\n\n`;
+                        });
+                    }
                     
                     contentPre.textContent = output;
                 }
                 
                 resultDiv.style.display = 'block';
-                showToast('Sucesso!', `${data.count} postback(s) encontrado(s)`, 'success');
+                showToast('Sucesso!', `${totalCount} postback(s) encontrado(s)`, 'success');
                 
             } catch (error) {
                 console.error('Error loading postback debug:', error);
