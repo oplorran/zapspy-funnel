@@ -1806,8 +1806,8 @@ app.get('/api/admin/funnel', authenticateToken, async (req, res) => {
     }
 });
 
-// Debug: Search events by email or phone
-app.get('/api/admin/funnel/search', authenticateToken, async (req, res) => {
+// Debug: Search events by email or phone (TEMPORARY - no auth for debugging)
+app.get('/api/debug/funnel/search', async (req, res) => {
     try {
         const { email, phone } = req.query;
         
