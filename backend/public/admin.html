@@ -1371,7 +1371,7 @@
                 <!-- Tab: Overview -->
                 <div class="tab-content active" id="tab-overview">
 
-                    <!-- Row 1: Volume Metrics (quantities and values) -->
+                    <!-- Row 1: Funnel Volume -->
                     <div class="stats-grid" style="grid-template-columns: repeat(6, 1fr); margin-bottom: 20px;">
                         <div class="stat-card" style="border-left: 4px solid #3b82f6;">
                             <div class="stat-header">
@@ -1379,7 +1379,31 @@
                                 <div class="stat-icon blue">👥</div>
                             </div>
                             <div class="stat-value blue" id="overviewLeads">0</div>
-                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewLeadsChange">--</div>
+                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewLeadsInfo">--</div>
+                        </div>
+                        <div class="stat-card" style="border-left: 4px solid #06b6d4;">
+                            <div class="stat-header">
+                                <span class="stat-label">Initiate Checkout</span>
+                                <div class="stat-icon" style="background: rgba(6, 182, 212, 0.1); color: #06b6d4;">🛒</div>
+                            </div>
+                            <div class="stat-value" style="color: #06b6d4;" id="overviewInitiateCheckout">0</div>
+                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewInitiateCheckoutInfo">entraram no checkout</div>
+                        </div>
+                        <div class="stat-card" style="border-left: 4px solid #f59e0b;">
+                            <div class="stat-header">
+                                <span class="stat-label">Checkout Abandonado</span>
+                                <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">🚫</div>
+                            </div>
+                            <div class="stat-value" style="color: #f59e0b;" id="overviewAbandoned">0</div>
+                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewAbandonedInfo">não finalizaram</div>
+                        </div>
+                        <div class="stat-card" style="border-left: 4px solid #06b6d4;">
+                            <div class="stat-header">
+                                <span class="stat-label">Taxa Conv. Checkout</span>
+                                <div class="stat-icon" style="background: rgba(6, 182, 212, 0.1); color: #06b6d4;">📊</div>
+                            </div>
+                            <div class="stat-value" style="color: #06b6d4;" id="overviewCheckoutRate">0%</div>
+                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewCheckoutRateInfo">vendas / checkouts</div>
                         </div>
                         <div class="stat-card" style="border-left: 4px solid #10b981;">
                             <div class="stat-header">
@@ -1387,7 +1411,7 @@
                                 <div class="stat-icon green">💳</div>
                             </div>
                             <div class="stat-value green" id="overviewSales">0</div>
-                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewSalesChange">--</div>
+                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewSalesInfo">aprovadas</div>
                         </div>
                         <div class="stat-card" style="border-left: 4px solid #10b981;">
                             <div class="stat-header">
@@ -1395,20 +1419,32 @@
                                 <div class="stat-icon green">💰</div>
                             </div>
                             <div class="stat-value" style="color: #10b981;" id="overviewRevenue">R$ 0</div>
-                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewRevenueChange">--</div>
+                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewRevenueInfo">total aprovado</div>
                         </div>
-                        <div class="stat-card" style="border-left: 4px solid #f59e0b;">
+                    </div>
+
+                    <!-- Row 2: Rates and Losses -->
+                    <div class="stats-grid" style="grid-template-columns: repeat(6, 1fr); margin-bottom: 28px;">
+                        <div class="stat-card" style="border-left: 4px solid #8b5cf6;">
                             <div class="stat-header">
-                                <span class="stat-label">Checkout Abandonado</span>
-                                <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">🛒</div>
+                                <span class="stat-label">Taxa Conv. Leads</span>
+                                <div class="stat-icon purple">📈</div>
                             </div>
-                            <div class="stat-value" style="color: #f59e0b;" id="overviewAbandoned">0</div>
-                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewAbandonedRate">0% de 0 checkouts</div>
+                            <div class="stat-value purple" id="overviewConvRate">0%</div>
+                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewConvRateInfo">vendas / leads</div>
+                        </div>
+                        <div class="stat-card" style="border-left: 4px solid #22c55e;">
+                            <div class="stat-header">
+                                <span class="stat-label">Taxa Aprovação</span>
+                                <div class="stat-icon" style="background: rgba(34, 197, 94, 0.1); color: #22c55e;">✅</div>
+                            </div>
+                            <div class="stat-value" style="color: #22c55e;" id="overviewApprovalRate">0%</div>
+                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewApprovalRateInfo">aprovadas / tentativas</div>
                         </div>
                         <div class="stat-card" style="border-left: 4px solid #ef4444;">
                             <div class="stat-header">
-                                <span class="stat-label">Vendas Recusadas</span>
-                                <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">🚫</div>
+                                <span class="stat-label">Vendas Perdidas</span>
+                                <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">❌</div>
                             </div>
                             <div class="stat-value" style="color: #ef4444;" id="overviewLostSales">0</div>
                             <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewLostSalesInfo">cartões recusados</div>
@@ -1419,67 +1455,23 @@
                                 <div class="stat-icon" style="background: rgba(220, 38, 38, 0.1); color: #dc2626;">💸</div>
                             </div>
                             <div class="stat-value" style="color: #dc2626;" id="overviewLostRevenue">R$ 0</div>
-                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewLostRevenueInfo">potencial não convertido</div>
+                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewLostRevenueInfo">não convertido</div>
                         </div>
-                    </div>
-
-                    <!-- Row 2: Rate/Quality Metrics (percentages and averages) -->
-                    <div class="stats-grid" style="grid-template-columns: repeat(7, 1fr); margin-bottom: 28px;">
-                        <div class="stat-card" style="border-left: 4px solid #8b5cf6;">
+                        <div class="stat-card" style="border-left: 4px solid #f59e0b;">
                             <div class="stat-header">
-                                <span class="stat-label">Taxa Conversão</span>
-                                <div class="stat-icon purple">📊</div>
+                                <span class="stat-label">Devoluções</span>
+                                <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">🔄</div>
                             </div>
-                            <div class="stat-value purple" id="overviewConvRate">0%</div>
-                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewConvRateInfo">0 convertidos</div>
-                        </div>
-                        <div class="stat-card" style="border-left: 4px solid #22c55e;">
-                            <div class="stat-header">
-                                <span class="stat-label">Taxa Aprovação</span>
-                                <div class="stat-icon" style="background: rgba(34, 197, 94, 0.1); color: #22c55e;">✅</div>
-                            </div>
-                            <div class="stat-value" style="color: #22c55e;" id="overviewApprovalRate">0%</div>
-                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewApprovalRateInfo">0 de 0 tentativas</div>
-                        </div>
-                        <div class="stat-card" style="border-left: 4px solid #06b6d4;">
-                            <div class="stat-header">
-                                <span class="stat-label">Taxa Checkout</span>
-                                <div class="stat-icon" style="background: rgba(6, 182, 212, 0.1); color: #06b6d4;">🛒</div>
-                            </div>
-                            <div class="stat-value" style="color: #06b6d4;" id="overviewCheckoutRate">0%</div>
-                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewCheckoutRateInfo">0 de 0 checkouts</div>
+                            <div class="stat-value" style="color: #f59e0b;" id="overviewRefunds">0</div>
+                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewRefundsInfo">Monetizze</div>
                         </div>
                         <div class="stat-card" style="border-left: 4px solid #f59e0b;">
                             <div class="stat-header">
                                 <span class="stat-label">Taxa Devolução</span>
-                                <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">🔄</div>
+                                <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">📉</div>
                             </div>
                             <div class="stat-value" style="color: #f59e0b;" id="overviewRefundRate">0%</div>
-                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewRefundRateInfo">0 devoluções Monetizze</div>
-                        </div>
-                        <div class="stat-card" style="border-left: 4px solid #14b8a6;">
-                            <div class="stat-header">
-                                <span class="stat-label">Taxa Upsell</span>
-                                <div class="stat-icon" style="background: rgba(20, 184, 166, 0.1); color: #14b8a6;">⬆️</div>
-                            </div>
-                            <div class="stat-value" style="color: #14b8a6;" id="overviewUpsellRate">0%</div>
-                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewUpsellRateInfo">0 de 0 compraram</div>
-                        </div>
-                        <div class="stat-card" style="border-left: 4px solid #6366f1;">
-                            <div class="stat-header">
-                                <span class="stat-label">Ticket Médio</span>
-                                <div class="stat-icon" style="background: rgba(99, 102, 241, 0.1); color: #6366f1;">🎫</div>
-                            </div>
-                            <div class="stat-value" style="color: #6366f1;" id="overviewTicket">R$ 0</div>
-                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewTicketInfo">por venda</div>
-                        </div>
-                        <div class="stat-card" style="border-left: 4px solid #0ea5e9;">
-                            <div class="stat-header">
-                                <span class="stat-label">Ticket Upsell</span>
-                                <div class="stat-icon" style="background: rgba(14, 165, 233, 0.1); color: #0ea5e9;">💎</div>
-                            </div>
-                            <div class="stat-value" style="color: #0ea5e9;" id="overviewAvgUpsellTicket">R$ 0</div>
-                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewAvgUpsellTicketInfo">0 upsells vendidos</div>
+                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewRefundRateInfo">devoluções / vendas</div>
                         </div>
                     </div>
 
@@ -3475,65 +3467,65 @@ Estou aqui para esclarecer tudo! 😊`
                 // Helper function
                 const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
                 
-                // Update main KPI cards
+                // Update main KPI cards - Row 1: Funnel Volume
+                
+                // 1. Leads
                 setEl('overviewLeads', totalLeads.toLocaleString('pt-BR'));
-                setEl('overviewLeadsChange', langFilter ? `Funil: ${langFilter.toUpperCase()}` : 'Todos os funis');
+                setEl('overviewLeadsInfo', langFilter ? `Funil: ${langFilter.toUpperCase()}` : 'Todos os funis');
                 
-                setEl('overviewSales', totalSales.toLocaleString('pt-BR'));
-                setEl('overviewSalesChange', sourceFilter ? `Origem: ${sourceFilter === 'main' ? 'Principal' : 'Afiliados'}` : 'Todas as origens');
+                // 2. Initiate Checkout (checkout_clicked)
+                setEl('overviewInitiateCheckout', checkoutClicked.toLocaleString('pt-BR'));
+                const initiateRate = totalLeads > 0 ? ((checkoutClicked / totalLeads) * 100) : 0;
+                setEl('overviewInitiateCheckoutInfo', `${initiateRate.toFixed(1)}% dos leads`);
                 
-                setEl('overviewRevenue', 'R$ ' + totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 }));
-                setEl('overviewRevenueChange', `${totalSales} vendas aprovadas`);
-                
-                setEl('overviewConvRate', convRate.toFixed(1) + '%');
-                setEl('overviewConvRateInfo', `${totalSales} vendas / ${totalLeads} leads`);
-                
-                setEl('overviewTicket', 'R$ ' + avgTicket.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-                setEl('overviewTicketInfo', 'por venda');
-                
+                // 3. Checkout Abandonado
                 setEl('overviewAbandoned', checkoutAbandoned.toLocaleString('pt-BR'));
-                setEl('overviewAbandonedRate', `${abandonRate.toFixed(1)}% de ${checkoutClicked} checkouts`);
+                setEl('overviewAbandonedInfo', `${abandonRate.toFixed(1)}% abandonaram`);
                 
-                // Calculate secondary KPIs
+                // 4. Taxa de Conversão do Checkout (vendas / initiate checkout)
+                const checkoutConvRate = checkoutClicked > 0 ? ((totalSales / checkoutClicked) * 100) : 0;
+                setEl('overviewCheckoutRate', checkoutConvRate.toFixed(1) + '%');
+                setEl('overviewCheckoutRateInfo', `${totalSales} de ${checkoutClicked} checkouts`);
                 
-                // 1. Taxa de Aprovação (approved / total transactions)
+                // 5. Vendas
+                setEl('overviewSales', totalSales.toLocaleString('pt-BR'));
+                setEl('overviewSalesInfo', 'aprovadas');
+                
+                // 6. Faturamento
+                setEl('overviewRevenue', 'R$ ' + totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 }));
+                setEl('overviewRevenueInfo', 'total aprovado');
+                
+                // Update main KPI cards - Row 2: Rates and Losses
+                
+                // 1. Taxa de Conversão dos Leads (vendas / leads)
+                setEl('overviewConvRate', convRate.toFixed(1) + '%');
+                setEl('overviewConvRateInfo', `${totalSales} de ${totalLeads} leads`);
+                
+                // 2. Taxa de Aprovação de Pagamento (approved / total transactions)
                 const totalTransactions = salesData.total || 0;
                 const approvalRate = totalTransactions > 0 ? ((totalSales / totalTransactions) * 100) : 0;
                 setEl('overviewApprovalRate', approvalRate.toFixed(1) + '%');
                 setEl('overviewApprovalRateInfo', `${totalSales} de ${totalTransactions} tentativas`);
                 
-                // 1.5. Taxa de Checkout (vendas / pessoas que entraram no checkout)
-                const checkoutConvRate = checkoutClicked > 0 ? ((totalSales / checkoutClicked) * 100) : 0;
-                setEl('overviewCheckoutRate', checkoutConvRate.toFixed(1) + '%');
-                setEl('overviewCheckoutRateInfo', `${totalSales} de ${checkoutClicked} checkouts`);
-                
-                // 2. Taxa de Devolução Monetizze (refunds+chargebacks / approved sales)
-                const refundedCount = salesData.refunded || 0;
-                const refundRate = totalSales > 0 ? ((refundedCount / totalSales) * 100) : 0;
-                setEl('overviewRefundRate', refundRate.toFixed(1) + '%');
-                setEl('overviewRefundRateInfo', `${refundedCount} devoluções Monetizze`);
-                
-                // 3. Taxa de Upsell (customers who bought at least 1 upsell / front sales)
-                const frontSales = upsellStats.front || totalSales;
-                const upsellRate = frontSales > 0 ? ((totalUpsells / frontSales) * 100) : 0;
-                setEl('overviewUpsellRate', upsellRate.toFixed(1) + '%');
-                setEl('overviewUpsellRateInfo', `${totalUpsells} de ${frontSales} compraram`);
-                
-                // 4. Ticket Médio Upsell
-                const avgUpsellTicket = salesData.avgUpsellTicket || 0;
-                const totalUpsellsSold = upsellStats.total || totalUpsells;
-                setEl('overviewAvgUpsellTicket', 'R$ ' + avgUpsellTicket.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-                setEl('overviewAvgUpsellTicketInfo', `${totalUpsellsSold} upsells vendidos`);
-                
-                // 5. Vendas Recusadas (cancelled/rejected)
+                // 3. Vendas Perdidas (cancelled/rejected)
                 const lostSales = salesData.cancelled || 0;
                 setEl('overviewLostSales', lostSales.toLocaleString('pt-BR'));
                 setEl('overviewLostSalesInfo', 'cartões recusados');
                 
-                // 6. Receita Perdida (value of lost sales)
+                // 4. Receita Perdida (value of lost sales)
                 const lostRevenue = salesData.lostRevenue || 0;
                 setEl('overviewLostRevenue', 'R$ ' + lostRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-                setEl('overviewLostRevenueInfo', 'potencial não convertido');
+                setEl('overviewLostRevenueInfo', 'não convertido');
+                
+                // 5. Devoluções (Monetizze)
+                const refundedCount = salesData.refunded || 0;
+                setEl('overviewRefunds', refundedCount.toLocaleString('pt-BR'));
+                setEl('overviewRefundsInfo', 'Monetizze');
+                
+                // 6. Taxa de Devolução (refunds / vendas aprovadas)
+                const refundRate = totalSales > 0 ? ((refundedCount / totalSales) * 100) : 0;
+                setEl('overviewRefundRate', refundRate.toFixed(1) + '%');
+                setEl('overviewRefundRateInfo', `${refundedCount} de ${totalSales} vendas`);
                 
                 // Update quick actions
                 setEl('quickRecoveryText', `${checkoutAbandoned} abandonos de checkout`);
