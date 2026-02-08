@@ -1418,26 +1418,6 @@
                         </div>
                     </div>
 
-                    <!-- Sales Breakdown -->
-                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px;">
-                        <div style="background: var(--bg-glass); border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-align: center;">
-                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">🏠 Vendas Principal</div>
-                            <div style="font-size: 28px; font-weight: 800; color: #3b82f6;" id="overviewSalesMain">0</div>
-                        </div>
-                        <div style="background: var(--bg-glass); border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-align: center;">
-                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">🤝 Vendas Afiliados</div>
-                            <div style="font-size: 28px; font-weight: 800; color: #a855f7;" id="overviewSalesAff">0</div>
-                        </div>
-                        <div style="background: var(--bg-glass); border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-align: center;">
-                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">⬆️ Upsells</div>
-                            <div style="font-size: 28px; font-weight: 800; color: #10b981;" id="overviewUpsells">0</div>
-                        </div>
-                        <div style="background: var(--bg-glass); border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-align: center;">
-                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">🔄 Reembolsos</div>
-                            <div style="font-size: 28px; font-weight: 800; color: #ef4444;" id="overviewRefunds">0</div>
-                        </div>
-                    </div>
-                    
                     <!-- Charts -->
                     <div class="charts-grid">
                         <div class="chart-card">
@@ -3390,12 +3370,6 @@ Estou aqui para esclarecer tudo! 😊`
                 
                 setEl('overviewAbandoned', abandonedLeads.toLocaleString('pt-BR'));
                 setEl('overviewAbandonedRate', abandonRate.toFixed(1) + '% do total');
-                
-                // Update sales breakdown
-                setEl('overviewSalesMain', (mainSalesData.approved || 0).toLocaleString('pt-BR'));
-                setEl('overviewSalesAff', (affSalesData.approved || 0).toLocaleString('pt-BR'));
-                setEl('overviewUpsells', totalUpsells.toLocaleString('pt-BR'));
-                setEl('overviewRefunds', pendingRefunds.toLocaleString('pt-BR'));
                 
                 // Update quick actions
                 setEl('quickRecoveryText', `${abandonedLeads} leads aguardando`);
