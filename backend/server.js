@@ -1938,40 +1938,6 @@ app.get('/api/admin/customer/:leadId/journey', authenticateToken, async (req, re
 // Store last 20 postbacks for debugging
 const recentPostbacks = [];
 
-// TEMPORARY: Quick check postback status (no auth - REMOVE LATER)
-app.get('/api/admin/debug/postback-check', async (req, res) => {
-    try {
-        // Check recent postback logs
-        const dbLogs = await pool.query(`
-            SELECT id, content_type, created_at, 
-                   substring(body::text from 1 for 200) as body_preview
-            FROM postback_logs 
-            ORDER BY created_at DESC LIMIT 10
-        `);
-        
-        // Check recent transactions
-        const recentTx = await pool.query(`
-            SELECT transaction_id, email, product, value, status, created_at
-            FROM transactions ORDER BY created_at DESC LIMIT 10
-        `);
-        
-        // Check if specific transaction exists
-        const tx55800380 = await pool.query(`
-            SELECT * FROM transactions WHERE transaction_id = '55800380'
-        `);
-        
-        res.json({
-            memoryPostbackCount: recentPostbacks.length,
-            recentPostbackLogs: dbLogs.rows,
-            recentTransactions: recentTx.rows,
-            transaction_55800380: tx55800380.rows.length > 0 ? tx55800380.rows[0] : 'NOT FOUND',
-            serverTime: new Date().toISOString()
-        });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
 // Debug endpoint to see recent postbacks (memory + DB)
 app.get('/api/admin/debug/postbacks', authenticateToken, async (req, res) => {
     // Extract value fields from each postback for easy viewing
