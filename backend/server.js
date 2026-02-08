@@ -3341,6 +3341,8 @@ app.delete('/api/admin/transactions/:id', authenticateToken, async (req, res) =>
 // TEMPORARY DEBUG: Check transaction dates in DB (no auth for easy access - REMOVE LATER)
 app.get('/api/admin/debug-dates', async (req, res) => {
     try {
+        const { startDate, endDate } = req.query;
+        
         const results = await pool.query(`
             SELECT 
                 MIN(created_at) as oldest_date,
@@ -3356,19 +3358,66 @@ app.get('/api/admin/debug-dates', async (req, res) => {
             FROM transactions
         `);
         
+        // Test parameterized query (same as sales endpoint)
+        let paramTest = { note: 'No date params provided. Add ?startDate=2026-02-07&endDate=2026-02-08 to test' };
+        if (startDate && endDate) {
+            try {
+                const testQuery = await pool.query(
+                    `SELECT COUNT(*) as count, 
+                            COALESCE(SUM(CAST(value AS DECIMAL)), 0) as revenue
+                     FROM transactions 
+                     WHERE status = 'approved' 
+                     AND created_at >= $1::date 
+                     AND created_at < ($2::date + INTERVAL '1 day')`,
+                    [startDate, endDate]
+                );
+                
+                // Also test without ::date cast
+                const testQuery2 = await pool.query(
+                    `SELECT COUNT(*) as count
+                     FROM transactions 
+                     WHERE status = 'approved' 
+                     AND created_at >= $1::timestamp 
+                     AND created_at < ($2::timestamp + INTERVAL '1 day')`,
+                    [startDate, endDate]
+                );
+                
+                // Also test with explicit date strings
+                const testQuery3 = await pool.query(
+                    `SELECT COUNT(*) as count
+                     FROM transactions 
+                     WHERE status = 'approved' 
+                     AND created_at >= '${startDate}'::date 
+                     AND created_at < ('${endDate}'::date + INTERVAL '1 day')`
+                );
+                
+                paramTest = {
+                    params_received: { startDate, endDate },
+                    with_date_cast: testQuery.rows[0],
+                    with_timestamp_cast: testQuery2.rows[0],
+                    with_inline_dates: testQuery3.rows[0]
+                };
+            } catch (queryError) {
+                paramTest = { 
+                    error: queryError.message, 
+                    params: { startDate, endDate } 
+                };
+            }
+        }
+        
         const sampleDates = await pool.query(`
             SELECT transaction_id, status, created_at, product, 
-                   created_at::date as date_only,
-                   created_at AT TIME ZONE 'UTC' as utc_time
+                   created_at::date as date_only
             FROM transactions 
             WHERE status = 'approved' 
             ORDER BY created_at DESC 
-            LIMIT 15
+            LIMIT 5
         `);
         
         res.json({
             summary: results.rows[0],
-            sample_approved_transactions: sampleDates.rows
+            parameterized_test: paramTest,
+            sample_transactions: sampleDates.rows
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
