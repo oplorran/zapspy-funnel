@@ -1806,6 +1806,92 @@ app.get('/api/admin/funnel', authenticateToken, async (req, res) => {
     }
 });
 
+// Debug: Search events by email or phone
+app.get('/api/admin/funnel/search', authenticateToken, async (req, res) => {
+    try {
+        const { email, phone } = req.query;
+        
+        if (!email && !phone) {
+            return res.status(400).json({ error: 'Provide email or phone parameter' });
+        }
+        
+        let events = [];
+        let transactions = [];
+        let lead = null;
+        
+        // Search by email in transactions
+        if (email) {
+            const txResult = await pool.query(`
+                SELECT * FROM transactions 
+                WHERE email ILIKE $1 
+                ORDER BY created_at DESC
+            `, [`%${email}%`]);
+            transactions = txResult.rows;
+            
+            // Get lead
+            const leadResult = await pool.query(`
+                SELECT * FROM leads 
+                WHERE email ILIKE $1 
+                ORDER BY created_at DESC LIMIT 1
+            `, [`%${email}%`]);
+            lead = leadResult.rows[0] || null;
+            
+            // Get visitor_id from lead or events
+            if (lead?.visitor_id) {
+                const eventsResult = await pool.query(`
+                    SELECT * FROM funnel_events 
+                    WHERE visitor_id = $1 
+                    ORDER BY created_at ASC
+                `, [lead.visitor_id]);
+                events = eventsResult.rows;
+            }
+        }
+        
+        // Search by phone in funnel_events target_phone
+        if (phone) {
+            const phoneClean = phone.replace(/\D/g, '');
+            const eventsResult = await pool.query(`
+                SELECT * FROM funnel_events 
+                WHERE target_phone LIKE $1 
+                ORDER BY created_at DESC LIMIT 100
+            `, [`%${phoneClean}%`]);
+            events = eventsResult.rows;
+            
+            // Get unique visitor_ids
+            const visitorIds = [...new Set(events.map(e => e.visitor_id))];
+            
+            // Get lead by target_phone
+            const leadResult = await pool.query(`
+                SELECT * FROM leads 
+                WHERE target_phone LIKE $1 
+                ORDER BY created_at DESC LIMIT 1
+            `, [`%${phoneClean}%`]);
+            lead = leadResult.rows[0] || null;
+        }
+        
+        res.json({
+            lead,
+            transactions,
+            events,
+            summary: {
+                totalEvents: events.length,
+                totalTransactions: transactions.length,
+                eventTypes: [...new Set(events.map(e => e.event))],
+                hasUpsell1View: events.some(e => e.event === 'upsell_1_view'),
+                hasUpsell1Accept: events.some(e => e.event === 'upsell_1_accepted'),
+                hasUpsell2View: events.some(e => e.event === 'upsell_2_view'),
+                hasUpsell2Accept: events.some(e => e.event === 'upsell_2_accepted'),
+                hasUpsell3View: events.some(e => e.event === 'upsell_3_view'),
+                hasUpsell3Accept: events.some(e => e.event === 'upsell_3_accepted')
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error searching funnel events:', error);
+        res.status(500).json({ error: 'Search failed' });
+    }
+});
+
 // Get specific visitor journey (protected)
 app.get('/api/admin/funnel/visitor/:visitorId', authenticateToken, async (req, res) => {
     try {
