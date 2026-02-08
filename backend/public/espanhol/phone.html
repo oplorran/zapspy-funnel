@@ -2287,6 +2287,14 @@
             localStorage.setItem('userCountryCode', country);
             localStorage.setItem('userPhoneNumber', whatsapp); // Número de teléfono sin código de país para Monetizze
             
+            // Ensure visitorId exists
+            let visitorId = localStorage.getItem('funnelVisitorId');
+            if (!visitorId) {
+                visitorId = 'v_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('funnelVisitorId', visitorId);
+                console.log('📊 Created visitorId in phone.html:', visitorId);
+            }
+            
             // Enviar al backend
             sendLeadToBackend({
                 name: name,
@@ -2294,9 +2302,11 @@
                 whatsapp: country + whatsapp,
                 targetPhone: localStorage.getItem('targetPhone') || '',
                 targetGender: localStorage.getItem('targetGender') || '',
+                funnelLanguage: 'es',
                 timestamp: new Date().toISOString(),
                 userAgent: navigator.userAgent,
-                referrer: document.referrer
+                referrer: document.referrer,
+                visitorId: visitorId
             });
             
             // Rastrear evento
