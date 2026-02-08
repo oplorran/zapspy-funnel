@@ -686,6 +686,7 @@
         .journey-tag { font-size: 11px; padding: 4px 10px; border-radius: 20px; background: var(--bg-tertiary); color: var(--text-secondary); }
         .journey-tag.completed { background: rgba(16, 185, 129, 0.1); color: var(--accent-light); }
         .journey-tag.checkout { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .journey-tag.success { background: rgba(16, 185, 129, 0.2); color: #10b981; font-weight: 600; }
         
         /* Config Box */
         .config-box { background: var(--bg-glass); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px; margin-bottom: 28px; position: relative; }
@@ -1935,13 +1936,14 @@
                                 </select>
                             </div>
                         </div>
-                        <table class="data-table">
+                        <table class="data-table" style="font-size: 13px;">
                             <thead>
                                 <tr>
-                                    <th>Visitante</th>
+                                    <th>Email / Nome</th>
+                                    <th>WhatsApp</th>
                                     <th>Funil</th>
                                     <th>Alvo</th>
-                                    <th>Gênero</th>
+                                    <th>Eventos</th>
                                     <th>Etapas</th>
                                     <th>Primeira Visita</th>
                                     <th>Última Atividade</th>
@@ -1949,7 +1951,7 @@
                                 </tr>
                             </thead>
                             <tbody id="journeysTable">
-                                <tr><td colspan="8"><div class="loading"><div class="spinner"></div>Carregando...</div></td></tr>
+                                <tr><td colspan="9"><div class="loading"><div class="spinner"></div>Carregando...</div></td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -4811,17 +4813,53 @@ Estou aqui para esclarecer tudo! 😊`
                     : '<span style="background: rgba(107, 114, 128, 0.15); color: #6b7280; padding: 2px 8px; border-radius: 12px; font-size: 11px;">-</span>';
                 
                 // Show email badge if captured
-                const emailBadge = j.email ? `<span style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 2px 6px; border-radius: 6px; font-size: 10px; margin-left: 4px;" title="${j.email}">📧</span>` : '';
+                // Determine status based on events
+                const hasCheckout = events.includes('checkout_clicked');
+                const hasEmail = !!j.email;
+                const hasUpsell = events.some(e => e.includes('upsell') && e.includes('accepted'));
+                const hasThankyou = events.includes('thankyou_view');
                 
-                html += `<tr>
-                    <td class="mono" style="display: flex; align-items: center; gap: 4px;">${j.visitor_id.substring(0, 12)}...${emailBadge}</td>
+                let statusBadge = '';
+                if (hasThankyou || hasUpsell) {
+                    statusBadge = '<span style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 600;">💰 Comprou</span>';
+                } else if (hasCheckout) {
+                    statusBadge = '<span style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 600;">🛒 Checkout</span>';
+                } else if (hasEmail) {
+                    statusBadge = '<span style="background: rgba(59, 130, 246, 0.15); color: #3b82f6; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 600;">📧 Lead</span>';
+                } else {
+                    statusBadge = '<span style="background: rgba(107, 114, 128, 0.15); color: #6b7280; padding: 3px 8px; border-radius: 6px; font-size: 10px;">👁️ Visitante</span>';
+                }
+                
+                // Email/Name column
+                const emailDisplay = j.email 
+                    ? `<div style="display: flex; flex-direction: column; gap: 2px;">
+                         <span style="color: #fff; font-weight: 500;">${j.email}</span>
+                         ${j.name ? `<span style="color: var(--text-muted); font-size: 11px;">${j.name}</span>` : ''}
+                       </div>`
+                    : `<span style="color: var(--text-muted); font-size: 11px;">${j.visitor_id.substring(0, 16)}...</span>`;
+                
+                // WhatsApp column - show target_phone (the number they're spying) OR their actual phone
+                const whatsappDisplay = j.target_phone 
+                    ? `<span class="mono" style="font-size: 12px;">${j.target_phone}</span>`
+                    : '<span style="color: var(--text-muted);">-</span>';
+                
+                // Gender with icon
+                const genderDisplay = j.target_gender === 'male' 
+                    ? '<span title="Masculino">👨</span>' 
+                    : j.target_gender === 'female' 
+                    ? '<span title="Feminino">👩</span>' 
+                    : '<span style="color: var(--text-muted);">-</span>';
+                
+                html += `<tr style="cursor: pointer;" onclick="openJourneyModal('${j.visitor_id}')">
+                    <td>${emailDisplay}</td>
+                    <td>${whatsappDisplay}</td>
                     ${showLanguage ? `<td>${langBadge}</td>` : ''}
-                    <td class="mono">${j.target_phone || '-'}</td>
-                    <td>${j.target_gender === 'male' ? '👨' : j.target_gender === 'female' ? '👩' : '-'}</td>
-                    <td><div class="journey-events">${events.slice(0, 5).map(e => `<span class="journey-tag ${e === 'checkout_clicked' ? 'checkout' : 'completed'}">${shortLabels[e] || e}</span>`).join('')}${events.length > 5 ? `<span class="journey-tag" style="cursor:pointer" onclick="openJourneyModal('${j.visitor_id}')">+${events.length - 5}</span>` : ''}</div></td>
-                    <td>${formatDate(j.first_seen)}</td>
-                    <td>${formatDate(j.last_seen)}</td>
-                    <td><button class="action-btn" onclick="openJourneyModal('${j.visitor_id}')" title="Ver detalhes">👁️</button></td>
+                    <td>${genderDisplay}</td>
+                    <td style="text-align: center;"><span style="background: rgba(99, 102, 241, 0.15); color: #6366f1; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;">${events.length}</span></td>
+                    <td><div class="journey-events" style="flex-wrap: wrap; gap: 4px;">${events.slice(0, 6).map(e => `<span class="journey-tag ${e === 'checkout_clicked' ? 'checkout' : e.includes('accepted') ? 'success' : 'completed'}" style="font-size: 10px; padding: 2px 6px;">${shortLabels[e] || e}</span>`).join('')}${events.length > 6 ? `<span class="journey-tag" style="cursor:pointer; font-size: 10px;">+${events.length - 6}</span>` : ''}</div></td>
+                    <td style="font-size: 12px; white-space: nowrap;">${formatDate(j.first_seen)}</td>
+                    <td style="font-size: 12px; white-space: nowrap;">${formatDate(j.last_seen)}</td>
+                    <td><button class="action-btn" onclick="event.stopPropagation(); openJourneyModal('${j.visitor_id}')" title="Ver detalhes">👁️</button></td>
                 </tr>`;
             });
             document.getElementById('journeysTable').innerHTML = html;

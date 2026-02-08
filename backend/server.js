@@ -1726,7 +1726,7 @@ app.get('/api/admin/funnel', authenticateToken, async (req, res) => {
             ORDER BY date DESC, event
         `);
         
-        // Get visitor journeys (filtered by date range) with email from leads
+        // Get visitor journeys (filtered by date range) with lead info
         const journeys = await pool.query(`
             SELECT 
                 fe.visitor_id,
@@ -1737,11 +1737,14 @@ app.get('/api/admin/funnel', authenticateToken, async (req, res) => {
                 MAX(fe.created_at) as last_seen,
                 COUNT(*) as total_events,
                 l.email,
-                l.name
+                l.name,
+                l.whatsapp,
+                l.country,
+                l.country_code
             FROM funnel_events fe
             LEFT JOIN leads l ON fe.visitor_id = l.visitor_id
             WHERE 1=1 ${dateCondition.replace(/created_at/g, 'fe.created_at')} ${langCondition.replace(/funnel_language/g, 'fe.funnel_language')}
-            GROUP BY fe.visitor_id, fe.target_phone, fe.target_gender, l.email, l.name
+            GROUP BY fe.visitor_id, fe.target_phone, fe.target_gender, l.email, l.name, l.whatsapp, l.country, l.country_code
             ORDER BY MAX(fe.created_at) DESC
             LIMIT 100
         `);
