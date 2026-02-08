@@ -1962,18 +1962,28 @@ app.post('/api/postback/test', (req, res) => {
 // Test Monetizze API connectivity (debug endpoint)
 app.get('/api/admin/test-monetizze-api', authenticateToken, requireAdmin, async (req, res) => {
     const consumerKey = process.env.MONETIZZE_CONSUMER_KEY;
-    const results = { tests: [], consumerKeyPresent: !!consumerKey };
+    const results = { tests: [], consumerKeyPresent: !!consumerKey, keyLength: consumerKey?.length };
     
     if (!consumerKey) {
         return res.json({ error: 'MONETIZZE_CONSUMER_KEY not configured', results });
     }
     
-    // Test different API endpoints
+    // Test different API endpoints with different auth methods
+    // Try multiple header formats and query param approaches
     const endpoints = [
-        { name: 'API 2.1 /vendas (header)', url: 'https://api.monetizze.com.br/2.1/vendas', headers: { 'X-Consumer-Key': consumerKey } },
-        { name: 'API 2.1 /transacoes (header)', url: 'https://api.monetizze.com.br/2.1/transacoes', headers: { 'X-Consumer-Key': consumerKey } },
-        { name: 'API 2.0 /vendas (token)', url: `https://api.monetizze.com.br/2.0/vendas?token=${consumerKey}`, headers: {} },
-        { name: 'API 2.0 /transacoes (token)', url: `https://api.monetizze.com.br/2.0/transacoes?token=${consumerKey}`, headers: {} }
+        // API 2.1 with X_CONSUMER_KEY header (underscore)
+        { name: 'API 2.1 /vendas X_CONSUMER_KEY', url: 'https://api.monetizze.com.br/2.1/vendas', headers: { 'X_CONSUMER_KEY': consumerKey } },
+        // API 2.1 with X-Consumer-Key header (hyphen)
+        { name: 'API 2.1 /vendas X-Consumer-Key', url: 'https://api.monetizze.com.br/2.1/vendas', headers: { 'X-Consumer-Key': consumerKey } },
+        // API 2.1 with token as query param
+        { name: 'API 2.1 /vendas ?token=', url: `https://api.monetizze.com.br/2.1/vendas?token=${consumerKey}`, headers: {} },
+        // API 2.1 with X_CONSUMER_KEY as query param
+        { name: 'API 2.1 /vendas ?X_CONSUMER_KEY=', url: `https://api.monetizze.com.br/2.1/vendas?X_CONSUMER_KEY=${consumerKey}`, headers: {} },
+        // API 2.1 transacoes
+        { name: 'API 2.1 /transacoes X_CONSUMER_KEY', url: 'https://api.monetizze.com.br/2.1/transacoes', headers: { 'X_CONSUMER_KEY': consumerKey } },
+        { name: 'API 2.1 /transacoes ?token=', url: `https://api.monetizze.com.br/2.1/transacoes?token=${consumerKey}`, headers: {} },
+        // Try /token endpoint
+        { name: 'API 2.1 /token (auth endpoint)', url: `https://api.monetizze.com.br/2.1/token?X_CONSUMER_KEY=${consumerKey}`, headers: {} }
     ];
     
     for (const ep of endpoints) {
@@ -1987,6 +1997,10 @@ app.get('/api/admin/test-monetizze-api', authenticateToken, requireAdmin, async 
                 ok: response.ok,
                 body: text.substring(0, 500)
             });
+            // If we got a 200, note it prominently
+            if (response.ok) {
+                console.log(`✅ SUCCESS: ${ep.name}`);
+            }
         } catch (err) {
             results.tests.push({
                 name: ep.name,
