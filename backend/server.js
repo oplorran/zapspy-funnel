@@ -1794,22 +1794,37 @@ app.get('/api/admin/funnel', authenticateToken, async (req, res) => {
             };
             
             // Get upsell stats for funnel visualization
-            // Define product keywords
-            const frontKeywords = language === 'es' 
-                ? `LOWER(product) LIKE '%espa%' AND LOWER(product) NOT LIKE '%upsell%' AND LOWER(product) NOT LIKE '%up %'`
-                : `(LOWER(product) LIKE '%ingl%' OR LOWER(product) LIKE '%spy%') AND LOWER(product) NOT LIKE '%upsell%' AND LOWER(product) NOT LIKE '%up %'`;
+            // Use same product keywords as /api/admin/sales for consistency
+            // English products (Main: 341972, 349241-349243 + Affiliates: 330254, 341443-341448)
+            const enFrontKeywords = "product ILIKE '%Monitor%' OR product ILIKE '%ZappDetect%' OR product ILIKE '%341972%' OR product ILIKE '%330254%'";
+            const enUp1Keywords = "product ILIKE '%Message Vault%' OR product ILIKE '%349241%' OR product ILIKE '%341443%'";
+            const enUp2Keywords = "product ILIKE '%360%' OR product ILIKE '%Tracker%' OR product ILIKE '%349242%' OR product ILIKE '%341444%'";
+            const enUp3Keywords = "product ILIKE '%Instant Access%' OR product ILIKE '%349243%' OR product ILIKE '%341448%'";
             
-            const up1Keywords = language === 'es'
-                ? `LOWER(product) LIKE '%espa%upsell%1%' OR LOWER(product) LIKE '%espa%up 1%'`
-                : `LOWER(product) LIKE '%ingl%upsell%1%' OR LOWER(product) LIKE '%ingl%up 1%' OR LOWER(product) LIKE '%spy%upsell%1%' OR LOWER(product) LIKE '%spy%up 1%'`;
+            // Spanish products (Main: 349260-349267 + Affiliates: 338375, 341452-341454)
+            const esFrontKeywords = "product ILIKE '%Infidelidad%' OR product ILIKE '%349260%' OR product ILIKE '%338375%'";
+            const esUp1Keywords = "product ILIKE '%Recuperación%' OR product ILIKE '%349261%' OR product ILIKE '%341452%'";
+            const esUp2Keywords = "product ILIKE '%Visión Total%' OR product ILIKE '%349266%' OR product ILIKE '%341453%'";
+            const esUp3Keywords = "product ILIKE '%VIP Sin Esperas%' OR product ILIKE '%349267%' OR product ILIKE '%341454%'";
             
-            const up2Keywords = language === 'es'
-                ? `LOWER(product) LIKE '%espa%upsell%2%' OR LOWER(product) LIKE '%espa%up 2%'`
-                : `LOWER(product) LIKE '%ingl%upsell%2%' OR LOWER(product) LIKE '%ingl%up 2%' OR LOWER(product) LIKE '%spy%upsell%2%' OR LOWER(product) LIKE '%spy%up 2%'`;
-            
-            const up3Keywords = language === 'es'
-                ? `LOWER(product) LIKE '%espa%upsell%3%' OR LOWER(product) LIKE '%espa%up 3%'`
-                : `LOWER(product) LIKE '%ingl%upsell%3%' OR LOWER(product) LIKE '%ingl%up 3%' OR LOWER(product) LIKE '%spy%upsell%3%' OR LOWER(product) LIKE '%spy%up 3%'`;
+            let frontKeywords, up1Keywords, up2Keywords, up3Keywords;
+            if (language === 'es') {
+                frontKeywords = esFrontKeywords;
+                up1Keywords = esUp1Keywords;
+                up2Keywords = esUp2Keywords;
+                up3Keywords = esUp3Keywords;
+            } else if (language === 'en') {
+                frontKeywords = enFrontKeywords;
+                up1Keywords = enUp1Keywords;
+                up2Keywords = enUp2Keywords;
+                up3Keywords = enUp3Keywords;
+            } else {
+                // All languages - combine both
+                frontKeywords = `(${enFrontKeywords}) OR (${esFrontKeywords})`;
+                up1Keywords = `(${enUp1Keywords}) OR (${esUp1Keywords})`;
+                up2Keywords = `(${enUp2Keywords}) OR (${esUp2Keywords})`;
+                up3Keywords = `(${enUp3Keywords}) OR (${esUp3Keywords})`;
+            }
             
             // Count front sales
             const frontResult = await pool.query(`

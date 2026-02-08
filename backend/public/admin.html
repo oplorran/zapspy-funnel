@@ -4527,25 +4527,21 @@ Estou aqui para esclarecer tudo! 😊`
                 const up2 = transactionStats.upsell2 || 0;
                 const up3 = transactionStats.upsell3 || 0;
                 
-                // Get checkout and upsell view values from funnel events
+                // Get checkout value
                 const checkoutValue = normalizedValues.find(s => s.key === 'checkout_clicked')?.value || 0;
                 
-                // Get upsell views from funnelStats (passed separately)
-                const up1View = statsMap['upsell_1_view'] || front; // fallback to front if no view data
-                const up2View = statsMap['upsell_2_view'] || up1; // fallback to up1
-                const up3View = statsMap['upsell_3_view'] || up2; // fallback to up2
-                
-                // Abandoned = people who clicked checkout but no transaction (front) occurred
+                // Abandoned = people who clicked checkout but no transaction occurred
                 const abandoned = Math.max(0, checkoutValue - rejected - front);
                 
-                // Calculate widths relative to max visitors (minimum 12% to fit text)
-                const calcWidth = (val) => val > 0 ? Math.max((val / maxVisitors) * 100, 12) : 0;
+                // Calculate widths relative to checkout value for this section (not landing)
+                const checkoutBase = Math.max(checkoutValue, 1);
+                const calcCheckoutWidth = (val) => val > 0 ? Math.max((val / checkoutBase) * 100, 15) : 0;
                 
                 // Abandoned bar (orange/yellow)
                 if (abandoned > 0) {
                     html += `
                         <div class="funnel-step" style="margin-bottom: 6px; position: relative;">
-                            <div class="funnel-bar" style="width: ${calcWidth(abandoned)}%; min-width: 100px; background: linear-gradient(90deg, #f59e0b, #d97706); position: relative;">
+                            <div class="funnel-bar" style="width: ${calcCheckoutWidth(abandoned)}%; min-width: 120px; background: linear-gradient(90deg, #f59e0b, #d97706); position: relative;">
                                 <span class="funnel-step-name">ABANDONADO</span>
                                 <span class="funnel-step-value">${abandoned}</span>
                             </div>
@@ -4557,7 +4553,7 @@ Estou aqui para esclarecer tudo! 😊`
                 if (rejected > 0) {
                     html += `
                         <div class="funnel-step" style="margin-bottom: 6px; position: relative;">
-                            <div class="funnel-bar" style="width: ${calcWidth(rejected)}%; min-width: 100px; background: linear-gradient(90deg, #ef4444, #dc2626); position: relative;">
+                            <div class="funnel-bar" style="width: ${calcCheckoutWidth(rejected)}%; min-width: 120px; background: linear-gradient(90deg, #ef4444, #dc2626); position: relative;">
                                 <span class="funnel-step-name">RECUSADAS</span>
                                 <span class="funnel-step-value">${rejected}</span>
                             </div>
@@ -4565,76 +4561,43 @@ Estou aqui para esclarecer tudo! 😊`
                     `;
                 }
                 
-                // Front sales bar (green)
+                // Front sales bar (green) - APROVADAS (renamed from FRONT for clarity)
                 if (front > 0) {
                     html += `
                         <div class="funnel-step" style="margin-bottom: 6px; position: relative;">
-                            <div class="funnel-bar" style="width: ${calcWidth(front)}%; min-width: 100px; background: linear-gradient(90deg, #10b981, #059669); position: relative;">
-                                <span class="funnel-step-name">FRONT</span>
+                            <div class="funnel-bar" style="width: ${calcCheckoutWidth(front)}%; min-width: 120px; background: linear-gradient(90deg, #10b981, #059669); position: relative;">
+                                <span class="funnel-step-name">APROVADAS</span>
                                 <span class="funnel-step-value">${front}</span>
                             </div>
                         </div>
                     `;
                 }
                 
-                // UP1 section
-                if (up1View > 0 || up1 > 0) {
-                    const up1Conv = up1View > 0 ? ((up1 / up1View) * 100).toFixed(0) : 0;
+                // Upsell summary section - compact view
+                if (up1 > 0 || up2 > 0 || up3 > 0) {
+                    const up1Rate = front > 0 ? ((up1 / front) * 100).toFixed(0) : 0;
+                    const up2Rate = front > 0 ? ((up2 / front) * 100).toFixed(0) : 0;
+                    const up3Rate = front > 0 ? ((up3 / front) * 100).toFixed(0) : 0;
+                    
                     html += `
-                        <div style="margin-top: 12px; margin-bottom: 4px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Upsell 1</div>
-                        <div class="funnel-step" style="margin-bottom: 4px; position: relative;">
-                            <div class="funnel-bar" style="width: ${calcWidth(up1View)}%; min-width: 100px; background: linear-gradient(90deg, #8b5cf6, #7c3aed); position: relative;">
-                                <span class="funnel-step-name">UP1 VIEW</span>
-                                <span class="funnel-step-value">${up1View}</span>
-                            </div>
-                        </div>
-                        <div class="funnel-step" style="margin-bottom: 6px; position: relative;">
-                            <div class="funnel-bar" style="width: ${calcWidth(up1)}%; min-width: 100px; background: linear-gradient(90deg, #10b981, #059669); position: relative;">
-                                <span class="funnel-step-name">UP1 ACEITO</span>
-                                <span class="funnel-step-value">${up1}</span>
-                                ${up1Conv > 0 ? `<span style="position: absolute; right: -50px; top: 50%; transform: translateY(-50%); color: #10b981; font-size: 11px; font-weight: 600;">${up1Conv}%</span>` : ''}
-                            </div>
-                        </div>
-                    `;
-                }
-                
-                // UP2 section
-                if (up2View > 0 || up2 > 0) {
-                    const up2Conv = up2View > 0 ? ((up2 / up2View) * 100).toFixed(0) : 0;
-                    html += `
-                        <div style="margin-top: 12px; margin-bottom: 4px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Upsell 2</div>
-                        <div class="funnel-step" style="margin-bottom: 4px; position: relative;">
-                            <div class="funnel-bar" style="width: ${calcWidth(up2View)}%; min-width: 100px; background: linear-gradient(90deg, #8b5cf6, #7c3aed); position: relative;">
-                                <span class="funnel-step-name">UP2 VIEW</span>
-                                <span class="funnel-step-value">${up2View}</span>
-                            </div>
-                        </div>
-                        <div class="funnel-step" style="margin-bottom: 6px; position: relative;">
-                            <div class="funnel-bar" style="width: ${calcWidth(up2)}%; min-width: 100px; background: linear-gradient(90deg, #10b981, #059669); position: relative;">
-                                <span class="funnel-step-name">UP2 ACEITO</span>
-                                <span class="funnel-step-value">${up2}</span>
-                                ${up2Conv > 0 ? `<span style="position: absolute; right: -50px; top: 50%; transform: translateY(-50%); color: #10b981; font-size: 11px; font-weight: 600;">${up2Conv}%</span>` : ''}
-                            </div>
-                        </div>
-                    `;
-                }
-                
-                // UP3 section
-                if (up3View > 0 || up3 > 0) {
-                    const up3Conv = up3View > 0 ? ((up3 / up3View) * 100).toFixed(0) : 0;
-                    html += `
-                        <div style="margin-top: 12px; margin-bottom: 4px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Upsell 3</div>
-                        <div class="funnel-step" style="margin-bottom: 4px; position: relative;">
-                            <div class="funnel-bar" style="width: ${calcWidth(up3View)}%; min-width: 100px; background: linear-gradient(90deg, #8b5cf6, #7c3aed); position: relative;">
-                                <span class="funnel-step-name">UP3 VIEW</span>
-                                <span class="funnel-step-value">${up3View}</span>
-                            </div>
-                        </div>
-                        <div class="funnel-step" style="margin-bottom: 6px; position: relative;">
-                            <div class="funnel-bar" style="width: ${calcWidth(up3)}%; min-width: 100px; background: linear-gradient(90deg, #10b981, #059669); position: relative;">
-                                <span class="funnel-step-name">UP3 ACEITO</span>
-                                <span class="funnel-step-value">${up3}</span>
-                                ${up3Conv > 0 ? `<span style="position: absolute; right: -50px; top: 50%; transform: translateY(-50%); color: #10b981; font-size: 11px; font-weight: 600;">${up3Conv}%</span>` : ''}
+                        <div style="margin-top: 16px; padding: 12px; background: rgba(139, 92, 246, 0.1); border-radius: 8px; border: 1px solid rgba(139, 92, 246, 0.2);">
+                            <div style="font-size: 11px; color: #8b5cf6; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; font-weight: 600;">📈 Upsells (de ${front} vendas)</div>
+                            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                                <div style="flex: 1; min-width: 80px; text-align: center; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 6px;">
+                                    <div style="font-size: 18px; font-weight: 700; color: ${up1 > 0 ? '#10b981' : '#6b7280'};">${up1}</div>
+                                    <div style="font-size: 10px; color: var(--text-muted);">UP1</div>
+                                    <div style="font-size: 11px; color: #8b5cf6; font-weight: 600;">${up1Rate}%</div>
+                                </div>
+                                <div style="flex: 1; min-width: 80px; text-align: center; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 6px;">
+                                    <div style="font-size: 18px; font-weight: 700; color: ${up2 > 0 ? '#10b981' : '#6b7280'};">${up2}</div>
+                                    <div style="font-size: 10px; color: var(--text-muted);">UP2</div>
+                                    <div style="font-size: 11px; color: #8b5cf6; font-weight: 600;">${up2Rate}%</div>
+                                </div>
+                                <div style="flex: 1; min-width: 80px; text-align: center; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 6px;">
+                                    <div style="font-size: 18px; font-weight: 700; color: ${up3 > 0 ? '#10b981' : '#6b7280'};">${up3}</div>
+                                    <div style="font-size: 10px; color: var(--text-muted);">UP3</div>
+                                    <div style="font-size: 11px; color: #8b5cf6; font-weight: 600;">${up3Rate}%</div>
+                                </div>
                             </div>
                         </div>
                     `;
