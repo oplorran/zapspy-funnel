@@ -1762,17 +1762,21 @@ app.get('/api/admin/funnel', authenticateToken, async (req, res) => {
                 txLangCondition = `AND funnel_language = 'es'`;
             }
             
+            // Debug: log query conditions
+            console.log('Transaction stats query - dateCondition:', txDateCondition, 'langCondition:', txLangCondition);
+            
             const txResult = await pool.query(`
                 SELECT 
                     status,
                     COUNT(*) as count
                 FROM transactions
-                WHERE (product_type = 'front' OR product_type IS NULL)
-                AND (product NOT ILIKE '%upsell%' AND product NOT ILIKE '%order bump%')
+                WHERE 1=1
                 ${txDateCondition}
                 ${txLangCondition}
                 GROUP BY status
             `);
+            
+            console.log('Transaction stats result:', txResult.rows);
             
             // Parse transaction stats
             const txStats = {};
