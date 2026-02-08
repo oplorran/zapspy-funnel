@@ -3397,8 +3397,8 @@ Estou aqui para esclarecer tudo! 😊`
             else if (tabName === 'reports') loadReportsStats();
             else if (tabName === 'settings') {
                 document.getElementById('postbackUrl').textContent = `${API_URL}/api/postback/monetizze`;
-                // Initialize sync dates with today
-                const today = new Date().toISOString().split('T')[0];
+                // Initialize sync dates with today (local timezone)
+                const today = getLocalDateString();
                 document.getElementById('syncStartDate').value = today;
                 document.getElementById('syncEndDate').value = today;
             }
@@ -6967,8 +6967,17 @@ Posso ajudar em algo mais? 😊`
             }
         }
         
+        // Helper: get local date string (YYYY-MM-DD) without UTC offset issues
+        function getLocalDateString(date) {
+            const d = date || new Date();
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
         function syncMonetizzeToday() {
-            const today = new Date().toISOString().split('T')[0];
+            const today = getLocalDateString();
             document.getElementById('syncStartDate').value = today;
             document.getElementById('syncEndDate').value = today;
             syncMonetizze();
@@ -6979,8 +6988,8 @@ Posso ajudar em algo mais? 😊`
             const sevenDaysAgo = new Date(today);
             sevenDaysAgo.setDate(today.getDate() - 7);
             
-            document.getElementById('syncStartDate').value = sevenDaysAgo.toISOString().split('T')[0];
-            document.getElementById('syncEndDate').value = today.toISOString().split('T')[0];
+            document.getElementById('syncStartDate').value = getLocalDateString(sevenDaysAgo);
+            document.getElementById('syncEndDate').value = getLocalDateString(today);
             syncMonetizze();
         }
         
