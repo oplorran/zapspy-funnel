@@ -1407,11 +1407,11 @@
                         </div>
                         <div class="stat-card" style="border-left: 4px solid #ef4444;">
                             <div class="stat-header">
-                                <span class="stat-label">Vendas Perdidas</span>
+                                <span class="stat-label">Vendas Recusadas</span>
                                 <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">🚫</div>
                             </div>
                             <div class="stat-value" style="color: #ef4444;" id="overviewLostSales">0</div>
-                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewLostSalesInfo">canceladas/rejeitadas</div>
+                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewLostSalesInfo">cartões recusados</div>
                         </div>
                         <div class="stat-card" style="border-left: 4px solid #dc2626;">
                             <div class="stat-header">
@@ -3524,10 +3524,10 @@ Estou aqui para esclarecer tudo! 😊`
                 setEl('overviewAvgUpsellTicket', 'R$ ' + avgUpsellTicket.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
                 setEl('overviewAvgUpsellTicketInfo', `${totalUpsellsSold} upsells vendidos`);
                 
-                // 5. Vendas Perdidas (cancelled/rejected)
+                // 5. Vendas Recusadas (cancelled/rejected)
                 const lostSales = salesData.cancelled || 0;
                 setEl('overviewLostSales', lostSales.toLocaleString('pt-BR'));
-                setEl('overviewLostSalesInfo', 'canceladas/rejeitadas');
+                setEl('overviewLostSalesInfo', 'cartões recusados');
                 
                 // 6. Receita Perdida (value of lost sales)
                 const lostRevenue = salesData.lostRevenue || 0;
