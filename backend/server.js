@@ -1938,6 +1938,39 @@ app.get('/api/admin/customer/:leadId/journey', authenticateToken, async (req, re
 // Store last 20 postbacks for debugging
 const recentPostbacks = [];
 
+// TEMPORARY: Inspect raw_data structure to understand dataFinalizada field (no auth)
+app.get('/api/admin/debug/raw-data', async (req, res) => {
+    try {
+        const today = new Date().toISOString().split('T')[0];
+        
+        // Get 5 sample transactions from today
+        const samples = await pool.query(`
+            SELECT 
+                transaction_id, 
+                email, 
+                product, 
+                status, 
+                monetizze_status,
+                created_at,
+                raw_data->'venda'->>'dataFinalizada' as data_finalizada_field,
+                raw_data->'venda'->>'status' as venda_status_field,
+                jsonb_pretty(raw_data->'venda') as venda_object
+            FROM transactions 
+            WHERE created_at::date = $1
+            ORDER BY created_at DESC
+            LIMIT 10
+        `, [today]);
+        
+        res.json({
+            today: today,
+            count: samples.rows.length,
+            samples: samples.rows
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // TEMPORARY: Fix today's transactions that don't have dataFinalizada (no auth - REMOVE LATER)
 app.get('/api/admin/fix-today-status', async (req, res) => {
     try {
