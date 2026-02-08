@@ -123,6 +123,11 @@ const FunnelTracker = {
     
     // Initialize auto-tracking
     init: function() {
+        // CRITICAL: Create visitorId IMMEDIATELY on page load
+        // This ensures visitorId exists before any email capture
+        const visitorId = this.getVisitorId();
+        console.log('📊 Funnel Tracker initialized with visitorId:', visitorId);
+        
         // Auto track page view
         this.autoTrackPageView();
         
@@ -131,8 +136,6 @@ const FunnelTracker = {
         
         // Track time on page
         this.trackTimeOnPage();
-        
-        console.log('📊 Funnel Tracker initialized');
     }
 };
 

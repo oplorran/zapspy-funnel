@@ -355,6 +355,14 @@ const EmailCapture = {
             localStorage.setItem('userEmail', email);
             localStorage.setItem('userWhatsApp', country + whatsapp);
             
+            // Ensure visitorId exists (create if missing)
+            let visitorId = localStorage.getItem('funnelVisitorId');
+            if (!visitorId) {
+                visitorId = 'v_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('funnelVisitorId', visitorId);
+                console.log('📊 Created visitorId in email-capture:', visitorId);
+            }
+            
             // Send to webhook/backend (if configured)
             this.sendToBackend({
                 email: email,
@@ -364,7 +372,7 @@ const EmailCapture = {
                 timestamp: new Date().toISOString(),
                 userAgent: navigator.userAgent,
                 referrer: document.referrer,
-                visitorId: localStorage.getItem('funnelVisitorId') || '',
+                visitorId: visitorId,
                 funnelLanguage: 'en'
             });
             

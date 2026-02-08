@@ -115,10 +115,14 @@ const FunnelTracker = {
     
     // Initialize
     init: function() {
+        // CRITICAL: Create visitorId IMMEDIATELY on page load
+        // This ensures visitorId exists before any email capture
+        const visitorId = this.getVisitorId();
+        console.log('📊 Funnel Tracker (ES-AFF) initialized with visitorId:', visitorId);
+        
         this.autoTrackPageView();
         this.trackScrollDepth();
         this.trackTimeOnPage();
-        console.log('📊 Funnel Tracker (ES) initialized');
     }
 };
 
