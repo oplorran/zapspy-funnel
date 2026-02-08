@@ -4473,14 +4473,31 @@ Estou aqui para esclarecer tudo! 😊`
                 prevValue = value;
             });
             
-            // Add transaction stats (rejected and approved) below checkout
+            // Add transaction stats (abandoned, rejected and approved) below checkout
             if (transactionStats) {
                 const rejected = transactionStats.rejected || 0;
                 const approved = transactionStats.approved || 0;
                 
+                // Get checkout value from normalized values
+                const checkoutValue = normalizedValues.find(s => s.key === 'checkout_clicked')?.value || 0;
+                
+                // Abandoned = people who clicked checkout but never generated a transaction
+                const abandoned = Math.max(0, checkoutValue - rejected - approved);
+                
                 // Calculate widths relative to max visitors
+                const abandonedWidth = maxVisitors > 0 ? Math.max((abandoned / maxVisitors) * 100, 10) : 10;
                 const rejectedWidth = maxVisitors > 0 ? Math.max((rejected / maxVisitors) * 100, 10) : 10;
                 const approvedWidth = maxVisitors > 0 ? Math.max((approved / maxVisitors) * 100, 10) : 10;
+                
+                // Abandoned bar (orange/yellow)
+                html += `
+                    <div class="funnel-step" style="margin-bottom: 6px; position: relative;">
+                        <div class="funnel-bar" style="width: ${abandonedWidth}%; background: linear-gradient(90deg, #f59e0b, #d97706); position: relative;">
+                            <span class="funnel-step-name">ABANDONADO</span>
+                            <span class="funnel-step-value">${abandoned}</span>
+                        </div>
+                    </div>
+                `;
                 
                 // Rejected bar (red)
                 html += `
@@ -4589,13 +4606,20 @@ Estou aqui para esclarecer tudo! 😊`
                 prevValue = value;
             });
             
-            // Add transaction stats (rejected and approved) below checkout
+            // Add transaction stats (abandoned, rejected and approved) below checkout
             if (transactionStats) {
                 const rejected = transactionStats.rejected || 0;
                 const approved = transactionStats.approved || 0;
                 
+                // Abandoned = people who clicked checkout but never generated a transaction
+                const abandoned = Math.max(0, checkoutVisitors - rejected - approved);
+                
+                const abandonedWidth = maxVisitors > 0 ? Math.max((abandoned / maxVisitors) * 100, 10) : 10;
                 const rejectedWidth = maxVisitors > 0 ? Math.max((rejected / maxVisitors) * 100, 10) : 10;
                 const approvedWidth = maxVisitors > 0 ? Math.max((approved / maxVisitors) * 100, 10) : 10;
+                
+                // Abandoned bar (orange)
+                html += `<div class="funnel-step" style="position: relative; margin-bottom: 6px;"><div class="funnel-bar" style="width: ${abandonedWidth}%; background: linear-gradient(90deg, #f59e0b, #d97706); position: relative;"><span class="funnel-step-name">ABANDONADO</span><span class="funnel-step-value">${abandoned}</span></div></div>`;
                 
                 // Rejected bar (red)
                 html += `<div class="funnel-step" style="position: relative; margin-bottom: 6px;"><div class="funnel-bar" style="width: ${rejectedWidth}%; background: linear-gradient(90deg, #ef4444, #dc2626); position: relative;"><span class="funnel-step-name">RECUSADAS</span><span class="funnel-step-value">${rejected}</span></div></div>`;
