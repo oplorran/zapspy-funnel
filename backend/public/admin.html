@@ -3442,7 +3442,6 @@ Estou aqui para esclarecer tudo! 😊`
                 setEl('overviewApprovalRateInfo', `${totalSales} de ${totalTransactions} tentativas`);
                 
                 // 1.5. Taxa de Checkout (vendas / pessoas que entraram no checkout)
-                const checkoutClicked = salesData.checkoutClicked || 0;
                 const checkoutConvRate = checkoutClicked > 0 ? ((totalSales / checkoutClicked) * 100) : 0;
                 setEl('overviewCheckoutRate', checkoutConvRate.toFixed(1) + '%');
                 setEl('overviewCheckoutRateInfo', `${totalSales} de ${checkoutClicked} checkouts`);
