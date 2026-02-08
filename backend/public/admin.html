@@ -4572,18 +4572,23 @@ Estou aqui para esclarecer tudo! 😊`
             });
             
             // Add transaction stats (abandoned, rejected and approved) below checkout
+            // IMPORTANT: Use transactionStats.front for approved FRONT sales only
+            // Use transactionStats.frontRejected for rejected FRONT only
+            // This ensures we only count the main product, not upsells
             if (transactionStats) {
-                const rejected = transactionStats.rejected || 0;
-                const approved = transactionStats.approved || 0;
+                // Use front-specific rejected count (not total rejected which includes upsells)
+                const frontRejected = transactionStats.frontRejected || 0;
+                // Use front sales for the main funnel, not total approved (which includes upsells)
+                const frontApproved = transactionStats.front || 0;
                 
-                // Abandoned = people who clicked checkout but never generated a transaction
-                const abandoned = Math.max(0, checkoutVisitors - rejected - approved);
+                // Abandoned = people who clicked checkout but never generated a transaction for front product
+                const abandoned = Math.max(0, checkoutVisitors - frontRejected - frontApproved);
                 
                 // Only show bars if there's data
-                if (abandoned > 0 || rejected > 0 || approved > 0) {
+                if (abandoned > 0 || frontRejected > 0 || frontApproved > 0) {
                     const abandonedWidth = abandoned > 0 ? Math.max((abandoned / maxVisitors) * 100, 15) : 0;
-                    const rejectedWidth = rejected > 0 ? Math.max((rejected / maxVisitors) * 100, 15) : 0;
-                    const approvedWidth = approved > 0 ? Math.max((approved / maxVisitors) * 100, 15) : 0;
+                    const rejectedWidth = frontRejected > 0 ? Math.max((frontRejected / maxVisitors) * 100, 15) : 0;
+                    const approvedWidth = frontApproved > 0 ? Math.max((frontApproved / maxVisitors) * 100, 15) : 0;
                     
                     // Abandoned bar (orange) - only show if > 0
                     if (abandoned > 0) {
@@ -4591,56 +4596,75 @@ Estou aqui para esclarecer tudo! 😊`
                     }
                     
                     // Rejected bar (red) - only show if > 0
-                    if (rejected > 0) {
-                        html += `<div class="funnel-step" style="position: relative; margin-bottom: 6px;"><div class="funnel-bar" style="width: ${rejectedWidth}%; min-width: 120px; background: linear-gradient(90deg, #ef4444, #dc2626); position: relative;"><span class="funnel-step-name">RECUSADAS</span><span class="funnel-step-value">${rejected}</span></div></div>`;
+                    if (frontRejected > 0) {
+                        html += `<div class="funnel-step" style="position: relative; margin-bottom: 6px;"><div class="funnel-bar" style="width: ${rejectedWidth}%; min-width: 120px; background: linear-gradient(90deg, #ef4444, #dc2626); position: relative;"><span class="funnel-step-name">RECUSADAS</span><span class="funnel-step-value">${frontRejected}</span></div></div>`;
                     }
                     
                     // Approved bar (green) - only show if > 0
-                    if (approved > 0) {
-                        html += `<div class="funnel-step" style="position: relative; margin-bottom: 6px;"><div class="funnel-bar" style="width: ${approvedWidth}%; min-width: 120px; background: linear-gradient(90deg, #10b981, #059669); position: relative;"><span class="funnel-step-name">APROVADAS</span><span class="funnel-step-value">${approved}</span></div></div>`;
+                    if (frontApproved > 0) {
+                        html += `<div class="funnel-step" style="position: relative; margin-bottom: 6px;"><div class="funnel-bar" style="width: ${approvedWidth}%; min-width: 120px; background: linear-gradient(90deg, #10b981, #059669); position: relative;"><span class="funnel-step-name">APROVADAS (Front)</span><span class="funnel-step-value">${frontApproved}</span></div></div>`;
                     }
                 }
             }
             
-            // Render upsell funnel if there's data
-            const hasUpsellData = upsellFunnelOrder.some(step => statsMap[step.key] > 0);
-            if (hasUpsellData) {
-                html += '<h4 style="color: var(--text-secondary); margin: 24px 0 12px 0; font-size: 13px; border-top: 1px solid var(--border); padding-top: 20px;">🚀 UPSELLS</h4>';
+            // Render upsell funnel using REAL transaction data (not tracking events)
+            // This ensures accuracy - only count actual approved sales
+            const frontSales = transactionStats?.front || 0;
+            const up1Sales = transactionStats?.upsell1 || 0;
+            const up2Sales = transactionStats?.upsell2 || 0;
+            const up3Sales = transactionStats?.upsell3 || 0;
+            
+            const hasUpsellData = up1Sales > 0 || up2Sales > 0 || up3Sales > 0;
+            if (hasUpsellData && frontSales > 0) {
+                html += '<h4 style="color: var(--text-secondary); margin: 24px 0 12px 0; font-size: 13px; border-top: 1px solid var(--border); padding-top: 20px;">🚀 UPSELLS (Vendas Aprovadas)</h4>';
                 
-                // Calculate upsell stats
-                const up1Conv = upsell1View > 0 ? ((upsell1Accept / upsell1View) * 100).toFixed(1) : 0;
-                const up2View = statsMap['upsell_2_view'] || 0;
-                const up2Accept = statsMap['upsell_2_accepted'] || 0;
-                const up2Conv = up2View > 0 ? ((up2Accept / up2View) * 100).toFixed(1) : 0;
-                const up3View = statsMap['upsell_3_view'] || 0;
-                const up3Accept = statsMap['upsell_3_accepted'] || 0;
-                const up3Conv = up3View > 0 ? ((up3Accept / up3View) * 100).toFixed(1) : 0;
+                // Calculate take rates based on REAL transaction data
+                const up1TakeRate = frontSales > 0 ? ((up1Sales / frontSales) * 100).toFixed(1) : 0;
+                const up2TakeRate = frontSales > 0 ? ((up2Sales / frontSales) * 100).toFixed(1) : 0;
+                const up3TakeRate = frontSales > 0 ? ((up3Sales / frontSales) * 100).toFixed(1) : 0;
                 
                 html += `<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
                     <div style="background: var(--bg-tertiary); padding: 12px; border-radius: 8px; text-align: center;">
-                        <div style="font-size: 20px; font-weight: 600; color: var(--accent);">${up1Conv}%</div>
-                        <div style="font-size: 11px; color: var(--text-muted);">Upsell 1</div>
+                        <div style="font-size: 20px; font-weight: 600; color: var(--accent);">${up1TakeRate}%</div>
+                        <div style="font-size: 11px; color: var(--text-muted);">Upsell 1 Take Rate</div>
+                        <div style="font-size: 10px; color: var(--text-muted);">${up1Sales} de ${frontSales}</div>
                     </div>
                     <div style="background: var(--bg-tertiary); padding: 12px; border-radius: 8px; text-align: center;">
-                        <div style="font-size: 20px; font-weight: 600; color: var(--accent);">${up2Conv}%</div>
-                        <div style="font-size: 11px; color: var(--text-muted);">Upsell 2</div>
+                        <div style="font-size: 20px; font-weight: 600; color: var(--accent);">${up2TakeRate}%</div>
+                        <div style="font-size: 11px; color: var(--text-muted);">Upsell 2 Take Rate</div>
+                        <div style="font-size: 10px; color: var(--text-muted);">${up2Sales} de ${frontSales}</div>
                     </div>
                     <div style="background: var(--bg-tertiary); padding: 12px; border-radius: 8px; text-align: center;">
-                        <div style="font-size: 20px; font-weight: 600; color: var(--accent);">${up3Conv}%</div>
-                        <div style="font-size: 11px; color: var(--text-muted);">Upsell 3</div>
+                        <div style="font-size: 20px; font-weight: 600; color: var(--accent);">${up3TakeRate}%</div>
+                        <div style="font-size: 11px; color: var(--text-muted);">Upsell 3 Take Rate</div>
+                        <div style="font-size: 10px; color: var(--text-muted);">${up3Sales} de ${frontSales}</div>
                     </div>
                 </div>`;
                 
-                prevValue = checkoutVisitors; // Start from checkout
-                upsellFunnelOrder.forEach(step => {
-                    const value = statsMap[step.key] || 0;
-                    if (value === 0 && !step.key.includes('view')) return; // Skip empty accept/decline
-                    const width = maxVisitors > 0 ? Math.max((value / maxVisitors) * 100, 15) : 15;
-                    let barColor = '';
-                    if (step.isConversion) barColor = 'background: linear-gradient(90deg, var(--success), #16a34a);';
-                    if (step.isDecline) barColor = 'background: linear-gradient(90deg, var(--danger), #dc2626);';
-                    html += `<div class="funnel-step"><div class="funnel-bar" style="width: ${width}%; ${barColor}"><span class="funnel-step-name">${step.label}</span><span class="funnel-step-value">${value}</span></div></div>`;
-                });
+                // Show upsell funnel bars based on real sales
+                const upsellMaxValue = Math.max(frontSales, up1Sales, up2Sales, up3Sales);
+                
+                // Front sales bar
+                const frontWidth = upsellMaxValue > 0 ? Math.max((frontSales / upsellMaxValue) * 100, 20) : 20;
+                html += `<div class="funnel-step"><div class="funnel-bar" style="width: ${frontWidth}%; background: linear-gradient(90deg, #10b981, #059669);"><span class="funnel-step-name">FRONT (Aprovadas)</span><span class="funnel-step-value">${frontSales}</span></div></div>`;
+                
+                // Upsell 1 bar
+                if (up1Sales > 0) {
+                    const up1Width = upsellMaxValue > 0 ? Math.max((up1Sales / upsellMaxValue) * 100, 15) : 15;
+                    html += `<div class="funnel-step"><div class="funnel-bar" style="width: ${up1Width}%; background: linear-gradient(90deg, #8b5cf6, #7c3aed);"><span class="funnel-step-name">UPSELL 1</span><span class="funnel-step-value">${up1Sales}</span></div></div>`;
+                }
+                
+                // Upsell 2 bar
+                if (up2Sales > 0) {
+                    const up2Width = upsellMaxValue > 0 ? Math.max((up2Sales / upsellMaxValue) * 100, 15) : 15;
+                    html += `<div class="funnel-step"><div class="funnel-bar" style="width: ${up2Width}%; background: linear-gradient(90deg, #6366f1, #4f46e5);"><span class="funnel-step-name">UPSELL 2</span><span class="funnel-step-value">${up2Sales}</span></div></div>`;
+                }
+                
+                // Upsell 3 bar
+                if (up3Sales > 0) {
+                    const up3Width = upsellMaxValue > 0 ? Math.max((up3Sales / upsellMaxValue) * 100, 15) : 15;
+                    html += `<div class="funnel-step"><div class="funnel-bar" style="width: ${up3Width}%; background: linear-gradient(90deg, #3b82f6, #2563eb);"><span class="funnel-step-name">UPSELL 3</span><span class="funnel-step-value">${up3Sales}</span></div></div>`;
+                }
             }
             
             document.getElementById('funnelSteps').innerHTML = html || '<div class="empty-state"><h3>Sem dados</h3></div>';

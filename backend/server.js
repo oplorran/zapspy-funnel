@@ -1865,11 +1865,18 @@ app.get('/api/admin/funnel', authenticateToken, async (req, res) => {
                 up3Keywords = `(${enUp3Keywords}) OR (${esUp3Keywords})`;
             }
             
-            // Count front sales
+            // Count front sales (approved)
             const frontResult = await pool.query(`
                 SELECT COUNT(DISTINCT email) as count 
                 FROM transactions 
                 WHERE status = 'approved' AND (${frontKeywords}) ${txDateCondition} ${txLangCondition} ${txSourceCondition}
+            `);
+            
+            // Count front rejected/cancelled (for funnel visualization)
+            const frontRejectedResult = await pool.query(`
+                SELECT COUNT(DISTINCT email) as count 
+                FROM transactions 
+                WHERE status IN ('rejected', 'cancelled', 'pending_payment') AND (${frontKeywords}) ${txDateCondition} ${txLangCondition} ${txSourceCondition}
             `);
             
             // Count upsell sales
@@ -1892,6 +1899,7 @@ app.get('/api/admin/funnel', authenticateToken, async (req, res) => {
             `);
             
             transactionStats.front = parseInt(frontResult.rows[0].count) || 0;
+            transactionStats.frontRejected = parseInt(frontRejectedResult.rows[0].count) || 0;
             transactionStats.upsell1 = parseInt(up1Result.rows[0].count) || 0;
             transactionStats.upsell2 = parseInt(up2Result.rows[0].count) || 0;
             transactionStats.upsell3 = parseInt(up3Result.rows[0].count) || 0;
