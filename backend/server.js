@@ -1967,6 +1967,18 @@ app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (re
                 const status = venda.status || venda.situacao;
                 const statusCode = venda.status_codigo || '2';
                 
+                // Extract real sale date from Monetizze
+                const saleDateStr = venda.dataVenda || venda.data || venda.data_venda || null;
+                let saleDate = null;
+                if (saleDateStr) {
+                    try {
+                        saleDate = new Date(saleDateStr);
+                        if (isNaN(saleDate.getTime())) saleDate = null;
+                    } catch (e) {
+                        saleDate = null;
+                    }
+                }
+                
                 // Detect funnel language
                 const spanishProductCodes = ['349260', '349261', '349266', '349267'];
                 const funnelLanguage = spanishProductCodes.includes(String(productCode)) ? 'es' : 'en';
@@ -1991,12 +2003,12 @@ app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (re
                     continue;
                 }
                 
-                // Insert or update transaction
+                // Insert or update transaction with real sale date
                 await pool.query(`
                     INSERT INTO transactions (
                         transaction_id, email, phone, name, product, value, 
                         monetizze_status, status, raw_data, funnel_language, created_at
-                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
+                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, COALESCE($11, NOW()))
                     ON CONFLICT (transaction_id) 
                     DO UPDATE SET 
                         monetizze_status = $7,
@@ -2014,7 +2026,8 @@ app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (re
                     String(statusCode),
                     mappedStatus,
                     JSON.stringify(venda),
-                    funnelLanguage
+                    funnelLanguage,
+                    saleDate
                 ]);
                 
                 console.log(`✅ Synced: ${transactionId} - ${email} - ${productName}`);
@@ -2182,6 +2195,10 @@ app.all('/api/postback/monetizze', async (req, res) => {
         // Funnel language from venda.idioma
         const idioma = venda.idioma || body['venda.idioma'] || body['venda[idioma]'] || 'en';
         
+        // Sale date from venda.dataVenda or data - use real sale time, not NOW()
+        const dataVenda = venda.dataVenda || body['venda.dataVenda'] || body['venda[dataVenda]'] || 
+                          venda.data || body.data || body['venda.data'] || null;
+        
         console.log('📥 Extracted:', { 
             chave_unica, 
             statusCode, 
@@ -2339,13 +2356,26 @@ app.all('/api/postback/monetizze', async (req, res) => {
         
         console.log(`💾 Saving transaction: ${transactionId} for ${finalEmail || buyerEmail}`);
         
+        // Determine created_at: use real sale date if available, otherwise NOW()
+        // dataVenda format from Monetizze: "2026-02-07 16:28:00" or ISO format
+        let saleDate = null;
+        if (dataVenda) {
+            try {
+                saleDate = new Date(dataVenda);
+                if (isNaN(saleDate.getTime())) saleDate = null;
+            } catch (e) {
+                saleDate = null;
+            }
+        }
+        console.log(`📅 Sale date: ${saleDate ? saleDate.toISOString() : 'Using NOW()'}`);
+        
         // Store transaction in database with funnel_language
         try {
             await pool.query(`
                 INSERT INTO transactions (
                     transaction_id, email, phone, name, product, value, 
                     monetizze_status, status, raw_data, funnel_language, created_at
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, COALESCE($11, NOW()))
                 ON CONFLICT (transaction_id) 
                 DO UPDATE SET 
                     monetizze_status = $7,
@@ -2363,7 +2393,8 @@ app.all('/api/postback/monetizze', async (req, res) => {
                 String(statusCode),
                 mappedStatus,
                 JSON.stringify(req.body),
-                funnelLanguage
+                funnelLanguage,
+                saleDate
             ]);
             console.log(`✅ Transaction saved: ${transactionId}`);
         } catch (dbError) {
