@@ -1419,38 +1419,46 @@
                     </div>
 
                     <!-- Secondary KPI Cards -->
-                    <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 28px;">
-                        <div class="stat-card" style="border-left: 4px solid #ec4899;">
+                    <div class="stats-grid" style="grid-template-columns: repeat(5, 1fr); margin-bottom: 28px;">
+                        <div class="stat-card" style="border-left: 4px solid #22c55e;">
                             <div class="stat-header">
-                                <span class="stat-label">Taxa de Reembolso</span>
-                                <div class="stat-icon" style="background: rgba(236, 72, 153, 0.1); color: #ec4899;">🔄</div>
+                                <span class="stat-label">Taxa de Aprovação</span>
+                                <div class="stat-icon" style="background: rgba(34, 197, 94, 0.1); color: #22c55e;">✅</div>
                             </div>
-                            <div class="stat-value" style="color: #ec4899;" id="overviewRefundRate">0%</div>
-                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewRefundRateInfo">0 reembolsos</div>
+                            <div class="stat-value" style="color: #22c55e;" id="overviewApprovalRate">0%</div>
+                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewApprovalRateInfo">0 de 0 tentativas</div>
+                        </div>
+                        <div class="stat-card" style="border-left: 4px solid #f59e0b;">
+                            <div class="stat-header">
+                                <span class="stat-label">Taxa de Devolução</span>
+                                <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">🔄</div>
+                            </div>
+                            <div class="stat-value" style="color: #f59e0b;" id="overviewRefundRate">0%</div>
+                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewRefundRateInfo">0 devoluções Monetizze</div>
                         </div>
                         <div class="stat-card" style="border-left: 4px solid #14b8a6;">
                             <div class="stat-header">
-                                <span class="stat-label">Taxa de Upsell</span>
+                                <span class="stat-label">Ticket Médio Upsell</span>
                                 <div class="stat-icon" style="background: rgba(20, 184, 166, 0.1); color: #14b8a6;">⬆️</div>
                             </div>
-                            <div class="stat-value" style="color: #14b8a6;" id="overviewUpsellRate">0%</div>
-                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewUpsellRateInfo">0 upsells aceitos</div>
+                            <div class="stat-value" style="color: #14b8a6;" id="overviewAvgUpsellTicket">R$ 0</div>
+                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewAvgUpsellTicketInfo">0 upsells vendidos</div>
                         </div>
-                        <div class="stat-card" style="border-left: 4px solid #6366f1;">
+                        <div class="stat-card" style="border-left: 4px solid #ef4444;">
                             <div class="stat-header">
-                                <span class="stat-label">País Top</span>
-                                <div class="stat-icon" style="background: rgba(99, 102, 241, 0.1); color: #6366f1;">🌍</div>
+                                <span class="stat-label">Vendas Perdidas</span>
+                                <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">🚫</div>
                             </div>
-                            <div class="stat-value" style="color: #6366f1; font-size: 20px;" id="overviewTopCountry">--</div>
-                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewTopCountryInfo">0 vendas</div>
+                            <div class="stat-value" style="color: #ef4444;" id="overviewLostSales">0</div>
+                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewLostSalesInfo">canceladas/rejeitadas</div>
                         </div>
-                        <div class="stat-card" style="border-left: 4px solid #0ea5e9;">
+                        <div class="stat-card" style="border-left: 4px solid #dc2626;">
                             <div class="stat-header">
-                                <span class="stat-label">Tempo Médio Conversão</span>
-                                <div class="stat-icon" style="background: rgba(14, 165, 233, 0.1); color: #0ea5e9;">⏱️</div>
+                                <span class="stat-label">Receita Perdida</span>
+                                <div class="stat-icon" style="background: rgba(220, 38, 38, 0.1); color: #dc2626;">💸</div>
                             </div>
-                            <div class="stat-value" style="color: #0ea5e9;" id="overviewAvgConvTime">--</div>
-                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewAvgConvTimeInfo">lead → venda</div>
+                            <div class="stat-value" style="color: #dc2626;" id="overviewLostRevenue">R$ 0</div>
+                            <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" id="overviewLostRevenueInfo">potencial não convertido</div>
                         </div>
                     </div>
 
@@ -3349,23 +3357,21 @@ Estou aqui para esclarecer tudo! 😊`
                 }
                 
                 // Fetch all data in parallel
-                const [leadsRes, salesRes, mainSalesRes, affSalesRes, refundsRes, transactionsRes] = await Promise.all([
+                const [leadsRes, salesRes, mainSalesRes, affSalesRes, refundsRes] = await Promise.all([
                     fetch(leadsUrl, { headers: { 'Authorization': `Bearer ${authToken}` } }),
                     fetch(salesUrl, { headers: { 'Authorization': `Bearer ${authToken}` } }).catch(() => null),
                     fetch(`${API_URL}/api/admin/sales?source=main&${langFilter ? `language=${langFilter}&` : ''}${dateParams}`, { headers: { 'Authorization': `Bearer ${authToken}` } }).catch(() => null),
                     fetch(`${API_URL}/api/admin/sales?source=affiliate&${langFilter ? `language=${langFilter}&` : ''}${dateParams}`, { headers: { 'Authorization': `Bearer ${authToken}` } }).catch(() => null),
-                    fetch(refundsUrl, { headers: { 'Authorization': `Bearer ${authToken}` } }).catch(() => null),
-                    fetch(`${API_URL}/api/admin/transactions?${langFilter ? `language=${langFilter}&` : ''}${sourceFilter ? `source=${sourceFilter}&` : ''}${dateParams}`, { headers: { 'Authorization': `Bearer ${authToken}` } }).catch(() => null)
+                    fetch(refundsUrl, { headers: { 'Authorization': `Bearer ${authToken}` } }).catch(() => null)
                 ]);
                 
                 if (leadsRes.status === 401 || leadsRes.status === 403) { logout(); return; }
                 
                 const leadsData = await leadsRes.json();
-                const salesData = salesRes?.ok ? await salesRes.json() : { approved: 0, revenue: 0, upsellStats: {}, refunded: 0 };
+                const salesData = salesRes?.ok ? await salesRes.json() : { approved: 0, revenue: 0, upsellStats: {}, refunded: 0, total: 0, cancelled: 0, lostRevenue: 0, avgUpsellTicket: 0 };
                 const mainSalesData = mainSalesRes?.ok ? await mainSalesRes.json() : { approved: 0 };
                 const affSalesData = affSalesRes?.ok ? await affSalesRes.json() : { approved: 0 };
                 const refundsData = refundsRes?.ok ? await refundsRes.json() : { refunds: [] };
-                const transactionsData = transactionsRes?.ok ? await transactionsRes.json() : { transactions: [] };
                 
                 // Calculate metrics
                 const leads = leadsData.leads || [];
@@ -3411,86 +3417,33 @@ Estou aqui para esclarecer tudo! 😊`
                 
                 // Calculate secondary KPIs
                 
-                // 1. Taxa de Reembolso (refunds / total sales)
+                // 1. Taxa de Aprovação (approved / total transactions)
+                const totalTransactions = salesData.total || 0;
+                const approvalRate = totalTransactions > 0 ? ((totalSales / totalTransactions) * 100) : 0;
+                setEl('overviewApprovalRate', approvalRate.toFixed(1) + '%');
+                setEl('overviewApprovalRateInfo', `${totalSales} de ${totalTransactions} tentativas`);
+                
+                // 2. Taxa de Devolução Monetizze (refunds+chargebacks / approved sales)
                 const refundedCount = salesData.refunded || 0;
-                const totalTransactions = totalSales + refundedCount;
-                const refundRate = totalTransactions > 0 ? ((refundedCount / totalTransactions) * 100) : 0;
+                const refundRate = totalSales > 0 ? ((refundedCount / totalSales) * 100) : 0;
                 setEl('overviewRefundRate', refundRate.toFixed(1) + '%');
-                setEl('overviewRefundRateInfo', `${refundedCount} reembolsos`);
+                setEl('overviewRefundRateInfo', `${refundedCount} devoluções Monetizze`);
                 
-                // 2. Taxa de Upsell (upsells aceitos / front sales)
-                const frontSales = upsellStats.front || totalSales;
-                const upsellRate = frontSales > 0 ? ((totalUpsells / frontSales) * 100) : 0;
-                setEl('overviewUpsellRate', upsellRate.toFixed(1) + '%');
-                setEl('overviewUpsellRateInfo', `${totalUpsells} de ${frontSales} compraram`);
+                // 3. Ticket Médio Upsell
+                const avgUpsellTicket = salesData.avgUpsellTicket || 0;
+                const totalUpsellsSold = upsellStats.total || totalUpsells;
+                setEl('overviewAvgUpsellTicket', 'R$ ' + avgUpsellTicket.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+                setEl('overviewAvgUpsellTicketInfo', `${totalUpsellsSold} upsells vendidos`);
                 
-                // 3. País Top (country with most converted leads)
-                const countryStats = {};
-                const countryFlags = {
-                    'US': '🇺🇸', 'BR': '🇧🇷', 'MX': '🇲🇽', 'ES': '🇪🇸', 'AR': '🇦🇷', 'CO': '🇨🇴', 'CL': '🇨🇱', 
-                    'PE': '🇵🇪', 'VE': '🇻🇪', 'EC': '🇪🇨', 'GT': '🇬🇹', 'CU': '🇨🇺', 'DO': '🇩🇴', 'HN': '🇭🇳',
-                    'GB': '🇬🇧', 'CA': '🇨🇦', 'AU': '🇦🇺', 'DE': '🇩🇪', 'FR': '🇫🇷', 'IT': '🇮🇹', 'PT': '🇵🇹',
-                    'ZA': '🇿🇦', 'NG': '🇳🇬', 'KE': '🇰🇪', 'IN': '🇮🇳', 'PH': '🇵🇭', 'ID': '🇮🇩', 'MY': '🇲🇾'
-                };
+                // 4. Vendas Perdidas (cancelled/rejected)
+                const lostSales = salesData.cancelled || 0;
+                setEl('overviewLostSales', lostSales.toLocaleString('pt-BR'));
+                setEl('overviewLostSalesInfo', 'canceladas/rejeitadas');
                 
-                // Count converted leads by country
-                const convertedLeadsList = leads.filter(l => l.status === 'converted');
-                for (const lead of convertedLeadsList) {
-                    const country = lead.country || lead.country_code || 'Unknown';
-                    const code = lead.country_code || '';
-                    if (country && country !== 'Unknown') {
-                        if (!countryStats[country]) {
-                            countryStats[country] = { count: 0, code: code };
-                        }
-                        countryStats[country].count++;
-                    }
-                }
-                
-                const sortedCountries = Object.entries(countryStats).sort((a, b) => b[1].count - a[1].count);
-                if (sortedCountries.length > 0) {
-                    const [topCountryName, topCountryData] = sortedCountries[0];
-                    const flag = countryFlags[topCountryData.code] || '🌍';
-                    setEl('overviewTopCountry', `${flag} ${topCountryName}`);
-                    setEl('overviewTopCountryInfo', `${topCountryData.count} vendas`);
-                } else {
-                    setEl('overviewTopCountry', '--');
-                    setEl('overviewTopCountryInfo', 'sem dados');
-                }
-                
-                // 4. Tempo Médio de Conversão (days between lead creation and sale)
-                const transactions = transactionsData.transactions || [];
-                const approvedTx = transactions.filter(t => t.status === 'approved');
-                let avgConversionDays = 0;
-                let conversionCount = 0;
-                
-                for (const tx of approvedTx) {
-                    // Find matching lead by email
-                    const matchingLead = leads.find(l => l.email && tx.email && l.email.toLowerCase() === tx.email.toLowerCase());
-                    if (matchingLead && matchingLead.created_at && tx.created_at) {
-                        const leadDate = new Date(matchingLead.created_at);
-                        const saleDate = new Date(tx.created_at);
-                        const diffDays = (saleDate - leadDate) / (1000 * 60 * 60 * 24);
-                        if (diffDays >= 0 && diffDays < 365) { // Reasonable range
-                            avgConversionDays += diffDays;
-                            conversionCount++;
-                        }
-                    }
-                }
-                
-                if (conversionCount > 0) {
-                    avgConversionDays = avgConversionDays / conversionCount;
-                    if (avgConversionDays < 1) {
-                        // Less than 1 day - show in hours
-                        const hours = Math.round(avgConversionDays * 24);
-                        setEl('overviewAvgConvTime', `${hours}h`);
-                    } else {
-                        setEl('overviewAvgConvTime', `${avgConversionDays.toFixed(1)} dias`);
-                    }
-                    setEl('overviewAvgConvTimeInfo', `${conversionCount} conversões analisadas`);
-                } else {
-                    setEl('overviewAvgConvTime', '--');
-                    setEl('overviewAvgConvTimeInfo', 'sem dados suficientes');
-                }
+                // 5. Receita Perdida (value of lost sales)
+                const lostRevenue = salesData.lostRevenue || 0;
+                setEl('overviewLostRevenue', 'R$ ' + lostRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+                setEl('overviewLostRevenueInfo', 'potencial não convertido');
                 
                 // Update quick actions
                 setEl('quickRecoveryText', `${abandonedLeads} leads aguardando`);

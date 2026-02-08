@@ -3687,11 +3687,17 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
             langParams.push(startDate, endDate);
         }
         
-        const [totalResult, approvedResult, refundedResult, revenueResult] = await Promise.all([
+        const [totalResult, approvedResult, refundedResult, revenueResult, cancelledResult, lostRevenueResult, upsellRevenueResult] = await Promise.all([
             pool.query(`SELECT COUNT(*) FROM transactions WHERE 1=1 ${langCondition}${sourceCondition}${dateCondition}`, langParams),
             pool.query(`SELECT COUNT(*) FROM transactions WHERE status = 'approved' ${langCondition}${sourceCondition}${dateCondition}`, langParams),
             pool.query(`SELECT COUNT(*) FROM transactions WHERE status IN ('refunded', 'chargeback') ${langCondition}${sourceCondition}${dateCondition}`, langParams),
-            pool.query(`SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total FROM transactions WHERE status = 'approved' ${langCondition}${sourceCondition}${dateCondition}`, langParams)
+            pool.query(`SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total FROM transactions WHERE status = 'approved' ${langCondition}${sourceCondition}${dateCondition}`, langParams),
+            // Cancelled/rejected transactions (not approved, not refunded - these are failed payment attempts)
+            pool.query(`SELECT COUNT(*) FROM transactions WHERE status IN ('cancelled', 'pending_payment', 'blocked') ${langCondition}${sourceCondition}${dateCondition}`, langParams),
+            // Lost revenue (value of cancelled/rejected transactions)
+            pool.query(`SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total FROM transactions WHERE status IN ('cancelled', 'pending_payment', 'blocked') ${langCondition}${sourceCondition}${dateCondition}`, langParams),
+            // Upsell revenue (for average upsell ticket)
+            pool.query(`SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total FROM transactions WHERE status = 'approved' AND (product ILIKE '%Message Vault%' OR product ILIKE '%Vault%' OR product ILIKE '%360%' OR product ILIKE '%Tracker%' OR product ILIKE '%Instant%' OR product ILIKE '%Recuperación%' OR product ILIKE '%Visión%' OR product ILIKE '%VIP%') ${langCondition}${sourceCondition}${dateCondition}`, langParams)
         ]);
         
         // Get today and this week
@@ -3782,11 +3788,19 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
         const up2Count = parseInt(upsell2Sales.rows[0].count) || 0;
         const up3Count = parseInt(upsell3Sales.rows[0].count) || 0;
         
+        const totalUpsellCount = up1Count + up2Count + up3Count;
+        const upsellRevenue = parseFloat(upsellRevenueResult.rows[0].total) || 0;
+        const avgUpsellTicket = totalUpsellCount > 0 ? upsellRevenue / totalUpsellCount : 0;
+        
         res.json({
             total: parseInt(totalResult.rows[0].count),
             approved: parseInt(approvedResult.rows[0].count),
             refunded: parseInt(refundedResult.rows[0].count),
+            cancelled: parseInt(cancelledResult.rows[0].count),
+            lostRevenue: parseFloat(lostRevenueResult.rows[0].total) || 0,
             revenue: parseFloat(revenueResult.rows[0].total) || 0,
+            upsellRevenue: upsellRevenue,
+            avgUpsellTicket: avgUpsellTicket,
             today: parseInt(todayResult.rows[0].count),
             thisWeek: parseInt(weekResult.rows[0].count),
             conversionRate: parseFloat(conversionRate),
@@ -3798,6 +3812,7 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
                 upsell1: up1Count,
                 upsell2: up2Count,
                 upsell3: up3Count,
+                total: totalUpsellCount,
                 takeRate1: frontCount > 0 ? ((up1Count / frontCount) * 100).toFixed(1) : 0,
                 takeRate2: frontCount > 0 ? ((up2Count / frontCount) * 100).toFixed(1) : 0,
                 takeRate3: frontCount > 0 ? ((up3Count / frontCount) * 100).toFixed(1) : 0
