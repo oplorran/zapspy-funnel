@@ -3461,7 +3461,8 @@ Estou aqui para esclarecer tudo! 😊`
                 const totalSales = salesData.approved || 0;
                 const totalRevenue = salesData.revenue || 0;
                 const avgTicket = totalSales > 0 ? totalRevenue / totalSales : 0;
-                const convRate = totalLeads > 0 ? ((convertedLeads / totalLeads) * 100) : 0;
+                // Taxa de conversão real: vendas aprovadas / total de leads
+                const convRate = totalLeads > 0 ? ((totalSales / totalLeads) * 100) : 0;
                 const abandonRate = checkoutClicked > 0 ? ((checkoutAbandoned / checkoutClicked) * 100) : 0;
                 
                 // Upsells (upsell1 + upsell2 + upsell3)
@@ -3485,7 +3486,7 @@ Estou aqui para esclarecer tudo! 😊`
                 setEl('overviewRevenueChange', `${totalSales} vendas aprovadas`);
                 
                 setEl('overviewConvRate', convRate.toFixed(1) + '%');
-                setEl('overviewConvRateInfo', `${convertedLeads} convertidos`);
+                setEl('overviewConvRateInfo', `${totalSales} vendas / ${totalLeads} leads`);
                 
                 setEl('overviewTicket', 'R$ ' + avgTicket.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
                 setEl('overviewTicketInfo', 'por venda');
