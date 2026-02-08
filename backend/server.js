@@ -1806,18 +1806,48 @@ app.get('/api/admin/funnel', authenticateToken, async (req, res) => {
     }
 });
 
-// Debug: Search events by email or phone (TEMPORARY - no auth for debugging)
+// Debug: Search events by email, phone, or visitor_id (TEMPORARY - no auth for debugging)
 app.get('/api/debug/funnel/search', async (req, res) => {
     try {
-        const { email, phone } = req.query;
+        const { email, phone, visitor_id } = req.query;
         
-        if (!email && !phone) {
-            return res.status(400).json({ error: 'Provide email or phone parameter' });
+        if (!email && !phone && !visitor_id) {
+            return res.status(400).json({ error: 'Provide email, phone, or visitor_id parameter' });
         }
         
         let events = [];
         let transactions = [];
         let lead = null;
+        
+        // Search directly by visitor_id
+        if (visitor_id) {
+            const eventsResult = await pool.query(`
+                SELECT * FROM funnel_events 
+                WHERE visitor_id = $1 
+                ORDER BY created_at ASC
+            `, [visitor_id]);
+            events = eventsResult.rows;
+            
+            // Try to find lead with this visitor_id
+            const leadResult = await pool.query(`
+                SELECT * FROM leads 
+                WHERE visitor_id = $1 
+                ORDER BY created_at DESC LIMIT 1
+            `, [visitor_id]);
+            lead = leadResult.rows[0] || null;
+            
+            res.json({
+                visitor_id,
+                lead,
+                transactions: [],
+                events,
+                summary: {
+                    total_events: events.length,
+                    event_types: [...new Set(events.map(e => e.event_type))]
+                }
+            });
+            return;
+        }
         
         // Search by email in transactions
         if (email) {
