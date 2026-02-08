@@ -1,175 +1,16 @@
 (function(){
 
     // ============================================
-    // VIP PROCESSING OVERLAY - 35 SECOND DELAY
+    // VIP PROCESSING OVERLAY - REMOVED FOR BETTER CONVERSION
     // ============================================
-    const PROCESSING_DURATION = 35000;
-    const overlay = document.getElementById('vipProcessingOverlay');
-    const progressFill = document.getElementById('progressFill');
-    const progressPercent = document.getElementById('progressPercent');
-    const progressStatus = document.getElementById('progressStatus');
-    const vipSteps = document.querySelectorAll('.vip-step');
-    const liveFeedItems = document.getElementById('liveFeedItems');
-    
-    // Queue status elements
-    const queueCount = document.getElementById('queueCount');
-    const waitTime = document.getElementById('waitTime');
-    const vipSlots = document.getElementById('vipSlots');
-    const vipTime = document.getElementById('vipTime');
-    
-    const processingStates = [
-        { percent: 0, status: 'Inicializando...' },
-        { percent: 15, status: 'Analizando cola...' },
-        { percent: 30, status: 'Calculando tiempo de espera...' },
-        { percent: 50, status: 'Verificando cupos VIP...' },
-        { percent: 70, status: 'Reservando tu lugar...' },
-        { percent: 85, status: 'Preparando tu oferta...' },
-        { percent: 95, status: 'Casi listo...' },
-        { percent: 100, status: '¡Análisis Completo!' }
-    ];
-    
-    const feedNames = [
-        'María G.', 'Juan D.', 'Ana L.', 'Carlos K.', 'Laura S.', 'Miguel R.',
-        'Elena T.', 'Diego W.', 'Sofía G.', 'Andrés B.', 'Isabella C.', 'Lucas P.'
-    ];
-    
-    const feedLocations = [
-        'Ciudad de México', 'Buenos Aires', 'Madrid', 'Bogotá', 'Lima', 'Santiago',
-        'Barcelona', 'Caracas', 'Medellín', 'Guadalajara', 'Monterrey', 'Quito'
-    ];
-    
-    let processingStartTime;
-    let currentStep = 0;
-    
-    // Fixed target values
-    const queueBase = Math.floor(2500 + Math.random() * 500);
-    const initialSlots = Math.floor(5 + Math.random() * 3);
-    
-    function getRandomItem(arr) {
-        return arr[Math.floor(Math.random() * arr.length)];
-    }
-    
-    function updateCounters(elapsed) {
-        const progress = elapsed / PROCESSING_DURATION;
-        
-        // Queue stays high (showing how many are waiting)
-        // VIP slots decrease (urgency - they're being taken!)
-        // Wait time stays high for standard, low for VIP
-        
-        if (queueCount) queueCount.textContent = queueBase.toLocaleString();
-        if (waitTime) waitTime.textContent = '48-72h';
-        if (vipSlots) vipSlots.textContent = Math.max(2, Math.floor(initialSlots - (initialSlots * progress * 0.5)));
-        if (vipTime) vipTime.textContent = '5min';
-    }
-    
-    function addLiveFeedItem() {
-        if (!liveFeedItems) return;
-        
-        const name = getRandomItem(feedNames);
-        const location = getRandomItem(feedLocations);
-        const actions = ['actualizó a Prioridad VIP', 'saltó la cola', 'obtuvo acceso instantáneo'];
-        const action = getRandomItem(actions);
-        
-        const item = document.createElement('div');
-        item.className = 'live-feed-item';
-        item.innerHTML = '<span class="feed-icon">🚀</span><span class="feed-text"><strong>' + name + '</strong> de ' + location + ' acaba de ' + action + '</span><span class="feed-time">Ahora</span>';
-        
-        liveFeedItems.insertBefore(item, liveFeedItems.firstChild);
-        
-        while (liveFeedItems.children.length > 3) {
-            liveFeedItems.removeChild(liveFeedItems.lastChild);
-        }
-    }
-    
-    function updateProgress(elapsed) {
-        const progress = Math.min(100, (elapsed / PROCESSING_DURATION) * 100);
-        
-        if (progressFill) progressFill.style.width = progress + '%';
-        if (progressPercent) progressPercent.textContent = Math.floor(progress) + '%';
-        
-        for (let i = processingStates.length - 1; i >= 0; i--) {
-            if (progress >= processingStates[i].percent) {
-                if (progressStatus) progressStatus.textContent = processingStates[i].status;
-                break;
-            }
-        }
-        
-        const stepDuration = PROCESSING_DURATION / 4;
-        const newStep = Math.floor(elapsed / stepDuration);
-        
-        if (newStep !== currentStep && newStep <= 4) {
-            // Complete current step
-            if (vipSteps[currentStep]) {
-                vipSteps[currentStep].classList.remove('active');
-                vipSteps[currentStep].classList.add('completed');
-            }
-            
-            if (vipSteps[newStep] && newStep < 4) {
-                vipSteps[newStep].classList.add('active');
-            }
-            
-            currentStep = newStep;
-        }
-    }
-    
-    function startProcessing() {
-        if (!overlay) return;
-        
-        processingStartTime = Date.now();
-        
-        if (vipSteps[0]) vipSteps[0].classList.add('active');
-        
-        // Add first feed item immediately
-        addLiveFeedItem();
-        
-        setTimeout(addLiveFeedItem, 7000);
-        setTimeout(addLiveFeedItem, 9000);
-        setTimeout(addLiveFeedItem, 17000);
-        setTimeout(addLiveFeedItem, 26000);
-        setTimeout(addLiveFeedItem, 33000);
-        
-        const updateLoop = setInterval(function() {
-            const elapsed = Date.now() - processingStartTime;
-            
-            updateProgress(elapsed);
-            updateCounters(elapsed);
-            
-            if (elapsed >= PROCESSING_DURATION) {
-                clearInterval(updateLoop);
-                completeProcessing();
-            }
-        }, 200);
-    }
-    
-    function completeProcessing() {
-        vipSteps.forEach(function(step) {
-            step.classList.remove('active');
-            step.classList.add('completed');
-        });
-        
-        if (progressStatus) progressStatus.textContent = '¡Cupo VIP Reservado!';
-        
-        setTimeout(function() {
-            if (overlay) {
-                overlay.style.transition = 'opacity 0.5s ease';
-                overlay.style.opacity = '0';
-                
-                setTimeout(function() {
-                    overlay.classList.add('hidden');
-                }, 500);
-            }
-        }, 1000);
-    }
-    
-    if (overlay) {
-        startProcessing();
-    }
+    // Overlay removed - content displays immediately
+    // Page view is tracked via upsell-tracking.js
 
     // ============================================
-    // COUNTDOWN TIMER
+    // COUNTDOWN TIMER WITH AUTO-RESTART
     // ============================================
-    const STORAGE_KEY = 'upsell3_timer_end_es';
-    const TIMER_DURATION = 10 * 60; // 10 minutes
+    const STORAGE_KEY = 'upsell2_timer_end_es';
+    const TIMER_DURATION = 12 * 60 + 47; // 12:47
     let totalSeconds;
     
     function initTimer() {
@@ -201,7 +42,7 @@
         return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
     }
     
-    function updateTimer() {
+    function updateAllTimers() {
         var formatted = format(totalSeconds);
         if (countdownEl) countdownEl.textContent = formatted;
         if (countdownCtaEl) countdownCtaEl.textContent = formatted;
@@ -210,7 +51,7 @@
     function tick(){
         if (totalSeconds <= 0) {
             restartTimer();
-            updateTimer();
+            updateAllTimers();
             
             // Visual feedback when timer restarts
             var timerBar = document.querySelector('.timer-bar');
@@ -223,12 +64,40 @@
             return;
         }
         totalSeconds -= 1;
-        updateTimer();
+        updateAllTimers();
     }
     
     initTimer();
-    updateTimer();
-    setInterval(tick, 1000);
+    updateAllTimers();
+    var timer = setInterval(tick, 1000);
+
+    // ============================================
+    // DYNAMIC SCARCITY NUMBERS
+    // ============================================
+    function updateScarcityNumber() {
+        var scarcityEl = document.querySelector('.scarcity-text strong');
+        if (scarcityEl) {
+            var baseNumber = Math.floor(Math.random() * (52 - 24 + 1)) + 24;
+            scarcityEl.textContent = baseNumber + ' personas';
+        }
+    }
+    
+    function scheduleScarcityUpdate() {
+        var delay = (Math.floor(Math.random() * 30) + 30) * 1000;
+        setTimeout(function() {
+            updateScarcityNumber();
+            scheduleScarcityUpdate();
+        }, delay);
+    }
+    
+    updateScarcityNumber();
+    scheduleScarcityUpdate();
+
+    // ============================================
+    // FOOTER YEAR
+    // ============================================
+    var yearEl = document.getElementById('year');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
 
     // ============================================
     // LIVE ACTIVITY FEED - REALISTIC & ANIMATED
@@ -249,10 +118,10 @@
     ];
     
     var actions = [
-        'saltó la espera de 3 días',
-        'obtuvo procesamiento prioritario VIP',
-        'desbloqueó resultados instantáneos',
-        'actualizó a acceso VIP'
+        'desbloqueó todas las redes sociales',
+        'agregó rastreo GPS',
+        'actualizó al paquete completo',
+        'activó monitoreo total'
     ];
     
     var activityFeed = document.getElementById('activityFeed');
@@ -345,65 +214,6 @@
     scheduleActivityUpdate();
 
     // ============================================
-    // FOOTER YEAR
-    // ============================================
-    var yearEl = document.getElementById('year');
-    if (yearEl) yearEl.textContent = new Date().getFullYear();
-
-    // ============================================
-    // URGENCY EFFECTS
-    // ============================================
-    function addUrgencyEffects() {
-        var urgencyCard = document.querySelector('.urgency-card');
-        if (urgencyCard) {
-            urgencyCard.style.animation = 'gentle-glow 2s ease-in-out infinite alternate';
-        }
-    }
-
-    window.addEventListener('load', addUrgencyEffects);
-
-    // ============================================
-    // FADE-IN ANIMATIONS
-    // ============================================
-    var style = document.createElement('style');
-    style.textContent = `
-        @keyframes gentle-glow {
-            0% { box-shadow: 0 4px 12px rgba(220, 53, 69, 0.1); }
-            100% { box-shadow: 0 8px 24px rgba(220, 53, 69, 0.25); }
-        }
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .fade-in { animation: fadeInUp 0.6s ease forwards; }
-    `;
-    document.head.appendChild(style);
-
-    var sections = document.querySelectorAll('.testimonial, .benefits, .urgency, .final-cta');
-    sections.forEach(function(section, index) {
-        section.style.animationDelay = (index * 0.15) + 's';
-        section.classList.add('fade-in');
-    });
-
-    // ============================================
-    // URGENCY REMINDER POPUP
-    // ============================================
-    setTimeout(function() {
-        var reminder = document.createElement('div');
-        reminder.className = 'urgency-popup';
-        reminder.textContent = '⏰ ¡Oferta VIP por tiempo limitado!';
-        
-        document.body.appendChild(reminder);
-        
-        setTimeout(function() {
-            reminder.classList.add('fade-out');
-            setTimeout(function() {
-                if (reminder.parentNode) reminder.parentNode.removeChild(reminder);
-            }, 500);
-        }, 5000);
-    }, 25000);
-
-    // ============================================
     // PREVENT PAGE EXIT
     // ============================================
     var isProcessingPayment = false;
@@ -415,7 +225,7 @@
             return e.returnValue;
         }
         e.preventDefault();
-        e.returnValue = '¿Estás seguro de que quieres salir? ¡Podrías perder tu acceso prioritario VIP para siempre!';
+        e.returnValue = '¿Estás seguro de que quieres salir? ¡Podrías perder tu oferta especial de actualización!';
         return e.returnValue;
     });
 
