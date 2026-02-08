@@ -1661,7 +1661,7 @@ app.post('/api/track', async (req, res) => {
 // Get funnel analytics (protected)
 app.get('/api/admin/funnel', authenticateToken, async (req, res) => {
     try {
-        const { language, startDate, endDate } = req.query;
+        const { language, source, startDate, endDate } = req.query;
         
         // Build language filter condition
         // The metadata column stores JSON with funnelLanguage field
@@ -1677,6 +1677,15 @@ app.get('/api/admin/funnel', authenticateToken, async (req, res) => {
             langCondition = `AND metadata->>'funnelLanguage' = 'es'`;
         }
         // else: no filter = all languages
+        
+        // Build source filter condition (main or affiliate)
+        let sourceCondition = '';
+        if (source === 'main') {
+            sourceCondition = `AND COALESCE(metadata->>'funnelSource', 'main') = 'main'`;
+        } else if (source === 'affiliate') {
+            sourceCondition = `AND metadata->>'funnelSource' = 'affiliate'`;
+        }
+        // else: no filter = all sources
         
         // Build date filter condition
         let dateCondition = '';
@@ -1700,6 +1709,7 @@ app.get('/api/admin/funnel', authenticateToken, async (req, res) => {
             WHERE 1=1
             ${dateCondition}
             ${langCondition}
+            ${sourceCondition}
             GROUP BY event
             ORDER BY 
                 CASE event
@@ -1741,6 +1751,7 @@ app.get('/api/admin/funnel', authenticateToken, async (req, res) => {
             WHERE 1=1
             ${dailyDateCondition}
             ${langCondition}
+            ${sourceCondition}
             GROUP BY DATE(created_at), event
             ORDER BY date DESC, event
         `);
@@ -1762,7 +1773,7 @@ app.get('/api/admin/funnel', authenticateToken, async (req, res) => {
                 l.country_code
             FROM funnel_events fe
             LEFT JOIN leads l ON fe.visitor_id = l.visitor_id
-            WHERE 1=1 ${dateCondition.replace(/created_at/g, 'fe.created_at')} ${langCondition.replace(/funnel_language/g, 'fe.funnel_language')}
+            WHERE 1=1 ${dateCondition.replace(/created_at/g, 'fe.created_at')} ${langCondition} ${sourceCondition}
             GROUP BY fe.visitor_id, fe.target_phone, fe.target_gender, l.email, l.name, l.whatsapp, l.country, l.country_code
             ORDER BY MAX(fe.created_at) DESC
             LIMIT 100
@@ -1787,6 +1798,14 @@ app.get('/api/admin/funnel', authenticateToken, async (req, res) => {
                 txLangCondition = `AND funnel_language = 'es'`;
             }
             
+            // Build source filter for transactions
+            let txSourceCondition = '';
+            if (source === 'main') {
+                txSourceCondition = `AND (funnel_source = 'main' OR funnel_source IS NULL)`;
+            } else if (source === 'affiliate') {
+                txSourceCondition = `AND funnel_source = 'affiliate'`;
+            }
+            
             // Count unique emails per status (not total transactions)
             // This makes it consistent with funnel which counts unique visitors
             const txResult = await pool.query(`
@@ -1797,6 +1816,7 @@ app.get('/api/admin/funnel', authenticateToken, async (req, res) => {
                 WHERE 1=1
                 ${txDateCondition}
                 ${txLangCondition}
+                ${txSourceCondition}
                 GROUP BY status
             `);
             
@@ -1849,26 +1869,26 @@ app.get('/api/admin/funnel', authenticateToken, async (req, res) => {
             const frontResult = await pool.query(`
                 SELECT COUNT(DISTINCT email) as count 
                 FROM transactions 
-                WHERE status = 'approved' AND (${frontKeywords}) ${txDateCondition} ${txLangCondition}
+                WHERE status = 'approved' AND (${frontKeywords}) ${txDateCondition} ${txLangCondition} ${txSourceCondition}
             `);
             
             // Count upsell sales
             const up1Result = await pool.query(`
                 SELECT COUNT(DISTINCT email) as count 
                 FROM transactions 
-                WHERE status = 'approved' AND (${up1Keywords}) ${txDateCondition} ${txLangCondition}
+                WHERE status = 'approved' AND (${up1Keywords}) ${txDateCondition} ${txLangCondition} ${txSourceCondition}
             `);
             
             const up2Result = await pool.query(`
                 SELECT COUNT(DISTINCT email) as count 
                 FROM transactions 
-                WHERE status = 'approved' AND (${up2Keywords}) ${txDateCondition} ${txLangCondition}
+                WHERE status = 'approved' AND (${up2Keywords}) ${txDateCondition} ${txLangCondition} ${txSourceCondition}
             `);
             
             const up3Result = await pool.query(`
                 SELECT COUNT(DISTINCT email) as count 
                 FROM transactions 
-                WHERE status = 'approved' AND (${up3Keywords}) ${txDateCondition} ${txLangCondition}
+                WHERE status = 'approved' AND (${up3Keywords}) ${txDateCondition} ${txLangCondition} ${txSourceCondition}
             `);
             
             transactionStats.front = parseInt(frontResult.rows[0].count) || 0;
@@ -1887,6 +1907,7 @@ app.get('/api/admin/funnel', authenticateToken, async (req, res) => {
             journeys: journeys.rows,
             transactionStats,
             language: language || 'all',
+            source: source || 'all',
             dateRange: { startDate, endDate }
         });
         
