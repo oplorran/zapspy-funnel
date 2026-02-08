@@ -1938,6 +1938,36 @@ app.get('/api/admin/customer/:leadId/journey', authenticateToken, async (req, re
 // Store last 20 postbacks for debugging
 const recentPostbacks = [];
 
+// TEMPORARY: Fix today's transactions that don't have dataFinalizada (no auth - REMOVE LATER)
+app.get('/api/admin/fix-today-status', async (req, res) => {
+    try {
+        const today = new Date().toISOString().split('T')[0];
+        
+        // Find transactions with status='approved' but no dataFinalizada in raw_data
+        // These should be 'pending_payment' instead
+        const result = await pool.query(`
+            UPDATE transactions 
+            SET status = 'pending_payment'
+            WHERE created_at::date = $1
+            AND status = 'approved'
+            AND (
+                raw_data->>'venda' IS NULL 
+                OR (raw_data->'venda'->>'dataFinalizada') IS NULL
+                OR (raw_data->'venda'->>'dataFinalizada') = ''
+            )
+            RETURNING transaction_id, email, product, status
+        `, [today]);
+        
+        res.json({
+            today: today,
+            updated: result.rows.length,
+            updatedTransactions: result.rows
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // TEMPORARY: Check today's sales count (no auth - REMOVE LATER)
 app.get('/api/admin/debug/today-sales', async (req, res) => {
     try {
