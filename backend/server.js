@@ -1938,6 +1938,32 @@ app.get('/api/admin/customer/:leadId/journey', authenticateToken, async (req, re
 // Store last 20 postbacks for debugging
 const recentPostbacks = [];
 
+// TEMPORARY: Quick sales count check (no auth)
+app.get('/api/admin/debug/sales-count', async (req, res) => {
+    try {
+        const total = await pool.query(`SELECT COUNT(*) as count FROM transactions`);
+        const approved = await pool.query(`SELECT COUNT(*) as count FROM transactions WHERE status = 'approved'`);
+        const byStatus = await pool.query(`SELECT status, COUNT(*) as count FROM transactions GROUP BY status ORDER BY count DESC`);
+        const byDate = await pool.query(`
+            SELECT created_at::date as date, COUNT(*) as total, 
+                   SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as approved
+            FROM transactions 
+            GROUP BY created_at::date 
+            ORDER BY date DESC 
+            LIMIT 10
+        `);
+        
+        res.json({
+            totalTransactions: parseInt(total.rows[0].count),
+            approvedTransactions: parseInt(approved.rows[0].count),
+            byStatus: byStatus.rows,
+            byDate: byDate.rows
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Debug endpoint to see recent postbacks (memory + DB)
 app.get('/api/admin/debug/postbacks', authenticateToken, async (req, res) => {
     // Extract value fields from each postback for easy viewing
