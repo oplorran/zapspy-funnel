@@ -2294,6 +2294,20 @@ async function syncMonetizzeSalesCore(startDate, endDate) {
                 continue;
             }
             
+            // Try to get correct WhatsApp from leads table (more reliable than Monetizze phone)
+            let finalPhone = phone;
+            try {
+                const leadResult = await pool.query(
+                    `SELECT whatsapp FROM leads WHERE LOWER(email) = LOWER($1) ORDER BY created_at DESC LIMIT 1`,
+                    [email]
+                );
+                if (leadResult.rows.length > 0 && leadResult.rows[0].whatsapp) {
+                    finalPhone = leadResult.rows[0].whatsapp;
+                }
+            } catch (leadErr) {
+                // Silently ignore - use Monetizze phone as fallback
+            }
+            
             await pool.query(`
                 INSERT INTO transactions (
                     transaction_id, email, phone, name, product, value, 
@@ -2306,8 +2320,9 @@ async function syncMonetizzeSalesCore(startDate, endDate) {
                     raw_data = $9,
                     funnel_language = $10,
                     funnel_source = $11,
+                    phone = COALESCE($3, transactions.phone),
                     updated_at = NOW()
-            `, [transactionId, email, phone, name, productName, value, String(statusCode), mappedStatus, JSON.stringify(item), funnelLanguage, funnelSource, saleDate]);
+            `, [transactionId, email, finalPhone, name, productName, value, String(statusCode), mappedStatus, JSON.stringify(item), funnelLanguage, funnelSource, saleDate]);
             
             synced++;
         } catch (saleError) {
@@ -3035,6 +3050,29 @@ app.all('/api/postback/monetizze', async (req, res) => {
         }
         console.log(`📅 Sale date: ${saleDate ? saleDate.toISOString() : 'Using NOW()'}`);
         
+        // ==================== WHATSAPP FROM LEADS (OPTION C) ====================
+        // Try to get the correct WhatsApp from leads table (captured in funnel)
+        // This is more reliable than phone from Monetizze checkout (users often fill wrong DDI)
+        let finalPhone = buyerPhone; // Default to Monetizze phone
+        const emailForLeadLookup = finalEmail || buyerEmail;
+        
+        if (emailForLeadLookup) {
+            try {
+                const leadResult = await pool.query(
+                    `SELECT whatsapp, name FROM leads WHERE LOWER(email) = LOWER($1) ORDER BY created_at DESC LIMIT 1`,
+                    [emailForLeadLookup]
+                );
+                if (leadResult.rows.length > 0 && leadResult.rows[0].whatsapp) {
+                    finalPhone = leadResult.rows[0].whatsapp;
+                    console.log(`📱 Using WhatsApp from lead: ${finalPhone} (instead of Monetizze: ${buyerPhone || 'none'})`);
+                } else {
+                    console.log(`📱 No lead WhatsApp found for ${emailForLeadLookup}, using Monetizze phone: ${buyerPhone || 'none'}`);
+                }
+            } catch (leadErr) {
+                console.log(`⚠️ Error looking up lead WhatsApp: ${leadErr.message}`);
+            }
+        }
+        
         // Store transaction in database with funnel_language and funnel_source
         try {
             await pool.query(`
@@ -3049,11 +3087,12 @@ app.all('/api/postback/monetizze', async (req, res) => {
                     raw_data = $9,
                     funnel_language = $10,
                     funnel_source = $11,
+                    phone = COALESCE($3, transactions.phone),
                     updated_at = NOW()
             `, [
                 transactionId,
                 finalEmail || buyerEmail,
-                buyerPhone,
+                finalPhone,  // Use WhatsApp from lead if available
                 buyerName,
                 productName,
                 transactionValue,
