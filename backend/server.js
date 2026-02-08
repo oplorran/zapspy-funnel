@@ -303,11 +303,11 @@ const authenticateToken = (req, res, next) => {
 };
 
 // Helper function to build date filter SQL
-// Uses ::date cast to compare dates correctly (includes full day)
+// Uses date range with < end+1day to include the full end date
 function buildDateFilter(startDate, endDate, columnName = 'created_at') {
     if (!startDate || !endDate) return { sql: '', params: [] };
     return {
-        sql: ` AND ${columnName}::date >= $PARAM_START::date AND ${columnName}::date <= $PARAM_END::date`,
+        sql: ` AND ${columnName} >= $PARAM_START AND ${columnName} < ($PARAM_END::date + INTERVAL '1 day')`,
         params: [startDate, endDate]
     };
 }
@@ -964,7 +964,7 @@ app.get('/api/admin/leads', authenticateToken, async (req, res) => {
         }
         
         if (startDate && endDate) {
-            conditions.push(`created_at::date >= $${params.length + 1}::date AND created_at::date <= $${params.length + 2}::date`);
+            conditions.push(`created_at >= $${params.length + 1} AND created_at < ($${params.length + 2}::date + INTERVAL '1 day')`);
             params.push(startDate, endDate);
         }
         
@@ -1006,7 +1006,7 @@ app.get('/api/admin/stats', authenticateToken, async (req, res) => {
         let dateFilter = '';
         const params = [];
         if (startDate && endDate) {
-            dateFilter = ` AND created_at::date >= $1::date AND created_at::date <= $2::date`;
+            dateFilter = ` AND created_at >= $1 AND created_at < ($2::date + INTERVAL '1 day')`;
             params.push(startDate, endDate);
         }
         
@@ -3094,7 +3094,7 @@ app.get('/api/admin/refunds', authenticateToken, async (req, res) => {
             params.push(language);
         }
         if (startDate && endDate) {
-            conditions.push(`created_at::date >= $${paramIndex++}::date AND created_at::date <= $${paramIndex++}::date`);
+            conditions.push(`created_at >= $${paramIndex++} AND created_at < ($${paramIndex++}::date + INTERVAL '1 day')`);
             params.push(startDate, endDate);
         }
         
@@ -3113,7 +3113,7 @@ app.get('/api/admin/refunds', authenticateToken, async (req, res) => {
         let statsParamIndex = 1;
         
         if (startDate && endDate) {
-            statsConditions.push(`created_at::date >= $${statsParamIndex++}::date AND created_at::date <= $${statsParamIndex++}::date`);
+            statsConditions.push(`created_at >= $${statsParamIndex++} AND created_at < ($${statsParamIndex++}::date + INTERVAL '1 day')`);
             statsParams.push(startDate, endDate);
         }
         
@@ -3298,7 +3298,7 @@ app.get('/api/admin/transactions', authenticateToken, async (req, res) => {
         }
         
         if (startDate && endDate) {
-            query += ` AND created_at::date >= $${paramIndex}::date AND created_at::date <= $${paramIndex + 1}::date`;
+            query += ` AND created_at >= $${paramIndex} AND created_at < ($${paramIndex + 1}::date + INTERVAL '1 day')`;
             params.push(startDate, endDate);
             paramIndex += 2;
         }
@@ -3343,13 +3343,10 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
     try {
         const { language, startDate, endDate, source } = req.query;
         
-        // Debug: log date filter params
-        if (startDate || endDate) {
-            console.log(`📊 Sales filter - startDate: ${startDate}, endDate: ${endDate}, language: ${language}, source: ${source}`);
-            // Check what dates exist in transactions
-            const dateCheck = await pool.query(`SELECT created_at::date as sale_date, COUNT(*) as count FROM transactions WHERE status = 'approved' GROUP BY created_at::date ORDER BY sale_date DESC LIMIT 5`);
-            console.log('📅 Recent transaction dates:', dateCheck.rows);
-        }
+        // Debug: log filter params and transaction dates
+        console.log(`📊 Sales API called - startDate: ${startDate || 'none'}, endDate: ${endDate || 'none'}, language: ${language || 'all'}, source: ${source || 'all'}`);
+        const debugDates = await pool.query(`SELECT created_at::date as sale_date, COUNT(*) as count FROM transactions WHERE status = 'approved' GROUP BY created_at::date ORDER BY sale_date DESC LIMIT 10`);
+        console.log('📅 Transaction dates in DB:', debugDates.rows);
         
         // Build language filter
         let langCondition = '';
@@ -3372,7 +3369,7 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
         if (startDate && endDate) {
             const startIdx = langParams.length + 1;
             const endIdx = langParams.length + 2;
-            dateCondition = ` AND created_at::date >= $${startIdx}::date AND created_at::date <= $${endIdx}::date`;
+            dateCondition = ` AND created_at >= $${startIdx} AND created_at < ($${endIdx}::date + INTERVAL '1 day')`;
             langParams.push(startDate, endDate);
         }
         
