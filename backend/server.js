@@ -2252,7 +2252,12 @@ async function syncMonetizzeSalesCore(startDate, endDate) {
             } else if (vendaStatus.includes('aguardando') || vendaStatus.includes('pending')) {
                 mappedStatus = 'pending_payment';
             } else if (vendaStatus.includes('finalizada') || vendaStatus.includes('aprovada')) {
-                mappedStatus = 'approved';
+                // Only mark as approved if dataFinalizada is valid
+                if (isFinalized) {
+                    mappedStatus = 'approved';
+                } else {
+                    mappedStatus = 'pending_payment';
+                }
             } else if (!isFinalized && statusCode === '2') {
                 // Status code says approved but no valid dataFinalizada
                 mappedStatus = 'pending_payment';
@@ -2579,7 +2584,12 @@ app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (re
                 } else if (vendaStatus.includes('aguardando') || vendaStatus.includes('pending')) {
                     mappedStatus = 'pending_payment';
                 } else if (vendaStatus.includes('finalizada') || vendaStatus.includes('aprovada')) {
-                    mappedStatus = 'approved';
+                    // Only mark as approved if dataFinalizada is valid
+                    if (isFinalized) {
+                        mappedStatus = 'approved';
+                    } else {
+                        mappedStatus = 'pending_payment';
+                    }
                 } else if (!isFinalized && statusCode === '2') {
                     // Status code says approved but no valid dataFinalizada
                     mappedStatus = 'pending_payment';
@@ -2870,7 +2880,12 @@ app.all('/api/postback/monetizze', async (req, res) => {
         } else if (vendaStatus.includes('aguardando') || vendaStatus.includes('pending')) {
             finalStatus = 'pending_payment';
         } else if (vendaStatus.includes('finalizada') || vendaStatus.includes('aprovada')) {
-            finalStatus = 'approved';
+            // Only mark as approved if dataFinalizada is valid
+            if (isFinalized) {
+                finalStatus = 'approved';
+            } else {
+                finalStatus = 'pending_payment';
+            }
         } else if (!isFinalized && statusCode === '2') {
             // Status code says approved but no valid dataFinalizada
             finalStatus = 'pending_payment';
@@ -3106,28 +3121,31 @@ app.all('/api/postback/monetizze', async (req, res) => {
         try {
             const statusStr = String(statusCode);
             
+            // Options with language for correct pixel selection
+            const capiOptions = { language: funnelLanguage };
+            
             // Status 7 = Abandono de Checkout -> InitiateCheckout event
             if (statusStr === '7') {
-                console.log('📤 Sending InitiateCheckout to Facebook CAPI...');
-                await sendToFacebookCAPI('InitiateCheckout', fbUserData, fbCustomData);
+                console.log(`📤 Sending InitiateCheckout to Facebook CAPI (${funnelLanguage})...`);
+                await sendToFacebookCAPI('InitiateCheckout', fbUserData, fbCustomData, null, null, capiOptions);
             }
             
             // Status 1 = Aguardando pagamento -> Also InitiateCheckout (they started checkout)
             if (statusStr === '1') {
-                console.log('📤 Sending InitiateCheckout (pending) to Facebook CAPI...');
-                await sendToFacebookCAPI('InitiateCheckout', fbUserData, fbCustomData);
+                console.log(`📤 Sending InitiateCheckout (pending) to Facebook CAPI (${funnelLanguage})...`);
+                await sendToFacebookCAPI('InitiateCheckout', fbUserData, fbCustomData, null, null, capiOptions);
             }
             
             // Status 2 or 6 = Aprovada/Completa -> Purchase event
             // BUT ONLY if dataFinalizada is valid (not "0000-00-00")
             if ((statusStr === '2' || statusStr === '6') && isFinalized) {
-                console.log('📤 Sending Purchase to Facebook CAPI (payment confirmed)...');
-                await sendToFacebookCAPI('Purchase', fbUserData, fbCustomData);
+                console.log(`📤 Sending Purchase to Facebook CAPI (${funnelLanguage}) - payment confirmed...`);
+                await sendToFacebookCAPI('Purchase', fbUserData, fbCustomData, null, null, capiOptions);
             } else if (statusStr === '2' && !isFinalized) {
                 // Status 2 but no valid dataFinalizada = still pending payment
                 console.log('⏸️ Skipping Purchase event - payment not yet confirmed (invalid dataFinalizada)');
-                console.log('📤 Sending InitiateCheckout instead...');
-                await sendToFacebookCAPI('InitiateCheckout', fbUserData, fbCustomData);
+                console.log(`📤 Sending InitiateCheckout instead (${funnelLanguage})...`);
+                await sendToFacebookCAPI('InitiateCheckout', fbUserData, fbCustomData, null, null, capiOptions);
             }
             
             // Status 3 = Cancelled -> Send custom Cancel event
@@ -3137,8 +3155,8 @@ app.all('/api/postback/monetizze', async (req, res) => {
             
             // Status 4 = Refund -> Refund event (custom)
             if (statusStr === '4' || finalStatus === 'refunded') {
-                console.log('📤 Sending Refund to Facebook CAPI...');
-                await sendToFacebookCAPI('Refund', fbUserData, fbCustomData);
+                console.log(`📤 Sending Refund to Facebook CAPI (${funnelLanguage})...`);
+                await sendToFacebookCAPI('Refund', fbUserData, fbCustomData, null, null, capiOptions);
             }
             
         } catch (capiError) {
