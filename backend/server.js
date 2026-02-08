@@ -2150,21 +2150,32 @@ app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (re
         let errors = [];
         
         // Process each sale/transaction
-        for (const venda of salesArray) {
+        // API 2.1 format: each item has { chave_unica, venda: {...}, produto: {...}, comprador: {...}, tipoEvento: {...} }
+        for (const item of salesArray) {
             try {
-                // Extract data from Monetizze API format
-                const transactionId = venda.codigo || venda.transacao;
-                const email = venda.comprador?.email || venda.email;
-                const phone = venda.comprador?.telefone || venda.telefone;
-                const name = venda.comprador?.nome || venda.nome;
-                const productName = venda.produto?.nome || venda.produto_nome;
-                const productCode = venda.produto?.codigo || venda.produto_codigo;
-                const value = venda.comissao || venda.valor_liquido || venda.valor;
-                const status = venda.status || venda.situacao;
-                const statusCode = venda.status_codigo || '2';
+                // API 2.1 has nested structure - venda, produto, comprador are sub-objects
+                const vendaData = item.venda || item;
+                const produtoData = item.produto || {};
+                const compradorData = item.comprador || {};
+                const tipoEvento = item.tipoEvento || {};
+                
+                // Extract data from Monetizze API 2.1 format
+                const transactionId = vendaData.codigo || item.codigo_venda || item.chave_unica;
+                const email = compradorData.email || vendaData.email;
+                const phone = compradorData.telefone || vendaData.telefone;
+                const name = compradorData.nome || vendaData.nome;
+                const productName = produtoData.nome || vendaData.produto_nome;
+                const productCode = produtoData.codigo || vendaData.produto_codigo;
+                
+                // Priority: comissao (commission) > valorRecebido > valor
+                const value = vendaData.valorRecebido || vendaData.comissao || vendaData.valor;
+                const status = vendaData.status || tipoEvento.descricao;
+                const statusCode = String(tipoEvento.codigo || item.codigo_status || '2');
+                
+                console.log(`📋 Processing sale: ID=${transactionId}, Product=${productName}, Value=${value}, Status=${status} (${statusCode})`);
                 
                 // Extract real sale date from Monetizze
-                const saleDateStr = venda.dataVenda || venda.data || venda.data_venda || null;
+                const saleDateStr = vendaData.dataInicio || vendaData.dataFinalizada || vendaData.dataVenda || vendaData.data || null;
                 let saleDate = null;
                 if (saleDateStr) {
                     try {
@@ -2243,7 +2254,7 @@ app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (re
             message: 'Monetizze sync completed',
             synced,
             skipped,
-            total: data.vendas.length,
+            total: salesArray.length,
             errors: errors.length > 0 ? errors : undefined
         });
         
