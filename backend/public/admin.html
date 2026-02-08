@@ -3478,9 +3478,9 @@ Estou aqui para esclarecer tudo! 😊`
                 const initiateRate = totalLeads > 0 ? ((checkoutClicked / totalLeads) * 100) : 0;
                 setEl('overviewInitiateCheckoutInfo', `${initiateRate.toFixed(1)}% dos leads`);
                 
-                // 3. Checkout Abandonado
+                // 3. Checkout Abandonado (pessoas que entraram no checkout mas não tentaram comprar)
                 setEl('overviewAbandoned', checkoutAbandoned.toLocaleString('pt-BR'));
-                setEl('overviewAbandonedInfo', `${abandonRate.toFixed(1)}% abandonaram`);
+                setEl('overviewAbandonedInfo', `sem tentativa de compra`);
                 
                 // 4. Taxa de Conversão do Checkout (vendas / initiate checkout)
                 const checkoutConvRate = checkoutClicked > 0 ? ((totalSales / checkoutClicked) * 100) : 0;

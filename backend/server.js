@@ -4008,7 +4008,15 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
             WHERE event = 'checkout_clicked'${funnelLangCondition}${funnelDateCondition}
         `);
         
-        // Count unique emails with approved transactions
+        // Count unique emails with ANY transaction (approved, cancelled, pending, etc)
+        // This represents people who ATTEMPTED to purchase (even if failed)
+        const allTransactionEmailsResult = await pool.query(`
+            SELECT COUNT(DISTINCT LOWER(email)) as count 
+            FROM transactions 
+            WHERE 1=1 ${langCondition}${sourceCondition}${dateCondition}
+        `, langParams);
+        
+        // Count unique emails with approved transactions (for other metrics)
         const approvedEmailsResult = await pool.query(`
             SELECT COUNT(DISTINCT LOWER(email)) as count 
             FROM transactions 
@@ -4016,8 +4024,12 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
         `, langParams);
         
         const checkoutClicked = parseInt(checkoutClickedResult.rows[0].count) || 0;
+        const allTransactionEmails = parseInt(allTransactionEmailsResult.rows[0].count) || 0;
         const approvedEmails = parseInt(approvedEmailsResult.rows[0].count) || 0;
-        const checkoutAbandoned = Math.max(0, checkoutClicked - approvedEmails);
+        
+        // Checkout Abandonado = pessoas que entraram no checkout mas NÃO fizeram NENHUMA tentativa de compra
+        // (não geraram nenhuma transação - nem aprovada, nem recusada, nem pendente)
+        const checkoutAbandoned = Math.max(0, checkoutClicked - allTransactionEmails);
         
         // Calculate conversion rate (leads -> sales) - also filtered by language
         const leadsCount = await pool.query(`SELECT COUNT(*) FROM leads WHERE 1=1 ${language ? `AND (funnel_language = $1 OR (funnel_language IS NULL AND $1 = 'en'))` : ''}`, language ? [language] : []);
