@@ -964,8 +964,7 @@ app.get('/api/admin/leads', authenticateToken, async (req, res) => {
         }
         
         if (startDate && endDate) {
-            // Use Brazil timezone for date filtering
-            conditions.push(`DATE(created_at AT TIME ZONE 'America/Sao_Paulo') >= $${params.length + 1}::date AND DATE(created_at AT TIME ZONE 'America/Sao_Paulo') <= $${params.length + 2}::date`);
+            conditions.push(`created_at >= $${params.length + 1}::date AND created_at < ($${params.length + 2}::date + INTERVAL '1 day')`);
             params.push(startDate, endDate);
         }
         
@@ -1007,24 +1006,23 @@ app.get('/api/admin/stats', authenticateToken, async (req, res) => {
         let dateFilter = '';
         const params = [];
         if (startDate && endDate) {
-            // Use Brazil timezone for date filtering
-            dateFilter = ` AND DATE(created_at AT TIME ZONE 'America/Sao_Paulo') >= $1::date AND DATE(created_at AT TIME ZONE 'America/Sao_Paulo') <= $2::date`;
+            dateFilter = ` AND created_at >= $1::date AND created_at < ($2::date + INTERVAL '1 day')`;
             params.push(startDate, endDate);
         }
         
         const [totalResult, todayResult, weekResult, statusResult] = await Promise.all([
             pool.query(`SELECT COUNT(*) FROM leads WHERE 1=1${dateFilter}`, params),
-            pool.query(`SELECT COUNT(*) FROM leads WHERE DATE(created_at AT TIME ZONE 'America/Sao_Paulo') = CURRENT_DATE${dateFilter}`, params),
-            pool.query(`SELECT COUNT(*) FROM leads WHERE DATE(created_at AT TIME ZONE 'America/Sao_Paulo') >= CURRENT_DATE - INTERVAL '7 days'${dateFilter}`, params),
+            pool.query(`SELECT COUNT(*) FROM leads WHERE created_at >= CURRENT_DATE${dateFilter}`, params),
+            pool.query(`SELECT COUNT(*) FROM leads WHERE created_at >= CURRENT_DATE - INTERVAL '7 days'${dateFilter}`, params),
             pool.query(`SELECT status, COUNT(*) FROM leads WHERE 1=1${dateFilter} GROUP BY status`, params)
         ]);
         
-        // Get leads by day for the last 7 days (Brazil timezone)
+        // Get leads by day for the last 7 days
         const dailyResult = await pool.query(`
-            SELECT DATE(created_at AT TIME ZONE 'America/Sao_Paulo') as date, COUNT(*) as count
+            SELECT DATE(created_at) as date, COUNT(*) as count
             FROM leads
-            WHERE DATE(created_at AT TIME ZONE 'America/Sao_Paulo') >= CURRENT_DATE - INTERVAL '7 days'${dateFilter}
-            GROUP BY DATE(created_at AT TIME ZONE 'America/Sao_Paulo')
+            WHERE created_at >= CURRENT_DATE - INTERVAL '7 days'${dateFilter}
+            GROUP BY DATE(created_at)
             ORDER BY date DESC
         `, params);
         
@@ -3415,9 +3413,7 @@ app.get('/api/admin/refunds', authenticateToken, async (req, res) => {
             params.push(language);
         }
         if (startDate && endDate) {
-            // Use Brazil timezone for date filtering
-            conditions.push(`DATE(created_at AT TIME ZONE 'America/Sao_Paulo') >= $${paramIndex}::date AND DATE(created_at AT TIME ZONE 'America/Sao_Paulo') <= $${paramIndex + 1}::date`);
-            paramIndex += 2;
+            conditions.push(`created_at >= $${paramIndex++}::date AND created_at < ($${paramIndex++}::date + INTERVAL '1 day')`);
             params.push(startDate, endDate);
         }
         
@@ -3436,9 +3432,7 @@ app.get('/api/admin/refunds', authenticateToken, async (req, res) => {
         let statsParamIndex = 1;
         
         if (startDate && endDate) {
-            // Use Brazil timezone for date filtering
-            statsConditions.push(`DATE(created_at AT TIME ZONE 'America/Sao_Paulo') >= $${statsParamIndex}::date AND DATE(created_at AT TIME ZONE 'America/Sao_Paulo') <= $${statsParamIndex + 1}::date`);
-            statsParamIndex += 2;
+            statsConditions.push(`created_at >= $${statsParamIndex++}::date AND created_at < ($${statsParamIndex++}::date + INTERVAL '1 day')`);
             statsParams.push(startDate, endDate);
         }
         
@@ -3623,8 +3617,7 @@ app.get('/api/admin/transactions', authenticateToken, async (req, res) => {
         }
         
         if (startDate && endDate) {
-            // Use Brazil timezone for date filtering to match Monetizze's timezone
-            query += ` AND DATE(created_at AT TIME ZONE 'America/Sao_Paulo') >= $${paramIndex}::date AND DATE(created_at AT TIME ZONE 'America/Sao_Paulo') <= $${paramIndex + 1}::date`;
+            query += ` AND created_at >= $${paramIndex}::date AND created_at < ($${paramIndex + 1}::date + INTERVAL '1 day')`;
             params.push(startDate, endDate);
             paramIndex += 2;
         }
@@ -3685,12 +3678,12 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
             langParams.push(source);
         }
         
-        // Build date filter (use Brazil timezone)
+        // Build date filter
         let dateCondition = '';
         if (startDate && endDate) {
             const startIdx = langParams.length + 1;
             const endIdx = langParams.length + 2;
-            dateCondition = ` AND DATE(created_at AT TIME ZONE 'America/Sao_Paulo') >= $${startIdx}::date AND DATE(created_at AT TIME ZONE 'America/Sao_Paulo') <= $${endIdx}::date`;
+            dateCondition = ` AND created_at >= $${startIdx}::date AND created_at < ($${endIdx}::date + INTERVAL '1 day')`;
             langParams.push(startDate, endDate);
         }
         
@@ -3701,10 +3694,10 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
             pool.query(`SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total FROM transactions WHERE status = 'approved' ${langCondition}${sourceCondition}${dateCondition}`, langParams)
         ]);
         
-        // Get today and this week (use Brazil timezone)
+        // Get today and this week
         const [todayResult, weekResult] = await Promise.all([
-            pool.query(`SELECT COUNT(*) FROM transactions WHERE status = 'approved' AND DATE(created_at AT TIME ZONE 'America/Sao_Paulo') = CURRENT_DATE ${langCondition}${sourceCondition}${dateCondition}`, langParams),
-            pool.query(`SELECT COUNT(*) FROM transactions WHERE status = 'approved' AND DATE(created_at AT TIME ZONE 'America/Sao_Paulo') >= CURRENT_DATE - INTERVAL '7 days' ${langCondition}${sourceCondition}${dateCondition}`, langParams)
+            pool.query(`SELECT COUNT(*) FROM transactions WHERE status = 'approved' AND created_at >= CURRENT_DATE ${langCondition}${sourceCondition}${dateCondition}`, langParams),
+            pool.query(`SELECT COUNT(*) FROM transactions WHERE status = 'approved' AND created_at >= CURRENT_DATE - INTERVAL '7 days' ${langCondition}${sourceCondition}${dateCondition}`, langParams)
         ]);
         
         // Calculate conversion rate (leads -> sales) - also filtered by language
@@ -4163,61 +4156,4 @@ app.listen(PORT, async () => {
     
     // Start auto-sync with Monetizze (every 30 minutes)
     startAutoSync();
-});
-
-// ==================== TEMPORARY DEBUG ENDPOINT ====================
-// Endpoint to debug transaction dates and filters
-app.get('/api/admin/debug/transactions-dates', authenticateToken, async (req, res) => {
-    try {
-        // Get server timezone and current time info
-        const serverNow = new Date();
-        const serverOffset = serverNow.getTimezoneOffset();
-        
-        // Get transactions grouped by date (Brazil time)
-        const dateBreakdown = await pool.query(`
-            SELECT 
-                DATE(created_at AT TIME ZONE 'America/Sao_Paulo') as sale_date,
-                COUNT(*) as count,
-                MIN(created_at) as min_time,
-                MAX(created_at) as max_time
-            FROM transactions
-            WHERE transaction_id NOT LIKE 'TEST%'
-            GROUP BY DATE(created_at AT TIME ZONE 'America/Sao_Paulo')
-            ORDER BY sale_date DESC
-            LIMIT 10
-        `);
-        
-        // Get today's transactions (Brazil time)
-        const todayBrazil = await pool.query(`
-            SELECT id, transaction_id, email, product, status, created_at, 
-                   created_at AT TIME ZONE 'America/Sao_Paulo' as created_at_brazil
-            FROM transactions
-            WHERE DATE(created_at AT TIME ZONE 'America/Sao_Paulo') = CURRENT_DATE
-              AND transaction_id NOT LIKE 'TEST%'
-            ORDER BY created_at DESC
-            LIMIT 20
-        `);
-        
-        // Get the actual date the server thinks is "today"
-        const serverToday = await pool.query(`SELECT CURRENT_DATE as today, NOW() as now, NOW() AT TIME ZONE 'America/Sao_Paulo' as now_brazil`);
-        
-        res.json({
-            server: {
-                now: serverNow.toISOString(),
-                offset: serverOffset,
-                offsetHours: -serverOffset / 60
-            },
-            database: {
-                today: serverToday.rows[0].today,
-                now: serverToday.rows[0].now,
-                nowBrazil: serverToday.rows[0].now_brazil
-            },
-            transactionsByDate: dateBreakdown.rows,
-            todayTransactions: todayBrazil.rows.length,
-            todayTransactionsSample: todayBrazil.rows.slice(0, 5)
-        });
-    } catch (error) {
-        console.error('Debug error:', error);
-        res.status(500).json({ error: error.message });
-    }
 });
