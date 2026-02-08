@@ -2090,9 +2090,9 @@ app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (re
         const params = new URLSearchParams();
         if (startDate) params.append('date_min', `${startDate} 00:00:00`);
         if (endDate) params.append('date_max', `${endDate} 23:59:59`);
-        // Status: 2=Finalizada, 6=Completa (approved sales)
-        params.append('status[]', '2');
-        params.append('status[]', '6');
+        // Get all statuses so we have complete data
+        // 1=Aguardando, 2=Finalizada, 3=Cancelada, 4=Devolvida, 5=Bloqueada, 6=Completa
+        ['1','2','3','4','5','6'].forEach(s => params.append('status[]', s));
         
         const txUrl = `https://api.monetizze.com.br/2.1/transactions?${params.toString()}`;
         console.log('🌐 Fetching transactions from Monetizze API 2.1:', txUrl);
@@ -2126,13 +2126,62 @@ app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (re
         
         const data = await response.json();
         
-        // API 2.1 returns data in 'dados' array (not 'vendas')
-        const transactions = data.dados || data.vendas || data.recordset || [];
-        console.log('📦 Received data from Monetizze:', typeof data, 'transactions:', transactions.length || 'N/A');
-        console.log('📦 Response keys:', Object.keys(data));
+        // Log response structure for debugging
+        console.log('📦 Response type:', typeof data);
+        console.log('📦 Is array:', Array.isArray(data));
+        if (!Array.isArray(data)) {
+            console.log('📦 Response keys:', Object.keys(data));
+            console.log('📦 Status field:', data.status);
+            console.log('📦 Pagination:', data.pagina, '/', data.paginas, 'registros:', data.registros);
+        }
         
-        // If data is an array directly
-        const salesArray = Array.isArray(data) ? data : (Array.isArray(transactions) ? transactions : []);
+        // API 2.1 /transactions returns: { status: 200, dados: [...], pagina, paginas, registros }
+        let salesArray = [];
+        if (Array.isArray(data)) {
+            salesArray = data;
+        } else if (Array.isArray(data.dados)) {
+            salesArray = data.dados;
+        } else if (Array.isArray(data.vendas)) {
+            salesArray = data.vendas;
+        } else if (Array.isArray(data.recordset)) {
+            salesArray = data.recordset;
+        }
+        
+        console.log(`📦 First page: ${salesArray.length} transactions`);
+        
+        // Handle pagination - fetch all pages
+        const totalPages = data.paginas || 1;
+        const totalRecords = data.registros || salesArray.length;
+        
+        if (totalPages > 1) {
+            console.log(`📄 Pagination detected: ${totalPages} pages, ${totalRecords} total records`);
+            for (let page = 2; page <= totalPages; page++) {
+                try {
+                    console.log(`📄 Fetching page ${page}/${totalPages}...`);
+                    const pageParams = new URLSearchParams(params.toString());
+                    pageParams.set('pagina', String(page));
+                    
+                    const pageResponse = await fetch(`https://api.monetizze.com.br/2.1/transactions?${pageParams.toString()}`, {
+                        method: 'GET',
+                        headers: {
+                            'TOKEN': monetizzeToken,
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    if (pageResponse.ok) {
+                        const pageData = await pageResponse.json();
+                        const pageItems = pageData.dados || pageData.vendas || [];
+                        salesArray = salesArray.concat(pageItems);
+                        console.log(`📄 Page ${page}: ${pageItems.length} transactions (total: ${salesArray.length})`);
+                    }
+                } catch (pageError) {
+                    console.error(`❌ Error fetching page ${page}:`, pageError.message);
+                }
+            }
+        }
+        
+        console.log(`📦 Total transactions fetched: ${salesArray.length}`);
         
         if (salesArray.length === 0) {
             return res.json({
@@ -2140,6 +2189,7 @@ app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (re
                 message: 'No sales found for the specified period',
                 synced: 0,
                 skipped: 0,
+                total: 0,
                 responseKeys: Object.keys(data),
                 rawPreview: JSON.stringify(data).substring(0, 500)
             });
@@ -2232,7 +2282,7 @@ app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (re
                     value,
                     String(statusCode),
                     mappedStatus,
-                    JSON.stringify(venda),
+                    JSON.stringify(item),
                     funnelLanguage,
                     saleDate
                 ]);
@@ -2242,7 +2292,7 @@ app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (re
                 
             } catch (saleError) {
                 console.error(`❌ Error processing sale:`, saleError.message);
-                errors.push({ sale: venda.codigo, error: saleError.message });
+                errors.push({ sale: item?.venda?.codigo || 'unknown', error: saleError.message });
                 skipped++;
             }
         }
