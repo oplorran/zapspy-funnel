@@ -3051,11 +3051,6 @@ app.all('/api/postback/monetizze', async (req, res) => {
             // Status code says approved but no valid dataFinalizada
             finalStatus = 'pending_payment';
         }
-        // Also check status text
-        const vendaStatus = (venda.status || '').toLowerCase();
-        if (vendaStatus.includes('aguardando')) {
-            finalStatus = 'pending_payment';
-        }
         
         const mappedStatus = finalStatus; // Use finalStatus which includes all detection logic
         const buyerEmail = email;
