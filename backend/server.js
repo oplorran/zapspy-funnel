@@ -2273,7 +2273,21 @@ async function syncMonetizzeSalesCore(startDate, endDate) {
             
             const funnelLanguage = spanishCodes.includes(String(productCode)) ? 'es' : 'en';
             const funnelSource = affiliateCodes.includes(String(productCode)) ? 'affiliate' : 'main';
-            const mappedStatus = statusMap[String(statusCode)] || 'approved';
+            
+            // Map status - IMPORTANT: check if sale is actually finalized
+            // Monetizze can send status='2' (Finalizada) but without dataFinalizada
+            // In that case, it's still pending payment
+            let mappedStatus = statusMap[String(statusCode)] || 'approved';
+            
+            // Override: if no dataFinalizada, it's pending regardless of statusCode
+            if (!vendaData.dataFinalizada && !vendaData.dataFinalizada && statusCode === '2') {
+                mappedStatus = 'pending_payment';
+            }
+            // Override: if status text says "Aguardando", it's pending
+            const statusText = (vendaData.status || '').toLowerCase();
+            if (statusText.includes('aguardando')) {
+                mappedStatus = 'pending_payment';
+            }
             
             if (!email || !transactionId) {
                 skipped++;
@@ -2566,7 +2580,9 @@ app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (re
                 let funnelLanguage = spanishCodes.includes(String(productCode)) ? 'es' : 'en';
                 const funnelSource = affiliateCodes.includes(String(productCode)) ? 'affiliate' : 'main';
                 
-                // Map status
+                // Map status - IMPORTANT: check if sale is actually finalized
+                // Monetizze can send status='2' (Finalizada) but without dataFinalizada
+                // In that case, it's still pending payment
                 const statusMap = {
                     '1': 'pending_payment',
                     '2': 'approved',
@@ -2578,7 +2594,17 @@ app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (re
                     '8': 'chargeback',
                     '9': 'chargeback'
                 };
-                const mappedStatus = statusMap[String(statusCode)] || 'approved';
+                let mappedStatus = statusMap[String(statusCode)] || 'approved';
+                
+                // Override: if no dataFinalizada, it's pending regardless of statusCode
+                if (!vendaData.dataFinalizada && statusCode === '2') {
+                    mappedStatus = 'pending_payment';
+                }
+                // Override: if status text says "Aguardando", it's pending
+                const statusText = (vendaData.status || '').toLowerCase();
+                if (statusText.includes('aguardando')) {
+                    mappedStatus = 'pending_payment';
+                }
                 
                 if (!email || !transactionId) {
                     console.log(`⚠️ Skipping sale without email or ID:`, transactionId);
@@ -2848,7 +2874,18 @@ app.all('/api/postback/monetizze', async (req, res) => {
             finalStatus = 'chargeback';
         }
         
-        const mappedStatus = finalStatus; // Use finalStatus which includes chargeback detection
+        // IMPORTANT: Override if no dataFinalizada - means it's still pending
+        // Monetizze postback can send status='2' before payment is confirmed
+        if (!dataVenda && statusCode === '2') {
+            finalStatus = 'pending_payment';
+        }
+        // Also check status text
+        const vendaStatus = (venda.status || '').toLowerCase();
+        if (vendaStatus.includes('aguardando')) {
+            finalStatus = 'pending_payment';
+        }
+        
+        const mappedStatus = finalStatus; // Use finalStatus which includes all detection logic
         const buyerEmail = email;
         const buyerPhone = telefone;
         const buyerName = nome;
