@@ -1938,6 +1938,40 @@ app.get('/api/admin/customer/:leadId/journey', authenticateToken, async (req, re
 // Store last 20 postbacks for debugging
 const recentPostbacks = [];
 
+// TEMPORARY: Quick check postback status (no auth - REMOVE LATER)
+app.get('/api/admin/debug/postback-check', async (req, res) => {
+    try {
+        // Check recent postback logs
+        const dbLogs = await pool.query(`
+            SELECT id, content_type, created_at, 
+                   substring(body::text from 1 for 200) as body_preview
+            FROM postback_logs 
+            ORDER BY created_at DESC LIMIT 10
+        `);
+        
+        // Check recent transactions
+        const recentTx = await pool.query(`
+            SELECT transaction_id, email, product, value, status, created_at
+            FROM transactions ORDER BY created_at DESC LIMIT 10
+        `);
+        
+        // Check if specific transaction exists
+        const tx55800380 = await pool.query(`
+            SELECT * FROM transactions WHERE transaction_id = '55800380'
+        `);
+        
+        res.json({
+            memoryPostbackCount: recentPostbacks.length,
+            recentPostbackLogs: dbLogs.rows,
+            recentTransactions: recentTx.rows,
+            transaction_55800380: tx55800380.rows.length > 0 ? tx55800380.rows[0] : 'NOT FOUND',
+            serverTime: new Date().toISOString()
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Debug endpoint to see recent postbacks (memory + DB)
 app.get('/api/admin/debug/postbacks', authenticateToken, async (req, res) => {
     // Extract value fields from each postback for easy viewing
@@ -2107,6 +2141,201 @@ app.get('/api/admin/test-monetizze-api', authenticateToken, requireAdmin, async 
     res.json(results);
 });
 
+// ==================== MONETIZZE SYNC CORE FUNCTION ====================
+// Reusable sync logic - called by manual endpoint AND auto-sync
+async function syncMonetizzeSalesCore(startDate, endDate) {
+    const consumerKey = process.env.MONETIZZE_CONSUMER_KEY;
+    if (!consumerKey) {
+        throw new Error('MONETIZZE_CONSUMER_KEY not configured');
+    }
+    
+    console.log('🔄 Starting Monetizze sync...');
+    console.log('📅 Date range:', startDate || 'today', 'to', endDate || 'today');
+    
+    // Step 1: Authenticate
+    let monetizzeToken;
+    try {
+        monetizzeToken = await getMonetizzeToken();
+    } catch (authError) {
+        throw new Error(`Monetizze authentication failed: ${authError.message}`);
+    }
+    
+    // Step 2: Query transactions
+    const params = new URLSearchParams();
+    if (startDate) params.append('date_min', `${startDate} 00:00:00`);
+    if (endDate) params.append('date_max', `${endDate} 23:59:59`);
+    ['1','2','3','4','5','6'].forEach(s => params.append('status[]', s));
+    
+    const validProductCodes = [
+        '341972', '349241', '349242', '349243',
+        '330254', '341443', '341444', '341448',
+        '349260', '349261', '349266', '349267',
+        '338375', '341452', '341453', '341454'
+    ];
+    validProductCodes.forEach(code => params.append('product[]', code));
+    
+    const txUrl = `https://api.monetizze.com.br/2.1/transactions?${params.toString()}`;
+    console.log('🌐 Fetching transactions from Monetizze API 2.1');
+    
+    const response = await fetch(txUrl, {
+        method: 'GET',
+        headers: { 'TOKEN': monetizzeToken, 'Accept': 'application/json' }
+    });
+    
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Monetizze API error ${response.status}: ${errorText.substring(0, 200)}`);
+    }
+    
+    const data = await response.json();
+    
+    let salesArray = [];
+    if (Array.isArray(data)) salesArray = data;
+    else if (Array.isArray(data.dados)) salesArray = data.dados;
+    else if (Array.isArray(data.vendas)) salesArray = data.vendas;
+    else if (Array.isArray(data.recordset)) salesArray = data.recordset;
+    
+    // Handle pagination
+    const totalPages = data.paginas || 1;
+    if (totalPages > 1) {
+        for (let page = 2; page <= totalPages; page++) {
+            try {
+                const pageParams = new URLSearchParams(params.toString());
+                pageParams.set('pagina', String(page));
+                const pageResponse = await fetch(`https://api.monetizze.com.br/2.1/transactions?${pageParams.toString()}`, {
+                    method: 'GET',
+                    headers: { 'TOKEN': monetizzeToken, 'Accept': 'application/json' }
+                });
+                if (pageResponse.ok) {
+                    const pageData = await pageResponse.json();
+                    salesArray = salesArray.concat(pageData.dados || pageData.vendas || []);
+                }
+            } catch (pageError) {
+                console.error(`❌ Error fetching page ${page}:`, pageError.message);
+            }
+        }
+    }
+    
+    console.log(`📦 Total transactions fetched: ${salesArray.length}`);
+    
+    if (salesArray.length === 0) {
+        return { synced: 0, skipped: 0, total: 0 };
+    }
+    
+    let synced = 0;
+    let skipped = 0;
+    let errors = [];
+    
+    const spanishCodes = ['349260', '349261', '349266', '349267', '338375', '341452', '341453', '341454'];
+    const affiliateCodes = ['330254', '341443', '341444', '341448', '338375', '341452', '341453', '341454'];
+    const statusMap = {
+        '1': 'pending_payment', '2': 'approved', '3': 'cancelled',
+        '4': 'refunded', '5': 'blocked', '6': 'approved',
+        '7': 'abandoned_checkout', '8': 'chargeback', '9': 'chargeback'
+    };
+    
+    for (const item of salesArray) {
+        try {
+            const vendaData = item.venda || item;
+            const produtoData = item.produto || {};
+            const compradorData = item.comprador || {};
+            const tipoEvento = item.tipoEvento || {};
+            
+            const transactionId = vendaData.codigo || item.codigo_venda || item.chave_unica;
+            const email = compradorData.email || vendaData.email;
+            const phone = compradorData.telefone || vendaData.telefone;
+            const name = compradorData.nome || vendaData.nome;
+            const productName = produtoData.nome || vendaData.produto_nome;
+            const productCode = produtoData.codigo || vendaData.produto_codigo;
+            const value = vendaData.valorRecebido || vendaData.comissao || vendaData.valor;
+            const statusCode = String(tipoEvento.codigo || item.codigo_status || '2');
+            
+            if (productCode && !validProductCodes.includes(String(productCode))) {
+                skipped++;
+                continue;
+            }
+            
+            const saleDateStr = vendaData.dataInicio || vendaData.dataFinalizada || vendaData.dataVenda || vendaData.data || null;
+            let saleDate = null;
+            if (saleDateStr) {
+                try {
+                    saleDate = new Date(saleDateStr);
+                    if (isNaN(saleDate.getTime())) saleDate = null;
+                } catch (e) { saleDate = null; }
+            }
+            
+            const funnelLanguage = spanishCodes.includes(String(productCode)) ? 'es' : 'en';
+            const funnelSource = affiliateCodes.includes(String(productCode)) ? 'affiliate' : 'main';
+            const mappedStatus = statusMap[String(statusCode)] || 'approved';
+            
+            if (!email || !transactionId) {
+                skipped++;
+                continue;
+            }
+            
+            await pool.query(`
+                INSERT INTO transactions (
+                    transaction_id, email, phone, name, product, value, 
+                    monetizze_status, status, raw_data, funnel_language, funnel_source, created_at
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, COALESCE($12, NOW()))
+                ON CONFLICT (transaction_id) 
+                DO UPDATE SET 
+                    monetizze_status = $7,
+                    status = $8,
+                    raw_data = $9,
+                    funnel_language = $10,
+                    funnel_source = $11,
+                    updated_at = NOW()
+            `, [transactionId, email, phone, name, productName, value, String(statusCode), mappedStatus, JSON.stringify(item), funnelLanguage, funnelSource, saleDate]);
+            
+            synced++;
+        } catch (saleError) {
+            errors.push({ sale: item?.venda?.codigo || 'unknown', error: saleError.message });
+            skipped++;
+        }
+    }
+    
+    console.log(`🎉 Sync complete: ${synced} synced, ${skipped} skipped`);
+    return { synced, skipped, total: salesArray.length, errors: errors.length > 0 ? errors : undefined };
+}
+
+// ==================== AUTO-SYNC MONETIZZE (every 30 minutes) ====================
+let autoSyncInterval = null;
+
+async function runAutoSync() {
+    try {
+        const consumerKey = process.env.MONETIZZE_CONSUMER_KEY;
+        if (!consumerKey) {
+            console.log('⏭️ Auto-sync skipped: MONETIZZE_CONSUMER_KEY not configured');
+            return;
+        }
+        
+        // Sync today and yesterday (to catch late-arriving transactions)
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        const startDate = yesterday.toISOString().split('T')[0];
+        const endDate = today.toISOString().split('T')[0];
+        
+        console.log(`🔄 Auto-sync starting (${startDate} to ${endDate})...`);
+        const result = await syncMonetizzeSalesCore(startDate, endDate);
+        console.log(`✅ Auto-sync complete: ${result.synced} new/updated, ${result.skipped} skipped, ${result.total} total from Monetizze`);
+    } catch (error) {
+        console.error('❌ Auto-sync error:', error.message);
+    }
+}
+
+function startAutoSync() {
+    // Run first sync 30 seconds after server start (let DB initialize first)
+    setTimeout(() => {
+        runAutoSync();
+        // Then run every 30 minutes
+        autoSyncInterval = setInterval(runAutoSync, 30 * 60 * 1000);
+        console.log('🔄 Auto-sync scheduled: every 30 minutes');
+    }, 30000);
+}
+
 // Sync sales from Monetizze API (protected - admin only)
 // Uses 2-step auth: GET /token with X_CONSUMER_KEY → then GET /transactions with TOKEN
 app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (req, res) => {
@@ -2122,7 +2351,7 @@ app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (re
             });
         }
         
-        console.log('🔄 Starting Monetizze sync...');
+        console.log('🔄 Starting manual Monetizze sync...');
         console.log('📅 Date range:', startDate || 'today', 'to', endDate || 'today');
         
         // Step 1: Authenticate - get temporary token
@@ -3834,4 +4063,7 @@ app.listen(PORT, async () => {
     
     // Initialize database
     await initDatabase();
+    
+    // Start auto-sync with Monetizze (every 30 minutes)
+    startAutoSync();
 });
