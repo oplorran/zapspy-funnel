@@ -374,7 +374,8 @@ app.post('/api/leads', leadLimiter, async (req, res) => {
             fbc,  // Facebook click ID (from URL param or cookie)
             fbp,  // Facebook browser ID (from cookie)
             funnelLanguage,  // 'en' or 'es' - funnel language for pixel selection
-            visitorId  // Funnel visitor ID for journey tracking
+            visitorId,  // Funnel visitor ID for journey tracking
+            funnelSource  // 'main' or 'affiliate' - source of the lead
         } = req.body;
         
         // Validation
@@ -388,6 +389,9 @@ app.post('/api/leads', leadLimiter, async (req, res) => {
         
         // Determine language (default to 'en' for backward compatibility)
         const language = funnelLanguage || 'en';
+        
+        // Determine source (default to 'main' for backward compatibility)
+        const source = funnelSource || 'main';
         
         // Get country from IP (non-blocking)
         const geoData = await getCountryFromIP(ipAddress);
@@ -417,23 +421,24 @@ app.post('/api/leads', leadLimiter, async (req, res) => {
                     country_code = COALESCE($9, country_code),
                     city = COALESCE($10, city),
                     visitor_id = COALESCE($11, visitor_id),
+                    funnel_source = COALESCE($12, funnel_source),
                     last_visit_at = NOW(),
                     updated_at = NOW()
-                WHERE id = $12
+                WHERE id = $13
                 RETURNING id, created_at`,
-                [name || null, targetPhone || null, targetGender || null, ipAddress, referrer || null, ua || null, currentVisitCount + 1, geoData.country, geoData.country_code, geoData.city, visitorId || null, existingLead.rows[0].id]
+                [name || null, targetPhone || null, targetGender || null, ipAddress, referrer || null, ua || null, currentVisitCount + 1, geoData.country, geoData.country_code, geoData.city, visitorId || null, source, existingLead.rows[0].id]
             );
-            console.log(`Returning lead [${language.toUpperCase()}]: ${name || 'No name'} - ${email} - ${geoData.country || 'Unknown'} (visit #${currentVisitCount + 1})`);
+            console.log(`Returning lead [${language.toUpperCase()}/${source}]: ${name || 'No name'} - ${email} - ${geoData.country || 'Unknown'} (visit #${currentVisitCount + 1})`);
         } else {
             // Insert new lead
             result = await pool.query(
-                `INSERT INTO leads (name, email, whatsapp, target_phone, target_gender, ip_address, referrer, user_agent, funnel_language, visit_count, country, country_code, city, visitor_id, created_at)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 1, $10, $11, $12, $13, NOW())
+                `INSERT INTO leads (name, email, whatsapp, target_phone, target_gender, ip_address, referrer, user_agent, funnel_language, funnel_source, visit_count, country, country_code, city, visitor_id, created_at)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 1, $11, $12, $13, $14, NOW())
                  RETURNING id, created_at`,
-                [name || null, email, whatsapp, targetPhone || null, targetGender || null, ipAddress, referrer || null, ua || null, language, geoData.country, geoData.country_code, geoData.city, visitorId || null]
+                [name || null, email, whatsapp, targetPhone || null, targetGender || null, ipAddress, referrer || null, ua || null, language, source, geoData.country, geoData.country_code, geoData.city, visitorId || null]
             );
             isNewLead = true;
-            console.log(`New lead captured [${language.toUpperCase()}]: ${name || 'No name'} - ${email} - ${whatsapp} - ${geoData.country || 'Unknown'}`);
+            console.log(`New lead captured [${language.toUpperCase()}/${source}]: ${name || 'No name'} - ${email} - ${whatsapp} - ${geoData.country || 'Unknown'}`);
         }
         
         // Send Lead event to Facebook Conversions API (using correct pixels for language)
@@ -936,6 +941,7 @@ app.get('/api/admin/leads', authenticateToken, async (req, res) => {
         const search = req.query.search || '';
         const status = req.query.status || '';
         const language = req.query.language || '';  // Filter by funnel language (en/es)
+        const source = req.query.source || '';  // Filter by funnel source (main/affiliate)
         const { startDate, endDate } = req.query;
         
         let query = `SELECT * FROM leads`;
@@ -961,6 +967,16 @@ app.get('/api/admin/leads', authenticateToken, async (req, res) => {
                 conditions.push(`funnel_language = $${params.length + 1}`);
             }
             params.push(language);
+        }
+        
+        if (source) {
+            // Treat NULL as 'main' (main is default for legacy leads)
+            if (source === 'main') {
+                conditions.push(`(funnel_source = $${params.length + 1} OR funnel_source IS NULL)`);
+            } else {
+                conditions.push(`funnel_source = $${params.length + 1}`);
+            }
+            params.push(source);
         }
         
         if (startDate && endDate) {
@@ -4046,8 +4062,22 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
         // (não geraram nenhuma transação - nem aprovada, nem recusada, nem pendente)
         const checkoutAbandoned = Math.max(0, checkoutClicked - allTransactionEmails);
         
-        // Calculate conversion rate (leads -> sales) - also filtered by language
-        const leadsCount = await pool.query(`SELECT COUNT(*) FROM leads WHERE 1=1 ${language ? `AND (funnel_language = $1 OR (funnel_language IS NULL AND $1 = 'en'))` : ''}`, language ? [language] : []);
+        // Calculate conversion rate (leads -> sales) - filtered by language AND source
+        // Build leads filter conditions
+        let leadsLangCondition = '';
+        let leadsSourceCondition = '';
+        let leadsParams = [];
+        
+        if (language) {
+            leadsLangCondition = ` AND (funnel_language = $${leadsParams.length + 1} OR (funnel_language IS NULL AND $${leadsParams.length + 1} = 'en'))`;
+            leadsParams.push(language);
+        }
+        if (source === 'main' || source === 'affiliate') {
+            leadsSourceCondition = ` AND (funnel_source = $${leadsParams.length + 1} OR (funnel_source IS NULL AND $${leadsParams.length + 1} = 'main'))`;
+            leadsParams.push(source);
+        }
+        
+        const leadsCount = await pool.query(`SELECT COUNT(*) FROM leads WHERE 1=1 ${leadsLangCondition}${leadsSourceCondition}`, leadsParams);
         const conversionRate = parseInt(leadsCount.rows[0].count) > 0 
             ? ((parseInt(approvedResult.rows[0].count) / parseInt(leadsCount.rows[0].count)) * 100).toFixed(2)
             : 0;
@@ -4275,6 +4305,9 @@ async function initDatabase() {
         await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS total_spent DECIMAL(10,2) DEFAULT 0;`);
         await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS first_purchase_at TIMESTAMP WITH TIME ZONE;`);
         await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS last_purchase_at TIMESTAMP WITH TIME ZONE;`);
+        
+        // Add funnel_source column to leads (main or affiliate)
+        await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS funnel_source VARCHAR(20) DEFAULT 'main';`);
         
         // Create funnel_events table for tracking
         await pool.query(`
