@@ -1744,48 +1744,56 @@ app.get('/api/admin/funnel', authenticateToken, async (req, res) => {
         `);
         
         // Get transaction stats (approved/rejected) for the funnel visualization
-        // Build date filter for transactions
-        let txDateCondition = '';
-        if (startDate && endDate) {
-            txDateCondition = `AND created_at >= '${startDate}'::date AND created_at < ('${endDate}'::date + INTERVAL '1 day')`;
-        } else {
-            txDateCondition = `AND created_at >= CURRENT_DATE - INTERVAL '30 days'`;
+        let transactionStats = { approved: 0, rejected: 0, pending: 0 };
+        try {
+            // Build date filter for transactions
+            let txDateCondition = '';
+            if (startDate && endDate) {
+                txDateCondition = `AND created_at >= '${startDate}'::date AND created_at < ('${endDate}'::date + INTERVAL '1 day')`;
+            } else {
+                txDateCondition = `AND created_at >= CURRENT_DATE - INTERVAL '30 days'`;
+            }
+            
+            // Build language filter for transactions (based on funnel_language column)
+            let txLangCondition = '';
+            if (language === 'en') {
+                txLangCondition = `AND (funnel_language = 'en' OR funnel_language IS NULL)`;
+            } else if (language === 'es') {
+                txLangCondition = `AND funnel_language = 'es'`;
+            }
+            
+            const txResult = await pool.query(`
+                SELECT 
+                    status,
+                    COUNT(*) as count
+                FROM transactions
+                WHERE product_type = 'front'
+                ${txDateCondition}
+                ${txLangCondition}
+                GROUP BY status
+            `);
+            
+            // Parse transaction stats
+            const txStats = {};
+            txResult.rows.forEach(row => {
+                txStats[row.status] = parseInt(row.count);
+            });
+            
+            transactionStats = {
+                approved: txStats['approved'] || 0,
+                rejected: (txStats['rejected'] || 0) + (txStats['cancelled'] || 0) + (txStats['pending_payment'] || 0),
+                pending: txStats['pending_payment'] || 0
+            };
+        } catch (txError) {
+            console.error('Error fetching transaction stats for funnel:', txError);
+            // Continue without transaction stats
         }
-        
-        // Build language filter for transactions (based on funnel_language column)
-        let txLangCondition = '';
-        if (language === 'en') {
-            txLangCondition = `AND (funnel_language = 'en' OR funnel_language IS NULL)`;
-        } else if (language === 'es') {
-            txLangCondition = `AND funnel_language = 'es'`;
-        }
-        
-        const transactionStats = await pool.query(`
-            SELECT 
-                status,
-                COUNT(*) as count
-            FROM transactions
-            WHERE product_type = 'front'
-            ${txDateCondition}
-            ${txLangCondition}
-            GROUP BY status
-        `);
-        
-        // Parse transaction stats
-        const txStats = {};
-        transactionStats.rows.forEach(row => {
-            txStats[row.status] = parseInt(row.count);
-        });
         
         res.json({
             funnelStats: funnelStats.rows,
             dailyStats: dailyStats.rows,
             journeys: journeys.rows,
-            transactionStats: {
-                approved: txStats['approved'] || 0,
-                rejected: (txStats['rejected'] || 0) + (txStats['cancelled'] || 0) + (txStats['pending_payment'] || 0),
-                pending: txStats['pending_payment'] || 0
-            },
+            transactionStats,
             language: language || 'all',
             dateRange: { startDate, endDate }
         });
