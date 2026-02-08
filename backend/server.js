@@ -1959,6 +1959,45 @@ app.post('/api/postback/test', (req, res) => {
     });
 });
 
+// Test Monetizze API connectivity (debug endpoint)
+app.get('/api/admin/test-monetizze-api', authenticateToken, requireAdmin, async (req, res) => {
+    const consumerKey = process.env.MONETIZZE_CONSUMER_KEY;
+    const results = { tests: [], consumerKeyPresent: !!consumerKey };
+    
+    if (!consumerKey) {
+        return res.json({ error: 'MONETIZZE_CONSUMER_KEY not configured', results });
+    }
+    
+    // Test different API endpoints
+    const endpoints = [
+        { name: 'API 2.1 /vendas (header)', url: 'https://api.monetizze.com.br/2.1/vendas', headers: { 'X-Consumer-Key': consumerKey } },
+        { name: 'API 2.1 /transacoes (header)', url: 'https://api.monetizze.com.br/2.1/transacoes', headers: { 'X-Consumer-Key': consumerKey } },
+        { name: 'API 2.0 /vendas (token)', url: `https://api.monetizze.com.br/2.0/vendas?token=${consumerKey}`, headers: {} },
+        { name: 'API 2.0 /transacoes (token)', url: `https://api.monetizze.com.br/2.0/transacoes?token=${consumerKey}`, headers: {} }
+    ];
+    
+    for (const ep of endpoints) {
+        try {
+            console.log(`Testing: ${ep.name}`);
+            const response = await fetch(ep.url, { method: 'GET', headers: { ...ep.headers, 'Accept': 'application/json' }, timeout: 15000 });
+            const text = await response.text();
+            results.tests.push({
+                name: ep.name,
+                status: response.status,
+                ok: response.ok,
+                body: text.substring(0, 500)
+            });
+        } catch (err) {
+            results.tests.push({
+                name: ep.name,
+                error: err.message
+            });
+        }
+    }
+    
+    res.json(results);
+});
+
 // Sync sales from Monetizze API (protected - admin only)
 app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (req, res) => {
     try {
@@ -1980,6 +2019,7 @@ app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (re
         // Try API 2.1 first, then fallback to 2.0
         let response = null;
         let apiVersion = '2.1';
+        let lastError = null;
         
         // API 2.1 uses X-Consumer-Key header
         const baseUrl21 = 'https://api.monetizze.com.br/2.1/vendas';
@@ -1990,16 +2030,22 @@ app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (re
         const url21 = `${baseUrl21}${params21.toString() ? '?' + params21.toString() : ''}`;
         console.log('🌐 Trying Monetizze API 2.1:', url21);
         
-        response = await fetch(url21, {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-                'X-Consumer-Key': consumerKey
-            }
-        });
+        try {
+            response = await fetch(url21, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Consumer-Key': consumerKey
+                }
+            });
+        } catch (fetchError) {
+            console.error('❌ API 2.1 fetch error:', fetchError.message);
+            lastError = fetchError.message;
+            response = null;
+        }
         
         // If 2.1 fails, try 2.0 with query param
-        if (!response.ok) {
+        if (!response || !response.ok) {
             console.log('⚠️ API 2.1 failed, trying API 2.0...');
             apiVersion = '2.0';
             
@@ -2012,13 +2058,51 @@ app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (re
             const url20 = `${baseUrl20}?${params20.toString()}`;
             console.log('🌐 Trying Monetizze API 2.0:', url20);
             
-            response = await fetch(url20, {
-                method: 'GET',
-                headers: { 'Accept': 'application/json' }
+            try {
+                response = await fetch(url20, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
+            } catch (fetchError) {
+                console.error('❌ API 2.0 fetch error:', fetchError.message);
+                lastError = fetchError.message;
+                response = null;
+            }
+        }
+        
+        // Also try transacoes endpoint
+        if (!response || !response.ok) {
+            console.log('⚠️ Both vendas endpoints failed, trying transacoes...');
+            apiVersion = '2.1-transacoes';
+            
+            const urlTx = `https://api.monetizze.com.br/2.1/transacoes${params21.toString() ? '?' + params21.toString() : ''}`;
+            console.log('🌐 Trying Monetizze API 2.1 transacoes:', urlTx);
+            
+            try {
+                response = await fetch(urlTx, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Consumer-Key': consumerKey
+                    }
+                });
+            } catch (fetchError) {
+                console.error('❌ API 2.1 transacoes fetch error:', fetchError.message);
+                lastError = fetchError.message;
+                response = null;
+            }
+        }
+        
+        if (!response) {
+            return res.status(200).json({ 
+                success: false,
+                error: 'Monetizze API request failed',
+                details: lastError || 'Failed to connect to Monetizze API',
+                hint: 'A API da Monetizze pode estar temporariamente indisponível. Tente novamente em alguns minutos.'
             });
         }
         
-        const url = apiVersion === '2.1' ? url21 : `API ${apiVersion}`;
+        const url = apiVersion;
         console.log(`📡 Using API version ${apiVersion}`);
         
         if (!response.ok) {

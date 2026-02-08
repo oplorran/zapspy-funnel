@@ -2587,6 +2587,7 @@
                             <button class="btn-primary" onclick="syncMonetizze()">🔄 Sincronizar Vendas</button>
                             <button class="btn-secondary" onclick="syncMonetizzeToday()">📅 Sincronizar Hoje</button>
                             <button class="btn-secondary" onclick="syncMonetizzeLast7Days()">📆 Últimos 7 Dias</button>
+                            <button class="btn-secondary" onclick="testMonetizzeApi()" style="background: #6366f1; color: white; border-color: #6366f1;">🔍 Testar API</button>
                         </div>
                         <div id="syncMonetizzeResult" style="margin-top: 16px; display: none;">
                             <div style="background: var(--bg-tertiary); border-radius: 12px; padding: 20px; border: 1px solid var(--border);">
@@ -6822,6 +6823,59 @@ Posso ajudar em algo mais? 😊`
                 }
             } catch (error) {
                 showToast('❌ Erro', 'Endpoint não está respondendo', 'error');
+            }
+        }
+        
+        // Test Monetizze API connectivity
+        async function testMonetizzeApi() {
+            showToast('🔍 Testando...', 'Verificando conectividade com a API Monetizze', 'info');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/admin/test-monetizze-api`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                // Show results in the sync result area
+                const resultDiv = document.getElementById('syncMonetizzeResult');
+                const contentDiv = document.getElementById('syncMonetizzeContent');
+                
+                resultDiv.style.display = 'block';
+                
+                let html = '🔍 TESTE DE CONECTIVIDADE API MONETIZZE\n';
+                html += '=' .repeat(50) + '\n\n';
+                html += `Consumer Key configurada: ${data.consumerKeyPresent ? '✅ Sim' : '❌ Não'}\n\n`;
+                
+                if (data.tests) {
+                    data.tests.forEach(test => {
+                        html += `📡 ${test.name}\n`;
+                        if (test.error) {
+                            html += `   ❌ Erro: ${test.error}\n`;
+                        } else {
+                            html += `   Status: ${test.status} ${test.ok ? '✅' : '❌'}\n`;
+                            html += `   Resposta: ${test.body}\n`;
+                        }
+                        html += '\n';
+                    });
+                }
+                
+                contentDiv.textContent = html;
+                
+                // Check if any test succeeded
+                const successTest = data.tests?.find(t => t.ok);
+                if (successTest) {
+                    showToast('✅ API Funcionando', `${successTest.name} retornou sucesso!`, 'success');
+                } else {
+                    showToast('⚠️ API Indisponível', 'Nenhum endpoint da Monetizze respondeu. Verifique os detalhes.', 'warning');
+                }
+                
+            } catch (error) {
+                console.error('API test error:', error);
+                showToast('❌ Erro', `Falha ao testar API: ${error.message}`, 'error');
             }
         }
         
