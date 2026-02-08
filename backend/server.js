@@ -3338,134 +3338,10 @@ app.delete('/api/admin/transactions/:id', authenticateToken, async (req, res) =>
     }
 });
 
-// TEMPORARY DEBUG: Check transaction dates in DB (no auth for easy access - REMOVE LATER)
-app.get('/api/admin/debug-dates', async (req, res) => {
-    try {
-        const { startDate, endDate } = req.query;
-        
-        const results = await pool.query(`
-            SELECT 
-                MIN(created_at) as oldest_date,
-                MAX(created_at) as newest_date,
-                COUNT(*) as total_transactions,
-                COUNT(*) FILTER (WHERE status = 'approved') as approved_count,
-                COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE - INTERVAL '30 days') as last_30_days,
-                COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE - INTERVAL '30 days' AND status = 'approved') as approved_last_30,
-                COUNT(*) FILTER (WHERE created_at::date = CURRENT_DATE) as today_count,
-                COUNT(*) FILTER (WHERE created_at::date = CURRENT_DATE AND status = 'approved') as approved_today,
-                NOW() as server_now,
-                CURRENT_DATE as server_date
-            FROM transactions
-        `);
-        
-        // Test parameterized query (same as sales endpoint)
-        let paramTest = { note: 'No date params provided. Add ?startDate=2026-02-07&endDate=2026-02-08 to test' };
-        if (startDate && endDate) {
-            try {
-                const testQuery = await pool.query(
-                    `SELECT COUNT(*) as count, 
-                            COALESCE(SUM(CAST(value AS DECIMAL)), 0) as revenue
-                     FROM transactions 
-                     WHERE status = 'approved' 
-                     AND created_at >= $1::date 
-                     AND created_at < ($2::date + INTERVAL '1 day')`,
-                    [startDate, endDate]
-                );
-                
-                // Also test without ::date cast
-                const testQuery2 = await pool.query(
-                    `SELECT COUNT(*) as count
-                     FROM transactions 
-                     WHERE status = 'approved' 
-                     AND created_at >= $1::timestamp 
-                     AND created_at < ($2::timestamp + INTERVAL '1 day')`,
-                    [startDate, endDate]
-                );
-                
-                // Also test with explicit date strings
-                const testQuery3 = await pool.query(
-                    `SELECT COUNT(*) as count
-                     FROM transactions 
-                     WHERE status = 'approved' 
-                     AND created_at >= '${startDate}'::date 
-                     AND created_at < ('${endDate}'::date + INTERVAL '1 day')`
-                );
-                
-                paramTest = {
-                    params_received: { startDate, endDate },
-                    with_date_cast: testQuery.rows[0],
-                    with_timestamp_cast: testQuery2.rows[0],
-                    with_inline_dates: testQuery3.rows[0]
-                };
-            } catch (queryError) {
-                paramTest = { 
-                    error: queryError.message, 
-                    params: { startDate, endDate } 
-                };
-            }
-        }
-        
-        const sampleDates = await pool.query(`
-            SELECT transaction_id, status, created_at, product, 
-                   created_at::date as date_only
-            FROM transactions 
-            WHERE status = 'approved' 
-            ORDER BY created_at DESC 
-            LIMIT 5
-        `);
-        
-        // Also test the EXACT sales endpoint logic
-        let salesEndpointTest = {};
-        if (startDate && endDate) {
-            try {
-                let langCondition = '';
-                let langParams = [];
-                
-                let dateCondition2 = '';
-                const startIdx2 = langParams.length + 1;
-                const endIdx2 = langParams.length + 2;
-                dateCondition2 = ` AND created_at >= $${startIdx2}::date AND created_at < ($${endIdx2}::date + INTERVAL '1 day')`;
-                langParams.push(startDate, endDate);
-                
-                const fullQuery = `SELECT COUNT(*) FROM transactions WHERE status = 'approved' ${langCondition}${dateCondition2}`;
-                const fullQueryRevenue = `SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total FROM transactions WHERE status = 'approved' ${langCondition}${dateCondition2}`;
-                
-                const [countResult, revenueResult] = await Promise.all([
-                    pool.query(fullQuery, langParams),
-                    pool.query(fullQueryRevenue, langParams)
-                ]);
-                
-                salesEndpointTest = {
-                    query: fullQuery,
-                    params: langParams,
-                    approved: parseInt(countResult.rows[0].count),
-                    revenue: parseFloat(revenueResult.rows[0].total)
-                };
-            } catch (e) {
-                salesEndpointTest = { error: e.message };
-            }
-        }
-        
-        res.json({
-            summary: results.rows[0],
-            parameterized_test: paramTest,
-            sales_endpoint_simulation: salesEndpointTest,
-            sample_transactions: sampleDates.rows
-        });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
 // Get sales stats (protected)
 app.get('/api/admin/sales', authenticateToken, async (req, res) => {
     try {
         const { language, startDate, endDate, source } = req.query;
-        
-        // Debug: log filter params and transaction dates
-        console.log(`📊 Sales API called - startDate: ${startDate || 'none'}, endDate: ${endDate || 'none'}, language: ${language || 'all'}, source: ${source || 'all'}`);
-        const debugDates = await pool.query(`SELECT created_at::date as sale_date, COUNT(*) as count FROM transactions WHERE status = 'approved' GROUP BY created_at::date ORDER BY sale_date DESC LIMIT 10`);
-        console.log('📅 Transaction dates in DB:', debugDates.rows);
         
         // Build language filter
         let langCondition = '';
@@ -3561,25 +3437,25 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
         const frontSales = await pool.query(`
             SELECT COUNT(DISTINCT email) as count 
             FROM transactions 
-            WHERE status = 'approved' AND (${frontKeywords}) ${langCondition}${sourceCondition}
+            WHERE status = 'approved' AND (${frontKeywords}) ${langCondition}${sourceCondition}${dateCondition}
         `, langParams);
         
         const upsell1Sales = await pool.query(`
             SELECT COUNT(DISTINCT email) as count 
             FROM transactions 
-            WHERE status = 'approved' AND (${up1Keywords}) ${langCondition}${sourceCondition}
+            WHERE status = 'approved' AND (${up1Keywords}) ${langCondition}${sourceCondition}${dateCondition}
         `, langParams);
         
         const upsell2Sales = await pool.query(`
             SELECT COUNT(DISTINCT email) as count 
             FROM transactions 
-            WHERE status = 'approved' AND (${up2Keywords}) ${langCondition}${sourceCondition}
+            WHERE status = 'approved' AND (${up2Keywords}) ${langCondition}${sourceCondition}${dateCondition}
         `, langParams);
         
         const upsell3Sales = await pool.query(`
             SELECT COUNT(DISTINCT email) as count 
             FROM transactions 
-            WHERE status = 'approved' AND (${up3Keywords}) ${langCondition}${sourceCondition}
+            WHERE status = 'approved' AND (${up3Keywords}) ${langCondition}${sourceCondition}${dateCondition}
         `, langParams);
         
         const frontCount = parseInt(frontSales.rows[0].count) || 0;
