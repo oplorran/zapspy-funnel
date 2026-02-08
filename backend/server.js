@@ -3343,6 +3343,14 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
     try {
         const { language, startDate, endDate, source } = req.query;
         
+        // Debug: log date filter params
+        if (startDate || endDate) {
+            console.log(`📊 Sales filter - startDate: ${startDate}, endDate: ${endDate}, language: ${language}, source: ${source}`);
+            // Check what dates exist in transactions
+            const dateCheck = await pool.query(`SELECT created_at::date as sale_date, COUNT(*) as count FROM transactions WHERE status = 'approved' GROUP BY created_at::date ORDER BY sale_date DESC LIMIT 5`);
+            console.log('📅 Recent transaction dates:', dateCheck.rows);
+        }
+        
         // Build language filter
         let langCondition = '';
         let langParams = [];
