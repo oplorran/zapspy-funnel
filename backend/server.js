@@ -312,6 +312,26 @@ function buildDateFilter(startDate, endDate, columnName = 'created_at') {
     };
 }
 
+// Helper function to parse Monetizze dates
+// Handles both Brazilian format (DD/MM/YYYY HH:MM:SS) and ISO format (YYYY-MM-DD HH:MM:SS)
+function parseMonetizzeDate(dateStr) {
+    if (!dateStr) return null;
+    try {
+        // Check if it's in DD/MM/YYYY format (Brazilian postback format)
+        const brDateMatch = dateStr.match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})$/);
+        if (brDateMatch) {
+            const [, day, month, year, hour, minute, second] = brDateMatch;
+            const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), parseInt(hour), parseInt(minute), parseInt(second));
+            return isNaN(date.getTime()) ? null : date;
+        }
+        // Try standard parsing (ISO format from API 2.1)
+        const date = new Date(dateStr);
+        return isNaN(date.getTime()) ? null : date;
+    } catch (e) {
+        return null;
+    }
+}
+
 // ==================== PUBLIC API ROUTES ====================
 
 // Health check
@@ -2554,13 +2574,7 @@ async function syncMonetizzeSalesCore(startDate, endDate) {
             }
             
             const saleDateStr = vendaData.dataInicio || vendaData.dataFinalizada || vendaData.dataVenda || vendaData.data || null;
-            let saleDate = null;
-            if (saleDateStr) {
-                try {
-                    saleDate = new Date(saleDateStr);
-                    if (isNaN(saleDate.getTime())) saleDate = null;
-                } catch (e) { saleDate = null; }
-            }
+            const saleDate = parseMonetizzeDate(saleDateStr);
             
             const funnelLanguage = spanishCodes.includes(String(productCode)) ? 'es' : 'en';
             const funnelSource = affiliateCodes.includes(String(productCode)) ? 'affiliate' : 'main';
@@ -2882,17 +2896,9 @@ app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (re
                     continue;
                 }
                 
-                // Extract real sale date from Monetizze
+                // Extract real sale date from Monetizze (uses helper to handle BR/ISO formats)
                 const saleDateStr = vendaData.dataInicio || vendaData.dataFinalizada || vendaData.dataVenda || vendaData.data || null;
-                let saleDate = null;
-                if (saleDateStr) {
-                    try {
-                        saleDate = new Date(saleDateStr);
-                        if (isNaN(saleDate.getTime())) saleDate = null;
-                    } catch (e) {
-                        saleDate = null;
-                    }
-                }
+                const saleDate = parseMonetizzeDate(saleDateStr);
                 
                 // Detect funnel language and source (main vs affiliate)
                 const spanishCodes = ['349260', '349261', '349266', '349267', '338375', '341452', '341453', '341454'];
@@ -3344,17 +3350,9 @@ app.all('/api/postback/monetizze', async (req, res) => {
         console.log(`💾 Saving transaction: ${transactionId} for ${finalEmail || buyerEmail}`);
         
         // Determine created_at: use real sale date if available, otherwise NOW()
-        // dataVenda format from Monetizze: "2026-02-07 16:28:00" or ISO format
-        let saleDate = null;
-        if (dataVenda) {
-            try {
-                saleDate = new Date(dataVenda);
-                if (isNaN(saleDate.getTime())) saleDate = null;
-            } catch (e) {
-                saleDate = null;
-            }
-        }
-        console.log(`📅 Sale date: ${saleDate ? saleDate.toISOString() : 'Using NOW()'}`);
+        // Uses parseMonetizzeDate helper to handle both Brazilian (DD/MM/YYYY) and ISO formats
+        const saleDate = parseMonetizzeDate(dataVenda);
+        console.log(`📅 Sale date: ${saleDate ? saleDate.toISOString() : 'Using NOW()'} (raw: ${dataVenda || 'none'})`);
         
         // ==================== WHATSAPP FROM LEADS (OPTION C) ====================
         // Try to get the correct WhatsApp from leads table (captured in funnel)
