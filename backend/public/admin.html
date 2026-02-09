@@ -2795,7 +2795,11 @@
                                 <button class="btn-secondary" style="background: #8b5cf6; color: white; border-color: #8b5cf6; white-space: nowrap;" onclick="searchTransactionById()">🔎 Buscar</button>
                             </div>
                             <p style="font-size: 12px; color: var(--text-muted);">Busca uma transação específica pelo ID (mostra se existe no banco e nos logs de postback).</p>
-                            <div id="debugTransactionsResult" style="display: none; margin-top: 16px; padding: 16px; background: rgba(0,0,0,0.3); border-radius: 8px; font-family: monospace; font-size: 12px; white-space: pre-wrap; max-height: 400px; overflow-y: auto;"></div>
+                            <div style="margin-top: 16px; border-top: 1px solid rgba(139,92,246,0.2); padding-top: 16px;">
+                                <button class="btn-secondary" style="background: #10b981; color: white; border-color: #10b981;" onclick="runDiagnostic()">🩺 Diagnóstico Completo do Painel</button>
+                                <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">Verifica todos os números (leads, vendas, funil) com e sem filtros para detectar inconsistências.</p>
+                            </div>
+                            <div id="debugTransactionsResult" style="display: none; margin-top: 16px; padding: 16px; background: rgba(0,0,0,0.3); border-radius: 8px; font-family: monospace; font-size: 12px; white-space: pre-wrap; max-height: 500px; overflow-y: auto;"></div>
                         </div>
                     </div>
                     
@@ -8297,6 +8301,90 @@ Posso ajudar em algo mais? 😊`
             } catch (error) {
                 console.error('Search transaction error:', error);
                 showToast('Erro', 'Falha ao buscar transação', 'error');
+            }
+        }
+        
+        async function runDiagnostic() {
+            try {
+                showToast('🩺 Executando...', 'Analisando todos os dados do painel...', 'info');
+                
+                const response = await fetch(`${API_URL}/api/admin/diagnostic`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.status === 401 || response.status === 403) { logout(); return; }
+                
+                const data = await response.json();
+                
+                const resultDiv = document.getElementById('debugTransactionsResult');
+                resultDiv.style.display = 'block';
+                
+                let html = `🩺 DIAGNÓSTICO COMPLETO DO PAINEL\n`;
+                html += `${'═'.repeat(70)}\n\n`;
+                
+                html += `⏰ INFORMAÇÕES DO SERVIDOR:\n`;
+                html += `${'─'.repeat(70)}\n`;
+                html += `   Horário UTC: ${new Date(data.serverInfo.utcTime).toLocaleString('pt-BR')}\n`;
+                html += `   Horário Brasil: ${new Date(data.serverInfo.brazilTime).toLocaleString('pt-BR')}\n`;
+                html += `   Data "Hoje" (Brazil): ${data.serverInfo.todayBrazil}\n\n`;
+                
+                html += `👥 LEADS:\n`;
+                html += `${'─'.repeat(70)}\n`;
+                html += `   Total no banco: ${data.leads.total}\n`;
+                html += `   Hoje (horário BR): ${data.leads.todayBrazil}\n`;
+                html += `   Últimos 7 dias: ${data.leads.thisWeek}\n`;
+                html += `\n   📋 Últimos 5 leads:\n`;
+                data.leads.recent.forEach((l, i) => {
+                    html += `      ${i+1}. ${l.email} - BR: ${new Date(l.brazil_time).toLocaleString('pt-BR')} (${l.brazil_date})\n`;
+                });
+                
+                html += `\n\n💰 TRANSAÇÕES:\n`;
+                html += `${'─'.repeat(70)}\n`;
+                html += `   Total no banco: ${data.transactions.total}\n`;
+                html += `   Total aprovadas: ${data.transactions.approved}\n`;
+                html += `   Aprovadas hoje (BR): ${data.transactions.todayApproved}\n`;
+                html += `   Receita total: R$ ${data.transactions.totalRevenue.toLocaleString('pt-BR', {minimumFractionDigits: 2})}\n`;
+                html += `   Receita hoje (BR): R$ ${data.transactions.todayRevenue.toLocaleString('pt-BR', {minimumFractionDigits: 2})}\n`;
+                html += `\n   📊 Por status:\n`;
+                data.transactions.byStatus.forEach(s => {
+                    html += `      ${s.status}: ${s.count} (R$ ${parseFloat(s.value).toLocaleString('pt-BR', {minimumFractionDigits: 2})})\n`;
+                });
+                html += `\n   📋 Últimas 5 transações:\n`;
+                data.transactions.recent.forEach((t, i) => {
+                    html += `      ${i+1}. ${t.transaction_id} | ${t.status} | R$ ${t.value} | BR: ${new Date(t.brazil_time).toLocaleString('pt-BR')} (${t.brazil_date})\n`;
+                });
+                
+                html += `\n\n📊 FUNIL (EVENTOS):\n`;
+                html += `${'─'.repeat(70)}\n`;
+                html += `   Total de eventos no banco: ${data.funnel.totalEvents}\n`;
+                html += `   Eventos de hoje (BR): ${data.funnel.todayEvents}\n`;
+                html += `   Visitantes únicos landing hoje: ${data.funnel.todayLandingVisitors}\n`;
+                html += `\n   📈 Eventos de hoje por tipo:\n`;
+                data.funnel.todayByEvent.forEach(e => {
+                    html += `      ${e.event}: ${e.count}\n`;
+                });
+                
+                html += `\n\n🔄 REEMBOLSOS:\n`;
+                html += `${'─'.repeat(70)}\n`;
+                html += `   Total no banco: ${data.refunds.total}\n`;
+                html += `   Solicitados hoje (BR): ${data.refunds.today}\n`;
+                
+                html += `\n\n${'═'.repeat(70)}\n`;
+                html += `✅ DICAS DE VERIFICAÇÃO:\n`;
+                html += `${'─'.repeat(70)}\n`;
+                data.consistency.tips.forEach(tip => {
+                    html += `   • ${tip}\n`;
+                });
+                
+                html += `\n📌 Compare estes números com o que o painel mostra.\n`;
+                html += `   Se houver diferenças, pode haver problemas nos filtros ou cache.\n`;
+                
+                resultDiv.textContent = html;
+                showToast('✅ Diagnóstico completo', 'Verifique os resultados abaixo', 'success');
+                
+            } catch (error) {
+                console.error('Diagnostic error:', error);
+                showToast('Erro', 'Falha ao executar diagnóstico', 'error');
             }
         }
         

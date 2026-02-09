@@ -4628,6 +4628,135 @@ app.get('/api/admin/debug-transactions', authenticateToken, async (req, res) => 
     }
 });
 
+// DIAGNOSTIC: Complete panel health check - verifies all metrics consistency
+app.get('/api/admin/diagnostic', authenticateToken, async (req, res) => {
+    try {
+        const today = new Date().toISOString().split('T')[0];
+        const brazilNow = `(NOW() AT TIME ZONE 'America/Sao_Paulo')`;
+        const brazilToday = `(${brazilNow})::date`;
+        
+        // 1. LEADS - Total counts
+        const leadsTotal = await pool.query(`SELECT COUNT(*) as count FROM leads`);
+        const leadsTodayBrazil = await pool.query(`
+            SELECT COUNT(*) as count FROM leads 
+            WHERE (created_at AT TIME ZONE 'America/Sao_Paulo')::date = ${brazilToday}
+        `);
+        const leadsThisWeek = await pool.query(`
+            SELECT COUNT(*) as count FROM leads 
+            WHERE (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= (${brazilNow} - INTERVAL '7 days')::date
+        `);
+        
+        // 2. TRANSACTIONS - Total counts
+        const txTotal = await pool.query(`SELECT COUNT(*) as count FROM transactions`);
+        const txApproved = await pool.query(`SELECT COUNT(*) as count FROM transactions WHERE status = 'approved'`);
+        const txTodayBrazil = await pool.query(`
+            SELECT COUNT(*) as count FROM transactions 
+            WHERE status = 'approved' AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date = ${brazilToday}
+        `);
+        const txRevenue = await pool.query(`
+            SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total FROM transactions WHERE status = 'approved'
+        `);
+        const txRevenueTodayBrazil = await pool.query(`
+            SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total FROM transactions 
+            WHERE status = 'approved' AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date = ${brazilToday}
+        `);
+        
+        // 3. TRANSACTIONS by status
+        const txByStatus = await pool.query(`
+            SELECT status, COUNT(*) as count, COALESCE(SUM(CAST(value AS DECIMAL)), 0) as value
+            FROM transactions GROUP BY status ORDER BY count DESC
+        `);
+        
+        // 4. FUNNEL EVENTS - Total counts
+        const funnelTotal = await pool.query(`SELECT COUNT(*) as count FROM funnel_events`);
+        const funnelTodayBrazil = await pool.query(`
+            SELECT COUNT(*) as count FROM funnel_events 
+            WHERE (created_at AT TIME ZONE 'America/Sao_Paulo')::date = ${brazilToday}
+        `);
+        const funnelByEvent = await pool.query(`
+            SELECT event, COUNT(*) as count FROM funnel_events 
+            WHERE (created_at AT TIME ZONE 'America/Sao_Paulo')::date = ${brazilToday}
+            GROUP BY event ORDER BY count DESC
+        `);
+        const funnelLandingToday = await pool.query(`
+            SELECT COUNT(DISTINCT visitor_id) as count FROM funnel_events 
+            WHERE event = 'page_view_landing' AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date = ${brazilToday}
+        `);
+        
+        // 5. REFUNDS
+        const refundsTotal = await pool.query(`SELECT COUNT(*) as count FROM refund_requests`);
+        const refundsTodayBrazil = await pool.query(`
+            SELECT COUNT(*) as count FROM refund_requests 
+            WHERE (created_at AT TIME ZONE 'America/Sao_Paulo')::date = ${brazilToday}
+        `);
+        
+        // 6. Check server timezone
+        const serverTime = await pool.query(`SELECT NOW() as utc, NOW() AT TIME ZONE 'America/Sao_Paulo' as brazil`);
+        
+        // 7. Recent transactions (last 5) to verify dates
+        const recentTx = await pool.query(`
+            SELECT transaction_id, email, status, value, 
+                   created_at as utc_time,
+                   (created_at AT TIME ZONE 'America/Sao_Paulo') as brazil_time,
+                   (created_at AT TIME ZONE 'America/Sao_Paulo')::date as brazil_date
+            FROM transactions ORDER BY created_at DESC LIMIT 5
+        `);
+        
+        // 8. Recent leads (last 5) to verify dates
+        const recentLeads = await pool.query(`
+            SELECT id, email, 
+                   created_at as utc_time,
+                   (created_at AT TIME ZONE 'America/Sao_Paulo') as brazil_time,
+                   (created_at AT TIME ZONE 'America/Sao_Paulo')::date as brazil_date
+            FROM leads ORDER BY created_at DESC LIMIT 5
+        `);
+        
+        res.json({
+            serverInfo: {
+                utcTime: serverTime.rows[0].utc,
+                brazilTime: serverTime.rows[0].brazil,
+                todayBrazil: today
+            },
+            leads: {
+                total: parseInt(leadsTotal.rows[0].count),
+                todayBrazil: parseInt(leadsTodayBrazil.rows[0].count),
+                thisWeek: parseInt(leadsThisWeek.rows[0].count),
+                recent: recentLeads.rows
+            },
+            transactions: {
+                total: parseInt(txTotal.rows[0].count),
+                approved: parseInt(txApproved.rows[0].count),
+                todayApproved: parseInt(txTodayBrazil.rows[0].count),
+                totalRevenue: parseFloat(txRevenue.rows[0].total),
+                todayRevenue: parseFloat(txRevenueTodayBrazil.rows[0].total),
+                byStatus: txByStatus.rows,
+                recent: recentTx.rows
+            },
+            funnel: {
+                totalEvents: parseInt(funnelTotal.rows[0].count),
+                todayEvents: parseInt(funnelTodayBrazil.rows[0].count),
+                todayLandingVisitors: parseInt(funnelLandingToday.rows[0].count),
+                todayByEvent: funnelByEvent.rows
+            },
+            refunds: {
+                total: parseInt(refundsTotal.rows[0].count),
+                today: parseInt(refundsTodayBrazil.rows[0].count)
+            },
+            consistency: {
+                message: 'Compare these numbers with what the panel shows. They should match.',
+                tips: [
+                    'If leads.todayBrazil != panel leads today, timezone issue remains',
+                    'If transactions.todayApproved != panel sales today, timezone issue remains',
+                    'If funnel.todayLandingVisitors is way higher than leads, check for old/test data'
+                ]
+            }
+        });
+    } catch (error) {
+        console.error('Diagnostic error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Fix leads status - convert leads with approved transactions to 'converted'
 app.post('/api/admin/fix-leads-status', authenticateToken, async (req, res) => {
     try {
