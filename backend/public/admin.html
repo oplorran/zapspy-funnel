@@ -4094,18 +4094,27 @@ Estou aqui para esclarecer tudo! 😊`
                 const data = await response.json();
                 
                 if (!response.ok) {
-                    showToast('Erro', data.error || 'Falha ao criar usuário', 'error');
+                    // Show specific error messages
+                    let errorMsg = data.error || 'Falha ao criar usuário';
+                    if (response.status === 409) {
+                        errorMsg = data.error || 'Email ou username já está em uso';
+                    } else if (response.status === 403) {
+                        errorMsg = 'Você não tem permissão para criar usuários';
+                    } else if (response.status === 400) {
+                        errorMsg = data.error || 'Dados incompletos. Preencha todos os campos.';
+                    }
+                    showToast('Erro', errorMsg, 'error');
                     return false;
                 }
                 
-                showToast('Sucesso!', `Usuário ${username} criado`, 'success');
+                showToast('Sucesso!', `Usuário ${username} criado com sucesso!`, 'success');
                 closeAddUserModal();
                 loadUsers();
                 return false;
                 
             } catch (error) {
                 console.error('Error creating user:', error);
-                showToast('Erro', 'Falha ao criar usuário', 'error');
+                showToast('Erro', 'Erro de conexão. Tente novamente.', 'error');
                 return false;
             }
         }

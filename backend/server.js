@@ -714,14 +714,23 @@ app.post('/api/admin/users', authenticateToken, requireAdmin, async (req, res) =
         const allowedRoles = ['admin', 'support', 'viewer'];
         const userRole = allowedRoles.includes(role) ? role : 'support';
         
-        // Check if user already exists
-        const existing = await pool.query(
-            'SELECT id FROM admin_users WHERE email = $1 OR username = $2',
-            [email, username]
+        // Check if user already exists - with specific error
+        const existingEmail = await pool.query(
+            'SELECT id FROM admin_users WHERE email = $1',
+            [email]
         );
         
-        if (existing.rows.length > 0) {
-            return res.status(409).json({ error: 'User with this email or username already exists' });
+        if (existingEmail.rows.length > 0) {
+            return res.status(409).json({ error: 'Este email já está cadastrado no sistema' });
+        }
+        
+        const existingUsername = await pool.query(
+            'SELECT id FROM admin_users WHERE username = $1',
+            [username]
+        );
+        
+        if (existingUsername.rows.length > 0) {
+            return res.status(409).json({ error: 'Este username já está em uso' });
         }
         
         // Hash password
@@ -739,7 +748,20 @@ app.post('/api/admin/users', authenticateToken, requireAdmin, async (req, res) =
         res.json({ success: true, user: result.rows[0] });
     } catch (error) {
         console.error('Error creating user:', error);
-        res.status(500).json({ error: 'Failed to create user' });
+        
+        // Provide more specific error messages
+        if (error.code === '23505') {
+            // Unique constraint violation
+            if (error.constraint && error.constraint.includes('email')) {
+                return res.status(409).json({ error: 'Este email já está em uso' });
+            }
+            if (error.constraint && error.constraint.includes('username')) {
+                return res.status(409).json({ error: 'Este username já está em uso' });
+            }
+            return res.status(409).json({ error: 'Usuário já existe com este email ou username' });
+        }
+        
+        res.status(500).json({ error: 'Falha ao criar usuário: ' + (error.message || 'Erro desconhecido') });
     }
 });
 
