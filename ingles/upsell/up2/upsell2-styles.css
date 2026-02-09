@@ -833,8 +833,38 @@ body {
 }
 
 /* ============================================
-   DECLINE LINK
+   DECLINE BUTTON (Same style as purchase button but gray/red)
    ============================================ */
+.btn-decline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 16px;
+    padding: 18px 32px;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-decoration: none;
+    color: #fff;
+    background: linear-gradient(180deg, #52525b, #3f3f46);
+    border: 2px solid #71717a;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    width: 100%;
+    max-width: 600px;
+}
+
+.btn-decline:hover {
+    background: linear-gradient(180deg, #ef4444, #dc2626);
+    border-color: #ef4444;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(239, 68, 68, 0.4);
+    color: #fff;
+}
+
+/* Legacy decline-link support */
 .decline-link {
     display: block;
     margin-top: 20px;
