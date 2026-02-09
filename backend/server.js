@@ -2268,12 +2268,16 @@ app.get('/api/admin/customer/:leadId/journey', authenticateToken, async (req, re
         // Sort timeline by timestamp
         timeline.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
         
+        // Calculate totalSpent from actual approved transactions (not the cached field)
+        const approvedTransactions = transactionsResult.rows.filter(t => t.status === 'approved');
+        const calculatedTotalSpent = approvedTransactions.reduce((sum, t) => sum + parseFloat(t.value || 0), 0);
+        
         // Calculate summary
         const summary = {
             totalEvents: funnelEvents.length,
             totalTransactions: transactionsResult.rows.length,
-            totalSpent: lead.total_spent || 0,
-            productsPurchased: lead.products_purchased || [],
+            totalSpent: calculatedTotalSpent, // Use calculated value from actual transactions
+            productsPurchased: [...new Set(approvedTransactions.map(t => t.product).filter(Boolean))],
             firstSeen: funnelEvents.length > 0 ? funnelEvents[0].created_at : lead.created_at,
             lastActivity: timeline.length > 0 ? timeline[timeline.length - 1].timestamp : lead.created_at,
             status: lead.status,
@@ -2429,6 +2433,117 @@ app.get('/api/admin/debug/transaction/:id', authenticateToken, async (req, res) 
             postbackLogs: logsResult.rows
         });
     } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Debug endpoint to search transactions by email
+app.get('/api/admin/debug/transactions-by-email/:email', authenticateToken, async (req, res) => {
+    try {
+        const { email } = req.params;
+        
+        // Search transactions by email
+        const transactions = await pool.query(`
+            SELECT id, transaction_id, product, value, status, monetizze_status, 
+                   funnel_language, funnel_source, email, phone, created_at, updated_at,
+                   raw_data
+            FROM transactions 
+            WHERE LOWER(email) = LOWER($1)
+            ORDER BY created_at DESC
+        `, [email]);
+        
+        // Get the lead for this email
+        const lead = await pool.query(`
+            SELECT id, email, name, status, total_spent, products_purchased, 
+                   first_purchase_at, last_purchase_at, visitor_id
+            FROM leads 
+            WHERE LOWER(email) = LOWER($1)
+            LIMIT 1
+        `, [email]);
+        
+        // Calculate what the total_spent SHOULD be
+        const approvedTransactions = transactions.rows.filter(t => t.status === 'approved');
+        const calculatedTotal = approvedTransactions.reduce((sum, t) => sum + parseFloat(t.value || 0), 0);
+        
+        res.json({
+            email: email,
+            foundTransactions: transactions.rows.length,
+            approvedCount: approvedTransactions.length,
+            transactions: transactions.rows,
+            lead: lead.rows[0] || null,
+            analysis: {
+                leadTotalSpent: lead.rows[0]?.total_spent || 0,
+                calculatedTotalFromTransactions: calculatedTotal,
+                mismatch: lead.rows[0] ? (parseFloat(lead.rows[0].total_spent || 0) !== calculatedTotal) : false,
+                suggestedFix: lead.rows[0] && (parseFloat(lead.rows[0].total_spent || 0) !== calculatedTotal) 
+                    ? `UPDATE leads SET total_spent = ${calculatedTotal} WHERE LOWER(email) = LOWER('${email}')`
+                    : null
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Fix transaction status endpoint
+app.post('/api/admin/fix-transaction/:transactionId', authenticateToken, requireAdmin, async (req, res) => {
+    try {
+        const { transactionId } = req.params;
+        const { newStatus, syncFromMonetizze } = req.body;
+        
+        if (!newStatus && !syncFromMonetizze) {
+            return res.status(400).json({ error: 'Provide newStatus or set syncFromMonetizze: true' });
+        }
+        
+        // Find the transaction
+        const txResult = await pool.query(`
+            SELECT * FROM transactions WHERE transaction_id = $1
+        `, [transactionId]);
+        
+        if (txResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Transaction not found' });
+        }
+        
+        const tx = txResult.rows[0];
+        const oldStatus = tx.status;
+        
+        // Update transaction status
+        const validStatuses = ['approved', 'pending_payment', 'cancelled', 'refunded', 'chargeback', 'abandoned_checkout'];
+        if (!validStatuses.includes(newStatus)) {
+            return res.status(400).json({ error: `Invalid status. Use: ${validStatuses.join(', ')}` });
+        }
+        
+        await pool.query(`
+            UPDATE transactions 
+            SET status = $1, updated_at = NOW()
+            WHERE transaction_id = $2
+        `, [newStatus, transactionId]);
+        
+        // Recalculate lead total_spent
+        if (tx.email) {
+            const approvedSum = await pool.query(`
+                SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total
+                FROM transactions 
+                WHERE LOWER(email) = LOWER($1) AND status = 'approved'
+            `, [tx.email]);
+            
+            await pool.query(`
+                UPDATE leads 
+                SET total_spent = $1, updated_at = NOW()
+                WHERE LOWER(email) = LOWER($2)
+            `, [approvedSum.rows[0].total, tx.email]);
+        }
+        
+        res.json({
+            success: true,
+            transactionId,
+            oldStatus,
+            newStatus,
+            message: `Transaction ${transactionId} updated from ${oldStatus} to ${newStatus}`
+        });
+        
+    } catch (error) {
+        console.error('Error fixing transaction:', error);
         res.status(500).json({ error: error.message });
     }
 });

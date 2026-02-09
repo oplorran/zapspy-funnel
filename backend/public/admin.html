@@ -2814,6 +2814,12 @@
                                 <button class="btn-secondary" style="background: #8b5cf6; color: white; border-color: #8b5cf6; white-space: nowrap;" onclick="searchTransactionById()">🔎 Buscar</button>
                             </div>
                             <p style="font-size: 12px; color: var(--text-muted);">Busca uma transação específica pelo ID (mostra se existe no banco e nos logs de postback).</p>
+                            
+                            <div style="margin-top: 12px; display: flex; gap: 8px; align-items: center;">
+                                <input type="email" id="searchTransactionEmail" placeholder="Email do cliente (ex: cliente@email.com)" style="flex: 1; padding: 10px 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(139,92,246,0.3); border-radius: 6px; color: white; font-size: 14px;">
+                                <button class="btn-secondary" style="background: #06b6d4; color: white; border-color: #06b6d4; white-space: nowrap;" onclick="searchTransactionsByEmail()">📧 Buscar por Email</button>
+                            </div>
+                            <p style="font-size: 12px; color: var(--text-muted);">Busca todas as transações de um email e verifica se o total_spent está correto.</p>
                             <div style="margin-top: 16px; border-top: 1px solid rgba(139,92,246,0.2); padding-top: 16px;">
                                 <button class="btn-secondary" style="background: #10b981; color: white; border-color: #10b981;" onclick="runDiagnostic()">🩺 Diagnóstico Completo do Painel</button>
                                 <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">Verifica todos os números (leads, vendas, funil) com e sem filtros para detectar inconsistências.</p>
@@ -8729,6 +8735,90 @@ Posso ajudar em algo mais? 😊`
             } catch (error) {
                 console.error('Search transaction error:', error);
                 showToast('Erro', 'Falha ao buscar transação', 'error');
+            }
+        }
+        
+        async function searchTransactionsByEmail() {
+            const email = document.getElementById('searchTransactionEmail').value.trim();
+            if (!email) {
+                showToast('Erro', 'Digite o email do cliente para buscar', 'error');
+                return;
+            }
+            
+            try {
+                showToast('🔍 Buscando...', `Procurando transações de ${email}...`, 'info');
+                
+                const response = await fetch(`${API_URL}/api/admin/debug/transactions-by-email/${encodeURIComponent(email)}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.status === 401 || response.status === 403) { logout(); return; }
+                
+                const data = await response.json();
+                
+                const resultDiv = document.getElementById('debugTransactionsResult');
+                resultDiv.style.display = 'block';
+                
+                let html = `📧 BUSCA POR EMAIL: ${email}\n`;
+                html += `${'═'.repeat(70)}\n\n`;
+                
+                // Lead info
+                html += `👤 LEAD:\n`;
+                html += `${'─'.repeat(70)}\n`;
+                if (data.lead) {
+                    html += `   Nome: ${data.lead.name || 'N/A'}\n`;
+                    html += `   Status: ${data.lead.status || 'N/A'}\n`;
+                    html += `   Total Gasto (campo lead): R$ ${parseFloat(data.lead.total_spent || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}\n`;
+                    html += `   Produtos: ${data.lead.products_purchased?.join(', ') || 'Nenhum'}\n`;
+                } else {
+                    html += `   ❌ Lead não encontrado!\n`;
+                }
+                
+                // Analysis
+                html += `\n📊 ANÁLISE:\n`;
+                html += `${'─'.repeat(70)}\n`;
+                html += `   Transações encontradas: ${data.foundTransactions}\n`;
+                html += `   Transações APROVADAS: ${data.approvedCount}\n`;
+                html += `   Total calculado das aprovadas: R$ ${parseFloat(data.analysis.calculatedTotalFromTransactions || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}\n`;
+                html += `   Total no campo lead.total_spent: R$ ${parseFloat(data.analysis.leadTotalSpent || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}\n`;
+                
+                if (data.analysis.mismatch) {
+                    html += `\n   ⚠️ DISCREPÂNCIA ENCONTRADA!\n`;
+                    html += `   O total_spent no lead está ERRADO.\n`;
+                    html += `   Correção SQL: ${data.analysis.suggestedFix}\n`;
+                } else {
+                    html += `\n   ✅ Valores consistentes!\n`;
+                }
+                
+                // Transactions
+                html += `\n📦 TODAS AS TRANSAÇÕES:\n`;
+                html += `${'─'.repeat(70)}\n`;
+                
+                if (data.transactions && data.transactions.length > 0) {
+                    data.transactions.forEach((t, i) => {
+                        const createdAt = t.created_at ? new Date(t.created_at).toLocaleString('pt-BR') : 'N/A';
+                        const statusIcon = t.status === 'approved' ? '✅' : t.status === 'refunded' ? '💸' : t.status === 'cancelled' ? '❌' : '⏳';
+                        html += `\n${statusIcon} #${i + 1} ID: ${t.transaction_id}\n`;
+                        html += `   Produto: ${t.product || 'N/A'}\n`;
+                        html += `   Valor: R$ ${parseFloat(t.value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}\n`;
+                        html += `   Status: ${t.status} (Monetizze: ${t.monetizze_status || 'N/A'})\n`;
+                        html += `   Data: ${createdAt}\n`;
+                    });
+                } else {
+                    html += `   ❌ Nenhuma transação encontrada para este email!\n`;
+                }
+                
+                resultDiv.textContent = html;
+                
+                const statusType = data.analysis.mismatch ? 'warning' : 'success';
+                const msg = data.analysis.mismatch 
+                    ? `⚠️ Discrepância encontrada! Total deveria ser R$ ${parseFloat(data.analysis.calculatedTotalFromTransactions).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                    : `✅ ${data.foundTransactions} transações encontradas`;
+                showToast('Resultado', msg, statusType);
+                
+            } catch (error) {
+                console.error('Search by email error:', error);
+                showToast('Erro', 'Falha ao buscar transações', 'error');
             }
         }
         
