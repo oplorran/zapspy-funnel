@@ -4185,12 +4185,13 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
             langParams.push(source);
         }
         
-        // Build date filter
+        // Build date filter - Use Brazil timezone (UTC-3) for date comparisons
+        // This ensures dates match Monetizze's Brazil-based timestamps
         let dateCondition = '';
         if (startDate && endDate) {
             const startIdx = langParams.length + 1;
             const endIdx = langParams.length + 2;
-            dateCondition = ` AND created_at >= $${startIdx}::date AND created_at < ($${endIdx}::date + INTERVAL '1 day')`;
+            dateCondition = ` AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= $${startIdx}::date AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date <= $${endIdx}::date`;
             langParams.push(startDate, endDate);
         }
         
@@ -4534,23 +4535,24 @@ app.get('/api/admin/debug-transactions', authenticateToken, async (req, res) => 
             params = [startDate, endDate];
         }
         
-        // Get all approved transactions
+        // Get all approved transactions - Use Brazil timezone for date filtering
         const approved = await pool.query(`
-            SELECT transaction_id, email, product, value, status, created_at 
+            SELECT transaction_id, email, product, value, status, created_at,
+                   (created_at AT TIME ZONE 'America/Sao_Paulo') as created_at_brazil
             FROM transactions 
-            WHERE status = 'approved' ${startDate ? 'AND created_at >= $1::date AND created_at < ($2::date + INTERVAL \'1 day\')' : ''}
+            WHERE status = 'approved' ${startDate ? 'AND (created_at AT TIME ZONE \'America/Sao_Paulo\')::date >= $1::date AND (created_at AT TIME ZONE \'America/Sao_Paulo\')::date <= $2::date' : ''}
             ORDER BY created_at DESC
             LIMIT 50
         `, params);
         
-        // Get sum of approved transactions
+        // Get sum of approved transactions - Use Brazil timezone
         const sumResult = await pool.query(`
             SELECT 
                 COUNT(*) as count,
                 COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total_value,
                 COALESCE(SUM(CAST(value AS DECIMAL)), 0) as revenue
             FROM transactions 
-            WHERE status = 'approved' ${startDate ? 'AND created_at >= $1::date AND created_at < ($2::date + INTERVAL \'1 day\')' : ''}
+            WHERE status = 'approved' ${startDate ? 'AND (created_at AT TIME ZONE \'America/Sao_Paulo\')::date >= $1::date AND (created_at AT TIME ZONE \'America/Sao_Paulo\')::date <= $2::date' : ''}
         `, params);
         
         // Get all unique statuses
