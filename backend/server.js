@@ -2585,12 +2585,13 @@ async function syncMonetizzeSalesCore(startDate, endDate) {
                 continue;
             }
             
-            const saleDateStr = vendaData.dataInicio || vendaData.dataFinalizada || vendaData.dataVenda || vendaData.data || null;
+            // Priority: dataFinalizada (matches Monetizze UI) > dataInicio > dataVenda > data
+            const saleDateStr = vendaData.dataFinalizada || vendaData.dataInicio || vendaData.dataVenda || vendaData.data || null;
             const saleDate = parseMonetizzeDate(saleDateStr);
             
             // Debug log for date parsing (remove after testing)
-            if (synced < 3) {
-                console.log(`📅 DEBUG DATE - Raw: "${saleDateStr}" | Parsed: ${saleDate ? saleDate.toISOString() : 'null'} | dataInicio: "${vendaData.dataInicio}" | dataFinalizada: "${vendaData.dataFinalizada}"`);
+            if (synced < 5) {
+                console.log(`📅 DEBUG DATE - Using: "${saleDateStr}" | Parsed: ${saleDate ? saleDate.toISOString() : 'null'} | dataFinalizada: "${vendaData.dataFinalizada}" | dataInicio: "${vendaData.dataInicio}"`);
             }
             
             const funnelLanguage = spanishCodes.includes(String(productCode)) ? 'es' : 'en';
@@ -2914,7 +2915,8 @@ app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (re
                 }
                 
                 // Extract real sale date from Monetizze (uses helper to handle BR/ISO formats)
-                const saleDateStr = vendaData.dataInicio || vendaData.dataFinalizada || vendaData.dataVenda || vendaData.data || null;
+                // Priority: dataFinalizada (matches Monetizze UI) > dataInicio > dataVenda > data
+                const saleDateStr = vendaData.dataFinalizada || vendaData.dataInicio || vendaData.dataVenda || vendaData.data || null;
                 const saleDate = parseMonetizzeDate(saleDateStr);
                 
                 // Detect funnel language and source (main vs affiliate)
@@ -3165,8 +3167,9 @@ app.all('/api/postback/monetizze', async (req, res) => {
         // Funnel language from venda.idioma
         const idioma = venda.idioma || body['venda.idioma'] || body['venda[idioma]'] || 'en';
         
-        // Sale date from venda.dataVenda or data - use real sale time, not NOW()
-        const dataVenda = venda.dataVenda || body['venda.dataVenda'] || body['venda[dataVenda]'] || 
+        // Sale date - prioritize dataFinalizada to match Monetizze UI
+        const dataFinalizada = venda.dataFinalizada || body['venda.dataFinalizada'] || body['venda[dataFinalizada]'] || null;
+        const dataVenda = dataFinalizada || venda.dataVenda || body['venda.dataVenda'] || body['venda[dataVenda]'] || 
                           venda.data || body.data || body['venda.data'] || null;
         
         console.log('📥 Extracted:', { 
