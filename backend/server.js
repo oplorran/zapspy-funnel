@@ -4124,7 +4124,7 @@ app.get('/api/admin/transactions', authenticateToken, async (req, res) => {
         }
         
         if (startDate && endDate) {
-            query += ` AND created_at >= $${paramIndex}::date AND created_at < ($${paramIndex + 1}::date + INTERVAL '1 day')`;
+            query += ` AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= $${paramIndex}::date AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date <= $${paramIndex + 1}::date`;
             params.push(startDate, endDate);
             paramIndex += 2;
         }
