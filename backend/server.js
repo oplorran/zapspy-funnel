@@ -3659,7 +3659,7 @@ app.post('/api/refund', async (req, res) => {
                 // Also check leads by visitorId if no transaction found
                 if (!detectedLanguage) {
                     const leadByVisitorResult = await pool.query(`
-                        SELECT metadata
+                        SELECT funnel_language
                         FROM leads 
                         WHERE visitor_id = $1
                         ORDER BY created_at DESC 
@@ -3667,8 +3667,7 @@ app.post('/api/refund', async (req, res) => {
                     `, [visitorId]);
                     
                     if (leadByVisitorResult.rows.length > 0) {
-                        const metadata = leadByVisitorResult.rows[0].metadata || {};
-                        detectedLanguage = metadata.funnelLanguage || null;
+                        detectedLanguage = leadByVisitorResult.rows[0].funnel_language || null;
                         console.log(`🔗 Refund cross-ref: Found lead by visitorId -> lang: ${detectedLanguage}`);
                     }
                 }
@@ -3715,7 +3714,7 @@ app.post('/api/refund', async (req, res) => {
             // 3. If still no language, check leads by email
             if (!detectedLanguage) {
                 const leadResult = await pool.query(`
-                    SELECT l.id, l.metadata
+                    SELECT l.id, l.funnel_language
                     FROM leads l
                     WHERE LOWER(l.email) = LOWER($1)
                     ORDER BY l.created_at DESC 
@@ -3723,9 +3722,7 @@ app.post('/api/refund', async (req, res) => {
                 `, [email]);
                 
                 if (leadResult.rows.length > 0) {
-                    const lead = leadResult.rows[0];
-                    const metadata = lead.metadata || {};
-                    detectedLanguage = metadata.funnelLanguage || null;
+                    detectedLanguage = leadResult.rows[0].funnel_language || null;
                     console.log(`🔗 Refund cross-ref: Found lead by email -> lang: ${detectedLanguage}`);
                 }
             }
@@ -3913,7 +3910,7 @@ app.get('/api/admin/refunds/:id/details', authenticateToken, async (req, res) =>
             const leadResult = await pool.query(`
                 SELECT id, email, name, whatsapp as phone, country, status, source,
                     products_purchased, total_spent, first_purchase_at, last_purchase_at,
-                    metadata, created_at
+                    funnel_language, created_at
                 FROM leads 
                 WHERE LOWER(email) = LOWER($1)
                 ORDER BY created_at DESC LIMIT 1
@@ -3962,7 +3959,7 @@ app.get('/api/admin/refunds/:id/details', authenticateToken, async (req, res) =>
                     totalSpent: transactions.filter(t => t.status === 'approved').reduce((sum, t) => sum + parseFloat(t.value || 0), 0),
                     productsBought: [...new Set(transactions.filter(t => t.status === 'approved').map(t => t.product))],
                     funnelSteps: funnelEvents.length,
-                    detectedLanguage: transactions[0]?.funnel_language || leadData?.metadata?.funnelLanguage || null
+                    detectedLanguage: transactions[0]?.funnel_language || leadData?.funnel_language || null
                 }
             }
         });
@@ -4740,12 +4737,12 @@ async function initDatabase() {
                         txId = txResult.rows[0].transaction_id;
                     }
                     
-                    // If no language from tx, try leads metadata
+                    // If no language from tx, try leads table (direct column)
                     if (!lang) {
                         const leadResult = await pool.query(`
-                            SELECT metadata->>'funnelLanguage' as funnel_language
+                            SELECT funnel_language
                             FROM leads 
-                            WHERE LOWER(email) = LOWER($1) AND metadata->>'funnelLanguage' IS NOT NULL
+                            WHERE LOWER(email) = LOWER($1) AND funnel_language IS NOT NULL
                             ORDER BY created_at DESC LIMIT 1
                         `, [refund.email]);
                         
