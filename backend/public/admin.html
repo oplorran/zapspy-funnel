@@ -5234,41 +5234,64 @@ Estou aqui para esclarecer tudo! 😊`
             tableBody.innerHTML = html;
         }
         
-        // Render pagination for new recovery
+        // Render pagination for new recovery - same style as other sections
         function renderRecoveryNewPagination(pagination) {
             const infoEl = document.getElementById('recoveryNewPaginationInfo');
             const buttonsEl = document.getElementById('recoveryNewPaginationButtons');
             
-            const start = ((pagination.page - 1) * pagination.limit) + 1;
-            const end = Math.min(pagination.page * pagination.limit, pagination.total);
+            const page = pagination.page;
+            const total = pagination.total;
+            const totalPages = pagination.totalPages;
+            const perPage = pagination.limit;
             
-            infoEl.textContent = pagination.total > 0 ? `Mostrando ${start}-${end} de ${pagination.total}` : 'Nenhum resultado';
+            const start = total > 0 ? ((page - 1) * perPage) + 1 : 0;
+            const end = Math.min(page * perPage, total);
             
-            // Generate pagination buttons
+            infoEl.textContent = total > 0 ? `Mostrando ${start}-${end} de ${total}` : 'Nenhum resultado';
+            
+            if (totalPages <= 1) {
+                buttonsEl.innerHTML = '';
+                return;
+            }
+            
+            // Generate pagination buttons - same style as other sections
             let html = '';
             const btnStyle = (active, disabled) => `
-                padding: 8px 12px;
-                background: ${active ? 'linear-gradient(135deg, #10b981, #059669)' : 'rgba(255,255,255,0.03)'};
-                border: 1px solid ${active ? 'transparent' : 'rgba(255,255,255,0.1)'};
-                border-radius: 6px;
-                color: ${disabled ? 'rgba(255,255,255,0.3)' : active ? '#fff' : 'rgba(255,255,255,0.7)'};
+                padding: 6px 10px; 
+                background: ${active ? '#8b5cf6' : disabled ? 'rgba(0,0,0,0.2)' : 'rgba(139,92,246,0.3)'}; 
+                border: 1px solid ${active ? '#8b5cf6' : disabled ? 'rgba(255,255,255,0.1)' : 'rgba(139,92,246,0.5)'}; 
+                border-radius: 6px; 
+                color: ${disabled ? 'var(--text-muted)' : 'white'}; 
+                cursor: ${disabled ? 'not-allowed' : 'pointer'}; 
                 font-size: 12px;
-                font-weight: 600;
-                cursor: ${disabled ? 'not-allowed' : 'pointer'};
+                font-weight: ${active ? '600' : '400'};
             `;
             
-            html += `<button onclick="goToRecoverySegmentPage(${pagination.page - 1})" style="${btnStyle(false, pagination.page <= 1)}" ${pagination.page <= 1 ? 'disabled' : ''}>‹</button>`;
+            // Previous button
+            html += `<button onclick="goToRecoverySegmentPage(${page - 1})" style="${btnStyle(false, page === 1)}" ${page === 1 ? 'disabled' : ''}>◀ Anterior</button>`;
             
-            for (let i = 1; i <= Math.min(pagination.totalPages, 5); i++) {
-                html += `<button onclick="goToRecoverySegmentPage(${i})" style="${btnStyle(i === pagination.page, false)}">${i}</button>`;
+            // Page numbers with ellipsis
+            const maxVisible = 5;
+            let startPage = Math.max(1, page - Math.floor(maxVisible / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+            if (endPage - startPage < maxVisible - 1) startPage = Math.max(1, endPage - maxVisible + 1);
+            
+            if (startPage > 1) {
+                html += `<button onclick="goToRecoverySegmentPage(1)" style="${btnStyle(false, false)}">1</button>`;
+                if (startPage > 2) html += `<span style="color: var(--text-muted); padding: 0 4px;">...</span>`;
             }
             
-            if (pagination.totalPages > 5) {
-                html += `<span style="color: rgba(255,255,255,0.4);">...</span>`;
-                html += `<button onclick="goToRecoverySegmentPage(${pagination.totalPages})" style="${btnStyle(false, false)}">${pagination.totalPages}</button>`;
+            for (let i = startPage; i <= endPage; i++) {
+                html += `<button onclick="goToRecoverySegmentPage(${i})" style="${btnStyle(i === page, false)}">${i}</button>`;
             }
             
-            html += `<button onclick="goToRecoverySegmentPage(${pagination.page + 1})" style="${btnStyle(false, pagination.page >= pagination.totalPages)}" ${pagination.page >= pagination.totalPages ? 'disabled' : ''}>›</button>`;
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) html += `<span style="color: var(--text-muted); padding: 0 4px;">...</span>`;
+                html += `<button onclick="goToRecoverySegmentPage(${totalPages})" style="${btnStyle(false, false)}">${totalPages}</button>`;
+            }
+            
+            // Next button
+            html += `<button onclick="goToRecoverySegmentPage(${page + 1})" style="${btnStyle(false, page === totalPages)}" ${page === totalPages ? 'disabled' : ''}>Próximo ▶</button>`;
             
             buttonsEl.innerHTML = html;
         }
