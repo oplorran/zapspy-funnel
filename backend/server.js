@@ -5093,22 +5093,51 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
         }
         
         const [totalResult, approvedResult, refundedResult, revenueResult, cancelledResult, lostRevenueResult, upsellRevenueResult] = await Promise.all([
-            pool.query(`SELECT COUNT(*) FROM transactions WHERE 1=1 ${langCondition}${sourceCondition}${dateCondition}`, langParams),
-            pool.query(`SELECT COUNT(*) FROM transactions WHERE status = 'approved' ${langCondition}${sourceCondition}${dateCondition}`, langParams),
-            pool.query(`SELECT COUNT(*) FROM transactions WHERE status IN ('refunded', 'chargeback') ${langCondition}${sourceCondition}${dateCondition}`, langParams),
+            // Count unique customers (not total transactions) for more accurate metrics
+            pool.query(`SELECT COUNT(DISTINCT email) FROM transactions WHERE 1=1 ${langCondition}${sourceCondition}${dateCondition}`, langParams),
+            pool.query(`SELECT COUNT(DISTINCT email) FROM transactions WHERE status = 'approved' ${langCondition}${sourceCondition}${dateCondition}`, langParams),
+            pool.query(`SELECT COUNT(DISTINCT email) FROM transactions WHERE status IN ('refunded', 'chargeback') ${langCondition}${sourceCondition}${dateCondition}`, langParams),
             pool.query(`SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total FROM transactions WHERE status = 'approved' ${langCondition}${sourceCondition}${dateCondition}`, langParams),
-            // Cancelled/rejected transactions (not approved, not refunded - these are failed payment attempts)
-            pool.query(`SELECT COUNT(*) FROM transactions WHERE status IN ('cancelled', 'pending_payment', 'blocked') ${langCondition}${sourceCondition}${dateCondition}`, langParams),
-            // Lost revenue (value of cancelled/rejected transactions)
-            pool.query(`SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total FROM transactions WHERE status IN ('cancelled', 'pending_payment', 'blocked') ${langCondition}${sourceCondition}${dateCondition}`, langParams),
+            // Cancelled/rejected - count unique customers who ONLY have failed attempts (never succeeded)
+            // This avoids counting someone who failed 10 times but eventually succeeded as "lost"
+            pool.query(`
+                SELECT COUNT(DISTINCT t.email) 
+                FROM transactions t 
+                WHERE t.status IN ('cancelled', 'pending_payment', 'blocked') 
+                ${langCondition}${sourceCondition}${dateCondition}
+                AND NOT EXISTS (
+                    SELECT 1 FROM transactions t2 
+                    WHERE t2.email = t.email 
+                    AND t2.product = t.product 
+                    AND t2.status = 'approved'
+                )
+            `, langParams),
+            // Lost revenue - sum the value of ONE failed transaction per customer/product (the highest value attempt)
+            // This gives a realistic estimate of what we could have earned
+            pool.query(`
+                SELECT COALESCE(SUM(max_value), 0) as total
+                FROM (
+                    SELECT t.email, t.product, MAX(CAST(t.value AS DECIMAL)) as max_value
+                    FROM transactions t
+                    WHERE t.status IN ('cancelled', 'pending_payment', 'blocked')
+                    ${langCondition}${sourceCondition}${dateCondition}
+                    AND NOT EXISTS (
+                        SELECT 1 FROM transactions t2 
+                        WHERE t2.email = t.email 
+                        AND t2.product = t.product 
+                        AND t2.status = 'approved'
+                    )
+                    GROUP BY t.email, t.product
+                ) as unique_lost
+            `, langParams),
             // Upsell revenue (for average upsell ticket)
             pool.query(`SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total FROM transactions WHERE status = 'approved' AND (product ILIKE '%Message Vault%' OR product ILIKE '%Vault%' OR product ILIKE '%360%' OR product ILIKE '%Tracker%' OR product ILIKE '%Instant%' OR product ILIKE '%Recuperación%' OR product ILIKE '%Visión%' OR product ILIKE '%VIP%') ${langCondition}${sourceCondition}${dateCondition}`, langParams)
         ]);
         
-        // Get today and this week (using Brazil timezone)
+        // Get today and this week (using Brazil timezone) - count unique customers
         const [todayResult, weekResult] = await Promise.all([
-            pool.query(`SELECT COUNT(*) FROM transactions WHERE status = 'approved' AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date = (NOW() AT TIME ZONE 'America/Sao_Paulo')::date ${langCondition}${sourceCondition}${dateCondition}`, langParams),
-            pool.query(`SELECT COUNT(*) FROM transactions WHERE status = 'approved' AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '7 days')::date ${langCondition}${sourceCondition}${dateCondition}`, langParams)
+            pool.query(`SELECT COUNT(DISTINCT email) FROM transactions WHERE status = 'approved' AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date = (NOW() AT TIME ZONE 'America/Sao_Paulo')::date ${langCondition}${sourceCondition}${dateCondition}`, langParams),
+            pool.query(`SELECT COUNT(DISTINCT email) FROM transactions WHERE status = 'approved' AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '7 days')::date ${langCondition}${sourceCondition}${dateCondition}`, langParams)
         ]);
         
         // Calculate checkout abandonment (clicked checkout but no approved transaction)
