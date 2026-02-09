@@ -5309,6 +5309,13 @@ async function initDatabase() {
         await pool.query(`CREATE INDEX IF NOT EXISTS idx_admin_users_email ON admin_users(email);`);
         await pool.query(`CREATE INDEX IF NOT EXISTS idx_admin_users_username ON admin_users(username);`);
         
+        // Add missing columns to admin_users if they don't exist (for existing tables)
+        await pool.query(`ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS name VARCHAR(255);`);
+        await pool.query(`ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'support';`);
+        await pool.query(`ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;`);
+        await pool.query(`ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS last_login TIMESTAMP WITH TIME ZONE;`);
+        await pool.query(`ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS created_by INTEGER;`);
+        
         // Insert default admin user if not exists (using env vars)
         const adminEmail = process.env.ADMIN_EMAIL || 'admin@zapspy.ai';
         const adminPassword = process.env.ADMIN_PASSWORD || 'zapspy2024';
