@@ -2376,6 +2376,41 @@ app.post('/api/postback/test', (req, res) => {
     });
 });
 
+// Debug endpoint to search for a specific transaction
+app.get('/api/admin/debug/transaction/:id', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        // Search by transaction_id (exact or partial match)
+        const result = await pool.query(`
+            SELECT * FROM transactions 
+            WHERE transaction_id ILIKE $1 
+               OR transaction_id ILIKE $2
+            ORDER BY created_at DESC
+            LIMIT 10
+        `, [`%${id}%`, id]);
+        
+        // Also check postback_logs for this ID
+        const logsResult = await pool.query(`
+            SELECT id, content_type, body, created_at 
+            FROM postback_logs 
+            WHERE body::text ILIKE $1
+            ORDER BY created_at DESC
+            LIMIT 10
+        `, [`%${id}%`]);
+        
+        res.json({
+            searchId: id,
+            foundTransactions: result.rows.length,
+            transactions: result.rows,
+            foundInPostbackLogs: logsResult.rows.length,
+            postbackLogs: logsResult.rows
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Helper: Authenticate with Monetizze API 2.1 (2-step auth)
 // Step 1: GET /token with X_CONSUMER_KEY header → returns temporary token
 // Step 2: Use TOKEN header for all subsequent requests
