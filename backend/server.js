@@ -3451,8 +3451,8 @@ app.all('/api/postback/monetizze', async (req, res) => {
                 UPDATE leads 
                 SET status = CASE 
                     WHEN $1 = 'approved' THEN 'converted'
-                    WHEN $1 IN ('cancelled', 'refunded', 'chargeback') THEN 'lost'
-                    WHEN $1 = 'pending_payment' THEN 'contacted'
+                    WHEN $1 IN ('cancelled', 'refunded', 'chargeback') AND status != 'converted' THEN 'lost'
+                    WHEN $1 = 'pending_payment' AND status NOT IN ('converted', 'lost') THEN 'contacted'
                     ELSE status
                 END,
                 notes = COALESCE(notes, '') || E'\n[Monetizze] ' || $2 || ' - ' || NOW()::text,
