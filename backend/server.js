@@ -5092,7 +5092,7 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
             langParams.push(startDate, endDate);
         }
         
-        const [totalResult, approvedResult, refundedResult, revenueResult, cancelledResult, lostRevenueResult, upsellRevenueResult] = await Promise.all([
+        const [totalResult, approvedResult, refundedResult, revenueResult, cancelledResult, lostRevenueResult, upsellRevenueResult, totalAttemptsResult, approvedAttemptsResult] = await Promise.all([
             // Count unique customers (not total transactions) for more accurate metrics
             pool.query(`SELECT COUNT(DISTINCT email) FROM transactions WHERE 1=1 ${langCondition}${sourceCondition}${dateCondition}`, langParams),
             pool.query(`SELECT COUNT(DISTINCT email) FROM transactions WHERE status = 'approved' ${langCondition}${sourceCondition}${dateCondition}`, langParams),
@@ -5131,7 +5131,11 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
                 ) as unique_lost
             `, langParams),
             // Upsell revenue (for average upsell ticket)
-            pool.query(`SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total FROM transactions WHERE status = 'approved' AND (product ILIKE '%Message Vault%' OR product ILIKE '%Vault%' OR product ILIKE '%360%' OR product ILIKE '%Tracker%' OR product ILIKE '%Instant%' OR product ILIKE '%Recuperación%' OR product ILIKE '%Visión%' OR product ILIKE '%VIP%') ${langCondition}${sourceCondition}${dateCondition}`, langParams)
+            pool.query(`SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total FROM transactions WHERE status = 'approved' AND (product ILIKE '%Message Vault%' OR product ILIKE '%Vault%' OR product ILIKE '%360%' OR product ILIKE '%Tracker%' OR product ILIKE '%Instant%' OR product ILIKE '%Recuperación%' OR product ILIKE '%Visión%' OR product ILIKE '%VIP%') ${langCondition}${sourceCondition}${dateCondition}`, langParams),
+            // Count ALL payment attempts (for approval rate calculation)
+            pool.query(`SELECT COUNT(*) FROM transactions WHERE 1=1 ${langCondition}${sourceCondition}${dateCondition}`, langParams),
+            // Count approved payment attempts
+            pool.query(`SELECT COUNT(*) FROM transactions WHERE status = 'approved' ${langCondition}${sourceCondition}${dateCondition}`, langParams)
         ]);
         
         // Get today and this week (using Brazil timezone) - count unique customers
@@ -5317,6 +5321,9 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
             checkoutClicked: checkoutClicked,
             today: parseInt(todayResult.rows[0].count),
             thisWeek: parseInt(weekResult.rows[0].count),
+            // Real payment attempts for approval rate
+            totalAttempts: parseInt(totalAttemptsResult.rows[0].count),
+            approvedAttempts: parseInt(approvedAttemptsResult.rows[0].count),
             conversionRate: parseFloat(conversionRate),
             byProduct: productStats.rows,
             language: language || 'all',

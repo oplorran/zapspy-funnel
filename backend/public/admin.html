@@ -4026,11 +4026,12 @@ Estou aqui para esclarecer tudo! 😊`
                 setEl('overviewConvRate', convRate.toFixed(1) + '%');
                 setEl('overviewConvRateInfo', `${totalSales} de ${totalLeads} leads`);
                 
-                // 2. Taxa de Aprovação de Pagamento (approved / total transactions)
-                const totalTransactions = salesData.total || 0;
-                const approvalRate = totalTransactions > 0 ? ((totalSales / totalTransactions) * 100) : 0;
+                // 2. Taxa de Aprovação de Pagamento (approved attempts / total attempts)
+                const totalAttempts = salesData.totalAttempts || 0;
+                const approvedAttempts = salesData.approvedAttempts || 0;
+                const approvalRate = totalAttempts > 0 ? ((approvedAttempts / totalAttempts) * 100) : 0;
                 setEl('overviewApprovalRate', approvalRate.toFixed(1) + '%');
-                setEl('overviewApprovalRateInfo', `${totalSales} de ${totalTransactions} tentativas`);
+                setEl('overviewApprovalRateInfo', `${approvedAttempts} de ${totalAttempts} tentativas`);
                 
                 // 3. Vendas Perdidas (cancelled/rejected)
                 const lostSales = salesData.cancelled || 0;
