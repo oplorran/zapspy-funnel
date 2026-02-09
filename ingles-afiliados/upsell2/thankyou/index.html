@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- UTMify tracking -->
+    <script src="https://cdn.utmify.com.br/scripts/utms/latest.js" data-utmify-prevent-xcod-sck data-utmify-prevent-subids async defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Welcome to ZappDetect! Your purchase was successful. Check your email for access credentials.">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Welcome to ZappDetect - Your Access is Ready!</title>
+    
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    
+    // Advanced Matching - get user data from localStorage
+    var userData = {};
+    try {
+        var em = localStorage.getItem('userEmail');
+        var ph = localStorage.getItem('userWhatsApp');
+        var fn = localStorage.getItem('userName');
+        if (em) userData.em = em.toLowerCase().trim();
+        if (ph) userData.ph = ph.replace(/\D/g, '');
+        if (fn) {
+            var names = fn.trim().split(' ');
+            userData.fn = names[0].toLowerCase();
+            if (names.length > 1) userData.ln = names.slice(1).join(' ').toLowerCase();
+        }
+    } catch(e) {}
+    
+    fbq('init', '726299943423075', userData);
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=726299943423075&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
+    
+    <!-- Facebook CAPI Client -->
+    <script src="../../js/facebook-capi.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof FacebookCAPI !== 'undefined') {
+                FacebookCAPI.init('Thank You Page');
+            }
+        });
+    </script>
+    
+    <link rel="stylesheet" href="thankyou-styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="success-header">
+            <div class="checkmark"></div>
+            <h1>Welcome to ZappDetect!</h1>
+            <p class="subtitle">Your purchase was successful and your access is ready</p>
+        </div>
+
+        <div class="email-info">
+            ⚡ <strong>Important:</strong> Check your email inbox for your login credentials. If you don't see it, check your spam folder.
+        </div>
+
+        <div class="members-area-alert">
+            <div class="members-icon">🎓</div>
+            <div>
+                <h3>Exclusive Members Area with Video Lessons!</h3>
+                <p>In addition to ZappDetect access, you'll receive <strong>exclusive access to our members area</strong> with:</p>
+                <ul>
+                    <li>✓ Step-by-step video tutorials on how to use all features</li>
+                    <li>✓ Advanced monitoring strategies and techniques</li>
+                    <li>✓ Tips to identify suspicious behaviors</li>
+                    <li>✓ Regular updates with new features</li>
+                </ul>
+                <p class="email-notice">📧 <strong>Your members area access will be sent to your email within the next 10 minutes!</strong></p>
+            </div>
+        </div>
+
+        <div class="access-card">
+            <h2 class="access-title">
+                📱 How to Access ZappDetect
+            </h2>
+
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>Check Your Email</h3>
+                    <p>We've sent your exclusive access link and login credentials to the email you provided during purchase. The email should arrive within 5 minutes.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>Access Your Dashboard</h3>
+                    <p>Use the link in your email to access your personal dashboard where you can start monitoring immediately.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>Enter Target Number</h3>
+                    <p>Once logged in, simply enter the phone number you want to monitor and let our advanced AI technology do the rest.</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="warning-box">
+            <span class="warning-icon">⚠️</span>
+            <div>
+                <strong>Privacy Notice:</strong> Use ZappDetect responsibly and in accordance with local laws. This tool is designed for legitimate monitoring purposes only.
+            </div>
+        </div>
+
+        <div class="testimonial">
+            <p>"I finally discovered the truth I was looking for. ZappDetect gave me the peace of mind I needed. The interface is incredibly easy to use, and the recovered messages feature is amazing!"</p>
+            <div class="testimonial-author">- Sarah M., Verified Customer</div>
+        </div>
+
+        <div class="testimonial">
+            <p>"Worth every penny! The real-time tracking and deleted message recovery helped me understand what was really happening. Professional and discreet service."</p>
+            <div class="testimonial-author">- Michael R., Verified Customer</div>
+        </div>
+
+        <div class="support-section">
+            <h2>Need Help? We're Here for You</h2>
+            <p class="support-subtitle">Our support team is available 24/7 to assist you with any questions</p>
+            
+            <div class="support-info">
+                <div class="support-item">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                    </svg>
+                    <a href="mailto:suportwhatsdetect@gmail.com" class="support-email">suportwhatsdetect@gmail.com</a>
+                </div>
+                <div class="support-item">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                    <span>Members Area Support</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>© <span id="current-year"></span> ZappDetect. All rights reserved.</p>
+            <p class="footer-disclaimer">This product is not affiliated with WhatsApp Inc.</p>
+        </div>
+    </div>
+
+    <script>
+        // Set dynamic year
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+        // Add staggered fade-in animation to elements
+        (function() {
+            var animatedElements = document.querySelectorAll('.step, .testimonial, .warning-box');
+            for (var i = 0; i < animatedElements.length; i++) {
+                animatedElements[i].style.animationDelay = (i * 0.15) + 's';
+                animatedElements[i].classList.add('fade-in-up');
+            }
+        })();
+    </script>
+    <script src="../upsell-tracking.js?v=1.0"></script>
+</body>
+</html>

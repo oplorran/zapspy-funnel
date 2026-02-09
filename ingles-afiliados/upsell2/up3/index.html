@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- UTMify tracking -->
+    <script src="https://cdn.utmify.com.br/scripts/utms/latest.js" data-utmify-prevent-xcod-sck data-utmify-prevent-subids async defer></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Priority Queue Access - VIP Pass</title>
+    
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    
+    // Advanced Matching - get user data from localStorage
+    var userData = {};
+    try {
+        var em = localStorage.getItem('userEmail');
+        var ph = localStorage.getItem('userWhatsApp');
+        var fn = localStorage.getItem('userName');
+        if (em) userData.em = em.toLowerCase().trim();
+        if (ph) userData.ph = ph.replace(/\D/g, '');
+        if (fn) {
+            var names = fn.trim().split(' ');
+            userData.fn = names[0].toLowerCase();
+            if (names.length > 1) userData.ln = names.slice(1).join(' ').toLowerCase();
+        }
+    } catch(e) {}
+    
+    fbq('init', '726299943423075', userData);
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=726299943423075&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
+    
+    <!-- Facebook CAPI Client -->
+    <script src="../../js/facebook-capi.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof FacebookCAPI !== 'undefined') {
+                FacebookCAPI.init('Upsell 3 - Instant Access');
+            }
+        });
+    </script>
+    
+    <meta name="description" content="Skip the line and get instant access to deleted messages, photos, and real-time locations.">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../vip-overlay-styles.css?v=8.0">
+    <link rel="stylesheet" href="upsell3-styles.css?v=8.0">
+    <!-- Monetizze Upsell Incorporado -->
+    <script type="text/javascript" src="https://app.monetizze.com.br/upsell_incorporado.php"></script>
+</head>
+<body>
+    <!-- VIP Processing Overlay REMOVED - direct content display for better conversion -->
+
+    <!-- Loading Overlay REMOVED - was interfering with Monetizze 1-click processing -->
+
+    <div class="page">
+        <header class="access-banner" role="banner">
+            <!-- Timer de Urgência -->
+            <div class="timer-bar" role="status" aria-live="polite">
+                <span class="timer-icon" aria-hidden="true">⏰</span>
+                <span class="timer-text">VIP offer expires in: <strong id="countdown">10:00</strong></span>
+            </div>
+            <div class="banner-content" role="alert" aria-live="polite">
+                <span class="banner-icon" aria-hidden="true">🚀</span>
+                <p class="banner-text">FINAL UPGRADE: Skip the 24-72 hour wait! Get VIP priority processing + instant results.</p>
+            </div>
+        </header>
+
+        <main class="content">
+            <section class="hero">
+                <h1 class="main-title">⚡ Get Results in 5 Minutes Instead of 3 Days</h1>
+                
+                <div class="intro-section">
+                    <p class="problem-text">🐌 <strong>Standard Processing (What You Have Now):</strong> Your data sits in a queue with thousands of other users. <strong>Wait 24-72 hours</strong> before seeing any results. By then, critical evidence may already be gone.</p>
+                    
+                    <p class="solution-text">⚡ <strong>VIP Priority Processing (Instant Access):</strong> Jump to the front of the line. Your data is processed <strong>FIRST</strong>, every time. See deleted messages, photos, and locations in <strong>under 5 minutes</strong> — not days.</p>
+                </div>
+            </section>
+
+            <section class="comparison-section">
+                <div class="comparison-card">
+                    <h2 class="comparison-title">⚡ Standard vs VIP Priority Processing</h2>
+                    <div class="comparison-grid">
+                        <div class="comparison-item standard">
+                            <span class="comparison-icon">🐌</span>
+                            <div class="comparison-text">
+                                <strong>Standard Processing:</strong>
+                                <p>• Wait 24-72 hours for results<br>• Data processed in order with thousands of others<br>• No priority support<br>• Risk losing critical evidence while waiting</p>
+                            </div>
+                        </div>
+                        <div class="comparison-item vip">
+                            <span class="comparison-icon">🚀</span>
+                            <div class="comparison-text">
+                                <strong>VIP Priority Processing:</strong>
+                                <p>• Instant results in minutes<br>• Your data processed FIRST<br>• 24/7 premium support<br>• Real-time notifications & alerts</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Live Activations Feed -->
+            <section class="live-activity-section">
+                <div class="live-activity">
+                    <div class="activity-header">
+                        <span class="pulse-dot"></span>
+                        <span class="activity-title">Recent Activations</span>
+                        <span class="live-badge">LIVE</span>
+                    </div>
+                    <div class="activity-items" id="activityFeed">
+                        <!-- Items são gerados dinamicamente pelo JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <section class="testimonial">
+                <div class="testimonial-card">
+                    <h2 class="testimonial-title">⭐ Real User Experiences</h2>
+                    <p class="testimonial-story">Sarah K. from California was using standard processing and waited 48 hours for results. By the time she saw the deleted messages, critical evidence was already gone. After upgrading to VIP Priority, she got instant access to everything in under 8 minutes.</p>
+                    
+                    <blockquote class="user-quote">
+                        "I wasted 2 days waiting with standard processing. After upgrading to VIP Priority, I saw deleted messages appear instantly. The difference is night and day. This upgrade is absolutely essential if you need answers NOW, not in 3 days."
+                    </blockquote>
+                    <p class="testimonial-author-right">— Sarah K., California</p>
+                    
+                    <hr class="testimonial-divider">
+                    
+                    <p class="testimonial-story">Michael R. from Texas almost gave up after waiting 3 days for standard processing. His wife was deleting evidence faster than he could access it. After upgrading to VIP, he finally got ahead of the deletions.</p>
+                    
+                    <blockquote class="user-quote">
+                        "With standard processing, by the time I saw the data, she had already deleted more. VIP Priority changed everything — I now see things within minutes of them happening. The peace of mind alone is worth 10x the price."
+                    </blockquote>
+                    <p class="testimonial-author-right">— Michael R., Texas</p>
+                    
+                    <p class="activation-text">Activation is instant. Your account is immediately moved to the VIP priority queue. All your data is processed first, with dedicated server resources ensuring maximum speed.</p>
+                </div>
+            </section>
+
+            <section class="benefits">
+                <div class="benefits-card">
+                    <h2 class="benefits-title">👑 What's Included in VIP Priority:</h2>
+                    <div class="benefits-grid">
+                        <div class="benefit-item">
+                            <span class="benefit-icon">⚡</span>
+                            <span class="benefit-text"><strong>Instant Results:</strong> Data processed in minutes, not days</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">🚀</span>
+                            <span class="benefit-text"><strong>Skip The Queue:</strong> Your requests always go first</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">🔔</span>
+                            <span class="benefit-text"><strong>Real-Time Alerts:</strong> Get notified the moment new data appears</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">👨‍💻</span>
+                            <span class="benefit-text"><strong>24/7 VIP Support:</strong> Priority assistance whenever you need</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">💻</span>
+                            <span class="benefit-text"><strong>Dedicated Resources:</strong> Faster servers, better performance</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">⭐</span>
+                            <span class="benefit-text"><strong>Lifetime VIP Status:</strong> Priority access forever</span>
+                        </div>
+                    </div>
+                    
+                    <p class="benefits-summary">⚡ Stop waiting 3 days. With VIP Priority, you get answers in MINUTES.</p>
+                </div>
+            </section>
+
+            <section class="urgency">
+                <div class="urgency-card">
+                    <h2 class="urgency-title">⚠️ ONE-TIME OFFER - Available Only Now</h2>
+                    <p class="urgency-text">⏰ <strong>This VIP Priority upgrade is only available RIGHT NOW</strong> at this exclusive price. Once you leave this page, you'll be locked into standard processing with 24-72 hour delays forever.</p>
+                    <p class="urgency-warning">❌ <strong>Don't make this mistake:</strong> Thousands of users regret not upgrading to VIP Priority. They waste days waiting for results while critical evidence disappears. By the time they see the data, it's too late. Don't let that be you—upgrade NOW and get instant access!</p>
+                </div>
+            </section>
+
+
+            <section class="final-cta">
+                <div class="cta-section">
+                    <h2 class="cta-title">3 Days is Too Long to Wait for The Truth</h2>
+                    <p class="cta-text">You've already invested in the best monitoring tools. Don't let slow processing ruin everything. Get VIP Priority and see results in minutes.</p>
+                    
+                    <!-- Timer no CTA -->
+                    <p class="cta-timer">⏰ Offer expires in: <strong id="countdown-cta">10:00</strong></p>
+                    
+                    <!-- Monetizze Upsell Iframe -->
+                    <div class="upsell-iframe-container">
+                        <iframe class="iframeUpsell" data-chave="991245fe485dda96b4e14bff4926fd42"></iframe>
+                    </div>
+                    
+                    <!-- Link de Recusa -->
+                    <a href="../thankyou/" class="decline-link">No thanks, I'm okay waiting 3 days for results</a>
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="footer">
+            <div class="smallprint">© <span id="year"></span> Priority Access. All rights reserved.</div>
+        </footer>
+    </div>
+
+    <script src="../polyfills.js?v=8.0"></script>
+    <script src="upsell3-script.js?v=8.0"></script>
+    <!-- geo-restriction.js removed - prices always visible -->
+    <script src="../upsell-tracking.js?v=1.0"></script>
+</body>
+</html>
