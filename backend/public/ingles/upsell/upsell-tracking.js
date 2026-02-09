@@ -145,16 +145,51 @@ const UpsellTracker = {
     },
     
     // Track accept (buy button click)
+    // Uses sendBeacon for reliability since the page will navigate away immediately
     trackAccept: function() {
         const upsell = this.getCurrentUpsell();
+        const self = this;
         
+        // Determine which event to send
+        let event = null;
         if (upsell === 1) {
-            this.track(this.events.ACCEPT_UPSELL_1, { action: 'buy_clicked' });
+            event = this.events.ACCEPT_UPSELL_1;
         } else if (upsell === 2) {
-            this.track(this.events.ACCEPT_UPSELL_2, { action: 'buy_clicked' });
+            event = this.events.ACCEPT_UPSELL_2;
         } else if (upsell === 3) {
-            this.track(this.events.ACCEPT_UPSELL_3, { action: 'buy_clicked' });
+            event = this.events.ACCEPT_UPSELL_3;
         }
+        
+        if (!event) return;
+        
+        // Build data payload
+        const data = {
+            visitorId: this.getVisitorId(),
+            event: event,
+            page: window.location.pathname,
+            targetPhone: localStorage.getItem('targetPhone') || null,
+            targetGender: localStorage.getItem('targetGender') || null,
+            metadata: {
+                action: 'buy_clicked',
+                url: window.location.href,
+                referrer: document.referrer,
+                timestamp: new Date().toISOString(),
+                timeOnPage: Math.round((Date.now() - this.pageLoadTime) / 1000),
+                scrollDepth: this.scrollDepth,
+                upsellFlow: true,
+                userAgent: navigator.userAgent,
+                screenWidth: window.innerWidth,
+                screenHeight: window.innerHeight
+            }
+        };
+        
+        // Use sendBeacon for reliable delivery (page is about to navigate away)
+        const beaconSent = navigator.sendBeacon(
+            `${this.API_URL}/api/track`,
+            JSON.stringify(data)
+        );
+        
+        console.log('📊 Upsell Accept Event (sendBeacon):', event, beaconSent ? '✅ sent' : '❌ failed', data);
     },
     
     // Track decline (no thanks click)
