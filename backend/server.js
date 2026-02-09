@@ -1719,13 +1719,13 @@ app.get('/api/admin/funnel', authenticateToken, async (req, res) => {
         }
         // else: no filter = all sources
         
-        // Build date filter condition
+        // Build date filter condition (using Brazil timezone for correct filtering)
         let dateCondition = '';
         if (startDate && endDate) {
-            // Use provided date range
-            dateCondition = `AND created_at >= '${startDate}'::date AND created_at < ('${endDate}'::date + INTERVAL '1 day')`;
+            // Use provided date range with Brazil timezone
+            dateCondition = `AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= '${startDate}'::date AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date <= '${endDate}'::date`;
         } else if (startDate) {
-            dateCondition = `AND created_at >= '${startDate}'::date`;
+            dateCondition = `AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= '${startDate}'::date`;
         } else {
             // Default: last 30 days
             dateCondition = `AND created_at >= CURRENT_DATE - INTERVAL '30 days'`;
@@ -1769,7 +1769,7 @@ app.get('/api/admin/funnel', authenticateToken, async (req, res) => {
         // Get daily funnel data (use same date range, but limit to 7 days for daily view)
         let dailyDateCondition = '';
         if (startDate && endDate) {
-            dailyDateCondition = `AND created_at >= '${startDate}'::date AND created_at < ('${endDate}'::date + INTERVAL '1 day')`;
+            dailyDateCondition = `AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= '${startDate}'::date AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date <= '${endDate}'::date`;
         } else {
             dailyDateCondition = `AND created_at >= CURRENT_DATE - INTERVAL '7 days'`;
         }
@@ -1814,10 +1814,10 @@ app.get('/api/admin/funnel', authenticateToken, async (req, res) => {
         // Get transaction stats (approved/rejected) for the funnel visualization
         let transactionStats = { approved: 0, rejected: 0, pending: 0 };
         try {
-            // Build date filter for transactions
+            // Build date filter for transactions (using Brazil timezone)
             let txDateCondition = '';
             if (startDate && endDate) {
-                txDateCondition = `AND created_at >= '${startDate}'::date AND created_at < ('${endDate}'::date + INTERVAL '1 day')`;
+                txDateCondition = `AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= '${startDate}'::date AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date <= '${endDate}'::date`;
             } else {
                 txDateCondition = `AND created_at >= CURRENT_DATE - INTERVAL '30 days'`;
             }
