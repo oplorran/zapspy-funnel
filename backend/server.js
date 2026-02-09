@@ -4521,6 +4521,57 @@ app.post('/api/admin/migrate-leads-funnel-source', authenticateToken, async (req
     }
 });
 
+// Debug endpoint to check transactions in database
+app.get('/api/admin/debug-transactions', authenticateToken, async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query;
+        
+        // Build date filter
+        let dateCondition = '';
+        let params = [];
+        if (startDate && endDate) {
+            dateCondition = ` WHERE created_at >= $1::date AND created_at < ($2::date + INTERVAL '1 day')`;
+            params = [startDate, endDate];
+        }
+        
+        // Get all approved transactions
+        const approved = await pool.query(`
+            SELECT transaction_id, email, product, value, status, created_at 
+            FROM transactions 
+            WHERE status = 'approved' ${startDate ? 'AND created_at >= $1::date AND created_at < ($2::date + INTERVAL \'1 day\')' : ''}
+            ORDER BY created_at DESC
+            LIMIT 50
+        `, params);
+        
+        // Get sum of approved transactions
+        const sumResult = await pool.query(`
+            SELECT 
+                COUNT(*) as count,
+                COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total_value,
+                COALESCE(SUM(CAST(value AS DECIMAL)), 0) as revenue
+            FROM transactions 
+            WHERE status = 'approved' ${startDate ? 'AND created_at >= $1::date AND created_at < ($2::date + INTERVAL \'1 day\')' : ''}
+        `, params);
+        
+        // Get all unique statuses
+        const statuses = await pool.query(`
+            SELECT status, COUNT(*) as count, COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total
+            FROM transactions
+            GROUP BY status
+        `);
+        
+        res.json({
+            dateFilter: { startDate, endDate },
+            summary: sumResult.rows[0],
+            statusBreakdown: statuses.rows,
+            recentApproved: approved.rows
+        });
+    } catch (error) {
+        console.error('Debug transactions error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Fix leads status - convert leads with approved transactions to 'converted'
 app.post('/api/admin/fix-leads-status', authenticateToken, async (req, res) => {
     try {
