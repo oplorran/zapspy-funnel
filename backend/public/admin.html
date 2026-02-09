@@ -2785,6 +2785,11 @@
                                 <button class="btn-secondary" style="background: #8b5cf6; color: white; border-color: #8b5cf6;" onclick="debugTransactions()">🔍 Ver Transações de Hoje</button>
                                 <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">Mostra todas as transações aprovadas de hoje e a soma dos valores.</p>
                             </div>
+                            <div style="margin-top: 12px; display: flex; gap: 8px; align-items: center;">
+                                <input type="text" id="searchTransactionId" placeholder="ID da transação (ex: 55805636)" style="flex: 1; padding: 10px 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(139,92,246,0.3); border-radius: 6px; color: white; font-size: 14px;">
+                                <button class="btn-secondary" style="background: #8b5cf6; color: white; border-color: #8b5cf6; white-space: nowrap;" onclick="searchTransactionById()">🔎 Buscar</button>
+                            </div>
+                            <p style="font-size: 12px; color: var(--text-muted);">Busca uma transação específica pelo ID (mostra se existe no banco e nos logs de postback).</p>
                             <div id="debugTransactionsResult" style="display: none; margin-top: 16px; padding: 16px; background: rgba(0,0,0,0.3); border-radius: 8px; font-family: monospace; font-size: 12px; white-space: pre-wrap; max-height: 400px; overflow-y: auto;"></div>
                         </div>
                     </div>
@@ -8153,6 +8158,92 @@ Posso ajudar em algo mais? 😊`
             } catch (error) {
                 console.error('Debug transactions error:', error);
                 showToast('Erro', 'Falha ao buscar transações', 'error');
+            }
+        }
+        
+        async function searchTransactionById() {
+            const transactionId = document.getElementById('searchTransactionId').value.trim();
+            if (!transactionId) {
+                showToast('Erro', 'Digite o ID da transação para buscar', 'error');
+                return;
+            }
+            
+            try {
+                showToast('🔍 Buscando...', `Procurando transação ${transactionId}...`, 'info');
+                
+                const response = await fetch(`${API_URL}/api/admin/debug/transaction/${transactionId}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.status === 401 || response.status === 403) { logout(); return; }
+                
+                const data = await response.json();
+                
+                const resultDiv = document.getElementById('debugTransactionsResult');
+                resultDiv.style.display = 'block';
+                
+                let html = `🔎 BUSCA POR ID: ${transactionId}\n`;
+                html += `${'═'.repeat(60)}\n\n`;
+                
+                html += `📦 TRANSAÇÕES NO BANCO: ${data.foundTransactions} encontrada(s)\n`;
+                html += `${'─'.repeat(60)}\n`;
+                
+                if (data.transactions && data.transactions.length > 0) {
+                    data.transactions.forEach((t, i) => {
+                        const createdAt = t.created_at ? new Date(t.created_at).toLocaleString('pt-BR') : 'N/A';
+                        html += `\n#${i + 1} ID: ${t.transaction_id}\n`;
+                        html += `   Email: ${t.email || 'N/A'}\n`;
+                        html += `   Nome: ${t.name || 'N/A'}\n`;
+                        html += `   Produto: ${t.product || 'N/A'}\n`;
+                        html += `   Valor: R$ ${t.value || '0'}\n`;
+                        html += `   Status: ${t.status || 'N/A'} (Monetizze: ${t.monetizze_status || 'N/A'})\n`;
+                        html += `   Idioma: ${t.funnel_language || 'N/A'} | Fonte: ${t.funnel_source || 'N/A'}\n`;
+                        html += `   Criado em: ${createdAt}\n`;
+                    });
+                } else {
+                    html += `   ❌ Nenhuma transação encontrada com este ID!\n`;
+                    html += `   Isso significa que o postback NÃO salvou essa transação no banco.\n`;
+                }
+                
+                html += `\n\n📋 LOGS DE POSTBACK: ${data.foundInPostbackLogs} encontrado(s)\n`;
+                html += `${'─'.repeat(60)}\n`;
+                
+                if (data.postbackLogs && data.postbackLogs.length > 0) {
+                    data.postbackLogs.forEach((log, i) => {
+                        const createdAt = log.created_at ? new Date(log.created_at).toLocaleString('pt-BR') : 'N/A';
+                        html += `\n#${i + 1} Log ID: ${log.id}\n`;
+                        html += `   Recebido em: ${createdAt}\n`;
+                        html += `   Content-Type: ${log.content_type || 'N/A'}\n`;
+                        
+                        // Try to parse and show key info from body
+                        try {
+                            const body = typeof log.body === 'string' ? JSON.parse(log.body) : log.body;
+                            const email = body?.comprador?.email || body?.['comprador.email'] || 'N/A';
+                            const produto = body?.produto?.nome || body?.['produto.nome'] || 'N/A';
+                            const status = body?.tipoEvento?.codigo || body?.['tipoEvento.codigo'] || 'N/A';
+                            html += `   Email: ${email}\n`;
+                            html += `   Produto: ${produto}\n`;
+                            html += `   Código Status: ${status}\n`;
+                        } catch (e) {
+                            html += `   Body: (erro ao parsear)\n`;
+                        }
+                    });
+                } else {
+                    html += `   ❌ Nenhum log de postback encontrado com este ID!\n`;
+                    html += `   Isso significa que a Monetizze NÃO enviou esse postback para nós.\n`;
+                }
+                
+                resultDiv.textContent = html;
+                
+                const status = data.foundTransactions > 0 ? 'success' : 'warning';
+                const msg = data.foundTransactions > 0 
+                    ? `Transação encontrada no banco!` 
+                    : `Transação NÃO encontrada no banco`;
+                showToast(data.foundTransactions > 0 ? '✅' : '⚠️', msg, status);
+                
+            } catch (error) {
+                console.error('Search transaction error:', error);
+                showToast('Erro', 'Falha ao buscar transação', 'error');
             }
         }
         
