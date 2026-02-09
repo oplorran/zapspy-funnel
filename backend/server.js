@@ -5166,13 +5166,25 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
             WHERE event = 'checkout_clicked'${funnelLangCondition}${funnelSourceCondition}${funnelDateCondition}
         `);
         
-        // Count unique emails with ANY transaction (approved, cancelled, pending, etc)
-        // This represents people who ATTEMPTED to purchase (even if failed)
-        const allTransactionEmailsResult = await pool.query(`
-            SELECT COUNT(DISTINCT LOWER(email)) as count 
-            FROM transactions 
-            WHERE 1=1 ${langCondition}${sourceCondition}${dateCondition}
-        `, langParams);
+        // Count checkout abandonment more accurately:
+        // Visitors who clicked checkout but whose email has NO transaction at all
+        // This joins funnel_events -> leads -> transactions to check properly
+        const checkoutAbandonedResult = await pool.query(`
+            SELECT COUNT(DISTINCT fe.visitor_id) as count
+            FROM funnel_events fe
+            LEFT JOIN leads l ON fe.visitor_id = l.visitor_id
+            WHERE fe.event = 'checkout_clicked'
+            ${funnelLangCondition.replace(/metadata/g, 'fe.metadata')}
+            ${funnelSourceCondition.replace(/metadata/g, 'fe.metadata')}
+            ${funnelDateCondition.replace(/created_at/g, 'fe.created_at')}
+            AND (
+                l.email IS NULL 
+                OR NOT EXISTS (
+                    SELECT 1 FROM transactions t 
+                    WHERE LOWER(t.email) = LOWER(l.email)
+                )
+            )
+        `);
         
         // Count unique emails with approved transactions (for other metrics)
         const approvedEmailsResult = await pool.query(`
@@ -5182,12 +5194,8 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
         `, langParams);
         
         const checkoutClicked = parseInt(checkoutClickedResult.rows[0].count) || 0;
-        const allTransactionEmails = parseInt(allTransactionEmailsResult.rows[0].count) || 0;
+        const checkoutAbandoned = parseInt(checkoutAbandonedResult.rows[0].count) || 0;
         const approvedEmails = parseInt(approvedEmailsResult.rows[0].count) || 0;
-        
-        // Checkout Abandonado = pessoas que entraram no checkout mas NÃO fizeram NENHUMA tentativa de compra
-        // (não geraram nenhuma transação - nem aprovada, nem recusada, nem pendente)
-        const checkoutAbandoned = Math.max(0, checkoutClicked - allTransactionEmails);
         
         // Calculate conversion rate (leads -> sales) - filtered by language, source AND date
         // Build leads filter conditions
