@@ -892,6 +892,15 @@ body {
     }
 }
 
+/* Social proof text below decline button */
+.social-proof-text {
+    margin-top: 16px;
+    font-size: 14px;
+    color: #22c55e;
+    font-weight: 500;
+    text-align: center;
+}
+
 /* Legacy decline-link support */
 .decline-link {
     display: block;
