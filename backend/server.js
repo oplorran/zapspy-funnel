@@ -4107,7 +4107,7 @@ app.get('/api/admin/recovery/segments', authenticateToken, async (req, res) => {
             FROM funnel_events fe
             LEFT JOIN leads l ON fe.visitor_id = l.visitor_id
             WHERE fe.event = 'checkout_clicked'
-            ${language ? `AND fe.funnel_language = '${language}'` : ''}
+            ${language ? `AND l.funnel_language = '${language}'` : ''}
             AND NOT EXISTS (
                 SELECT 1 FROM transactions t 
                 WHERE LOWER(t.email) = LOWER(COALESCE(l.email, ''))
@@ -4140,7 +4140,7 @@ app.get('/api/admin/recovery/segments', authenticateToken, async (req, res) => {
             FROM funnel_events fe
             INNER JOIN leads l ON fe.visitor_id = l.visitor_id
             WHERE fe.event LIKE '%_declined'
-            ${language ? `AND fe.funnel_language = '${language}'` : ''}
+            ${language ? `AND l.funnel_language = '${language}'` : ''}
             AND EXISTS (
                 SELECT 1 FROM transactions t 
                 WHERE LOWER(t.email) = LOWER(l.email)
@@ -4243,7 +4243,7 @@ app.get('/api/admin/recovery/:segment', authenticateToken, async (req, res) => {
                     COALESCE(l.whatsapp, '') as phone,
                     COALESCE(l.country, '') as country,
                     COALESCE(l.country_code, '') as country_code,
-                    fe.funnel_language as language,
+                    l.funnel_language as language,
                     fe.created_at as last_event_at,
                     'checkout_clicked' as event,
                     47.00 as potential_value,
@@ -4255,7 +4255,7 @@ app.get('/api/admin/recovery/:segment', authenticateToken, async (req, res) => {
                 FROM funnel_events fe
                 LEFT JOIN leads l ON fe.visitor_id = l.visitor_id
                 WHERE fe.event = 'checkout_clicked'
-                ${language ? `AND fe.funnel_language = '${language}'` : ''}
+                ${language ? `AND l.funnel_language = '${language}'` : ''}
                 AND NOT EXISTS (
                     SELECT 1 FROM transactions t 
                     WHERE LOWER(t.email) = LOWER(COALESCE(l.email, ''))
@@ -4274,7 +4274,7 @@ app.get('/api/admin/recovery/:segment', authenticateToken, async (req, res) => {
                 FROM funnel_events fe
                 LEFT JOIN leads l ON fe.visitor_id = l.visitor_id
                 WHERE fe.event = 'checkout_clicked'
-                ${language ? `AND fe.funnel_language = '${language}'` : ''}
+                ${language ? `AND l.funnel_language = '${language}'` : ''}
                 AND NOT EXISTS (
                     SELECT 1 FROM transactions t 
                     WHERE LOWER(t.email) = LOWER(COALESCE(l.email, ''))
@@ -4371,7 +4371,7 @@ app.get('/api/admin/recovery/:segment', authenticateToken, async (req, res) => {
                     COALESCE(l.whatsapp, '') as phone,
                     COALESCE(l.country, '') as country,
                     COALESCE(l.country_code, '') as country_code,
-                    fe.funnel_language as language,
+                    l.funnel_language as language,
                     fe.created_at as last_event_at,
                     fe.event,
                     67.00 as potential_value,
@@ -4388,7 +4388,7 @@ app.get('/api/admin/recovery/:segment', authenticateToken, async (req, res) => {
                 FROM funnel_events fe
                 INNER JOIN leads l ON fe.visitor_id = l.visitor_id
                 WHERE fe.event LIKE '%_declined'
-                ${language ? `AND fe.funnel_language = '${language}'` : ''}
+                ${language ? `AND l.funnel_language = '${language}'` : ''}
                 AND EXISTS (
                     SELECT 1 FROM transactions t 
                     WHERE LOWER(t.email) = LOWER(l.email)
@@ -4406,7 +4406,7 @@ app.get('/api/admin/recovery/:segment', authenticateToken, async (req, res) => {
                 FROM funnel_events fe
                 INNER JOIN leads l ON fe.visitor_id = l.visitor_id
                 WHERE fe.event LIKE '%_declined'
-                ${language ? `AND fe.funnel_language = '${language}'` : ''}
+                ${language ? `AND l.funnel_language = '${language}'` : ''}
                 AND EXISTS (
                     SELECT 1 FROM transactions t 
                     WHERE LOWER(t.email) = LOWER(l.email)
