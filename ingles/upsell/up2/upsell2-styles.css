@@ -833,78 +833,40 @@ body {
 }
 
 /* ============================================
-   DECLINE BUTTON (Same mega style as purchase button but RED)
+   DECLINE BUTTON (Smaller red button)
    ============================================ */
 .btn-decline {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     margin-top: 16px;
-    padding: 28px 48px;
-    font-size: 24px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
+    padding: 14px 28px;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
     line-height: 1.3;
     text-decoration: none;
     color: #fff;
     background: linear-gradient(180deg, #ef4444, #dc2626);
-    border: 3px dashed rgba(255, 255, 255, 0.6);
-    border-radius: 12px;
-    box-shadow: 
-        0 0 20px rgba(239, 68, 68, 0.8),
-        0 0 40px rgba(239, 68, 68, 0.6),
-        0 0 60px rgba(239, 68, 68, 0.4),
-        inset 0 0 20px rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
     transition: all 0.3s ease;
     cursor: pointer;
-    width: 100%;
-    max-width: 600px;
-    min-height: 90px;
-    position: relative;
-    overflow: hidden;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    animation: declinePulse 1.5s ease-in-out infinite, borderDanceRed 2s linear infinite;
-}
-
-.btn-decline::before {
-    content: '';
-    position: absolute;
-    top: -2px;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-    animation: shimmer 2s infinite;
 }
 
 .btn-decline:hover {
     background: linear-gradient(180deg, #f87171, #ef4444);
     border-color: #fff;
-    transform: scale(1.08);
-    box-shadow: 
-        0 0 30px rgba(239, 68, 68, 1),
-        0 0 60px rgba(239, 68, 68, 0.8),
-        0 0 90px rgba(239, 68, 68, 0.6);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.5);
     color: #fff;
-}
-
-@keyframes declinePulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.03); }
-}
-
-@keyframes borderDanceRed {
-    0% { border-color: rgba(255, 255, 255, 0.6); }
-    50% { border-color: rgba(255, 255, 255, 1); }
-    100% { border-color: rgba(255, 255, 255, 0.6); }
 }
 
 @media (max-width: 720px) {
     .btn-decline {
-        font-size: 20px;
-        padding: 24px 20px;
-        min-height: 85px;
-        border-width: 3px;
+        font-size: 14px;
+        padding: 12px 20px;
     }
 }
 
