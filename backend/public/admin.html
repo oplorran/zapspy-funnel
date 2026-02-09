@@ -3900,6 +3900,12 @@ Estou aqui para esclarecer tudo! 😊`
             const languageFilter = document.getElementById('languageFilter');
             if (languageFilter) languageFilter.value = globalLangFilter;
             
+            // Sync with recovery filter (but don't override if user manually selected)
+            const recoveryLangFilter = document.getElementById('recoveryFilterLanguage');
+            if (recoveryLangFilter && !recoveryLangFilter.value) {
+                // Only sync if recovery filter is empty (user hasn't selected manually)
+            }
+            
             // Only reload if not custom or if custom dates are selected
             if (globalDateFilter !== 'custom' || (dateStartInput?.value && dateEndInput?.value)) {
                 loadAllData();
@@ -5040,7 +5046,11 @@ Estou aqui para esclarecer tudo! 😊`
         // Load recovery segments summary
         async function loadRecoverySegments() {
             try {
-                const language = document.getElementById('recoveryFilterLanguage')?.value || '';
+                // Check local filter first, then fallback to global filter
+                const localLanguage = document.getElementById('recoveryFilterLanguage')?.value || '';
+                const globalLanguage = document.getElementById('globalFunnelFilter')?.value || '';
+                const language = localLanguage || globalLanguage; // Local filter takes priority
+                
                 const period = document.getElementById('recoveryFilterPeriod')?.value || '';
                 
                 let params = [];
@@ -5150,7 +5160,11 @@ Estou aqui para esclarecer tudo! 😊`
             tableBody.innerHTML = '<tr><td colspan="8"><div class="loading"><div class="spinner"></div>Carregando...</div></td></tr>';
             
             try {
-                const language = document.getElementById('recoveryFilterLanguage')?.value || '';
+                // Check local filter first, then fallback to global filter
+                const localLanguage = document.getElementById('recoveryFilterLanguage')?.value || '';
+                const globalLanguage = document.getElementById('globalFunnelFilter')?.value || '';
+                const language = localLanguage || globalLanguage; // Local filter takes priority
+                
                 const period = document.getElementById('recoveryFilterPeriod')?.value || '';
                 const minScore = document.getElementById('recoveryFilterScore')?.value || '';
                 const contactStatus = document.getElementById('recoveryFilterContact')?.value || '';
