@@ -40,6 +40,19 @@ const UpsellTracker = {
         return visitorId;
     },
     
+    // Get stored UTMs (uses TrackingUtils if available)
+    getUTMs: function() {
+        if (typeof TrackingUtils !== 'undefined') {
+            return TrackingUtils.getStoredUTMs();
+        }
+        const utms = {};
+        ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach(param => {
+            const value = localStorage.getItem(param);
+            if (value) utms[param] = value;
+        });
+        return utms;
+    },
+    
     // Track an event
     track: function(event, metadata = {}) {
         const visitorId = this.getVisitorId();
@@ -47,6 +60,7 @@ const UpsellTracker = {
         const targetGender = localStorage.getItem('targetGender') || null;
         const page = window.location.pathname;
         const timeOnPage = Math.round((Date.now() - this.pageLoadTime) / 1000);
+        const utms = this.getUTMs();
         
         const data = {
             visitorId,
@@ -54,8 +68,11 @@ const UpsellTracker = {
             page,
             targetPhone,
             targetGender,
+            funnelLanguage: 'es',
+            funnelSource: 'main',
             metadata: {
                 ...metadata,
+                ...utms, // Include UTMs in metadata
                 url: window.location.href,
                 referrer: document.referrer,
                 timestamp: new Date().toISOString(),
@@ -68,12 +85,21 @@ const UpsellTracker = {
             }
         };
         
-        // Send to backend
-        fetch(`${this.API_URL}/api/track`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        }).catch(err => console.log('Tracking error:', err));
+        // Use TrackingUtils retry logic if available
+        if (typeof TrackingUtils !== 'undefined') {
+            TrackingUtils.sendWithRetry(`${this.API_URL}/api/track`, data)
+                .then(result => {
+                    if (!result.success) {
+                        console.warn('📊 Upsell tracking failed after retries:', event);
+                    }
+                });
+        } else {
+            fetch(`${this.API_URL}/api/track`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            }).catch(err => console.log('Tracking error:', err));
+        }
         
         console.log('📊 Upsell Event:', event, data);
     },

@@ -1,14 +1,19 @@
 /**
  * Funnel Tracking System
  * Tracks visitor journey through the sales funnel
+ * Requires: tracking-utils.js to be loaded first
  */
 
 const FunnelTracker = {
     // Backend API URL - configure after deploying
     API_URL: 'https://zapspy-funnel-production.up.railway.app',
     
-    // Get or create visitor ID
+    // Get or create visitor ID (uses TrackingUtils if available)
     getVisitorId: function() {
+        if (typeof TrackingUtils !== 'undefined') {
+            return TrackingUtils.getVisitorId();
+        }
+        // Fallback if TrackingUtils not loaded
         let visitorId = localStorage.getItem('funnelVisitorId');
         if (!visitorId) {
             visitorId = 'v_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
@@ -17,12 +22,27 @@ const FunnelTracker = {
         return visitorId;
     },
     
+    // Get stored UTMs (uses TrackingUtils if available)
+    getUTMs: function() {
+        if (typeof TrackingUtils !== 'undefined') {
+            return TrackingUtils.getStoredUTMs();
+        }
+        // Fallback
+        const utms = {};
+        ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach(param => {
+            const value = localStorage.getItem(param);
+            if (value) utms[param] = value;
+        });
+        return utms;
+    },
+    
     // Track an event
     track: function(event, metadata = {}) {
         const visitorId = this.getVisitorId();
         const targetPhone = localStorage.getItem('targetPhone') || null;
         const targetGender = localStorage.getItem('targetGender') || null;
         const page = window.location.pathname.split('/').pop() || 'index';
+        const utms = this.getUTMs();
         
         const data = {
             visitorId,
@@ -34,18 +54,29 @@ const FunnelTracker = {
             funnelSource: 'main',
             metadata: {
                 ...metadata,
+                ...utms, // Include UTMs in metadata
                 url: window.location.href,
                 referrer: document.referrer,
                 timestamp: new Date().toISOString()
             }
         };
         
-        // Send to backend (fire and forget)
-        fetch(`${this.API_URL}/api/track`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        }).catch(err => console.log('Tracking error:', err));
+        // Use TrackingUtils retry logic if available
+        if (typeof TrackingUtils !== 'undefined') {
+            TrackingUtils.sendWithRetry(`${this.API_URL}/api/track`, data)
+                .then(result => {
+                    if (!result.success) {
+                        console.warn('📊 Funnel tracking failed after retries:', event);
+                    }
+                });
+        } else {
+            // Fallback to simple fetch
+            fetch(`${this.API_URL}/api/track`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            }).catch(err => console.log('Tracking error:', err));
+        }
         
         // Also log to console for debugging
         console.log('📊 Funnel Event:', event, data);

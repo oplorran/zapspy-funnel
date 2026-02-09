@@ -48,6 +48,7 @@
     <!-- End Meta Pixel Code -->
 
     <!-- Enhanced Tracking -->
+    <script src="js/tracking-utils.js"></script>
     <script src="js/tracking.js"></script>
     <script src="js/funnel-tracking.js"></script>
     <script src="js/facebook-capi.js"></script>
@@ -55,6 +56,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             if (typeof FacebookCAPI !== 'undefined') {
                 FacebookCAPI.init('CTA Page');
+                FacebookCAPI.trackViewContent('CTA Page', 'Funnel - Final Step', 47);
             }
         });
     </script>
@@ -2308,7 +2310,33 @@
             
             // Build checkout URL with user data
             // X Ai - Detector de Infidelidad (349260) - Produto Front Espanhol
-            let checkoutUrl = 'https://pay.monetizze.com.br/KCH455963?utm_source=zapspy&utm_medium=funnel_es&utm_campaign=' + utmCampaign;
+            // Use original UTMs from Meta Ads (for Utmify) + custom zs_* params (for internal tracking)
+            let checkoutUrl = 'https://pay.monetizze.com.br/KCH455963';
+            
+            // Get preserved UTMs from Meta Ads (if they exist)
+            const utm_source = localStorage.getItem('utm_source') || 'zapspy';
+            const utm_medium = localStorage.getItem('utm_medium') || 'funnel_es';
+            const utm_campaign = localStorage.getItem('utm_campaign') || utmCampaign;
+            const utm_content = localStorage.getItem('utm_content');
+            const utm_term = localStorage.getItem('utm_term');
+            
+            // Add original UTMs (compatible with Utmify)
+            checkoutUrl += '?utm_source=' + encodeURIComponent(utm_source);
+            checkoutUrl += '&utm_medium=' + encodeURIComponent(utm_medium);
+            checkoutUrl += '&utm_campaign=' + encodeURIComponent(utm_campaign);
+            if (utm_content) checkoutUrl += '&utm_content=' + encodeURIComponent(utm_content);
+            if (utm_term) checkoutUrl += '&utm_term=' + encodeURIComponent(utm_term);
+            
+            // Add custom zs_* params for internal tracking (won't interfere with Utmify)
+            checkoutUrl += '&zs_source=zapspy';
+            checkoutUrl += '&zs_funnel=funnel_es';
+            checkoutUrl += '&zs_campaign=' + encodeURIComponent(utmCampaign);
+            
+            // IMPORTANT: Pass visitor_id for upsell tracking continuity
+            const visitorId = typeof TrackingUtils !== 'undefined' ? TrackingUtils.getVisitorId() : localStorage.getItem('funnelVisitorId');
+            if (visitorId) {
+                checkoutUrl += '&vid=' + encodeURIComponent(visitorId);
+            }
             
             // Add user data from localStorage to pre-fill Monetizze checkout
             const userName = localStorage.getItem('userName');
@@ -2408,8 +2436,32 @@
                 fbq('track', 'InitiateCheckout', { content_name: '50% OFF Offer', value: 23.50, currency: 'USD' });
             }
             
-            // Build checkout URL with user data
-            let checkoutUrl = CHECKOUT_50_OFF_BASE + '?utm_source=zapspy&utm_medium=backredirect&utm_campaign=50off';
+            // Build checkout URL with preserved UTMs + internal tracking
+            let checkoutUrl = CHECKOUT_50_OFF_BASE;
+            
+            // Get preserved UTMs from Meta Ads (if they exist)
+            const utm_source_50 = localStorage.getItem('utm_source') || 'zapspy';
+            const utm_medium_50 = localStorage.getItem('utm_medium') || 'backredirect';
+            const utm_campaign_50 = localStorage.getItem('utm_campaign') || '50off';
+            const utm_content_50 = localStorage.getItem('utm_content');
+            const utm_term_50 = localStorage.getItem('utm_term');
+            
+            // Add original UTMs (compatible with Utmify)
+            checkoutUrl += '?utm_source=' + encodeURIComponent(utm_source_50);
+            checkoutUrl += '&utm_medium=' + encodeURIComponent(utm_medium_50);
+            checkoutUrl += '&utm_campaign=' + encodeURIComponent(utm_campaign_50);
+            if (utm_content_50) checkoutUrl += '&utm_content=' + encodeURIComponent(utm_content_50);
+            if (utm_term_50) checkoutUrl += '&utm_term=' + encodeURIComponent(utm_term_50);
+            
+            // Add custom zs_* params for internal tracking
+            checkoutUrl += '&zs_source=zapspy';
+            checkoutUrl += '&zs_funnel=50off_es';
+            
+            // IMPORTANT: Pass visitor_id for upsell tracking continuity
+            const visitorId_50 = typeof TrackingUtils !== 'undefined' ? TrackingUtils.getVisitorId() : localStorage.getItem('funnelVisitorId');
+            if (visitorId_50) {
+                checkoutUrl += '&vid=' + encodeURIComponent(visitorId_50);
+            }
             
             // Add user data from localStorage to pre-fill Monetizze checkout
             const userName = localStorage.getItem('userName');

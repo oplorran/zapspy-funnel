@@ -16,6 +16,7 @@
     <script src="js/audio-vibration.js"></script>
     
     <!-- Enhanced Tracking -->
+    <script src="js/tracking-utils.js"></script>
     <script src="js/tracking.js"></script>
     <script src="js/funnel-tracking.js"></script>
     
@@ -97,6 +98,8 @@
         document.addEventListener('DOMContentLoaded', function() {
             if (typeof FacebookCAPI !== 'undefined') {
                 FacebookCAPI.init('Phone Capture');
+                // Track ViewContent for phone capture step
+                FacebookCAPI.trackViewContent('Phone Capture', 'Funnel - Lead Step', 0);
             }
         });
     </script>
@@ -2440,14 +2443,31 @@
             data.fbc = fbIds.fbc;
             data.fbp = fbIds.fbp;
             
-            fetch(`${ZAPSPY_API_URL}/api/leads`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            })
-            .then(response => response.json())
-            .then(result => console.log('Lead saved:', result))
-            .catch(error => console.log('Lead save error:', error));
+            // Add UTM parameters from TrackingUtils (if available)
+            if (typeof TrackingUtils !== 'undefined') {
+                const utms = TrackingUtils.getStoredUTMs();
+                data.utm_source = utms.utm_source || null;
+                data.utm_medium = utms.utm_medium || null;
+                data.utm_campaign = utms.utm_campaign || null;
+                data.utm_content = utms.utm_content || null;
+                data.utm_term = utms.utm_term || null;
+            }
+            
+            // Use TrackingUtils retry logic if available
+            if (typeof TrackingUtils !== 'undefined') {
+                TrackingUtils.sendWithRetry(`${ZAPSPY_API_URL}/api/leads`, data)
+                    .then(result => console.log('Lead saved:', result))
+                    .catch(error => console.log('Lead save error:', error));
+            } else {
+                fetch(`${ZAPSPY_API_URL}/api/leads`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(result => console.log('Lead saved:', result))
+                .catch(error => console.log('Lead save error:', error));
+            }
         }
         
         function startHacking() {

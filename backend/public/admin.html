@@ -5811,6 +5811,14 @@ Estou aqui para esclarecer tudo! 😊`
                 let icon = '📍';
                 let glowColor = 'rgba(59, 130, 246, 0.3)';
                 
+                // Check for upsell events first
+                const eventName = item.event || '';
+                const isUpsellAccepted = eventName.includes('_accepted');
+                const isUpsellDeclined = eventName.includes('_declined');
+                const isUpsellView = eventName.includes('_view');
+                const isUpsellEvent = eventName.startsWith('upsell_');
+                const isEngagement = eventName.startsWith('engaged_') || eventName.includes('scroll_');
+                
                 if (item.type === 'lead_captured') {
                     bgColor = '#6366f1';
                     glowColor = 'rgba(99, 102, 241, 0.4)';
@@ -5829,6 +5837,26 @@ Estou aqui para esclarecer tudo! 😊`
                         glowColor = 'rgba(245, 158, 11, 0.4)';
                         icon = '⏳';
                     }
+                } else if (isUpsellAccepted) {
+                    // Upsell accepted - bright green
+                    bgColor = '#22c55e';
+                    glowColor = 'rgba(34, 197, 94, 0.5)';
+                    icon = '💰';
+                } else if (isUpsellDeclined) {
+                    // Upsell declined - orange/red
+                    bgColor = '#f97316';
+                    glowColor = 'rgba(249, 115, 22, 0.4)';
+                    icon = '❌';
+                } else if (isUpsellView) {
+                    // Upsell page viewed - purple
+                    bgColor = '#8b5cf6';
+                    glowColor = 'rgba(139, 92, 246, 0.4)';
+                    icon = '👀';
+                } else if (isEngagement) {
+                    // Engagement events - teal
+                    bgColor = '#14b8a6';
+                    glowColor = 'rgba(20, 184, 166, 0.3)';
+                    icon = '⏱️';
                 }
                 
                 html += `

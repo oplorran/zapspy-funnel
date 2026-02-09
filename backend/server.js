@@ -407,7 +407,13 @@ app.post('/api/leads', leadLimiter, async (req, res) => {
             fbp,  // Facebook browser ID (from cookie)
             funnelLanguage,  // 'en' or 'es' - funnel language for pixel selection
             visitorId,  // Funnel visitor ID for journey tracking
-            funnelSource  // 'main' or 'affiliate' - source of the lead
+            funnelSource,  // 'main' or 'affiliate' - source of the lead
+            // UTM parameters for campaign tracking
+            utm_source,
+            utm_medium,
+            utm_campaign,
+            utm_content,
+            utm_term
         } = req.body;
         
         // Validation
@@ -454,23 +460,28 @@ app.post('/api/leads', leadLimiter, async (req, res) => {
                     city = COALESCE($10, city),
                     visitor_id = COALESCE($11, visitor_id),
                     funnel_source = COALESCE($12, funnel_source),
+                    utm_source = COALESCE($14, utm_source),
+                    utm_medium = COALESCE($15, utm_medium),
+                    utm_campaign = COALESCE($16, utm_campaign),
+                    utm_content = COALESCE($17, utm_content),
+                    utm_term = COALESCE($18, utm_term),
                     last_visit_at = NOW(),
                     updated_at = NOW()
                 WHERE id = $13
                 RETURNING id, created_at`,
-                [name || null, targetPhone || null, targetGender || null, ipAddress, referrer || null, ua || null, currentVisitCount + 1, geoData.country, geoData.country_code, geoData.city, visitorId || null, source, existingLead.rows[0].id]
+                [name || null, targetPhone || null, targetGender || null, ipAddress, referrer || null, ua || null, currentVisitCount + 1, geoData.country, geoData.country_code, geoData.city, visitorId || null, source, existingLead.rows[0].id, utm_source || null, utm_medium || null, utm_campaign || null, utm_content || null, utm_term || null]
             );
             console.log(`Returning lead [${language.toUpperCase()}/${source}]: ${name || 'No name'} - ${email} - ${geoData.country || 'Unknown'} (visit #${currentVisitCount + 1})`);
         } else {
             // Insert new lead
             result = await pool.query(
-                `INSERT INTO leads (name, email, whatsapp, target_phone, target_gender, ip_address, referrer, user_agent, funnel_language, funnel_source, visit_count, country, country_code, city, visitor_id, created_at)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 1, $11, $12, $13, $14, NOW())
+                `INSERT INTO leads (name, email, whatsapp, target_phone, target_gender, ip_address, referrer, user_agent, funnel_language, funnel_source, visit_count, country, country_code, city, visitor_id, utm_source, utm_medium, utm_campaign, utm_content, utm_term, created_at)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 1, $11, $12, $13, $14, $15, $16, $17, $18, $19, NOW())
                  RETURNING id, created_at`,
-                [name || null, email, whatsapp, targetPhone || null, targetGender || null, ipAddress, referrer || null, ua || null, language, source, geoData.country, geoData.country_code, geoData.city, visitorId || null]
+                [name || null, email, whatsapp, targetPhone || null, targetGender || null, ipAddress, referrer || null, ua || null, language, source, geoData.country, geoData.country_code, geoData.city, visitorId || null, utm_source || null, utm_medium || null, utm_campaign || null, utm_content || null, utm_term || null]
             );
             isNewLead = true;
-            console.log(`New lead captured [${language.toUpperCase()}/${source}]: ${name || 'No name'} - ${email} - ${whatsapp} - ${geoData.country || 'Unknown'}`);
+            console.log(`New lead captured [${language.toUpperCase()}/${source}]: ${name || 'No name'} - ${email} - ${whatsapp} - ${geoData.country || 'Unknown'}${utm_source ? ` [UTM: ${utm_source}]` : ''}`);
         }
         
         // Send Lead event to Facebook Conversions API (using correct pixels for language)
@@ -2192,6 +2203,7 @@ app.get('/api/admin/customer/:leadId/journey', authenticateToken, async (req, re
         // Add funnel events to timeline
         funnelEvents.forEach(event => {
             const eventLabels = {
+                // Main funnel events
                 'page_view_landing': '👀 Visitou página inicial',
                 'page_view_phone': '📱 Página do telefone',
                 'gender_selected': '👤 Selecionou gênero',
@@ -2201,11 +2213,49 @@ app.get('/api/admin/customer/:leadId/journey', authenticateToken, async (req, re
                 'page_view_cta': '🎯 Página de oferta',
                 'email_captured': '📧 Email capturado',
                 'checkout_clicked': '🛒 Clicou no checkout',
+                'checkout_50off_clicked': '🛒 Clicou checkout 50% OFF',
                 'scroll_50_percent': '📜 Scroll 50%',
                 'scroll_100_percent': '📜 Scroll 100%',
+                'scroll_90_percent': '📜 Scroll 90%',
                 'time_on_page_30s': '⏱️ 30s na página',
                 'time_on_page_60s': '⏱️ 60s na página',
-                'exit_intent_shown': '🚪 Exit intent'
+                'exit_intent_shown': '🚪 Exit intent',
+                
+                // Upsell page views
+                'upsell_1_view': '👀 Visualizou Upsell 1',
+                'upsell_2_view': '👀 Visualizou Upsell 2',
+                'upsell_3_view': '👀 Visualizou Upsell 3',
+                'thankyou_view': '🎉 Página de obrigado',
+                
+                // Upsell page ready
+                'upsell_1_ready': '✅ Upsell 1 carregado',
+                'upsell_2_ready': '✅ Upsell 2 carregado',
+                'upsell_3_ready': '✅ Upsell 3 carregado',
+                
+                // Upsell accepts
+                'upsell_1_accepted': '💰 ACEITOU Upsell 1',
+                'upsell_2_accepted': '💰 ACEITOU Upsell 2',
+                'upsell_3_accepted': '💰 ACEITOU Upsell 3',
+                
+                // Upsell declines
+                'upsell_1_declined': '❌ Recusou Upsell 1',
+                'upsell_2_declined': '❌ Recusou Upsell 2',
+                'upsell_3_declined': '❌ Recusou Upsell 3',
+                
+                // Upsell CTA visibility
+                'upsell_1_cta_visible': '👁️ CTA visível Up1',
+                'upsell_2_cta_visible': '👁️ CTA visível Up2',
+                'upsell_3_cta_visible': '👁️ CTA visível Up3',
+                
+                // Upsell exits
+                'upsell_1_exit': '🚪 Saiu do Upsell 1',
+                'upsell_2_exit': '🚪 Saiu do Upsell 2',
+                'upsell_3_exit': '🚪 Saiu do Upsell 3',
+                
+                // Engagement milestones
+                'engaged_10s': '⏱️ Engajado 10s',
+                'engaged_30s': '⏱️ Engajado 30s',
+                'engaged_60s': '⏱️ Engajado 60s'
             };
             
             timeline.push({
@@ -5180,6 +5230,13 @@ async function initDatabase() {
         // Add funnel_source column to leads (main or affiliate)
         await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS funnel_source VARCHAR(20) DEFAULT 'main';`);
         
+        // Add UTM tracking columns to leads
+        await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS utm_source VARCHAR(255);`);
+        await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS utm_medium VARCHAR(255);`);
+        await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS utm_campaign VARCHAR(500);`);
+        await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS utm_content VARCHAR(500);`);
+        await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS utm_term VARCHAR(255);`);
+        
         // Create funnel_events table for tracking
         await pool.query(`
             CREATE TABLE IF NOT EXISTS funnel_events (
@@ -5424,6 +5481,152 @@ async function initDatabase() {
         console.error('❌ Database init error:', error.message);
     }
 }
+
+// Debug endpoint: Upsell tracking analysis
+// Find upsell events that might be orphaned (not linked to leads)
+app.get('/api/admin/debug/upsell-tracking', authenticateToken, async (req, res) => {
+    try {
+        // 1. Get all upsell-related events
+        const upsellEvents = await pool.query(`
+            SELECT event, COUNT(*) as count
+            FROM funnel_events
+            WHERE event LIKE '%upsell%'
+            GROUP BY event
+            ORDER BY count DESC
+        `);
+        
+        // 2. Get upsell events that DON'T have a matching lead (orphaned)
+        const orphanedEvents = await pool.query(`
+            SELECT fe.visitor_id, COUNT(*) as event_count, 
+                   array_agg(DISTINCT fe.event) as events,
+                   MIN(fe.created_at) as first_event,
+                   MAX(fe.created_at) as last_event
+            FROM funnel_events fe
+            LEFT JOIN leads l ON fe.visitor_id = l.visitor_id
+            WHERE fe.event LIKE '%upsell%' AND l.id IS NULL
+            GROUP BY fe.visitor_id
+            ORDER BY last_event DESC
+            LIMIT 50
+        `);
+        
+        // 3. Get upsell events that DO have matching leads
+        const linkedEvents = await pool.query(`
+            SELECT l.id as lead_id, l.email, l.name, fe.visitor_id,
+                   COUNT(*) as event_count,
+                   array_agg(DISTINCT fe.event) as events
+            FROM funnel_events fe
+            INNER JOIN leads l ON fe.visitor_id = l.visitor_id
+            WHERE fe.event LIKE '%upsell%'
+            GROUP BY l.id, l.email, l.name, fe.visitor_id
+            ORDER BY MAX(fe.created_at) DESC
+            LIMIT 50
+        `);
+        
+        // 4. Get recent upsell events with page info
+        const recentUpsellEvents = await pool.query(`
+            SELECT fe.*, 
+                   l.email as lead_email, 
+                   l.name as lead_name
+            FROM funnel_events fe
+            LEFT JOIN leads l ON fe.visitor_id = l.visitor_id
+            WHERE fe.event LIKE '%upsell%'
+            ORDER BY fe.created_at DESC
+            LIMIT 100
+        `);
+        
+        // 5. Check for visitor_ids that have transactions but no linked lead
+        const transactionsWithoutLeadLink = await pool.query(`
+            SELECT t.email, t.product, t.status, t.value, t.created_at,
+                   l.visitor_id as lead_visitor_id,
+                   (SELECT COUNT(*) FROM funnel_events fe WHERE fe.visitor_id = l.visitor_id AND fe.event LIKE '%upsell%') as upsell_events_count
+            FROM transactions t
+            LEFT JOIN leads l ON LOWER(t.email) = LOWER(l.email)
+            WHERE t.status = 'approved'
+            AND (t.product ILIKE '%recovery%' OR t.product ILIKE '%vault%' OR t.product ILIKE '%vision%' OR t.product ILIKE '%vip%')
+            ORDER BY t.created_at DESC
+            LIMIT 50
+        `);
+        
+        res.json({
+            summary: {
+                totalUpsellEventTypes: upsellEvents.rows.length,
+                orphanedVisitors: orphanedEvents.rows.length,
+                linkedVisitors: linkedEvents.rows.length
+            },
+            eventBreakdown: upsellEvents.rows,
+            orphanedEvents: orphanedEvents.rows,
+            linkedEvents: linkedEvents.rows,
+            recentEvents: recentUpsellEvents.rows,
+            upsellTransactionsLinkStatus: transactionsWithoutLeadLink.rows
+        });
+        
+    } catch (error) {
+        console.error('Error in upsell tracking debug:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Debug endpoint: Find customer journey by email
+app.get('/api/admin/debug/journey-by-email/:email', authenticateToken, async (req, res) => {
+    try {
+        const { email } = req.params;
+        
+        // Find all leads with this email
+        const leads = await pool.query(`
+            SELECT * FROM leads WHERE LOWER(email) = LOWER($1)
+        `, [email]);
+        
+        // Find all transactions for this email
+        const transactions = await pool.query(`
+            SELECT * FROM transactions WHERE LOWER(email) = LOWER($1) ORDER BY created_at
+        `, [email]);
+        
+        // Find all funnel events for each lead's visitor_id
+        const allEvents = [];
+        for (const lead of leads.rows) {
+            if (lead.visitor_id) {
+                const events = await pool.query(`
+                    SELECT * FROM funnel_events WHERE visitor_id = $1 ORDER BY created_at
+                `, [lead.visitor_id]);
+                allEvents.push({
+                    lead_id: lead.id,
+                    visitor_id: lead.visitor_id,
+                    events: events.rows
+                });
+            }
+        }
+        
+        // Also find events that might match by looking for similar visitor_ids or time proximity
+        // Look for upsell events that happened around the same time as the transactions
+        if (transactions.rows.length > 0) {
+            const firstTxTime = transactions.rows[0].created_at;
+            const potentialEvents = await pool.query(`
+                SELECT fe.*, l.email as potential_lead_email
+                FROM funnel_events fe
+                LEFT JOIN leads l ON fe.visitor_id = l.visitor_id
+                WHERE fe.event LIKE '%upsell%'
+                AND fe.created_at BETWEEN $1::timestamp - INTERVAL '30 minutes' AND $1::timestamp + INTERVAL '30 minutes'
+                ORDER BY fe.created_at
+            `, [firstTxTime]);
+            
+            allEvents.push({
+                context: 'potential_matches_by_time',
+                events: potentialEvents.rows
+            });
+        }
+        
+        res.json({
+            email: email,
+            leads: leads.rows,
+            transactions: transactions.rows,
+            eventsByLead: allEvents
+        });
+        
+    } catch (error) {
+        console.error('Error in journey by email debug:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
 
 // Start server
 app.listen(PORT, async () => {

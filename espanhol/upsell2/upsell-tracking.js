@@ -40,6 +40,19 @@ const UpsellTracker = {
         return visitorId;
     },
     
+    // Get stored UTMs (uses TrackingUtils if available)
+    getUTMs: function() {
+        if (typeof TrackingUtils !== 'undefined') {
+            return TrackingUtils.getStoredUTMs();
+        }
+        const utms = {};
+        ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach(param => {
+            const value = localStorage.getItem(param);
+            if (value) utms[param] = value;
+        });
+        return utms;
+    },
+    
     // Track an event
     track: function(event, metadata = {}) {
         const visitorId = this.getVisitorId();
@@ -47,6 +60,7 @@ const UpsellTracker = {
         const targetGender = localStorage.getItem('targetGender') || null;
         const page = window.location.pathname;
         const timeOnPage = Math.round((Date.now() - this.pageLoadTime) / 1000);
+        const utms = this.getUTMs();
         
         const data = {
             visitorId,
@@ -54,8 +68,11 @@ const UpsellTracker = {
             page,
             targetPhone,
             targetGender,
+            funnelLanguage: 'es',
+            funnelSource: 'main',
             metadata: {
                 ...metadata,
+                ...utms, // Include UTMs in metadata
                 url: window.location.href,
                 referrer: document.referrer,
                 timestamp: new Date().toISOString(),
@@ -68,12 +85,21 @@ const UpsellTracker = {
             }
         };
         
-        // Send to backend
-        fetch(`${this.API_URL}/api/track`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        }).catch(err => console.log('Tracking error:', err));
+        // Use TrackingUtils retry logic if available
+        if (typeof TrackingUtils !== 'undefined') {
+            TrackingUtils.sendWithRetry(`${this.API_URL}/api/track`, data)
+                .then(result => {
+                    if (!result.success) {
+                        console.warn('📊 Upsell tracking failed after retries:', event);
+                    }
+                });
+        } else {
+            fetch(`${this.API_URL}/api/track`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            }).catch(err => console.log('Tracking error:', err));
+        }
         
         console.log('📊 Upsell Event:', event, data);
     },
@@ -145,16 +171,51 @@ const UpsellTracker = {
     },
     
     // Track accept (buy button click)
+    // Uses sendBeacon for reliability since the page will navigate away immediately
     trackAccept: function() {
         const upsell = this.getCurrentUpsell();
+        const self = this;
         
+        // Determine which event to send
+        let event = null;
         if (upsell === 1) {
-            this.track(this.events.ACCEPT_UPSELL_1, { action: 'buy_clicked' });
+            event = this.events.ACCEPT_UPSELL_1;
         } else if (upsell === 2) {
-            this.track(this.events.ACCEPT_UPSELL_2, { action: 'buy_clicked' });
+            event = this.events.ACCEPT_UPSELL_2;
         } else if (upsell === 3) {
-            this.track(this.events.ACCEPT_UPSELL_3, { action: 'buy_clicked' });
+            event = this.events.ACCEPT_UPSELL_3;
         }
+        
+        if (!event) return;
+        
+        // Build data payload
+        const data = {
+            visitorId: this.getVisitorId(),
+            event: event,
+            page: window.location.pathname,
+            targetPhone: localStorage.getItem('targetPhone') || null,
+            targetGender: localStorage.getItem('targetGender') || null,
+            metadata: {
+                action: 'buy_clicked',
+                url: window.location.href,
+                referrer: document.referrer,
+                timestamp: new Date().toISOString(),
+                timeOnPage: Math.round((Date.now() - this.pageLoadTime) / 1000),
+                scrollDepth: this.scrollDepth,
+                upsellFlow: true,
+                userAgent: navigator.userAgent,
+                screenWidth: window.innerWidth,
+                screenHeight: window.innerHeight
+            }
+        };
+        
+        // Use sendBeacon for reliable delivery (page is about to navigate away)
+        const beaconSent = navigator.sendBeacon(
+            `${this.API_URL}/api/track`,
+            JSON.stringify(data)
+        );
+        
+        console.log('📊 Upsell Accept Event (sendBeacon):', event, beaconSent ? '✅ sent' : '❌ failed', data);
     },
     
     // Track decline (no thanks click)

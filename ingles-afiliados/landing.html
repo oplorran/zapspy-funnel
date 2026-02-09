@@ -45,7 +45,8 @@
         });
     </script>
     
-    <!-- Funnel Tracking -->
+    <!-- Enhanced Tracking -->
+    <script src="js/tracking-utils.js"></script>
     <script src="js/funnel-tracking.js"></script>
     
     <!-- Matrix Effect -->
@@ -677,6 +678,27 @@
     </div>
 
     <script>
+        // ============================================
+        // CAPTURE AND PRESERVE ORIGINAL UTMs FROM META ADS
+        // ============================================
+        (function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // List of UTM parameters to capture
+            const utmParams = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'];
+            
+            // Only save if we have UTM params in URL (fresh visit from ad)
+            if (urlParams.has('utm_source') || urlParams.has('utm_campaign')) {
+                utmParams.forEach(param => {
+                    const value = urlParams.get(param);
+                    if (value) {
+                        localStorage.setItem(param, value);
+                    }
+                });
+                console.log('[UTM] Captured UTMs from URL:', Object.fromEntries(utmParams.map(p => [p, urlParams.get(p)])));
+            }
+        })();
+        
         // Selected gender
         let selectedGender = null;
 
