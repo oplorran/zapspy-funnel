@@ -5623,8 +5623,9 @@ Estou aqui para esclarecer tudo! 😊`
             
             // Add transaction stats (abandoned, rejected, front, upsells) below checkout
             if (transactionStats) {
-                const rejected = transactionStats.rejected || 0;
-                const front = transactionStats.front || transactionStats.approved || 0;
+                // Use frontRejected (only front product rejections) instead of total rejected
+                const rejected = transactionStats.frontRejected || 0;
+                const front = transactionStats.front || 0;
                 const up1 = transactionStats.upsell1 || 0;
                 const up2 = transactionStats.upsell2 || 0;
                 const up3 = transactionStats.upsell3 || 0;
@@ -5632,7 +5633,8 @@ Estou aqui para esclarecer tudo! 😊`
                 // Get checkout value
                 const checkoutValue = normalizedValues.find(s => s.key === 'checkout_clicked')?.value || 0;
                 
-                // Abandoned = people who clicked checkout but no transaction occurred
+                // Abandoned = people who clicked checkout but no front transaction occurred
+                // (neither approved nor rejected for front product)
                 const abandoned = Math.max(0, checkoutValue - rejected - front);
                 
                 // Calculate widths relative to checkout value for this section (not landing)
