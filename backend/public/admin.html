@@ -2799,6 +2799,11 @@
                                 <button class="btn-secondary" style="background: #10b981; color: white; border-color: #10b981;" onclick="runDiagnostic()">🩺 Diagnóstico Completo do Painel</button>
                                 <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">Verifica todos os números (leads, vendas, funil) com e sem filtros para detectar inconsistências.</p>
                             </div>
+                            <div style="margin-top: 16px; border-top: 1px solid rgba(239,68,68,0.2); padding-top: 16px;">
+                                <button class="btn-secondary" style="background: #ef4444; color: white; border-color: #ef4444;" onclick="checkCorruptedData()">🔍 Verificar Dados Corrompidos</button>
+                                <button class="btn-secondary" style="background: #f59e0b; color: white; border-color: #f59e0b; margin-left: 8px;" onclick="fixCorruptedData()" id="btnFixCorrupted" disabled>🧹 Limpar Dados Corrompidos</button>
+                                <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">Encontra transações com datas inválidas, IDs corrompidos, duplicatas e outros problemas no banco.</p>
+                            </div>
                             <div id="debugTransactionsResult" style="display: none; margin-top: 16px; padding: 16px; background: rgba(0,0,0,0.3); border-radius: 8px; font-family: monospace; font-size: 12px; white-space: pre-wrap; max-height: 500px; overflow-y: auto;"></div>
                         </div>
                     </div>
@@ -8385,6 +8390,173 @@ Posso ajudar em algo mais? 😊`
             } catch (error) {
                 console.error('Diagnostic error:', error);
                 showToast('Erro', 'Falha ao executar diagnóstico', 'error');
+            }
+        }
+        
+        // Store corrupted data for cleanup
+        let corruptedDataCache = null;
+        
+        async function checkCorruptedData() {
+            try {
+                showToast('🔍 Verificando...', 'Procurando dados corrompidos no banco...', 'info');
+                
+                const response = await fetch(`${API_URL}/api/admin/diagnostic/corrupted`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.status === 401 || response.status === 403) { logout(); return; }
+                
+                const data = await response.json();
+                corruptedDataCache = data;
+                
+                const resultDiv = document.getElementById('debugTransactionsResult');
+                resultDiv.style.display = 'block';
+                
+                let html = `🔍 VERIFICAÇÃO DE DADOS CORROMPIDOS\n`;
+                html += `${'═'.repeat(70)}\n\n`;
+                
+                html += `📊 RESUMO:\n`;
+                html += `${'─'.repeat(70)}\n`;
+                html += `   Total de problemas encontrados: ${data.summary.totalIssues}\n`;
+                html += `   🔴 Alta severidade: ${data.summary.highSeverity}\n`;
+                html += `   🟡 Média severidade: ${data.summary.mediumSeverity}\n`;
+                html += `   🟢 Baixa severidade: ${data.summary.lowSeverity}\n\n`;
+                
+                if (data.issues.length === 0) {
+                    html += `✅ NENHUM PROBLEMA ENCONTRADO!\n`;
+                    html += `   O banco de dados está limpo.\n`;
+                    document.getElementById('btnFixCorrupted').disabled = true;
+                } else {
+                    data.issues.forEach((issue, idx) => {
+                        const severityIcon = issue.severity === 'high' ? '🔴' : issue.severity === 'medium' ? '🟡' : '🟢';
+                        html += `\n${severityIcon} PROBLEMA ${idx + 1}: ${issue.type.toUpperCase()}\n`;
+                        html += `${'─'.repeat(70)}\n`;
+                        html += `   Severidade: ${issue.severity}\n`;
+                        html += `   Quantidade: ${issue.count}\n`;
+                        html += `   Descrição: ${issue.description}\n`;
+                        html += `   Ação sugerida: ${issue.fix_action}\n`;
+                        
+                        if (issue.data && Array.isArray(issue.data) && issue.data.length > 0) {
+                            html += `\n   📋 Exemplos:\n`;
+                            issue.data.slice(0, 5).forEach((item, i) => {
+                                if (item.transaction_id) {
+                                    html += `      ${i+1}. ID: ${item.transaction_id} | ${item.status || '-'} | R$ ${item.value || 0} | ${item.email || '-'}\n`;
+                                    if (item.created_at) {
+                                        html += `         Data: ${new Date(item.created_at).toLocaleString('pt-BR')}\n`;
+                                    }
+                                } else if (item.email) {
+                                    html += `      ${i+1}. ${item.email}\n`;
+                                } else if (item.count) {
+                                    html += `      ID ${item.transaction_id}: ${item.count} duplicatas\n`;
+                                }
+                            });
+                            if (issue.data.length > 5) {
+                                html += `      ... e mais ${issue.data.length - 5} registros\n`;
+                            }
+                        }
+                        html += `\n`;
+                    });
+                    
+                    // Enable cleanup button if there are high severity issues
+                    if (data.summary.highSeverity > 0) {
+                        document.getElementById('btnFixCorrupted').disabled = false;
+                        html += `\n${'═'.repeat(70)}\n`;
+                        html += `⚠️ ATENÇÃO: Clique em "🧹 Limpar Dados Corrompidos" para remover os registros inválidos.\n`;
+                        html += `   Isso irá deletar transações com datas no futuro e IDs inválidos.\n`;
+                    }
+                }
+                
+                resultDiv.textContent = html;
+                showToast('✅ Verificação concluída', `${data.summary.totalIssues} problemas encontrados`, data.summary.highSeverity > 0 ? 'warning' : 'success');
+                
+            } catch (error) {
+                console.error('Corrupted check error:', error);
+                showToast('Erro', 'Falha ao verificar dados corrompidos', 'error');
+            }
+        }
+        
+        async function fixCorruptedData() {
+            if (!corruptedDataCache || corruptedDataCache.issues.length === 0) {
+                showToast('ℹ️ Nada a limpar', 'Execute a verificação primeiro', 'info');
+                return;
+            }
+            
+            if (!confirm('⚠️ ATENÇÃO: Isso vai DELETAR permanentemente os dados corrompidos do banco.\n\nTem certeza que deseja continuar?')) {
+                return;
+            }
+            
+            try {
+                showToast('🧹 Limpando...', 'Removendo dados corrompidos...', 'info');
+                
+                const results = [];
+                
+                // 1. Delete future dates
+                const hasFutureDates = corruptedDataCache.issues.find(i => i.type === 'transactions_future_dates');
+                if (hasFutureDates) {
+                    const r1 = await fetch(`${API_URL}/api/admin/diagnostic/fix-corrupted`, {
+                        method: 'POST',
+                        headers: { 
+                            'Authorization': `Bearer ${authToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ action: 'delete_future_dates' })
+                    });
+                    const d1 = await r1.json();
+                    results.push(`Datas futuras: ${d1.result.deleted} removidas`);
+                }
+                
+                // 2. Delete invalid IDs
+                const hasInvalidIds = corruptedDataCache.issues.find(i => i.type === 'transactions_invalid_id_or_value');
+                if (hasInvalidIds) {
+                    const r2 = await fetch(`${API_URL}/api/admin/diagnostic/fix-corrupted`, {
+                        method: 'POST',
+                        headers: { 
+                            'Authorization': `Bearer ${authToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ action: 'delete_invalid' })
+                    });
+                    const d2 = await r2.json();
+                    results.push(`IDs inválidos: ${d2.result.deleted} removidos`);
+                }
+                
+                // 3. Remove duplicates
+                const hasDuplicates = corruptedDataCache.issues.find(i => i.type === 'transactions_duplicates');
+                if (hasDuplicates) {
+                    const r3 = await fetch(`${API_URL}/api/admin/diagnostic/fix-corrupted`, {
+                        method: 'POST',
+                        headers: { 
+                            'Authorization': `Bearer ${authToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ action: 'remove_duplicates' })
+                    });
+                    const d3 = await r3.json();
+                    results.push(`Duplicatas: ${d3.result.deleted} removidas`);
+                }
+                
+                const resultDiv = document.getElementById('debugTransactionsResult');
+                resultDiv.style.display = 'block';
+                
+                let html = `🧹 LIMPEZA CONCLUÍDA\n`;
+                html += `${'═'.repeat(70)}\n\n`;
+                html += `📊 RESULTADOS:\n`;
+                results.forEach(r => {
+                    html += `   ✅ ${r}\n`;
+                });
+                html += `\n${'─'.repeat(70)}\n`;
+                html += `💡 Execute "Verificar Dados Corrompidos" novamente para confirmar a limpeza.\n`;
+                
+                resultDiv.textContent = html;
+                
+                document.getElementById('btnFixCorrupted').disabled = true;
+                corruptedDataCache = null;
+                
+                showToast('✅ Limpeza concluída', results.join(', '), 'success');
+                
+            } catch (error) {
+                console.error('Fix corrupted error:', error);
+                showToast('Erro', 'Falha ao limpar dados corrompidos', 'error');
             }
         }
         

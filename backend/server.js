@@ -4757,6 +4757,194 @@ app.get('/api/admin/diagnostic', authenticateToken, async (req, res) => {
     }
 });
 
+// DATA CLEANUP: Find and fix corrupted data in the database
+app.get('/api/admin/diagnostic/corrupted', authenticateToken, async (req, res) => {
+    try {
+        const issues = [];
+        
+        // 1. Find transactions with future dates (date > today + 1 day buffer)
+        const futureTx = await pool.query(`
+            SELECT transaction_id, email, status, value, created_at,
+                   (created_at AT TIME ZONE 'America/Sao_Paulo') as brazil_time
+            FROM transactions 
+            WHERE created_at > NOW() + INTERVAL '1 day'
+            ORDER BY created_at DESC
+        `);
+        
+        if (futureTx.rows.length > 0) {
+            issues.push({
+                type: 'transactions_future_dates',
+                severity: 'high',
+                count: futureTx.rows.length,
+                description: 'Transações com datas no futuro (corrompidas)',
+                data: futureTx.rows,
+                fix_action: 'delete_or_fix_date'
+            });
+        }
+        
+        // 2. Find transactions with invalid IDs (not numeric Monetizze IDs)
+        const invalidIdTx = await pool.query(`
+            SELECT transaction_id, email, status, value, created_at
+            FROM transactions 
+            WHERE transaction_id !~ '^[0-9]+$' 
+            OR LENGTH(transaction_id) > 20
+            OR value IS NULL 
+            OR value = '0'
+        `);
+        
+        if (invalidIdTx.rows.length > 0) {
+            issues.push({
+                type: 'transactions_invalid_id_or_value',
+                severity: 'medium',
+                count: invalidIdTx.rows.length,
+                description: 'Transações com ID inválido ou valor nulo/zero',
+                data: invalidIdTx.rows,
+                fix_action: 'review_and_delete'
+            });
+        }
+        
+        // 3. Find duplicate transactions (same transaction_id)
+        const duplicateTx = await pool.query(`
+            SELECT transaction_id, COUNT(*) as count
+            FROM transactions 
+            GROUP BY transaction_id 
+            HAVING COUNT(*) > 1
+        `);
+        
+        if (duplicateTx.rows.length > 0) {
+            issues.push({
+                type: 'transactions_duplicates',
+                severity: 'medium',
+                count: duplicateTx.rows.length,
+                description: 'Transaction IDs duplicados',
+                data: duplicateTx.rows,
+                fix_action: 'remove_duplicates'
+            });
+        }
+        
+        // 4. Find leads with invalid emails
+        const invalidLeads = await pool.query(`
+            SELECT id, email, created_at
+            FROM leads 
+            WHERE email IS NULL 
+            OR email = ''
+            OR email !~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
+            LIMIT 20
+        `);
+        
+        if (invalidLeads.rows.length > 0) {
+            issues.push({
+                type: 'leads_invalid_email',
+                severity: 'low',
+                count: invalidLeads.rows.length,
+                description: 'Leads com email inválido ou vazio',
+                data: invalidLeads.rows,
+                fix_action: 'review'
+            });
+        }
+        
+        // 5. Find very old funnel events that might be test data (before project start)
+        const oldEvents = await pool.query(`
+            SELECT COUNT(*) as count, MIN(created_at) as oldest
+            FROM funnel_events 
+            WHERE created_at < '2025-01-01'
+        `);
+        
+        if (parseInt(oldEvents.rows[0].count) > 0) {
+            issues.push({
+                type: 'funnel_very_old_events',
+                severity: 'low',
+                count: parseInt(oldEvents.rows[0].count),
+                description: 'Eventos do funil muito antigos (antes de 2025)',
+                data: { oldest: oldEvents.rows[0].oldest },
+                fix_action: 'review_and_delete'
+            });
+        }
+        
+        res.json({
+            summary: {
+                totalIssues: issues.length,
+                highSeverity: issues.filter(i => i.severity === 'high').length,
+                mediumSeverity: issues.filter(i => i.severity === 'medium').length,
+                lowSeverity: issues.filter(i => i.severity === 'low').length
+            },
+            issues,
+            timestamp: new Date().toISOString()
+        });
+        
+    } catch (error) {
+        console.error('Corrupted data check error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// DATA CLEANUP: Delete corrupted transactions
+app.post('/api/admin/diagnostic/fix-corrupted', authenticateToken, async (req, res) => {
+    try {
+        const { action, transactionIds } = req.body;
+        let result = { deleted: 0, fixed: 0, details: [] };
+        
+        if (action === 'delete_future_dates') {
+            // Delete transactions with dates in the future
+            const deleted = await pool.query(`
+                DELETE FROM transactions 
+                WHERE created_at > NOW() + INTERVAL '1 day'
+                RETURNING transaction_id, email
+            `);
+            result.deleted = deleted.rowCount;
+            result.details = deleted.rows;
+        }
+        
+        if (action === 'delete_invalid') {
+            // Delete transactions with invalid IDs or zero value
+            const deleted = await pool.query(`
+                DELETE FROM transactions 
+                WHERE (transaction_id !~ '^[0-9]+$' OR LENGTH(transaction_id) > 20)
+                AND status != 'approved'
+                RETURNING transaction_id, email
+            `);
+            result.deleted = deleted.rowCount;
+            result.details = deleted.rows;
+        }
+        
+        if (action === 'delete_specific' && transactionIds && transactionIds.length > 0) {
+            // Delete specific transaction IDs
+            const deleted = await pool.query(`
+                DELETE FROM transactions 
+                WHERE transaction_id = ANY($1)
+                RETURNING transaction_id, email
+            `, [transactionIds]);
+            result.deleted = deleted.rowCount;
+            result.details = deleted.rows;
+        }
+        
+        if (action === 'remove_duplicates') {
+            // Remove duplicate transactions, keeping the newest one
+            const deleted = await pool.query(`
+                DELETE FROM transactions a
+                USING transactions b
+                WHERE a.transaction_id = b.transaction_id 
+                AND a.created_at < b.created_at
+                RETURNING a.transaction_id
+            `);
+            result.deleted = deleted.rowCount;
+        }
+        
+        console.log(`🧹 Cleanup action "${action}": ${result.deleted} deleted, ${result.fixed} fixed`);
+        
+        res.json({
+            success: true,
+            action,
+            result,
+            timestamp: new Date().toISOString()
+        });
+        
+    } catch (error) {
+        console.error('Fix corrupted error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Fix leads status - convert leads with approved transactions to 'converted'
 app.post('/api/admin/fix-leads-status', authenticateToken, async (req, res) => {
     try {
