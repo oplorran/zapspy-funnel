@@ -4521,6 +4521,46 @@ app.post('/api/admin/migrate-leads-funnel-source', authenticateToken, async (req
     }
 });
 
+// Fix leads status - convert leads with approved transactions to 'converted'
+app.post('/api/admin/fix-leads-status', authenticateToken, async (req, res) => {
+    try {
+        // Find leads that have approved transactions but are NOT marked as 'converted'
+        const result = await pool.query(`
+            UPDATE leads 
+            SET status = 'converted',
+                updated_at = NOW(),
+                notes = COALESCE(notes, '') || E'\n[Auto-fix] Status corrigido para converted - ' || NOW()::text
+            WHERE status != 'converted'
+            AND LOWER(email) IN (
+                SELECT DISTINCT LOWER(email) 
+                FROM transactions 
+                WHERE status = 'approved'
+            )
+            RETURNING id, email, status
+        `);
+        
+        console.log(`✅ Fixed ${result.rowCount} leads with incorrect status`);
+        
+        // Get summary stats
+        const stats = await pool.query(`
+            SELECT status, COUNT(*) as count 
+            FROM leads 
+            GROUP BY status
+            ORDER BY count DESC
+        `);
+        
+        res.json({ 
+            success: true, 
+            message: `${result.rowCount} leads corrigidos para 'converted'`,
+            fixedLeads: result.rows.map(l => ({ id: l.id, email: l.email })),
+            currentStats: stats.rows
+        });
+    } catch (error) {
+        console.error('Error fixing leads status:', error);
+        res.status(500).json({ error: 'Failed to fix leads status', details: error.message });
+    }
+});
+
 // Auto-migrate database on startup
 async function initDatabase() {
     try {
