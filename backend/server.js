@@ -443,6 +443,407 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// ==================== A/B TESTING API ====================
+
+// Public endpoint: Get variant for a visitor
+app.get('/api/ab/variant', async (req, res) => {
+    try {
+        const { funnel, visitor_id } = req.query;
+        
+        if (!funnel || !visitor_id) {
+            return res.json({ variant: null, test_id: null });
+        }
+        
+        // Check if visitor already has a variant assigned
+        const existing = await pool.query(`
+            SELECT atv.variant, atv.test_id, at.variant_a_param, at.variant_b_param
+            FROM ab_test_visitors atv
+            JOIN ab_tests at ON at.id = atv.test_id
+            WHERE atv.visitor_id = $1 AND at.funnel = $2 AND at.status = 'running'
+            LIMIT 1
+        `, [visitor_id, funnel]);
+        
+        if (existing.rows.length > 0) {
+            const row = existing.rows[0];
+            const param = row.variant === 'A' ? row.variant_a_param : row.variant_b_param;
+            return res.json({ 
+                variant: row.variant, 
+                test_id: row.test_id,
+                param: param
+            });
+        }
+        
+        // Get active test for this funnel
+        const test = await pool.query(`
+            SELECT id, traffic_split, variant_a_param, variant_b_param
+            FROM ab_tests 
+            WHERE funnel = $1 AND status = 'running'
+            LIMIT 1
+        `, [funnel]);
+        
+        if (test.rows.length === 0) {
+            return res.json({ variant: null, test_id: null });
+        }
+        
+        const activeTest = test.rows[0];
+        
+        // Assign variant based on traffic split
+        const random = Math.random() * 100;
+        const variant = random < activeTest.traffic_split ? 'A' : 'B';
+        const param = variant === 'A' ? activeTest.variant_a_param : activeTest.variant_b_param;
+        
+        // Save assignment
+        await pool.query(`
+            INSERT INTO ab_test_visitors (test_id, visitor_id, variant, ip_address, user_agent)
+            VALUES ($1, $2, $3, $4, $5)
+            ON CONFLICT (test_id, visitor_id) DO NOTHING
+        `, [activeTest.id, visitor_id, variant, req.ip, req.headers['user-agent']]);
+        
+        res.json({ 
+            variant, 
+            test_id: activeTest.id,
+            param: param
+        });
+        
+    } catch (error) {
+        console.error('A/B variant error:', error);
+        res.json({ variant: null, test_id: null });
+    }
+});
+
+// Public endpoint: Track conversion
+app.post('/api/ab/convert', async (req, res) => {
+    try {
+        const { test_id, visitor_id, event_type, value, metadata } = req.body;
+        
+        if (!test_id || !visitor_id || !event_type) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+        
+        // Get visitor's variant
+        const visitor = await pool.query(`
+            SELECT variant FROM ab_test_visitors
+            WHERE test_id = $1 AND visitor_id = $2
+        `, [test_id, visitor_id]);
+        
+        if (visitor.rows.length === 0) {
+            return res.status(404).json({ error: 'Visitor not found in test' });
+        }
+        
+        const variant = visitor.rows[0].variant;
+        
+        // Record conversion
+        await pool.query(`
+            INSERT INTO ab_test_conversions (test_id, visitor_id, variant, event_type, value, metadata)
+            VALUES ($1, $2, $3, $4, $5, $6)
+        `, [test_id, visitor_id, variant, event_type, value || 0, metadata || {}]);
+        
+        res.json({ success: true, variant });
+        
+    } catch (error) {
+        console.error('A/B conversion error:', error);
+        res.status(500).json({ error: 'Failed to record conversion' });
+    }
+});
+
+// Admin: List all A/B tests
+app.get('/api/admin/ab-tests', authenticateToken, async (req, res) => {
+    try {
+        const tests = await pool.query(`
+            SELECT 
+                at.*,
+                (SELECT COUNT(*) FROM ab_test_visitors WHERE test_id = at.id AND variant = 'A') as visitors_a,
+                (SELECT COUNT(*) FROM ab_test_visitors WHERE test_id = at.id AND variant = 'B') as visitors_b,
+                (SELECT COUNT(*) FROM ab_test_conversions WHERE test_id = at.id AND variant = 'A' AND event_type = 'lead') as leads_a,
+                (SELECT COUNT(*) FROM ab_test_conversions WHERE test_id = at.id AND variant = 'B' AND event_type = 'lead') as leads_b,
+                (SELECT COUNT(*) FROM ab_test_conversions WHERE test_id = at.id AND variant = 'A' AND event_type = 'purchase') as purchases_a,
+                (SELECT COUNT(*) FROM ab_test_conversions WHERE test_id = at.id AND variant = 'B' AND event_type = 'purchase') as purchases_b,
+                (SELECT COALESCE(SUM(value), 0) FROM ab_test_conversions WHERE test_id = at.id AND variant = 'A' AND event_type = 'purchase') as revenue_a,
+                (SELECT COALESCE(SUM(value), 0) FROM ab_test_conversions WHERE test_id = at.id AND variant = 'B' AND event_type = 'purchase') as revenue_b
+            FROM ab_tests at
+            ORDER BY at.created_at DESC
+        `);
+        
+        // Calculate conversion rates
+        const testsWithStats = tests.rows.map(test => {
+            const visitorsA = parseInt(test.visitors_a) || 0;
+            const visitorsB = parseInt(test.visitors_b) || 0;
+            const leadsA = parseInt(test.leads_a) || 0;
+            const leadsB = parseInt(test.leads_b) || 0;
+            const purchasesA = parseInt(test.purchases_a) || 0;
+            const purchasesB = parseInt(test.purchases_b) || 0;
+            
+            return {
+                ...test,
+                conversion_rate_a: visitorsA > 0 ? ((leadsA / visitorsA) * 100).toFixed(2) : 0,
+                conversion_rate_b: visitorsB > 0 ? ((leadsB / visitorsB) * 100).toFixed(2) : 0,
+                purchase_rate_a: visitorsA > 0 ? ((purchasesA / visitorsA) * 100).toFixed(2) : 0,
+                purchase_rate_b: visitorsB > 0 ? ((purchasesB / visitorsB) * 100).toFixed(2) : 0
+            };
+        });
+        
+        res.json(testsWithStats);
+        
+    } catch (error) {
+        console.error('List A/B tests error:', error);
+        res.status(500).json({ error: 'Failed to fetch A/B tests' });
+    }
+});
+
+// Admin: Get single A/B test with detailed stats
+app.get('/api/admin/ab-tests/:id', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const test = await pool.query(`SELECT * FROM ab_tests WHERE id = $1`, [id]);
+        
+        if (test.rows.length === 0) {
+            return res.status(404).json({ error: 'Test not found' });
+        }
+        
+        // Get daily stats
+        const dailyStats = await pool.query(`
+            SELECT 
+                DATE(created_at) as date,
+                variant,
+                COUNT(*) as visitors
+            FROM ab_test_visitors
+            WHERE test_id = $1
+            GROUP BY DATE(created_at), variant
+            ORDER BY date
+        `, [id]);
+        
+        const dailyConversions = await pool.query(`
+            SELECT 
+                DATE(created_at) as date,
+                variant,
+                event_type,
+                COUNT(*) as count,
+                COALESCE(SUM(value), 0) as value
+            FROM ab_test_conversions
+            WHERE test_id = $1
+            GROUP BY DATE(created_at), variant, event_type
+            ORDER BY date
+        `, [id]);
+        
+        // Get totals
+        const totals = await pool.query(`
+            SELECT 
+                variant,
+                COUNT(*) as visitors
+            FROM ab_test_visitors
+            WHERE test_id = $1
+            GROUP BY variant
+        `, [id]);
+        
+        const conversionTotals = await pool.query(`
+            SELECT 
+                variant,
+                event_type,
+                COUNT(*) as count,
+                COALESCE(SUM(value), 0) as value
+            FROM ab_test_conversions
+            WHERE test_id = $1
+            GROUP BY variant, event_type
+        `, [id]);
+        
+        res.json({
+            test: test.rows[0],
+            daily_visitors: dailyStats.rows,
+            daily_conversions: dailyConversions.rows,
+            totals: totals.rows,
+            conversion_totals: conversionTotals.rows
+        });
+        
+    } catch (error) {
+        console.error('Get A/B test error:', error);
+        res.status(500).json({ error: 'Failed to fetch test details' });
+    }
+});
+
+// Admin: Create A/B test
+app.post('/api/admin/ab-tests', authenticateToken, async (req, res) => {
+    try {
+        const { 
+            name, 
+            description, 
+            funnel, 
+            variant_a_name, 
+            variant_a_param,
+            variant_b_name, 
+            variant_b_param,
+            traffic_split 
+        } = req.body;
+        
+        if (!name || !funnel) {
+            return res.status(400).json({ error: 'Name and funnel are required' });
+        }
+        
+        const result = await pool.query(`
+            INSERT INTO ab_tests (
+                name, description, funnel, 
+                variant_a_name, variant_a_param,
+                variant_b_name, variant_b_param,
+                traffic_split, status, created_by
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'draft', $9)
+            RETURNING *
+        `, [
+            name, 
+            description || '', 
+            funnel,
+            variant_a_name || 'Control (sem VSL)',
+            variant_a_param || 'control',
+            variant_b_name || 'Test (com VSL)',
+            variant_b_param || 'test',
+            traffic_split || 50,
+            req.user.id
+        ]);
+        
+        res.json(result.rows[0]);
+        
+    } catch (error) {
+        console.error('Create A/B test error:', error);
+        res.status(500).json({ error: 'Failed to create A/B test' });
+    }
+});
+
+// Admin: Update A/B test
+app.put('/api/admin/ab-tests/:id', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { 
+            name, 
+            description, 
+            variant_a_name, 
+            variant_a_param,
+            variant_b_name, 
+            variant_b_param,
+            traffic_split 
+        } = req.body;
+        
+        const result = await pool.query(`
+            UPDATE ab_tests SET
+                name = COALESCE($1, name),
+                description = COALESCE($2, description),
+                variant_a_name = COALESCE($3, variant_a_name),
+                variant_a_param = COALESCE($4, variant_a_param),
+                variant_b_name = COALESCE($5, variant_b_name),
+                variant_b_param = COALESCE($6, variant_b_param),
+                traffic_split = COALESCE($7, traffic_split)
+            WHERE id = $8
+            RETURNING *
+        `, [name, description, variant_a_name, variant_a_param, variant_b_name, variant_b_param, traffic_split, id]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Test not found' });
+        }
+        
+        res.json(result.rows[0]);
+        
+    } catch (error) {
+        console.error('Update A/B test error:', error);
+        res.status(500).json({ error: 'Failed to update A/B test' });
+    }
+});
+
+// Admin: Start/Stop A/B test
+app.post('/api/admin/ab-tests/:id/status', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { action } = req.body; // 'start', 'stop', 'reset'
+        
+        let query, params;
+        
+        if (action === 'start') {
+            // Check if there's already a running test for this funnel
+            const existing = await pool.query(`
+                SELECT id, name FROM ab_tests 
+                WHERE id != $1 AND status = 'running' 
+                AND funnel = (SELECT funnel FROM ab_tests WHERE id = $1)
+            `, [id]);
+            
+            if (existing.rows.length > 0) {
+                return res.status(400).json({ 
+                    error: `Another test "${existing.rows[0].name}" is already running for this funnel` 
+                });
+            }
+            
+            query = `UPDATE ab_tests SET status = 'running', started_at = NOW() WHERE id = $1 RETURNING *`;
+            params = [id];
+        } else if (action === 'stop') {
+            query = `UPDATE ab_tests SET status = 'stopped', ended_at = NOW() WHERE id = $1 RETURNING *`;
+            params = [id];
+        } else if (action === 'reset') {
+            // Delete all visitors and conversions for this test
+            await pool.query(`DELETE FROM ab_test_conversions WHERE test_id = $1`, [id]);
+            await pool.query(`DELETE FROM ab_test_visitors WHERE test_id = $1`, [id]);
+            query = `UPDATE ab_tests SET status = 'draft', started_at = NULL, ended_at = NULL, winner = NULL WHERE id = $1 RETURNING *`;
+            params = [id];
+        } else {
+            return res.status(400).json({ error: 'Invalid action' });
+        }
+        
+        const result = await pool.query(query, params);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Test not found' });
+        }
+        
+        res.json(result.rows[0]);
+        
+    } catch (error) {
+        console.error('Update A/B test status error:', error);
+        res.status(500).json({ error: 'Failed to update test status' });
+    }
+});
+
+// Admin: Set winner and end test
+app.post('/api/admin/ab-tests/:id/winner', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { winner } = req.body; // 'A' or 'B'
+        
+        if (!['A', 'B'].includes(winner)) {
+            return res.status(400).json({ error: 'Winner must be A or B' });
+        }
+        
+        const result = await pool.query(`
+            UPDATE ab_tests SET 
+                status = 'completed',
+                winner = $1,
+                ended_at = NOW()
+            WHERE id = $2
+            RETURNING *
+        `, [winner, id]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Test not found' });
+        }
+        
+        res.json(result.rows[0]);
+        
+    } catch (error) {
+        console.error('Set A/B winner error:', error);
+        res.status(500).json({ error: 'Failed to set winner' });
+    }
+});
+
+// Admin: Delete A/B test
+app.delete('/api/admin/ab-tests/:id', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        await pool.query(`DELETE FROM ab_tests WHERE id = $1`, [id]);
+        
+        res.json({ success: true });
+        
+    } catch (error) {
+        console.error('Delete A/B test error:', error);
+        res.status(500).json({ error: 'Failed to delete test' });
+    }
+});
+
 // Public endpoint to check recent CAPI activity (limited info for debugging)
 app.get('/api/capi/status', async (req, res) => {
     try {
@@ -6737,6 +7138,61 @@ async function initDatabase() {
         // Create index for admin_users
         await pool.query(`CREATE INDEX IF NOT EXISTS idx_admin_users_email ON admin_users(email);`);
         await pool.query(`CREATE INDEX IF NOT EXISTS idx_admin_users_username ON admin_users(username);`);
+        
+        // Create A/B tests table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS ab_tests (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                description TEXT,
+                funnel VARCHAR(50) NOT NULL,
+                variant_a_name VARCHAR(100) DEFAULT 'Control',
+                variant_a_param VARCHAR(100) DEFAULT 'control',
+                variant_b_name VARCHAR(100) DEFAULT 'Test',
+                variant_b_param VARCHAR(100) DEFAULT 'test',
+                traffic_split INTEGER DEFAULT 50,
+                status VARCHAR(20) DEFAULT 'draft',
+                winner VARCHAR(10),
+                started_at TIMESTAMP WITH TIME ZONE,
+                ended_at TIMESTAMP WITH TIME ZONE,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                created_by INTEGER
+            );
+        `);
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_ab_tests_funnel ON ab_tests(funnel);`);
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_ab_tests_status ON ab_tests(status);`);
+        
+        // Create A/B test visitors table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS ab_test_visitors (
+                id SERIAL PRIMARY KEY,
+                test_id INTEGER REFERENCES ab_tests(id) ON DELETE CASCADE,
+                visitor_id VARCHAR(100) NOT NULL,
+                variant VARCHAR(10) NOT NULL,
+                ip_address VARCHAR(45),
+                user_agent TEXT,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(test_id, visitor_id)
+            );
+        `);
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_ab_visitors_test ON ab_test_visitors(test_id);`);
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_ab_visitors_variant ON ab_test_visitors(variant);`);
+        
+        // Create A/B test conversions table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS ab_test_conversions (
+                id SERIAL PRIMARY KEY,
+                test_id INTEGER REFERENCES ab_tests(id) ON DELETE CASCADE,
+                visitor_id VARCHAR(100) NOT NULL,
+                variant VARCHAR(10) NOT NULL,
+                event_type VARCHAR(50) NOT NULL,
+                value DECIMAL(10,2) DEFAULT 0,
+                metadata JSONB DEFAULT '{}',
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_ab_conversions_test ON ab_test_conversions(test_id);`);
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_ab_conversions_event ON ab_test_conversions(event_type);`);
         
         // Add missing columns to admin_users if they don't exist (for existing tables)
         // Support both 'name' and 'full_name' columns for compatibility

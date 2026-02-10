@@ -100,6 +100,10 @@
                         <span class="nav-item-icon">📡</span>
                         Pixel & CAPI
                     </div>
+                    <div class="nav-item" onclick="switchTab('abtests')">
+                        <span class="nav-item-icon">🧪</span>
+                        Testes A/B
+                    </div>
                 </div>
                 
                 <div class="nav-section">
@@ -1851,6 +1855,123 @@
                     </div>
                 </div>
                 
+                <!-- Tab: A/B Tests -->
+                <div class="tab-content" id="tab-abtests">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                        <div>
+                            <h2 style="margin: 0; display: flex; align-items: center; gap: 10px;">
+                                <span>🧪</span> Testes A/B
+                            </h2>
+                            <p style="color: var(--text-muted); margin: 8px 0 0 0;">
+                                Divida o tráfego e compare conversões entre diferentes versões do funil
+                            </p>
+                        </div>
+                        <button class="btn-primary" onclick="showCreateABTestModal()" style="display: flex; align-items: center; gap: 8px;">
+                            <span>+</span> Novo Teste
+                        </button>
+                    </div>
+                    
+                    <!-- Active Tests -->
+                    <div id="abTestsContainer">
+                        <div class="loading"><div class="spinner"></div>Carregando testes...</div>
+                    </div>
+                    
+                    <!-- Help Section -->
+                    <div class="config-box" style="margin-top: 24px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));">
+                        <h3 style="margin-top: 0;">📖 Como funciona o Teste A/B</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 16px;">
+                            <div>
+                                <strong style="color: #3b82f6;">1. Crie um teste</strong>
+                                <p style="margin: 8px 0 0 0; color: var(--text-muted); font-size: 13px;">
+                                    Defina duas variantes: A (controle) e B (teste). Ex: sem VSL vs com VSL.
+                                </p>
+                            </div>
+                            <div>
+                                <strong style="color: #8b5cf6;">2. Divida o tráfego</strong>
+                                <p style="margin: 8px 0 0 0; color: var(--text-muted); font-size: 13px;">
+                                    Configure a porcentagem de visitantes que verá cada versão (padrão: 50/50).
+                                </p>
+                            </div>
+                            <div>
+                                <strong style="color: #10b981;">3. Acompanhe resultados</strong>
+                                <p style="margin: 8px 0 0 0; color: var(--text-muted); font-size: 13px;">
+                                    Veja leads, vendas e conversões de cada variante em tempo real.
+                                </p>
+                            </div>
+                            <div>
+                                <strong style="color: #f59e0b;">4. Escolha o vencedor</strong>
+                                <p style="margin: 8px 0 0 0; color: var(--text-muted); font-size: 13px;">
+                                    Quando tiver dados suficientes, defina o vencedor e aplique no funil.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- A/B Test Modal -->
+                <div id="abTestModal" class="modal" style="display: none;">
+                    <div class="modal-content" style="max-width: 500px;">
+                        <div class="modal-header">
+                            <h3 id="abTestModalTitle">Novo Teste A/B</h3>
+                            <button class="modal-close" onclick="closeABTestModal()">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="abTestForm">
+                                <input type="hidden" id="abTestId">
+                                
+                                <div class="form-group">
+                                    <label>Nome do Teste *</label>
+                                    <input type="text" id="abTestName" placeholder="Ex: Teste VSL Inglês" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Descrição</label>
+                                    <textarea id="abTestDescription" placeholder="Descreva o objetivo do teste..." rows="2"></textarea>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Funil *</label>
+                                    <select id="abTestFunnel" required>
+                                        <option value="">Selecione...</option>
+                                        <option value="ingles">Inglês</option>
+                                        <option value="ingles-afiliados">Inglês Afiliados</option>
+                                        <option value="espanhol">Espanhol</option>
+                                        <option value="espanhol-afiliados">Espanhol Afiliados</option>
+                                    </select>
+                                </div>
+                                
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                    <div class="form-group">
+                                        <label style="color: #3b82f6;">Variante A (Controle)</label>
+                                        <input type="text" id="abTestVariantAName" placeholder="Ex: Sem VSL" value="Sem VSL">
+                                        <input type="text" id="abTestVariantAParam" placeholder="Parâmetro URL" value="control" style="margin-top: 8px; font-family: monospace; font-size: 12px;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label style="color: #10b981;">Variante B (Teste)</label>
+                                        <input type="text" id="abTestVariantBName" placeholder="Ex: Com VSL" value="Com VSL">
+                                        <input type="text" id="abTestVariantBParam" placeholder="Parâmetro URL" value="test" style="margin-top: 8px; font-family: monospace; font-size: 12px;">
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Divisão de Tráfego: <strong id="trafficSplitLabel">50% / 50%</strong></label>
+                                    <input type="range" id="abTestTrafficSplit" min="10" max="90" value="50" 
+                                        oninput="document.getElementById('trafficSplitLabel').textContent = this.value + '% / ' + (100 - this.value) + '%'"
+                                        style="width: 100%;">
+                                    <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted);">
+                                        <span>Variante A</span>
+                                        <span>Variante B</span>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn-secondary" onclick="closeABTestModal()">Cancelar</button>
+                            <button type="button" class="btn-primary" onclick="saveABTest()">Salvar Teste</button>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- Tab: Settings -->
                 <div class="tab-content" id="tab-settings">
                     <div class="config-box">
@@ -2619,6 +2740,7 @@ Posso ajudar com alguma dúvida?</textarea>
             'countries': { title: 'Países', subtitle: 'Análise de performance por país' },
             'reports': { title: 'Exportar Dados', subtitle: 'Baixe relatórios em Excel, PDF ou CSV' },
             'pixel': { title: 'Pixel & CAPI', subtitle: 'Monitore a qualidade dos eventos do Facebook' },
+            'abtests': { title: 'Testes A/B', subtitle: 'Compare versões do funil e otimize conversões' },
             'settings': { title: 'Configurações', subtitle: 'Configure integrações' },
             'users': { title: 'Usuários', subtitle: 'Gerencie membros da equipe' }
         };
@@ -3082,6 +3204,7 @@ Estou aqui para esclarecer tudo! 😊`
             }
             else if (tabName === 'users') loadUsers();
             else if (tabName === 'pixel') loadPixelStats();
+            else if (tabName === 'abtests') loadABTests();
         }
         
         function logout() {
@@ -7022,6 +7145,407 @@ Obrigado pela compreensão.`
             } catch (error) {
                 console.error('Error updating refund:', error);
                 showToast('Erro', 'Falha ao atualizar status', 'error');
+            }
+        }
+        
+        // ==================== A/B TESTING ====================
+        
+        let abTests = [];
+        
+        async function loadABTests() {
+            try {
+                const response = await fetch('/api/admin/ab-tests', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load tests');
+                
+                abTests = await response.json();
+                renderABTests();
+                
+            } catch (error) {
+                console.error('Error loading A/B tests:', error);
+                document.getElementById('abTestsContainer').innerHTML = `
+                    <div class="empty-state">
+                        <span style="font-size: 48px;">🧪</span>
+                        <h3>Erro ao carregar testes</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function renderABTests() {
+            const container = document.getElementById('abTestsContainer');
+            
+            if (abTests.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state" style="padding: 60px 20px; text-align: center; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border);">
+                        <span style="font-size: 64px; display: block; margin-bottom: 16px;">🧪</span>
+                        <h3 style="margin: 0 0 8px 0;">Nenhum teste A/B criado</h3>
+                        <p style="color: var(--text-muted); margin: 0 0 20px 0;">Crie seu primeiro teste para comparar diferentes versões do funil</p>
+                        <button class="btn-primary" onclick="showCreateABTestModal()">+ Criar Primeiro Teste</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            const runningTests = abTests.filter(t => t.status === 'running');
+            const otherTests = abTests.filter(t => t.status !== 'running');
+            
+            let html = '';
+            
+            // Running tests first
+            if (runningTests.length > 0) {
+                html += `<h3 style="margin: 0 0 16px 0; color: #10b981;">🟢 Testes Ativos</h3>`;
+                html += runningTests.map(t => renderABTestCard(t)).join('');
+            }
+            
+            // Other tests
+            if (otherTests.length > 0) {
+                if (runningTests.length > 0) {
+                    html += `<h3 style="margin: 24px 0 16px 0; color: var(--text-muted);">📋 Outros Testes</h3>`;
+                }
+                html += otherTests.map(t => renderABTestCard(t)).join('');
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        function renderABTestCard(test) {
+            const statusColors = {
+                'draft': { bg: '#6b7280', text: 'Rascunho' },
+                'running': { bg: '#10b981', text: 'Ativo' },
+                'stopped': { bg: '#f59e0b', text: 'Pausado' },
+                'completed': { bg: '#3b82f6', text: 'Concluído' }
+            };
+            
+            const status = statusColors[test.status] || statusColors.draft;
+            
+            const visitorsA = parseInt(test.visitors_a) || 0;
+            const visitorsB = parseInt(test.visitors_b) || 0;
+            const leadsA = parseInt(test.leads_a) || 0;
+            const leadsB = parseInt(test.leads_b) || 0;
+            const purchasesA = parseInt(test.purchases_a) || 0;
+            const purchasesB = parseInt(test.purchases_b) || 0;
+            const revenueA = parseFloat(test.revenue_a) || 0;
+            const revenueB = parseFloat(test.revenue_b) || 0;
+            
+            const convRateA = visitorsA > 0 ? ((leadsA / visitorsA) * 100).toFixed(1) : '0.0';
+            const convRateB = visitorsB > 0 ? ((leadsB / visitorsB) * 100).toFixed(1) : '0.0';
+            const purchRateA = visitorsA > 0 ? ((purchasesA / visitorsA) * 100).toFixed(1) : '0.0';
+            const purchRateB = visitorsB > 0 ? ((purchasesB / visitorsB) * 100).toFixed(1) : '0.0';
+            
+            // Determine which variant is winning
+            const aWinning = parseFloat(convRateA) > parseFloat(convRateB);
+            const bWinning = parseFloat(convRateB) > parseFloat(convRateA);
+            const totalVisitors = visitorsA + visitorsB;
+            
+            return `
+                <div class="ab-test-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px; ${test.status === 'running' ? 'border-left: 4px solid #10b981;' : ''}">
+                    <!-- Header -->
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                                <h3 style="margin: 0; font-size: 18px;">${test.name}</h3>
+                                <span style="background: ${status.bg}; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;">${status.text}</span>
+                                ${test.winner ? `<span style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;">🏆 Vencedor: ${test.winner}</span>` : ''}
+                            </div>
+                            <p style="margin: 0; color: var(--text-muted); font-size: 13px;">
+                                Funil: <strong>${test.funnel}</strong> • 
+                                Tráfego: ${test.traffic_split}% / ${100 - test.traffic_split}% •
+                                Total: ${totalVisitors.toLocaleString()} visitantes
+                            </p>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            ${test.status === 'draft' ? `
+                                <button class="btn-sm btn-success" onclick="startABTest(${test.id})" style="background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">▶ Iniciar</button>
+                                <button class="btn-sm" onclick="editABTest(${test.id})" style="background: var(--bg-tertiary); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">✏️ Editar</button>
+                            ` : ''}
+                            ${test.status === 'running' ? `
+                                <button class="btn-sm" onclick="stopABTest(${test.id})" style="background: #f59e0b; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">⏸ Pausar</button>
+                                <button class="btn-sm" onclick="showSetWinnerModal(${test.id})" style="background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">🏆 Definir Vencedor</button>
+                            ` : ''}
+                            ${test.status === 'stopped' ? `
+                                <button class="btn-sm btn-success" onclick="startABTest(${test.id})" style="background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">▶ Retomar</button>
+                            ` : ''}
+                            <button class="btn-sm" onclick="resetABTest(${test.id})" style="background: transparent; border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;" title="Resetar dados">🔄</button>
+                            <button class="btn-sm" onclick="deleteABTest(${test.id})" style="background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;" title="Excluir">🗑️</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Variants Comparison -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <!-- Variant A -->
+                        <div style="background: ${aWinning && totalVisitors > 50 ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05))' : 'var(--bg-tertiary)'}; border-radius: 10px; padding: 16px; border: 1px solid ${aWinning && totalVisitors > 50 ? '#3b82f6' : 'var(--border)'};">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                                <span style="background: #3b82f6; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">A</span>
+                                <strong>${test.variant_a_name || 'Controle'}</strong>
+                                ${aWinning && totalVisitors > 50 ? '<span style="color: #3b82f6; font-size: 12px;">📈 Liderando</span>' : ''}
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; text-align: center;">
+                                <div>
+                                    <div style="font-size: 20px; font-weight: 700; color: var(--text-primary);">${visitorsA.toLocaleString()}</div>
+                                    <div style="font-size: 11px; color: var(--text-muted);">Visitantes</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 20px; font-weight: 700; color: #10b981;">${convRateA}%</div>
+                                    <div style="font-size: 11px; color: var(--text-muted);">Conv. Lead</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 20px; font-weight: 700; color: #f59e0b;">${purchRateA}%</div>
+                                    <div style="font-size: 11px; color: var(--text-muted);">Conv. Venda</div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 12px;">
+                                <span><strong>${leadsA}</strong> leads</span>
+                                <span><strong>${purchasesA}</strong> vendas</span>
+                                <span><strong>$${revenueA.toFixed(2)}</strong></span>
+                            </div>
+                        </div>
+                        
+                        <!-- Variant B -->
+                        <div style="background: ${bWinning && totalVisitors > 50 ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05))' : 'var(--bg-tertiary)'}; border-radius: 10px; padding: 16px; border: 1px solid ${bWinning && totalVisitors > 50 ? '#10b981' : 'var(--border)'};">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                                <span style="background: #10b981; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">B</span>
+                                <strong>${test.variant_b_name || 'Teste'}</strong>
+                                ${bWinning && totalVisitors > 50 ? '<span style="color: #10b981; font-size: 12px;">📈 Liderando</span>' : ''}
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; text-align: center;">
+                                <div>
+                                    <div style="font-size: 20px; font-weight: 700; color: var(--text-primary);">${visitorsB.toLocaleString()}</div>
+                                    <div style="font-size: 11px; color: var(--text-muted);">Visitantes</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 20px; font-weight: 700; color: #10b981;">${convRateB}%</div>
+                                    <div style="font-size: 11px; color: var(--text-muted);">Conv. Lead</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 20px; font-weight: 700; color: #f59e0b;">${purchRateB}%</div>
+                                    <div style="font-size: 11px; color: var(--text-muted);">Conv. Venda</div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 12px;">
+                                <span><strong>${leadsB}</strong> leads</span>
+                                <span><strong>${purchasesB}</strong> vendas</span>
+                                <span><strong>$${revenueB.toFixed(2)}</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Integration Code -->
+                    ${test.status === 'running' ? `
+                    <div style="margin-top: 16px; padding: 12px; background: var(--bg-tertiary); border-radius: 8px; font-family: monospace; font-size: 11px;">
+                        <strong style="font-family: inherit;">Código de integração:</strong>
+                        <code style="display: block; margin-top: 8px; color: #10b981; word-break: break-all;">
+                            ?ab_test=${test.id}&variant={A ou B}
+                        </code>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+        
+        function showCreateABTestModal() {
+            document.getElementById('abTestModalTitle').textContent = 'Novo Teste A/B';
+            document.getElementById('abTestId').value = '';
+            document.getElementById('abTestForm').reset();
+            document.getElementById('abTestVariantAName').value = 'Sem VSL';
+            document.getElementById('abTestVariantAParam').value = 'control';
+            document.getElementById('abTestVariantBName').value = 'Com VSL';
+            document.getElementById('abTestVariantBParam').value = 'test';
+            document.getElementById('abTestTrafficSplit').value = 50;
+            document.getElementById('trafficSplitLabel').textContent = '50% / 50%';
+            document.getElementById('abTestModal').style.display = 'flex';
+        }
+        
+        function editABTest(id) {
+            const test = abTests.find(t => t.id === id);
+            if (!test) return;
+            
+            document.getElementById('abTestModalTitle').textContent = 'Editar Teste A/B';
+            document.getElementById('abTestId').value = test.id;
+            document.getElementById('abTestName').value = test.name;
+            document.getElementById('abTestDescription').value = test.description || '';
+            document.getElementById('abTestFunnel').value = test.funnel;
+            document.getElementById('abTestVariantAName').value = test.variant_a_name || 'Controle';
+            document.getElementById('abTestVariantAParam').value = test.variant_a_param || 'control';
+            document.getElementById('abTestVariantBName').value = test.variant_b_name || 'Teste';
+            document.getElementById('abTestVariantBParam').value = test.variant_b_param || 'test';
+            document.getElementById('abTestTrafficSplit').value = test.traffic_split;
+            document.getElementById('trafficSplitLabel').textContent = `${test.traffic_split}% / ${100 - test.traffic_split}%`;
+            document.getElementById('abTestModal').style.display = 'flex';
+        }
+        
+        function closeABTestModal() {
+            document.getElementById('abTestModal').style.display = 'none';
+        }
+        
+        async function saveABTest() {
+            const id = document.getElementById('abTestId').value;
+            const data = {
+                name: document.getElementById('abTestName').value,
+                description: document.getElementById('abTestDescription').value,
+                funnel: document.getElementById('abTestFunnel').value,
+                variant_a_name: document.getElementById('abTestVariantAName').value,
+                variant_a_param: document.getElementById('abTestVariantAParam').value,
+                variant_b_name: document.getElementById('abTestVariantBName').value,
+                variant_b_param: document.getElementById('abTestVariantBParam').value,
+                traffic_split: parseInt(document.getElementById('abTestTrafficSplit').value)
+            };
+            
+            if (!data.name || !data.funnel) {
+                alert('Preencha o nome e selecione o funil');
+                return;
+            }
+            
+            try {
+                const url = id ? `/api/admin/ab-tests/${id}` : '/api/admin/ab-tests';
+                const method = id ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to save');
+                }
+                
+                closeABTestModal();
+                loadABTests();
+                showNotification(id ? 'Teste atualizado!' : 'Teste criado!', 'success');
+                
+            } catch (error) {
+                alert('Erro: ' + error.message);
+            }
+        }
+        
+        async function startABTest(id) {
+            if (!confirm('Iniciar este teste A/B? O tráfego será dividido conforme configurado.')) return;
+            
+            try {
+                const response = await fetch(`/api/admin/ab-tests/${id}/status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ action: 'start' })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to start');
+                }
+                
+                loadABTests();
+                showNotification('Teste iniciado! O tráfego está sendo dividido.', 'success');
+                
+            } catch (error) {
+                alert('Erro: ' + error.message);
+            }
+        }
+        
+        async function stopABTest(id) {
+            if (!confirm('Pausar este teste? O tráfego não será mais dividido.')) return;
+            
+            try {
+                const response = await fetch(`/api/admin/ab-tests/${id}/status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ action: 'stop' })
+                });
+                
+                if (!response.ok) throw new Error('Failed to stop');
+                
+                loadABTests();
+                showNotification('Teste pausado', 'info');
+                
+            } catch (error) {
+                alert('Erro ao pausar teste');
+            }
+        }
+        
+        async function resetABTest(id) {
+            if (!confirm('ATENÇÃO: Isso apagará todos os dados coletados (visitantes e conversões). Continuar?')) return;
+            
+            try {
+                const response = await fetch(`/api/admin/ab-tests/${id}/status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ action: 'reset' })
+                });
+                
+                if (!response.ok) throw new Error('Failed to reset');
+                
+                loadABTests();
+                showNotification('Teste resetado - dados apagados', 'info');
+                
+            } catch (error) {
+                alert('Erro ao resetar teste');
+            }
+        }
+        
+        async function deleteABTest(id) {
+            if (!confirm('Excluir este teste permanentemente?')) return;
+            
+            try {
+                const response = await fetch(`/api/admin/ab-tests/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (!response.ok) throw new Error('Failed to delete');
+                
+                loadABTests();
+                showNotification('Teste excluído', 'info');
+                
+            } catch (error) {
+                alert('Erro ao excluir teste');
+            }
+        }
+        
+        function showSetWinnerModal(id) {
+            const test = abTests.find(t => t.id === id);
+            if (!test) return;
+            
+            const winner = prompt(`Qual variante venceu?\n\nA: ${test.variant_a_name} (${test.conversion_rate_a}% conv.)\nB: ${test.variant_b_name} (${test.conversion_rate_b}% conv.)\n\nDigite A ou B:`);
+            
+            if (winner && ['A', 'B', 'a', 'b'].includes(winner)) {
+                setABTestWinner(id, winner.toUpperCase());
+            }
+        }
+        
+        async function setABTestWinner(id, winner) {
+            try {
+                const response = await fetch(`/api/admin/ab-tests/${id}/winner`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ winner })
+                });
+                
+                if (!response.ok) throw new Error('Failed to set winner');
+                
+                loadABTests();
+                showNotification(`Variante ${winner} definida como vencedora!`, 'success');
+                
+            } catch (error) {
+                alert('Erro ao definir vencedor');
             }
         }
         

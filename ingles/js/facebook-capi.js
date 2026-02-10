@@ -217,3 +217,4 @@ const FacebookCAPI = {
 };
 
 // Don't auto-initialize - pages will call init() with page name
+// A/B Testing is now in a separate file: ab-testing.js
