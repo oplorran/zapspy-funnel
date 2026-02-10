@@ -213,6 +213,13 @@ async function sendToFacebookCAPI(eventName, userData, customData = {}, eventSou
     // Get pixels for the correct language (or use custom pixels from frontend)
     const pixels = getPixelsForLanguage(options.language, options.pixelIds, options.accessToken);
     
+    // Test event codes for Facebook Events Manager testing
+    // EN: TEST23104, ES: TEST96875
+    const testEventCodes = {
+        'en': process.env.FB_TEST_CODE_EN || null,  // Set to 'TEST23104' to enable testing
+        'es': process.env.FB_TEST_CODE_ES || null   // Set to 'TEST96875' to enable testing
+    };
+    
     // Send to all pixels
     const results = [];
     
@@ -220,14 +227,24 @@ async function sendToFacebookCAPI(eventName, userData, customData = {}, eventSou
         try {
             const url = `https://graph.facebook.com/${FB_API_VERSION}/${pixel.id}/events?access_token=${pixel.token}`;
             
+            // Build request body
+            const requestBody = {
+                data: [eventPayload]
+            };
+            
+            // Add test_event_code if in test mode (from options or env var)
+            const testCode = options.testEventCode || testEventCodes[options.language];
+            if (testCode) {
+                requestBody.test_event_code = testCode;
+                console.log(`🧪 TEST MODE: Using test_event_code ${testCode} for ${pixel.name}`);
+            }
+            
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    data: [eventPayload]
-                })
+                body: JSON.stringify(requestBody)
             });
             
             const result = await response.json();
@@ -589,6 +606,76 @@ app.post('/api/leads', leadLimiter, async (req, res) => {
 });
 
 // ==================== FACEBOOK CAPI ENDPOINT ====================
+
+// Test CAPI events - use this endpoint to verify events in Facebook Events Manager
+// Test codes: EN = TEST23104, ES = TEST96875
+app.post('/api/capi/test', async (req, res) => {
+    try {
+        const { language, eventName } = req.body;
+        
+        // Test event codes from Facebook Events Manager
+        const testCodes = {
+            'en': 'TEST23104',
+            'es': 'TEST96875'
+        };
+        
+        const lang = language || 'en';
+        const testCode = testCodes[lang];
+        const event = eventName || 'PageView';
+        
+        if (!testCode) {
+            return res.status(400).json({ error: 'Invalid language. Use "en" or "es"' });
+        }
+        
+        // Get IP and User Agent from request
+        const ipAddress = req.headers['x-forwarded-for']?.split(',')[0] || req.ip;
+        const userAgent = req.headers['user-agent'];
+        
+        // Build test user data
+        const userData = {
+            email: 'test@example.com',
+            phone: '+5511999999999',
+            firstName: 'Test User',
+            ip: ipAddress,
+            userAgent,
+            externalId: 'test_visitor_' + Date.now()
+        };
+        
+        // Build test custom data
+        const customData = {
+            value: lang === 'es' ? 37.00 : 47.00,
+            currency: 'USD',
+            content_name: 'Test Event',
+            content_category: 'test'
+        };
+        
+        // Send with test_event_code
+        const results = await sendToFacebookCAPI(
+            event, 
+            userData, 
+            customData, 
+            `https://${lang === 'es' ? 'espanhol' : 'ingles'}.zappdetect.com/landing.html`,
+            `test_${Date.now()}`,
+            { 
+                language: lang,
+                testEventCode: testCode  // This enables test mode
+            }
+        );
+        
+        res.json({ 
+            success: true, 
+            message: `Test event ${event} sent to ${lang.toUpperCase()} pixel`,
+            testCode: testCode,
+            language: lang,
+            results,
+            instructions: 'Check Facebook Events Manager > "Eventos de teste" tab to see this event'
+        });
+        
+    } catch (error) {
+        console.error('CAPI test error:', error);
+        res.status(500).json({ error: 'Failed to send test event', details: error.message });
+    }
+});
 
 // Send event to Facebook CAPI (from frontend)
 app.post('/api/capi/event', async (req, res) => {
