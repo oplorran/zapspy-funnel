@@ -380,11 +380,18 @@
                         </div>
                     </div>
                     
-                    <!-- Heatmap Section -->
+                    <!-- Heatmap Section with Filters -->
                     <div class="chart-card" style="margin-bottom: 28px;">
                         <div class="chart-header">
                             <span class="chart-title">🔥 Mapa de Calor - Melhores Horários</span>
-                            <button class="btn-secondary" onclick="loadHeatmapData()" style="font-size: 12px; padding: 6px 12px;">🔄 Atualizar</button>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <div style="display: flex; background: var(--card-bg); border-radius: 8px; padding: 4px; gap: 4px;">
+                                    <button class="heatmap-filter-btn active" data-type="leads" onclick="changeHeatmapType('leads')">👥 Leads</button>
+                                    <button class="heatmap-filter-btn" data-type="sales" onclick="changeHeatmapType('sales')">💰 Vendas</button>
+                                    <button class="heatmap-filter-btn" data-type="revenue" onclick="changeHeatmapType('revenue')">💵 Faturamento</button>
+                                </div>
+                                <button class="btn-secondary" onclick="loadHeatmapData()" style="font-size: 12px; padding: 6px 12px;">🔄</button>
+                            </div>
                         </div>
                         <div id="heatmapContainer" style="padding: 20px;">
                             <div style="display: grid; grid-template-columns: 50px repeat(24, 1fr); gap: 2px; font-size: 10px;">
@@ -419,8 +426,8 @@
                                 <!-- Will be populated by JavaScript -->
                                 <div style="text-align: center; padding: 40px; color: var(--text-muted); grid-column: span 25;">Carregando dados...</div>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 16px; margin-top: 16px; font-size: 11px; color: var(--text-muted);">
-                                <span>Menos leads</span>
+                            <div id="heatmapLegend" style="display: flex; align-items: center; gap: 16px; margin-top: 16px; font-size: 11px; color: var(--text-muted);">
+                                <span>Menos</span>
                                 <div style="display: flex; gap: 2px;">
                                     <div style="width: 20px; height: 12px; background: rgba(16, 185, 129, 0.1); border-radius: 2px;"></div>
                                     <div style="width: 20px; height: 12px; background: rgba(16, 185, 129, 0.3); border-radius: 2px;"></div>
@@ -428,33 +435,43 @@
                                     <div style="width: 20px; height: 12px; background: rgba(16, 185, 129, 0.7); border-radius: 2px;"></div>
                                     <div style="width: 20px; height: 12px; background: rgba(16, 185, 129, 1); border-radius: 2px;"></div>
                                 </div>
-                                <span>Mais leads</span>
+                                <span>Mais</span>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Recent Leads -->
-                    <div class="data-panel">
-                        <div class="panel-header">
-                            <div class="panel-title">
-                                <h2>Leads Recentes</h2>
+                    <!-- Additional Charts Row -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 24px; margin-bottom: 28px;">
+                        <!-- Top Countries Chart -->
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <span class="chart-title">🌍 Top 5 Países por Vendas</span>
                             </div>
-                            <button class="btn-secondary" onclick="switchTab('leads')">Ver Todos →</button>
+                            <div id="topCountriesChart" style="padding: 20px; min-height: 250px;">
+                                <div style="text-align: center; padding: 40px; color: var(--text-muted);">Carregando...</div>
+                            </div>
                         </div>
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Email</th>
-                                    <th>WhatsApp</th>
-                                    <th>Funil</th>
-                                    <th>Status</th>
-                                    <th>Há quanto tempo</th>
-                                </tr>
-                            </thead>
-                            <tbody id="recentLeadsTable">
-                                <tr><td colspan="5"><div class="loading"><div class="spinner"></div>Carregando...</div></td></tr>
-                            </tbody>
-                        </table>
+                        
+                        <!-- Weekly Performance Chart -->
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <span class="chart-title">📊 Performance Semanal</span>
+                            </div>
+                            <div style="padding: 20px; height: 250px;">
+                                <canvas id="weeklyPerformanceChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Conversion Funnel Visual -->
+                    <div class="chart-card" style="margin-bottom: 28px;">
+                        <div class="chart-header">
+                            <span class="chart-title">🎯 Funil de Conversão</span>
+                            <button class="btn-secondary" onclick="loadConversionFunnel()" style="font-size: 12px; padding: 6px 12px;">🔄</button>
+                        </div>
+                        <div id="conversionFunnelChart" style="padding: 20px;">
+                            <div style="text-align: center; padding: 40px; color: var(--text-muted);">Carregando...</div>
+                        </div>
                     </div>
                 </div>
                 
@@ -9259,10 +9276,368 @@ Posso ajudar em algo mais? 😊`
             grid.innerHTML = html;
         }
         
-        // Load heatmap on page load
+        // Heatmap type management
+        let currentHeatmapType = 'leads';
+        
+        function changeHeatmapType(type) {
+            currentHeatmapType = type;
+            
+            // Update button states
+            document.querySelectorAll('.heatmap-filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.type === type);
+            });
+            
+            // Update legend colors based on type
+            const legend = document.getElementById('heatmapLegend');
+            const colors = {
+                leads: '#10b981',
+                sales: '#3b82f6',
+                revenue: '#f59e0b'
+            };
+            
+            if (legend) {
+                const boxes = legend.querySelectorAll('div > div');
+                boxes.forEach((box, i) => {
+                    const opacity = 0.1 + (i * 0.225);
+                    box.style.background = colors[type].replace(')', `, ${opacity})`).replace('rgb', 'rgba');
+                });
+            }
+            
+            // Reload heatmap with new type
+            loadHeatmapByType(type);
+        }
+        
+        async function loadHeatmapByType(type) {
+            try {
+                const grid = document.getElementById('heatmapGrid');
+                if (grid) {
+                    grid.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted); grid-column: span 25;">Carregando...</div>';
+                }
+                
+                const response = await fetch(`${API_URL}/api/admin/stats/heatmap?type=${type}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (!response.ok) {
+                    // Fallback to default heatmap
+                    loadHeatmapData();
+                    return;
+                }
+                
+                const data = await response.json();
+                if (data.hourlyHeatmap) {
+                    renderHeatmapWithType(data.hourlyHeatmap, type);
+                }
+            } catch (e) {
+                console.log('Heatmap data not available:', e);
+                loadHeatmapData();
+            }
+        }
+        
+        function renderHeatmapWithType(hourlyData, type) {
+            const grid = document.getElementById('heatmapGrid');
+            if (!grid) return;
+            
+            const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+            const colors = {
+                leads: 'rgba(16, 185, 129,',
+                sales: 'rgba(59, 130, 246,',
+                revenue: 'rgba(245, 158, 11,'
+            };
+            const colorBase = colors[type] || colors.leads;
+            const labels = {
+                leads: 'leads',
+                sales: 'vendas',
+                revenue: 'R$'
+            };
+            
+            // Create a 7x24 matrix
+            const matrix = {};
+            let maxCount = 1;
+            
+            hourlyData.forEach(item => {
+                const key = `${item.day_of_week}-${item.hour}`;
+                const value = type === 'revenue' ? parseFloat(item.value || item.count || 0) : parseInt(item.count || item.value || 0);
+                matrix[key] = value;
+                if (value > maxCount) maxCount = value;
+            });
+            
+            let html = '';
+            
+            for (let day = 0; day < 7; day++) {
+                html += `<div style="display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; font-weight: 600; color: var(--text-secondary); font-size: 11px;">${dayNames[day]}</div>`;
+                
+                for (let hour = 0; hour < 24; hour++) {
+                    const count = matrix[`${day}-${hour}`] || 0;
+                    const intensity = maxCount > 0 ? (count / maxCount) : 0;
+                    const opacity = 0.1 + (intensity * 0.9);
+                    const bgColor = `${colorBase} ${opacity})`;
+                    
+                    const displayValue = type === 'revenue' 
+                        ? (count > 0 ? (count >= 1000 ? Math.round(count/1000) + 'k' : Math.round(count)) : '')
+                        : (count > 0 ? count : '');
+                    
+                    const tooltipValue = type === 'revenue'
+                        ? `R$ ${count.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`
+                        : `${count} ${labels[type]}`;
+                    
+                    html += `
+                        <div style="
+                            height: 28px;
+                            background: ${count > 0 ? bgColor : 'rgba(255,255,255,0.03)'};
+                            border-radius: 4px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 9px;
+                            color: ${intensity > 0.5 ? '#fff' : 'var(--text-muted)'};
+                            cursor: pointer;
+                            transition: transform 0.15s;
+                        " 
+                        onmouseover="this.style.transform='scale(1.1)'; this.style.zIndex='10';"
+                        onmouseout="this.style.transform='scale(1)'; this.style.zIndex='1';"
+                        title="${dayNames[day]} às ${hour}:00 - ${tooltipValue}"
+                        >${displayValue}</div>
+                    `;
+                }
+            }
+            
+            grid.innerHTML = html;
+        }
+        
+        // ==================== TOP COUNTRIES CHART ====================
+        async function loadTopCountriesChart() {
+            try {
+                const container = document.getElementById('topCountriesChart');
+                if (!container) return;
+                
+                const response = await fetch(`${API_URL}/api/admin/stats/countries-sales`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (!response.ok) {
+                    container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted);">Dados não disponíveis</div>';
+                    return;
+                }
+                
+                const data = await response.json();
+                renderTopCountriesChart(data.countries || []);
+            } catch (e) {
+                console.log('Countries chart error:', e);
+            }
+        }
+        
+        function renderTopCountriesChart(countries) {
+            const container = document.getElementById('topCountriesChart');
+            if (!container) return;
+            
+            if (!countries.length) {
+                container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted);">Nenhuma venda ainda</div>';
+                return;
+            }
+            
+            const maxSales = Math.max(...countries.map(c => c.sales), 1);
+            
+            let html = '<div style="display: flex; flex-direction: column; gap: 12px;">';
+            
+            countries.slice(0, 5).forEach((country, index) => {
+                const percentage = (country.sales / maxSales) * 100;
+                const flag = getCountryFlag(country.country_code);
+                
+                html += `
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="font-size: 24px; width: 40px; text-align: center;">${flag}</div>
+                        <div style="flex: 1;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                <span style="font-weight: 600; color: var(--text-primary);">${country.country_name || country.country_code}</span>
+                                <span style="color: var(--text-muted); font-size: 13px;">${country.sales} vendas</span>
+                            </div>
+                            <div style="height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
+                                <div style="
+                                    height: 100%; 
+                                    width: ${percentage}%; 
+                                    background: linear-gradient(90deg, #10b981, #3b82f6);
+                                    border-radius: 4px;
+                                    transition: width 0.5s ease;
+                                "></div>
+                            </div>
+                            <div style="font-size: 12px; color: #10b981; margin-top: 4px;">R$ ${(country.revenue || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        // ==================== WEEKLY PERFORMANCE CHART ====================
+        let weeklyChart = null;
+        
+        async function loadWeeklyPerformanceChart() {
+            try {
+                const response = await fetch(`${API_URL}/api/admin/stats/weekly-performance`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (!response.ok) return;
+                
+                const data = await response.json();
+                renderWeeklyPerformanceChart(data);
+            } catch (e) {
+                console.log('Weekly performance error:', e);
+                // Fallback with sample data
+                renderWeeklyPerformanceChart({
+                    labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+                    leads: [0, 0, 0, 0, 0, 0, 0],
+                    sales: [0, 0, 0, 0, 0, 0, 0]
+                });
+            }
+        }
+        
+        function renderWeeklyPerformanceChart(data) {
+            const ctx = document.getElementById('weeklyPerformanceChart');
+            if (!ctx) return;
+            
+            if (weeklyChart) {
+                weeklyChart.destroy();
+            }
+            
+            weeklyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels || ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+                    datasets: [
+                        {
+                            label: 'Leads',
+                            data: data.leads || [],
+                            backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                            borderRadius: 4,
+                            barPercentage: 0.6
+                        },
+                        {
+                            label: 'Vendas',
+                            data: data.sales || [],
+                            backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                            borderRadius: 4,
+                            barPercentage: 0.6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { color: '#a1a1aa', padding: 16, usePointStyle: true }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#71717a' }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#71717a' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // ==================== CONVERSION FUNNEL VISUAL ====================
+        async function loadConversionFunnel() {
+            try {
+                const container = document.getElementById('conversionFunnelChart');
+                if (!container) return;
+                
+                const dateRange = getGlobalDateRange();
+                let dateParams = '';
+                if (dateRange) {
+                    dateParams = `?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`;
+                }
+                
+                const response = await fetch(`${API_URL}/api/admin/funnel-stats${dateParams}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (!response.ok) {
+                    container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted);">Dados não disponíveis</div>';
+                    return;
+                }
+                
+                const data = await response.json();
+                renderConversionFunnel(data);
+            } catch (e) {
+                console.log('Conversion funnel error:', e);
+            }
+        }
+        
+        function renderConversionFunnel(data) {
+            const container = document.getElementById('conversionFunnelChart');
+            if (!container) return;
+            
+            const stages = [
+                { name: 'Visitantes', value: data.visitors || data.totalLeads || 0, color: '#6366f1', icon: '👁️' },
+                { name: 'Leads Capturados', value: data.leads || data.totalLeads || 0, color: '#3b82f6', icon: '👥' },
+                { name: 'Checkout Iniciado', value: data.checkouts || Math.round((data.totalLeads || 0) * 0.3), color: '#f59e0b', icon: '🛒' },
+                { name: 'Compra Finalizada', value: data.sales || data.totalSales || 0, color: '#10b981', icon: '✅' }
+            ];
+            
+            const maxValue = Math.max(...stages.map(s => s.value), 1);
+            
+            let html = '<div style="display: flex; flex-direction: column; gap: 8px;">';
+            
+            stages.forEach((stage, index) => {
+                const width = Math.max((stage.value / maxValue) * 100, 10);
+                const conversionRate = index > 0 && stages[index - 1].value > 0 
+                    ? ((stage.value / stages[index - 1].value) * 100).toFixed(1) 
+                    : 100;
+                
+                html += `
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <div style="width: 140px; display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 18px;">${stage.icon}</span>
+                            <span style="font-size: 13px; color: var(--text-secondary);">${stage.name}</span>
+                        </div>
+                        <div style="flex: 1; position: relative;">
+                            <div style="
+                                height: 40px;
+                                width: ${width}%;
+                                background: linear-gradient(90deg, ${stage.color}, ${stage.color}99);
+                                border-radius: 8px;
+                                display: flex;
+                                align-items: center;
+                                justify-content: flex-end;
+                                padding-right: 16px;
+                                transition: width 0.5s ease;
+                                box-shadow: 0 2px 8px ${stage.color}40;
+                            ">
+                                <span style="font-weight: 700; color: #fff; font-size: 14px;">${stage.value.toLocaleString('pt-BR')}</span>
+                            </div>
+                        </div>
+                        <div style="width: 60px; text-align: right;">
+                            ${index > 0 ? `<span style="font-size: 12px; color: ${parseFloat(conversionRate) >= 50 ? '#10b981' : parseFloat(conversionRate) >= 20 ? '#f59e0b' : '#ef4444'}; font-weight: 600;">${conversionRate}%</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        // Load all new charts on page load
         document.addEventListener('DOMContentLoaded', () => {
             if (authToken) {
-                setTimeout(loadHeatmapData, 1000);
+                setTimeout(() => {
+                    loadHeatmapData();
+                    loadTopCountriesChart();
+                    loadWeeklyPerformanceChart();
+                    loadConversionFunnel();
+                }, 1000);
             }
         });
         

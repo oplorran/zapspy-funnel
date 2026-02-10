@@ -1335,6 +1335,26 @@
             display: none !important;
         }
         
+        /* Heatmap Filter Buttons */
+        .heatmap-filter-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .heatmap-filter-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--text-primary);
+        }
+        .heatmap-filter-btn.active {
+            background: var(--accent);
+            color: #fff;
+        }
+        
         /* Toast Animations */
         @keyframes toastSlideIn {
             from {

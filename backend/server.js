@@ -1261,6 +1261,134 @@ app.get('/api/admin/stats/period-comparison', authenticateToken, async (req, res
     }
 });
 
+// Get heatmap data by type (leads, sales, revenue)
+app.get('/api/admin/stats/heatmap', authenticateToken, async (req, res) => {
+    try {
+        const { type = 'leads' } = req.query;
+        
+        let query;
+        if (type === 'leads') {
+            query = `
+                SELECT 
+                    EXTRACT(HOUR FROM created_at AT TIME ZONE 'America/Sao_Paulo') as hour,
+                    EXTRACT(DOW FROM created_at AT TIME ZONE 'America/Sao_Paulo') as day_of_week,
+                    COUNT(*) as count
+                FROM leads
+                WHERE (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '30 days')::date
+                GROUP BY EXTRACT(HOUR FROM created_at AT TIME ZONE 'America/Sao_Paulo'), EXTRACT(DOW FROM created_at AT TIME ZONE 'America/Sao_Paulo')
+                ORDER BY day_of_week, hour
+            `;
+        } else if (type === 'sales') {
+            query = `
+                SELECT 
+                    EXTRACT(HOUR FROM created_at AT TIME ZONE 'America/Sao_Paulo') as hour,
+                    EXTRACT(DOW FROM created_at AT TIME ZONE 'America/Sao_Paulo') as day_of_week,
+                    COUNT(*) as count
+                FROM transactions
+                WHERE status = 'approved' 
+                AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '30 days')::date
+                GROUP BY EXTRACT(HOUR FROM created_at AT TIME ZONE 'America/Sao_Paulo'), EXTRACT(DOW FROM created_at AT TIME ZONE 'America/Sao_Paulo')
+                ORDER BY day_of_week, hour
+            `;
+        } else if (type === 'revenue') {
+            query = `
+                SELECT 
+                    EXTRACT(HOUR FROM created_at AT TIME ZONE 'America/Sao_Paulo') as hour,
+                    EXTRACT(DOW FROM created_at AT TIME ZONE 'America/Sao_Paulo') as day_of_week,
+                    COALESCE(SUM(CAST(value AS DECIMAL)), 0) as value,
+                    COUNT(*) as count
+                FROM transactions
+                WHERE status = 'approved' 
+                AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '30 days')::date
+                GROUP BY EXTRACT(HOUR FROM created_at AT TIME ZONE 'America/Sao_Paulo'), EXTRACT(DOW FROM created_at AT TIME ZONE 'America/Sao_Paulo')
+                ORDER BY day_of_week, hour
+            `;
+        }
+        
+        const result = await pool.query(query);
+        res.json({ type, hourlyHeatmap: result.rows });
+        
+    } catch (error) {
+        console.error('Error fetching heatmap data:', error);
+        res.status(500).json({ error: 'Failed to fetch heatmap data' });
+    }
+});
+
+// Get top countries by sales
+app.get('/api/admin/stats/countries-sales', authenticateToken, async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT 
+                COALESCE(l.country, 'Unknown') as country_code,
+                COALESCE(l.country, 'Desconhecido') as country_name,
+                COUNT(t.id) as sales,
+                COALESCE(SUM(CAST(t.value AS DECIMAL)), 0) as revenue
+            FROM transactions t
+            LEFT JOIN leads l ON t.email = l.email
+            WHERE t.status = 'approved'
+            AND (t.created_at AT TIME ZONE 'America/Sao_Paulo')::date >= ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '30 days')::date
+            GROUP BY l.country
+            ORDER BY sales DESC, revenue DESC
+            LIMIT 5
+        `);
+        
+        res.json({ countries: result.rows });
+        
+    } catch (error) {
+        console.error('Error fetching countries sales:', error);
+        res.status(500).json({ error: 'Failed to fetch countries sales' });
+    }
+});
+
+// Get weekly performance data
+app.get('/api/admin/stats/weekly-performance', authenticateToken, async (req, res) => {
+    try {
+        const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+        
+        // Get leads by day of week (last 4 weeks)
+        const leadsResult = await pool.query(`
+            SELECT 
+                EXTRACT(DOW FROM created_at AT TIME ZONE 'America/Sao_Paulo') as day_of_week,
+                COUNT(*) as count
+            FROM leads
+            WHERE (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '28 days')::date
+            GROUP BY EXTRACT(DOW FROM created_at AT TIME ZONE 'America/Sao_Paulo')
+            ORDER BY day_of_week
+        `);
+        
+        // Get sales by day of week (last 4 weeks)
+        const salesResult = await pool.query(`
+            SELECT 
+                EXTRACT(DOW FROM created_at AT TIME ZONE 'America/Sao_Paulo') as day_of_week,
+                COUNT(*) as count
+            FROM transactions
+            WHERE status = 'approved'
+            AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '28 days')::date
+            GROUP BY EXTRACT(DOW FROM created_at AT TIME ZONE 'America/Sao_Paulo')
+            ORDER BY day_of_week
+        `);
+        
+        // Build arrays starting from Monday (1) to Sunday (0)
+        const leadsMap = {};
+        const salesMap = {};
+        
+        leadsResult.rows.forEach(r => { leadsMap[r.day_of_week] = parseInt(r.count); });
+        salesResult.rows.forEach(r => { salesMap[r.day_of_week] = parseInt(r.count); });
+        
+        // Reorder: Mon(1), Tue(2), Wed(3), Thu(4), Fri(5), Sat(6), Sun(0)
+        const order = [1, 2, 3, 4, 5, 6, 0];
+        const labels = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+        const leads = order.map(d => leadsMap[d] || 0);
+        const sales = order.map(d => salesMap[d] || 0);
+        
+        res.json({ labels, leads, sales });
+        
+    } catch (error) {
+        console.error('Error fetching weekly performance:', error);
+        res.status(500).json({ error: 'Failed to fetch weekly performance' });
+    }
+});
+
 // Update lead status (protected)
 app.put('/api/admin/leads/:id', authenticateToken, async (req, res) => {
     try {
