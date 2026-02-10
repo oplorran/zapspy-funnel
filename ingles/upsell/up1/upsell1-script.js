@@ -97,122 +97,42 @@
     scheduleScarcityUpdate();
 
     // ============================================
-    // LIVE ACTIVITY FEED - REALISTIC & ANIMATED
+    // STATIC ACTIVITY FEED - FIXED LIST OF BUYERS
     // ============================================
-    const firstNames = [
-        'Sarah', 'John', 'Maria', 'David', 'Anna', 'Michael', 'Emma', 'James',
-        'Sofia', 'William', 'Isabella', 'Lucas', 'Olivia', 'Daniel', 'Mia',
-        'Gabriel', 'Emily', 'Matthew', 'Ava', 'Andrew', 'Jessica', 'Ryan',
-        'Jennifer', 'Carlos', 'Amanda', 'Pedro', 'Rachel', 'Luis', 'Nicole',
-        'Ashley', 'Brandon', 'Christina', 'Derek', 'Elena', 'Frank', 'Grace'
-    ];
-    
-    const locations = [
-        'New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia',
-        'San Antonio', 'San Diego', 'Dallas', 'San Jose', 'Austin', 'Jacksonville',
-        'Fort Worth', 'Columbus', 'Charlotte', 'Seattle', 'Denver', 'Boston',
-        'Nashville', 'Detroit', 'Portland', 'Las Vegas', 'Atlanta', 'Miami'
-    ];
-    
-    const actions = [
-        'just activated',
-        'recovered messages',
-        'unlocked access',
-        'started recovery'
+    const staticBuyers = [
+        { name: 'Sarah M.', location: 'New York', action: 'unlocked access', time: '2 minutes ago' },
+        { name: 'John D.', location: 'Los Angeles', action: 'recovered messages', time: '4 minutes ago' },
+        { name: 'Emma W.', location: 'Chicago', action: 'just activated', time: '5 minutes ago' },
+        { name: 'Michael R.', location: 'Houston', action: 'unlocked access', time: '7 minutes ago' },
+        { name: 'Olivia K.', location: 'Phoenix', action: 'recovered messages', time: '9 minutes ago' },
+        { name: 'James T.', location: 'Philadelphia', action: 'just activated', time: '11 minutes ago' },
+        { name: 'Isabella C.', location: 'San Diego', action: 'unlocked access', time: '14 minutes ago' },
+        { name: 'William B.', location: 'Dallas', action: 'recovered messages', time: '16 minutes ago' },
+        { name: 'Sophia L.', location: 'Austin', action: 'just activated', time: '18 minutes ago' },
+        { name: 'Daniel H.', location: 'Seattle', action: 'unlocked access', time: '21 minutes ago' },
+        { name: 'Mia P.', location: 'Denver', action: 'recovered messages', time: '24 minutes ago' },
+        { name: 'Lucas G.', location: 'Boston', action: 'just activated', time: '27 minutes ago' },
+        { name: 'Ava S.', location: 'Miami', action: 'unlocked access', time: '31 minutes ago' },
+        { name: 'Matthew N.', location: 'Atlanta', action: 'recovered messages', time: '35 minutes ago' },
+        { name: 'Emily F.', location: 'Portland', action: 'just activated', time: '38 minutes ago' }
     ];
     
     const activityFeed = document.getElementById('activityFeed');
     
-    function getRandomTime() {
-        const rand = Math.random();
-        if (rand < 0.3) {
-            return Math.floor(Math.random() * 60) + ' seconds ago';
-        } else if (rand < 0.7) {
-            return (Math.floor(Math.random() * 5) + 1) + ' minutes ago';
-        } else {
-            return (Math.floor(Math.random() * 10) + 5) + ' minutes ago';
-        }
-    }
-    
-    function getRandomName() {
-        const name = firstNames[Math.floor(Math.random() * firstNames.length)];
-        const lastInitial = String.fromCharCode(65 + Math.floor(Math.random() * 26));
-        return name + ' ' + lastInitial + '.';
-    }
-    
-    function getRandomLocation() {
-        return locations[Math.floor(Math.random() * locations.length)];
-    }
-    
-    function getRandomAction() {
-        return actions[Math.floor(Math.random() * actions.length)];
-    }
-    
-    function createActivityItem(isNew) {
-        const name = getRandomName();
-        const location = getRandomLocation();
-        const time = getRandomTime();
-        const action = getRandomAction();
-        
-        const item = document.createElement('div');
-        item.className = 'activity-item' + (isNew ? ' new-item' : '');
-        item.innerHTML = '<span class="activity-icon">✅</span> <strong>' + name + '</strong> from ' + location + ' ' + action + ' <span class="activity-time">' + time + '</span>';
-        
-        return item;
-    }
-    
     function initActivityFeed() {
         if (!activityFeed) return;
         
-        // Create initial 3 items
-        for (let i = 0; i < 3; i++) {
-            const item = createActivityItem(false);
+        // Create all static items
+        staticBuyers.forEach(function(buyer) {
+            const item = document.createElement('div');
+            item.className = 'activity-item';
+            item.innerHTML = '<span class="activity-icon">✅</span> <strong>' + buyer.name + '</strong> from ' + buyer.location + ' ' + buyer.action + ' <span class="activity-time">' + buyer.time + '</span>';
             activityFeed.appendChild(item);
-        }
-    }
-    
-    function addNewActivity() {
-        if (!activityFeed) return;
-        
-        const newItem = createActivityItem(true);
-        
-        // Insert at the top
-        activityFeed.insertBefore(newItem, activityFeed.firstChild);
-        
-        // Remove old class after animation
-        setTimeout(function() {
-            newItem.classList.remove('new-item');
-        }, 2000);
-        
-        // Keep only 3 items visible
-        const items = activityFeed.querySelectorAll('.activity-item');
-        if (items.length > 3) {
-            const lastItem = items[items.length - 1];
-            lastItem.classList.add('fade-out');
-            setTimeout(function() {
-                if (lastItem.parentNode) {
-                    lastItem.parentNode.removeChild(lastItem);
-                }
-            }, 500);
-        }
-    }
-    
-    function scheduleNextActivity() {
-        // Random interval between 8-25 seconds for realistic feel
-        const delay = (Math.floor(Math.random() * 17) + 8) * 1000;
-        setTimeout(function() {
-            addNewActivity();
-            scheduleNextActivity();
-        }, delay);
+        });
     }
     
     // Initialize feed
     initActivityFeed();
-    
-    // Start adding new activities after 5 seconds
-    setTimeout(function() {
-        scheduleNextActivity();
-    }, 5000);
 
     // ============================================
     // FOOTER YEAR
