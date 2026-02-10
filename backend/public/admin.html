@@ -9345,6 +9345,79 @@ Posso ajudar em algo mais? 😊`
             html += '</div>';
             container.innerHTML = html;
         }
+        
+        // Focus Mode Toggle
+        let focusModeActive = false;
+        
+        function toggleFocusMode() {
+            focusModeActive = !focusModeActive;
+            const btn = document.getElementById('focusModeBtn');
+            const icon = document.getElementById('focusModeIcon');
+            const text = document.getElementById('focusModeText');
+            
+            if (focusModeActive) {
+                // Activate focus mode
+                document.body.classList.add('focus-mode');
+                if (btn) {
+                    btn.style.background = 'linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(16, 185, 129, 0.15))';
+                    btn.style.borderColor = '#10b981';
+                }
+                if (icon) icon.textContent = '✓';
+                if (text) text.textContent = 'Foco Ativo';
+                
+                // Hide non-essential nav items
+                const hideItems = ['overview', 'leads', 'funnel', 'sales', 'countries', 'reports', 'settings', 'users'];
+                hideItems.forEach(tab => {
+                    const item = document.querySelector(`.nav-item[onclick="switchTab('${tab}')"]`);
+                    if (item) item.style.display = 'none';
+                });
+                
+                // Switch to recovery tab
+                switchTab('recovery');
+                
+                showToast('Modo Foco ativado', 'Mostrando apenas Recuperação e Reembolsos', 'success');
+                
+            } else {
+                // Deactivate focus mode
+                document.body.classList.remove('focus-mode');
+                if (btn) {
+                    btn.style.background = '';
+                    btn.style.borderColor = '';
+                }
+                if (icon) icon.textContent = '🎯';
+                if (text) text.textContent = 'Foco';
+                
+                // Show all nav items
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    // Keep admin-only hidden if not admin
+                    if (!item.classList.contains('admin-only')) {
+                        item.style.display = '';
+                    }
+                });
+                
+                // Switch to overview
+                switchTab('overview');
+                
+                showToast('Modo Foco desativado', 'Todas as seções estão visíveis', 'info');
+            }
+            
+            // Save preference
+            localStorage.setItem('focusMode', focusModeActive ? 'true' : 'false');
+        }
+        
+        // Restore focus mode on page load
+        function restoreFocusMode() {
+            const savedFocusMode = localStorage.getItem('focusMode');
+            if (savedFocusMode === 'true') {
+                // Delay to ensure DOM is ready
+                setTimeout(() => {
+                    toggleFocusMode();
+                }, 500);
+            }
+        }
+        
+        // Initialize focus mode on load
+        document.addEventListener('DOMContentLoaded', restoreFocusMode);
     </script>
 </body>
 </html>
