@@ -134,6 +134,13 @@ body {
     text-align: center;
 }
 
+/* Hide price tag on mobile - only visible on desktop */
+@media (max-width: 768px) {
+    .price-tag {
+        display: none !important;
+    }
+}
+
 .charge-notice {
     margin: 6px 0 0;
     font-size: 12px;
