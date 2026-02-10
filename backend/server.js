@@ -117,6 +117,14 @@ async function sendToFacebookCAPI(eventName, userData, customData = {}, eventSou
     if (userData.fbp) {
         user_data.fbp = userData.fbp;
     }
+    // Country code (2-letter ISO 3166-1 alpha-2, lowercase, hashed)
+    if (userData.country) {
+        user_data.country = [hashData(userData.country.toLowerCase())];
+    }
+    // City (lowercase, no spaces, hashed)
+    if (userData.city) {
+        user_data.ct = [hashData(userData.city.toLowerCase().replace(/\s+/g, ''))];
+    }
     // External ID for cross-device tracking
     if (userData.externalId) {
         user_data.external_id = [hashData(userData.externalId)];
@@ -465,20 +473,22 @@ app.post('/api/leads', leadLimiter, async (req, res) => {
                     utm_campaign = COALESCE($16, utm_campaign),
                     utm_content = COALESCE($17, utm_content),
                     utm_term = COALESCE($18, utm_term),
+                    fbc = COALESCE($19, fbc),
+                    fbp = COALESCE($20, fbp),
                     last_visit_at = NOW(),
                     updated_at = NOW()
                 WHERE id = $13
                 RETURNING id, created_at`,
-                [name || null, targetPhone || null, targetGender || null, ipAddress, referrer || null, ua || null, currentVisitCount + 1, geoData.country, geoData.country_code, geoData.city, visitorId || null, source, existingLead.rows[0].id, utm_source || null, utm_medium || null, utm_campaign || null, utm_content || null, utm_term || null]
+                [name || null, targetPhone || null, targetGender || null, ipAddress, referrer || null, ua || null, currentVisitCount + 1, geoData.country, geoData.country_code, geoData.city, visitorId || null, source, existingLead.rows[0].id, utm_source || null, utm_medium || null, utm_campaign || null, utm_content || null, utm_term || null, fbc || null, fbp || null]
             );
             console.log(`Returning lead [${language.toUpperCase()}/${source}]: ${name || 'No name'} - ${email} - ${geoData.country || 'Unknown'} (visit #${currentVisitCount + 1})`);
         } else {
             // Insert new lead
             result = await pool.query(
-                `INSERT INTO leads (name, email, whatsapp, target_phone, target_gender, ip_address, referrer, user_agent, funnel_language, funnel_source, visit_count, country, country_code, city, visitor_id, utm_source, utm_medium, utm_campaign, utm_content, utm_term, created_at)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 1, $11, $12, $13, $14, $15, $16, $17, $18, $19, NOW())
+                `INSERT INTO leads (name, email, whatsapp, target_phone, target_gender, ip_address, referrer, user_agent, funnel_language, funnel_source, visit_count, country, country_code, city, visitor_id, utm_source, utm_medium, utm_campaign, utm_content, utm_term, fbc, fbp, created_at)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 1, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, NOW())
                  RETURNING id, created_at`,
-                [name || null, email, whatsapp, targetPhone || null, targetGender || null, ipAddress, referrer || null, ua || null, language, source, geoData.country, geoData.country_code, geoData.city, visitorId || null, utm_source || null, utm_medium || null, utm_campaign || null, utm_content || null, utm_term || null]
+                [name || null, email, whatsapp, targetPhone || null, targetGender || null, ipAddress, referrer || null, ua || null, language, source, geoData.country, geoData.country_code, geoData.city, visitorId || null, utm_source || null, utm_medium || null, utm_campaign || null, utm_content || null, utm_term || null, fbc || null, fbp || null]
             );
             isNewLead = true;
             console.log(`New lead captured [${language.toUpperCase()}/${source}]: ${name || 'No name'} - ${email} - ${whatsapp} - ${geoData.country || 'Unknown'}${utm_source ? ` [UTM: ${utm_source}]` : ''}`);
@@ -4097,11 +4107,37 @@ app.all('/api/postback/monetizze', async (req, res) => {
         
         // ==================== FACEBOOK CONVERSIONS API EVENTS ====================
         
-        // User data for Facebook CAPI
+        // Try to get enriched data from the lead record (IP, userAgent, fbc, fbp, country, city)
+        let leadData = null;
+        const emailForCAPI = finalEmail || buyerEmail;
+        if (emailForCAPI) {
+            try {
+                const leadResult = await pool.query(
+                    `SELECT ip_address, user_agent, fbc, fbp, country, country_code, city, name 
+                     FROM leads WHERE LOWER(email) = LOWER($1) LIMIT 1`,
+                    [emailForCAPI]
+                );
+                if (leadResult.rows.length > 0) {
+                    leadData = leadResult.rows[0];
+                    console.log(`📊 Found lead data for CAPI enrichment: IP=${leadData.ip_address ? 'Yes' : 'No'}, UA=${leadData.user_agent ? 'Yes' : 'No'}, fbc=${leadData.fbc ? 'Yes' : 'No'}, fbp=${leadData.fbp ? 'Yes' : 'No'}, Country=${leadData.country || 'No'}`);
+                }
+            } catch (leadErr) {
+                console.error('⚠️ Error fetching lead data for CAPI:', leadErr.message);
+            }
+        }
+        
+        // User data for Facebook CAPI - enriched with lead data
         const fbUserData = {
-            email: finalEmail || buyerEmail,
+            email: emailForCAPI,
             phone: buyerPhone,
-            firstName: buyerName
+            firstName: leadData?.name || buyerName,
+            // Add enriched data from lead record
+            ip: leadData?.ip_address || null,
+            userAgent: leadData?.user_agent || null,
+            fbc: leadData?.fbc || null,
+            fbp: leadData?.fbp || null,
+            country: leadData?.country_code || null,
+            city: leadData?.city || null
         };
         
         // Custom data for Facebook CAPI
@@ -6316,6 +6352,10 @@ async function initDatabase() {
         await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS whatsapp_verified BOOLEAN DEFAULT NULL;`);
         await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS whatsapp_verified_at TIMESTAMP WITH TIME ZONE;`);
         await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS whatsapp_profile_pic TEXT;`);
+        
+        // Facebook Pixel tracking columns (for CAPI enrichment on purchase)
+        await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS fbc VARCHAR(255);`);
+        await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS fbp VARCHAR(255);`);
         
         // Create funnel_events table for tracking
         await pool.query(`
