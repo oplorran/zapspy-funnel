@@ -4171,13 +4171,13 @@ app.all('/api/postback/monetizze', async (req, res) => {
         if (emailForCAPI) {
             try {
                 const leadResult = await pool.query(
-                    `SELECT ip_address, user_agent, fbc, fbp, country, country_code, city, name, target_gender, whatsapp 
+                    `SELECT ip_address, user_agent, fbc, fbp, country, country_code, city, name, target_gender, whatsapp, visitor_id, funnel_language 
                      FROM leads WHERE LOWER(email) = LOWER($1) LIMIT 1`,
                     [emailForCAPI]
                 );
                 if (leadResult.rows.length > 0) {
                     leadData = leadResult.rows[0];
-                    console.log(`📊 Found lead data for CAPI enrichment: IP=${leadData.ip_address ? 'Yes' : 'No'}, UA=${leadData.user_agent ? 'Yes' : 'No'}, fbc=${leadData.fbc ? 'Yes' : 'No'}, fbp=${leadData.fbp ? 'Yes' : 'No'}, Country=${leadData.country_code || 'No'}, Gender=${leadData.target_gender || 'No'}`);
+                    console.log(`📊 Found lead data for CAPI enrichment: IP=${leadData.ip_address ? 'Yes' : 'No'}, UA=${leadData.user_agent ? 'Yes' : 'No'}, fbc=${leadData.fbc ? 'Yes' : 'No'}, fbp=${leadData.fbp ? 'Yes' : 'No'}, Country=${leadData.country_code || 'No'}, Gender=${leadData.target_gender || 'No'}, VisitorID=${leadData.visitor_id || 'No'}`);
                 }
             } catch (leadErr) {
                 console.error('⚠️ Error fetching lead data for CAPI:', leadErr.message);
@@ -4196,7 +4196,8 @@ app.all('/api/postback/monetizze', async (req, res) => {
             fbp: leadData?.fbp || null,
             country: leadData?.country_code || null,
             city: leadData?.city || null,
-            gender: leadData?.target_gender || null  // Gender for better matching
+            gender: leadData?.target_gender || null,  // Gender for better matching
+            externalId: leadData?.visitor_id || null  // Cross-device tracking
         };
         
         // Custom data for Facebook CAPI
@@ -4208,6 +4209,14 @@ app.all('/api/postback/monetizze', async (req, res) => {
             currency: 'BRL'
         };
         
+        // Build event_source_url based on funnel language
+        const eventSourceUrl = funnelLanguage === 'es' 
+            ? 'https://spy-espanhol.zapspy.shop/' 
+            : 'https://spy-ingles.zapspy.shop/';
+        
+        // Generate unique event_id for deduplication (transaction-based)
+        const eventId = `monetizze_${chave_unica}_${statusCode}`;
+        
         try {
             const statusStr = String(statusCode);
             
@@ -4217,25 +4226,25 @@ app.all('/api/postback/monetizze', async (req, res) => {
             // Status 7 = Abandono de Checkout -> InitiateCheckout event
             if (statusStr === '7') {
                 console.log(`📤 Sending InitiateCheckout to Facebook CAPI (${funnelLanguage})...`);
-                await sendToFacebookCAPI('InitiateCheckout', fbUserData, fbCustomData, null, null, capiOptions);
+                await sendToFacebookCAPI('InitiateCheckout', fbUserData, fbCustomData, eventSourceUrl, `${eventId}_checkout`, capiOptions);
             }
             
             // Status 1 = Aguardando pagamento -> Also InitiateCheckout (they started checkout)
             if (statusStr === '1') {
                 console.log(`📤 Sending InitiateCheckout (pending) to Facebook CAPI (${funnelLanguage})...`);
-                await sendToFacebookCAPI('InitiateCheckout', fbUserData, fbCustomData, null, null, capiOptions);
+                await sendToFacebookCAPI('InitiateCheckout', fbUserData, fbCustomData, eventSourceUrl, `${eventId}_pending`, capiOptions);
             }
             
             // Status 2 or 6 = Aprovada/Completa -> Purchase event
             // BUT ONLY if dataFinalizada is valid (not "0000-00-00")
             if ((statusStr === '2' || statusStr === '6') && isFinalized) {
                 console.log(`📤 Sending Purchase to Facebook CAPI (${funnelLanguage}) - payment confirmed...`);
-                await sendToFacebookCAPI('Purchase', fbUserData, fbCustomData, null, null, capiOptions);
+                await sendToFacebookCAPI('Purchase', fbUserData, fbCustomData, eventSourceUrl, `${eventId}_purchase`, capiOptions);
             } else if (statusStr === '2' && !isFinalized) {
                 // Status 2 but no valid dataFinalizada = still pending payment
                 console.log('⏸️ Skipping Purchase event - payment not yet confirmed (invalid dataFinalizada)');
                 console.log(`📤 Sending InitiateCheckout instead (${funnelLanguage})...`);
-                await sendToFacebookCAPI('InitiateCheckout', fbUserData, fbCustomData, null, null, capiOptions);
+                await sendToFacebookCAPI('InitiateCheckout', fbUserData, fbCustomData, eventSourceUrl, `${eventId}_awaiting`, capiOptions);
             }
             
             // Status 3 = Cancelled -> Send custom Cancel event
@@ -4246,7 +4255,7 @@ app.all('/api/postback/monetizze', async (req, res) => {
             // Status 4 = Refund -> Refund event (custom)
             if (statusStr === '4' || finalStatus === 'refunded') {
                 console.log(`📤 Sending Refund to Facebook CAPI (${funnelLanguage})...`);
-                await sendToFacebookCAPI('Refund', fbUserData, fbCustomData, null, null, capiOptions);
+                await sendToFacebookCAPI('Refund', fbUserData, fbCustomData, eventSourceUrl, `${eventId}_refund`, capiOptions);
             }
             
         } catch (capiError) {
