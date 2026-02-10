@@ -169,7 +169,7 @@ Estou aqui para esclarecer tudo! 😊`
                 return null;
             }
             
-            const filter = filterElement.value || 'all';
+            const filter = filterElement.value || 'today';
             console.log('📅 Date filter value:', filter);
             
             if (filter === 'all') return null;
@@ -255,7 +255,7 @@ Estou aqui para esclarecer tudo! 😊`
         function onGlobalFilterChange() {
             console.log('🔄 Global filter changed');
             const globalLangFilter = document.getElementById('globalFunnelFilter')?.value || '';
-            const globalDateFilter = document.getElementById('globalDateFilter')?.value || 'all';
+            const globalDateFilter = document.getElementById('globalDateFilter')?.value || 'today';
             const globalSourceFilter = document.getElementById('globalSourceFilter')?.value || '';
             console.log('📊 Language:', globalLangFilter, 'Date:', globalDateFilter, 'Source:', globalSourceFilter);
             
