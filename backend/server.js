@@ -5513,10 +5513,11 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
             `, langParams),
             // Upsell revenue (for average upsell ticket)
             pool.query(`SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total FROM transactions WHERE status = 'approved' AND (product ILIKE '%Message Vault%' OR product ILIKE '%Vault%' OR product ILIKE '%360%' OR product ILIKE '%Tracker%' OR product ILIKE '%Instant%' OR product ILIKE '%Recuperación%' OR product ILIKE '%Visión%' OR product ILIKE '%VIP%') ${langCondition}${sourceCondition}${dateCondition}`, langParams),
-            // Count ALL payment attempts (for approval rate calculation)
-            pool.query(`SELECT COUNT(*) FROM transactions WHERE 1=1 ${langCondition}${sourceCondition}${dateCondition}`, langParams),
-            // Count approved payment attempts
-            pool.query(`SELECT COUNT(*) FROM transactions WHERE status = 'approved' ${langCondition}${sourceCondition}${dateCondition}`, langParams)
+            // Count unique CUSTOMERS who attempted payment (for approval rate calculation)
+            // This counts people, not payment attempts
+            pool.query(`SELECT COUNT(DISTINCT email) FROM transactions WHERE 1=1 ${langCondition}${sourceCondition}${dateCondition}`, langParams),
+            // Count unique CUSTOMERS with approved payment
+            pool.query(`SELECT COUNT(DISTINCT email) FROM transactions WHERE status = 'approved' ${langCondition}${sourceCondition}${dateCondition}`, langParams)
         ]);
         
         // Get today and this week (using Brazil timezone) - count unique customers
