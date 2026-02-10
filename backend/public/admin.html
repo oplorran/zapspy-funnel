@@ -118,7 +118,7 @@
                     </div>
                 </div>
             </nav>
-            
+            <button type="button" class="sidebar-close-mobile" id="sidebarCloseMobile" onclick="toggleSidebarMobile()" aria-label="Fechar menu" style="display: none;">✕</button>
             <div class="sidebar-footer">
                 <div class="user-menu" onclick="logout()">
                     <div class="user-avatar" id="userAvatarSidebar">A</div>
@@ -129,9 +129,15 @@
                 </div>
             </div>
         </aside>
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebarMobile()" aria-hidden="true"></div>
         
         <main class="main-content">
             <header class="header">
+                <button type="button" class="sidebar-mobile-toggle" id="sidebarMobileToggle" onclick="toggleSidebarMobile()" aria-label="Abrir menu" title="Menu" style="display: none;">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
                 <div class="header-title">
                     <h1 id="pageTitle">Visão Geral</h1>
                     <p id="pageSubtitle">Acompanhe suas métricas em tempo real</p>
@@ -205,7 +211,7 @@
                     </div>
 
                     <!-- Row 1: Funnel Volume -->
-                    <div class="stats-grid" style="grid-template-columns: repeat(6, 1fr); margin-bottom: 20px;">
+                    <div class="stats-grid stats-grid-6" style="margin-bottom: 20px;">
                         <div class="stat-card" style="border-left: 4px solid #3b82f6;">
                             <div class="stat-header">
                                 <span class="stat-label">Leads</span>
@@ -257,7 +263,7 @@
                     </div>
 
                     <!-- Row 2: Rates and Losses -->
-                    <div class="stats-grid" style="grid-template-columns: repeat(6, 1fr); margin-bottom: 28px;">
+                    <div class="stats-grid stats-grid-6" style="margin-bottom: 28px;">
                         <div class="stat-card" style="border-left: 4px solid #8b5cf6;">
                             <div class="stat-header">
                                 <span class="stat-label">Taxa Conv. Leads</span>
@@ -321,7 +327,7 @@
                             </div>
                         </div>
                         <div id="periodComparisonContent" style="padding: 20px;">
-                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px;">
                                 <div class="stat-card" style="padding: 16px;">
                                     <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">Leads</div>
                                     <div style="display: flex; align-items: baseline; gap: 8px;">
@@ -1401,7 +1407,7 @@
                                 </div>
                                 
                                 <!-- Secondary metrics -->
-                                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px;">
                                     <div style="text-align: center; padding: 16px 8px; background: var(--bg-secondary); border-radius: 10px;">
                                         <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">CPL</div>
                                         <div id="roiCPL" style="font-size: 16px; font-weight: 700; color: var(--text-primary);">R$ 0</div>
@@ -1951,7 +1957,7 @@
                                 <!-- Tipo de Teste -->
                                 <div style="margin-bottom: 24px;">
                                     <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 12px; color: #888;">TIPO DE TESTE</label>
-                                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px;">
                                         <label class="test-type-option" style="display: flex; flex-direction: column; align-items: center; padding: 14px 8px; border-radius: 10px; border: 2px solid #333; background: #0d0d0d; cursor: pointer; transition: all 0.2s;" onclick="selectTestType('vsl')">
                                             <input type="radio" name="testType" value="vsl" checked style="display: none;">
                                             <span style="font-size: 24px; margin-bottom: 6px;">🎬</span>
@@ -2356,7 +2362,7 @@
                     </div>
                     
                     <!-- Quick Stats -->
-                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px;">
                         <div class="stat-card" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05)); border: 1px solid rgba(239, 68, 68, 0.2);">
                             <div style="display: flex; justify-content: space-between; align-items: start;">
                                 <div>
@@ -2399,7 +2405,7 @@
                     </div>
                     
                     <!-- Info Cards -->
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-bottom: 32px;">
                         <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 20px; position: relative; overflow: hidden;">
                             <div style="position: absolute; top: -10px; right: -10px; font-size: 80px; opacity: 0.05;">🔐</div>
                             <div style="position: relative; z-index: 1;">
@@ -2660,7 +2666,7 @@ Posso ajudar com alguma dúvida?</textarea>
             
             <div style="padding: 24px;">
                 <!-- Stats Cards Row -->
-                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;" id="customerSummaryCards">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;" id="customerSummaryCards">
                     <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 16px; padding: 20px; text-align: center; position: relative; overflow: hidden;">
                         <div style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: rgba(99, 102, 241, 0.1); border-radius: 50%;"></div>
                         <div style="font-size: 32px; font-weight: 700; color: #6366f1; margin-bottom: 4px;" id="summaryVisits">0</div>
@@ -3392,6 +3398,13 @@ Estou aqui para esclarecer tudo! 😊`
             else if (tabName === 'users') loadUsers();
             else if (tabName === 'pixel') loadPixelStats();
             else if (tabName === 'abtests') loadABTests();
+            if (window.innerWidth <= 768 && document.body.classList.contains('sidebar-open')) toggleSidebarMobile();
+        }
+        
+        function toggleSidebarMobile() {
+            document.body.classList.toggle('sidebar-open');
+            const btn = document.getElementById('sidebarMobileToggle');
+            if (btn) btn.setAttribute('aria-label', document.body.classList.contains('sidebar-open') ? 'Fechar menu' : 'Abrir menu');
         }
         
         function logout() {
