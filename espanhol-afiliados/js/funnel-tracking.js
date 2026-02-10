@@ -49,7 +49,7 @@ const FunnelTracker = {
             targetPhone,
             targetGender,
             funnelLanguage: 'es',
-            funnelSource: 'main',
+            funnelSource: 'affiliate',
             metadata: {
                 ...metadata,
                 ...utms, // Include UTMs in metadata
