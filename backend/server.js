@@ -5515,8 +5515,8 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
         `);
         
         // Count checkout abandonment more accurately:
-        // Visitors who clicked checkout but whose email has NO transaction at all
-        // This joins funnel_events -> leads -> transactions to check properly
+        // Visitors who clicked checkout but have NO payment attempt at all (not even rejected)
+        // People with rejected cards TRIED to pay, so they are NOT abandoned
         const checkoutAbandonedResult = await pool.query(`
             SELECT COUNT(DISTINCT fe.visitor_id) as count
             FROM funnel_events fe
@@ -5530,6 +5530,7 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
                 OR NOT EXISTS (
                     SELECT 1 FROM transactions t 
                     WHERE LOWER(t.email) = LOWER(l.email)
+                    AND t.status IN ('approved', 'cancelled', 'refused', 'rejected', 'pending_payment', 'blocked', 'waiting_payment', 'refunded', 'chargeback')
                 )
             )
         `);
