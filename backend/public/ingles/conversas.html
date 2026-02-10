@@ -982,7 +982,7 @@
             border-radius: 50%;
             object-fit: cover;
             border: 3px solid var(--bg-primary);
-            filter: blur(4px);
+            filter: blur(8px);
         }
 
         .story-name {
@@ -993,6 +993,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            filter: blur(3px);
         }
 
         .story-badge {
@@ -1464,50 +1465,50 @@
         <div class="stories-scroll">
             <div class="story-item" onclick="openConversation({name: 'Story', blur: 'full'})">
                 <div class="story-ring" style="position:relative;">
-                    <img src="imagens/mulher1.jpg" alt="" onerror="this.src='imagens/default-avatar.png'">
+                    <img src="imagens/blocked-female-1.png" alt="" onerror="this.src='imagens/default-avatar.png'">
                     <span class="story-badge">🔴 NEW</span>
                 </div>
-                <span class="story-name">+1 555-***</span>
+                <span class="story-name">+1 5**-***</span>
             </div>
             <div class="story-item" onclick="openConversation({name: 'Story', blur: 'full'})">
                 <div class="story-ring" style="position:relative;">
-                    <img src="imagens/homem1.jpg" alt="" onerror="this.src='imagens/default-avatar.png'">
+                    <img src="imagens/blocked-male-1.png" alt="" onerror="this.src='imagens/default-avatar.png'">
                     <span class="story-badge">3</span>
                 </div>
-                <span class="story-name">(Blocked)</span>
+                <span class="story-name">(Bloc***)</span>
             </div>
             <div class="story-item" onclick="openConversation({name: 'Story', blur: 'full'})">
                 <div class="story-ring" style="position:relative;">
-                    <img src="imagens/mulher2.jpg" alt="" onerror="this.src='imagens/default-avatar.png'">
+                    <img src="imagens/blocked-female-2.png" alt="" onerror="this.src='imagens/default-avatar.png'">
                     <span class="story-badge">5</span>
                 </div>
-                <span class="story-name">J</span>
+                <span class="story-name">J**</span>
             </div>
             <div class="story-item" onclick="openConversation({name: 'Story', blur: 'full'})">
                 <div class="story-ring viewed" style="position:relative;">
-                    <img src="imagens/mulher3.jpg" alt="" onerror="this.src='imagens/default-avatar.png'">
+                    <img src="imagens/blocked-female-3.png" alt="" onerror="this.src='imagens/default-avatar.png'">
                 </div>
-                <span class="story-name">Jes**</span>
+                <span class="story-name">Je***</span>
             </div>
             <div class="story-item" onclick="openConversation({name: 'Story', blur: 'full'})">
                 <div class="story-ring" style="position:relative;">
-                    <img src="imagens/homem2.jpg" alt="" onerror="this.src='imagens/default-avatar.png'">
+                    <img src="imagens/blocked-male-2.png" alt="" onerror="this.src='imagens/default-avatar.png'">
                     <span class="story-badge">2</span>
                 </div>
-                <span class="story-name">Kev** (Work)</span>
+                <span class="story-name">Ke** (W***)</span>
             </div>
             <div class="story-item" onclick="openConversation({name: 'Story', blur: 'full'})">
                 <div class="story-ring viewed">
-                    <img src="imagens/mulher4.jpg" alt="" onerror="this.src='imagens/default-avatar.png'">
+                    <img src="imagens/blocked-female-4.png" alt="" onerror="this.src='imagens/default-avatar.png'">
                 </div>
-                <span class="story-name">Aman**</span>
+                <span class="story-name">Am***</span>
             </div>
             <div class="story-item" onclick="openConversation({name: 'Story', blur: 'full'})">
                 <div class="story-ring" style="position:relative;">
-                    <img src="imagens/mulher5.jpg" alt="" onerror="this.src='imagens/default-avatar.png'">
+                    <img src="imagens/blocked-female-5.png" alt="" onerror="this.src='imagens/default-avatar.png'">
                     <span class="story-badge">🔴</span>
                 </div>
-                <span class="story-name">❤️</span>
+                <span class="story-name">**</span>
             </div>
         </div>
     </div>
@@ -1611,18 +1612,7 @@
         </div>
     </div>
 
-    <!-- Push Notification -->
-    <div class="push-notification" id="pushNotification">
-        <img src="imagens/default-avatar.png" alt="" class="avatar" id="targetAvatar">
-        <div class="push-notification-content">
-            <div class="push-notification-header">
-                <span class="push-notification-name" id="pushName">Sec*****</span>
-                <span class="push-notification-time">now</span>
-            </div>
-            <div class="push-notification-text" id="pushText">New message...</div>
-            <span class="push-notification-tag" id="pushTag">DELETED MESSAGE</span>
-        </div>
-    </div>
+    <!-- Push Notification - Removido para reduzir excesso de informações -->
 
     <script>
         // Get the gender being spied on from URL
@@ -2161,9 +2151,7 @@
             // Rotate deleted messages every 30 seconds
             setInterval(rotateDeletedMessage, 30000);
             
-            // Show push notifications more frequently
-            setTimeout(showPushNotification, 2000);
-            setInterval(showPushNotification, 8000);
+            // Push notifications removidas - muito artificiais
             
             // Typing indicator - show randomly
             setTimeout(showTypingIndicator, 5000);
