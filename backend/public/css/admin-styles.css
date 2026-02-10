@@ -559,7 +559,7 @@
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
-            overflow: hidden;
+            overflow: visible;
         }
         
         .panel-header {
@@ -592,6 +592,24 @@
         .data-table tr:hover td { background: rgba(255, 255, 255, 0.02); }
         .data-table .mono { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent-light); }
         .data-table .text-primary { color: var(--text-primary); font-weight: 600; }
+        
+        /* Table Scroll Container */
+        .table-scroll-container {
+            max-height: 600px;
+            overflow-y: auto;
+            overflow-x: auto;
+        }
+        
+        .table-scroll-container::-webkit-scrollbar { width: 6px; height: 6px; }
+        .table-scroll-container::-webkit-scrollbar-track { background: transparent; }
+        .table-scroll-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        .table-scroll-container::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+        
+        /* Pagination Container */
+        #leadsPaginationContainer {
+            padding: 0 20px 20px 20px;
+            background: var(--bg-secondary);
+        }
         
         /* Badges */
         .badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 24px; font-size: 12px; font-weight: 600; backdrop-filter: blur(8px); }
