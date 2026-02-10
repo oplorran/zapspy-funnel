@@ -1725,6 +1725,19 @@
                         </div>
                     </div>
                     
+                    <div class="config-box" style="border-color: #ef4444; background: rgba(239,68,68,0.05);">
+                        <h3>🔧 Debug do Banco de Dados</h3>
+                        <p style="color: var(--text-muted);">Visualize estatísticas detalhadas das transações para identificar problemas.</p>
+                        <div style="margin-top: 16px; display: flex; gap: 12px; flex-wrap: wrap;">
+                            <button class="btn-secondary" onclick="loadDatabaseDebug()" style="background: #ef4444; color: white; border-color: #ef4444;">📊 Carregar Estatísticas</button>
+                        </div>
+                        <div id="databaseDebugResult" style="margin-top: 16px; display: none;">
+                            <div style="background: var(--bg-tertiary); border-radius: 12px; padding: 20px; border: 1px solid var(--border); max-height: 500px; overflow-y: auto;">
+                                <pre id="databaseDebugContent" style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-secondary); white-space: pre-wrap; word-break: break-all;"></pre>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="config-box">
                         <h3>🔔 Webhook de Notificações</h3>
                         <p>Receba notificações externas quando novos leads entrarem.</p>
@@ -8123,6 +8136,87 @@ Posso ajudar em algo mais? 😊`
             } catch (error) {
                 console.error('Error loading postback debug:', error);
                 showToast('Erro', 'Falha ao carregar postbacks', 'error');
+            }
+        }
+        
+        // Database Debug Function
+        async function loadDatabaseDebug() {
+            try {
+                showToast('Carregando...', 'Buscando estatísticas do banco', 'info');
+                
+                const response = await fetch(`${API_URL}/api/admin/debug/sales-count`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (!response.ok) throw new Error('Falha ao buscar dados');
+                
+                const data = await response.json();
+                
+                const resultDiv = document.getElementById('databaseDebugResult');
+                const contentPre = document.getElementById('databaseDebugContent');
+                
+                let output = '═══════════════════════════════════════════════════════════\n';
+                output += '📊 ESTATÍSTICAS GERAIS DO BANCO DE DADOS\n';
+                output += '═══════════════════════════════════════════════════════════\n\n';
+                
+                output += `📦 Total de Transações: ${data.totalTransactions}\n`;
+                output += `✅ Transações Aprovadas: ${data.approvedTransactions}\n\n`;
+                
+                output += '═══════════════════════════════════════════════════════════\n';
+                output += '📈 TRANSAÇÕES POR STATUS:\n';
+                output += '═══════════════════════════════════════════════════════════\n\n';
+                
+                if (data.byStatus && data.byStatus.length > 0) {
+                    data.byStatus.forEach(s => {
+                        const icon = s.status === 'approved' ? '✅' : 
+                                     s.status === 'cancelled' ? '❌' : 
+                                     s.status === 'refunded' ? '🔄' : '⏳';
+                        output += `${icon} ${s.status || 'null'}: ${s.count} transações\n`;
+                    });
+                }
+                
+                output += '\n═══════════════════════════════════════════════════════════\n';
+                output += '📅 TRANSAÇÕES POR DATA (últimos 10 dias):\n';
+                output += '═══════════════════════════════════════════════════════════\n\n';
+                
+                if (data.byDate && data.byDate.length > 0) {
+                    data.byDate.forEach(d => {
+                        const date = new Date(d.date).toLocaleDateString('pt-BR');
+                        output += `📆 ${date}: ${d.total} total, ${d.approved} aprovadas\n`;
+                    });
+                }
+                
+                // Cancelled debug info
+                if (data.cancelledDebug) {
+                    output += '\n═══════════════════════════════════════════════════════════\n';
+                    output += '❌ DEBUG: TRANSAÇÕES CANCELADAS\n';
+                    output += '═══════════════════════════════════════════════════════════\n\n';
+                    
+                    output += `📊 Total de linhas com status de falha: ${data.cancelledDebug.totalRows}\n`;
+                    output += `🔑 Transações únicas (por transaction_id): ${data.cancelledDebug.uniqueTransactions}\n\n`;
+                    
+                    if (data.cancelledDebug.todayTransactions && data.cancelledDebug.todayTransactions.length > 0) {
+                        output += '📋 Transações canceladas HOJE:\n\n';
+                        data.cancelledDebug.todayTransactions.forEach((tx, i) => {
+                            output += `${i + 1}. ID: ${tx.transaction_id}\n`;
+                            output += `   Email: ${tx.email}\n`;
+                            output += `   Produto: ${tx.product}\n`;
+                            output += `   Valor: R$ ${tx.value}\n`;
+                            output += `   Status: ${tx.status}\n`;
+                            output += `   Data: ${new Date(tx.created_at).toLocaleString('pt-BR')}\n\n`;
+                        });
+                    } else {
+                        output += '📋 Nenhuma transação cancelada hoje.\n';
+                    }
+                }
+                
+                contentPre.textContent = output;
+                resultDiv.style.display = 'block';
+                showToast('Sucesso!', 'Estatísticas carregadas', 'success');
+                
+            } catch (error) {
+                console.error('Error loading database debug:', error);
+                showToast('Erro', 'Falha ao carregar estatísticas: ' + error.message, 'error');
             }
         }
         
