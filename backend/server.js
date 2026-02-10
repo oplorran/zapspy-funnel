@@ -201,6 +201,11 @@ async function sendToFacebookCAPI(eventName, userData, customData = {}, eventSou
         eventPayload.event_source_url = eventSourceUrl;
     }
     
+    // Add referrer URL if available (helps with attribution)
+    if (userData.referrer) {
+        eventPayload.referrer_url = userData.referrer;
+    }
+    
     if (Object.keys(customData).length > 0) {
         eventPayload.custom_data = customData;
     }
@@ -4171,7 +4176,7 @@ app.all('/api/postback/monetizze', async (req, res) => {
         if (emailForCAPI) {
             try {
                 const leadResult = await pool.query(
-                    `SELECT ip_address, user_agent, fbc, fbp, country, country_code, city, name, target_gender, whatsapp, visitor_id, funnel_language 
+                    `SELECT ip_address, user_agent, fbc, fbp, country, country_code, city, name, target_gender, whatsapp, visitor_id, funnel_language, referrer 
                      FROM leads WHERE LOWER(email) = LOWER($1) LIMIT 1`,
                     [emailForCAPI]
                 );
@@ -4197,16 +4202,37 @@ app.all('/api/postback/monetizze', async (req, res) => {
             country: leadData?.country_code || null,
             city: leadData?.city || null,
             gender: leadData?.target_gender || null,  // Gender for better matching
-            externalId: leadData?.visitor_id || null  // Cross-device tracking
+            externalId: leadData?.visitor_id || null,  // Cross-device tracking
+            referrer: leadData?.referrer || null  // HTTP referrer for attribution
         };
         
-        // Custom data for Facebook CAPI
+        // Check if this is a new or returning customer
+        let customerSegmentation = 'new_customer_to_business';
+        if (emailForCAPI) {
+            try {
+                const prevPurchases = await pool.query(
+                    `SELECT COUNT(*) as count FROM transactions WHERE LOWER(email) = LOWER($1) AND status = 'approved'`,
+                    [emailForCAPI]
+                );
+                if (parseInt(prevPurchases.rows[0]?.count || 0) > 0) {
+                    customerSegmentation = 'existing_customer_to_business';
+                }
+            } catch (segErr) {
+                // Non-blocking
+            }
+        }
+        
+        // Custom data for Facebook CAPI - enriched with all available data
         const fbCustomData = {
             content_name: productName,
             content_ids: [productCode || chave_unica],
             content_type: 'product',
+            content_category: productType || 'digital_product',  // Product category
             value: parseFloat(transactionValue) || 0,
-            currency: 'BRL'
+            currency: 'BRL',
+            order_id: chave_unica,  // Transaction ID for tracking
+            num_items: 1,  // Number of items
+            customer_segmentation: customerSegmentation  // New vs returning customer
         };
         
         // Build event_source_url based on funnel language
