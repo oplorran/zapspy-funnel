@@ -5459,20 +5459,23 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
             // Count actual refunded/chargeback transactions (not unique customers)
             pool.query(`SELECT COUNT(*) FROM transactions WHERE status IN ('refunded', 'chargeback') ${langCondition}${sourceCondition}${dateCondition}`, langParams),
             pool.query(`SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total FROM transactions WHERE status = 'approved' ${langCondition}${sourceCondition}${dateCondition}`, langParams),
-            // Cancelled/rejected - count ALL failed transactions (not unique customers)
-            // This shows the actual number of failed payment attempts
+            // Cancelled/rejected - count unique TRANSACTIONS (by transaction_id) with failed status
+            // This matches what Monetizze shows in their dashboard
             pool.query(`
-                SELECT COUNT(*) 
+                SELECT COUNT(DISTINCT transaction_id) 
                 FROM transactions t 
                 WHERE t.status IN ('cancelled', 'pending_payment', 'blocked', 'refused', 'rejected', 'waiting_payment') 
                 ${langCondition}${sourceCondition}${dateCondition}
             `, langParams),
-            // Lost revenue - sum ALL failed transactions value
+            // Lost revenue - sum value of unique failed transactions (by transaction_id)
             pool.query(`
-                SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total
-                FROM transactions t
-                WHERE t.status IN ('cancelled', 'pending_payment', 'blocked', 'refused', 'rejected', 'waiting_payment')
-                ${langCondition}${sourceCondition}${dateCondition}
+                SELECT COALESCE(SUM(value), 0) as total
+                FROM (
+                    SELECT DISTINCT ON (transaction_id) transaction_id, CAST(value AS DECIMAL) as value
+                    FROM transactions t
+                    WHERE t.status IN ('cancelled', 'pending_payment', 'blocked', 'refused', 'rejected', 'waiting_payment')
+                    ${langCondition}${sourceCondition}${dateCondition}
+                ) unique_tx
             `, langParams),
             // Upsell revenue (for average upsell ticket)
             pool.query(`SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total FROM transactions WHERE status = 'approved' AND (product ILIKE '%Message Vault%' OR product ILIKE '%Vault%' OR product ILIKE '%360%' OR product ILIKE '%Tracker%' OR product ILIKE '%Instant%' OR product ILIKE '%Recuperación%' OR product ILIKE '%Visión%' OR product ILIKE '%VIP%') ${langCondition}${sourceCondition}${dateCondition}`, langParams),
