@@ -5447,6 +5447,8 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
     try {
         const { language, startDate, endDate, source } = req.query;
         
+        console.log('[Sales API] Params:', { language, startDate, endDate, source });
+        
         // Build language filter
         let langCondition = '';
         let langParams = [];
@@ -5481,22 +5483,19 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
             pool.query(`SELECT COUNT(*) FROM transactions WHERE status IN ('refunded', 'chargeback') ${langCondition}${sourceCondition}${dateCondition}`, langParams),
             pool.query(`SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total FROM transactions WHERE status = 'approved' ${langCondition}${sourceCondition}${dateCondition}`, langParams),
             // Cancelled/rejected - count unique TRANSACTIONS (by transaction_id) with failed status
-            // This matches what Monetizze shows in their dashboard
+            // Only count 'cancelled' status to match Monetizze exactly
             pool.query(`
                 SELECT COUNT(DISTINCT transaction_id) 
                 FROM transactions t 
-                WHERE t.status IN ('cancelled', 'pending_payment', 'blocked', 'refused', 'rejected', 'waiting_payment') 
+                WHERE t.status = 'cancelled'
                 ${langCondition}${sourceCondition}${dateCondition}
             `, langParams),
-            // Lost revenue - sum value of unique failed transactions (by transaction_id)
+            // Lost revenue - sum value of cancelled transactions only
             pool.query(`
-                SELECT COALESCE(SUM(value), 0) as total
-                FROM (
-                    SELECT DISTINCT ON (transaction_id) transaction_id, CAST(value AS DECIMAL) as value
-                    FROM transactions t
-                    WHERE t.status IN ('cancelled', 'pending_payment', 'blocked', 'refused', 'rejected', 'waiting_payment')
-                    ${langCondition}${sourceCondition}${dateCondition}
-                ) unique_tx
+                SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total
+                FROM transactions t
+                WHERE t.status = 'cancelled'
+                ${langCondition}${sourceCondition}${dateCondition}
             `, langParams),
             // Upsell revenue (for average upsell ticket)
             pool.query(`SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total FROM transactions WHERE status = 'approved' AND (product ILIKE '%Message Vault%' OR product ILIKE '%Vault%' OR product ILIKE '%360%' OR product ILIKE '%Tracker%' OR product ILIKE '%Instant%' OR product ILIKE '%Recuperación%' OR product ILIKE '%Visión%' OR product ILIKE '%VIP%') ${langCondition}${sourceCondition}${dateCondition}`, langParams),
