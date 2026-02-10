@@ -1344,6 +1344,9 @@ app.post('/api/capi/event', async (req, res) => {
             phone,
             firstName,
             lastName,
+            country,           // Country code (2-letter ISO) for better match quality
+            city,              // City name for better match quality
+            gender,            // Gender (m/f) for better match quality
             value,
             currency,
             contentName,
@@ -1368,12 +1371,15 @@ app.post('/api/capi/event', async (req, res) => {
         const ipAddress = req.headers['x-forwarded-for']?.split(',')[0] || req.ip;
         const userAgent = req.headers['user-agent'];
         
-        // Build user data
+        // Build user data (including geo data for better match quality)
         const userData = {
             email,
             phone,
             firstName,
             lastName,
+            country,           // Country code for CAPI matching
+            city,              // City for CAPI matching
+            gender,            // Gender for CAPI matching
             externalId,        // For cross-device tracking
             ip: ipAddress,
             userAgent,
