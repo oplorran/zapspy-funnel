@@ -2728,11 +2728,32 @@ app.get('/api/admin/debug/sales-count', authenticateToken, async (req, res) => {
             LIMIT 10
         `);
         
+        // Debug: count unique transaction_ids vs total rows for cancelled
+        const cancelledTotal = await pool.query(`
+            SELECT COUNT(*) as total_rows, COUNT(DISTINCT transaction_id) as unique_tx
+            FROM transactions 
+            WHERE status IN ('cancelled', 'pending_payment', 'blocked', 'refused', 'rejected', 'waiting_payment')
+        `);
+        
+        // Debug: show all cancelled transactions for today
+        const cancelledToday = await pool.query(`
+            SELECT transaction_id, email, product, value, status, created_at
+            FROM transactions 
+            WHERE status IN ('cancelled', 'pending_payment', 'blocked', 'refused', 'rejected', 'waiting_payment')
+            AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date = (NOW() AT TIME ZONE 'America/Sao_Paulo')::date
+            ORDER BY created_at DESC
+        `);
+        
         res.json({
             totalTransactions: parseInt(total.rows[0].count),
             approvedTransactions: parseInt(approved.rows[0].count),
             byStatus: byStatus.rows,
-            byDate: byDate.rows
+            byDate: byDate.rows,
+            cancelledDebug: {
+                totalRows: parseInt(cancelledTotal.rows[0].total_rows),
+                uniqueTransactions: parseInt(cancelledTotal.rows[0].unique_tx),
+                todayTransactions: cancelledToday.rows
+            }
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
