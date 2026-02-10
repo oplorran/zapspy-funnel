@@ -470,7 +470,7 @@ app.get('/api/capi/status', async (req, res) => {
                 status, 
                 funnel_language,
                 created_at,
-                CASE WHEN value > 0 THEN 'has_value' ELSE 'no_value' END as value_status
+                CASE WHEN CAST(value AS NUMERIC) > 0 THEN 'has_value' ELSE 'no_value' END as value_status
             FROM transactions 
             ORDER BY created_at DESC 
             LIMIT 5
