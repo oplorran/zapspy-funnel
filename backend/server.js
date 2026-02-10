@@ -1028,10 +1028,10 @@ app.get('/api/admin/pixel-stats', authenticateToken, async (req, res) => {
             COUNT(*) FILTER (WHERE user_agent IS NOT NULL AND user_agent != '')::int as with_user_agent,
             COUNT(*) FILTER (WHERE visitor_id IS NOT NULL AND visitor_id != '')::int as with_visitor_id,
             COUNT(*) FILTER (WHERE country_code IS NOT NULL AND country_code != '')::int as with_country,
-            COUNT(*) FILTER (WHERE (fbc IS NOT NULL AND fbc != '') OR utm_source = 'facebook')::int as facebook_ads,
-            COUNT(*) FILTER (WHERE ((fbc IS NOT NULL AND fbc != '') OR utm_source = 'facebook') AND fbc IS NOT NULL AND fbc != '')::int as facebook_ads_with_fbc,
+            COUNT(*) FILTER (WHERE (fbc IS NOT NULL AND fbc != '') OR (utm_source IS NOT NULL AND LOWER(TRIM(utm_source)) IN ('facebook','fb','meta')))::int as facebook_ads,
+            COUNT(*) FILTER (WHERE ((fbc IS NOT NULL AND fbc != '') OR (utm_source IS NOT NULL AND LOWER(TRIM(utm_source)) IN ('facebook','fb','meta'))) AND fbc IS NOT NULL AND fbc != '')::int as facebook_ads_with_fbc,
             COUNT(*) FILTER (WHERE (fbc IS NULL OR fbc = '') AND (utm_source IS NULL OR utm_source = '') AND (referrer IS NULL OR referrer = ''))::int as direct,
-            COUNT(*) FILTER (WHERE utm_source IS NOT NULL AND utm_source != '' AND utm_source != 'facebook')::int as other,
+            COUNT(*) FILTER (WHERE utm_source IS NOT NULL AND utm_source != '' AND LOWER(TRIM(utm_source)) NOT IN ('facebook','fb','meta'))::int as other,
             COUNT(*) FILTER (WHERE (fbc IS NULL OR fbc = '') AND (utm_source IS NULL OR utm_source = ''))::int as unidentified
         FROM leads WHERE ${whereClause}`;
 
