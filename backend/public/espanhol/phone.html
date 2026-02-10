@@ -2314,6 +2314,8 @@
                 whatsapp: country + whatsapp,
                 targetPhone: localStorage.getItem('targetPhone') || '',
                 targetGender: localStorage.getItem('targetGender') || '',
+                country_code: localStorage.getItem('userCountryCode') || localStorage.getItem('detectedCountry') || '',
+                city: localStorage.getItem('userCity') || localStorage.getItem('detectedCity') || '',
                 funnelLanguage: 'es',
                 funnelSource: 'main',
                 timestamp: new Date().toISOString(),
