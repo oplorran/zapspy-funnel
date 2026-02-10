@@ -1065,28 +1065,44 @@
 
         /* Bonus Section */
         .bonus-section {
-            background: linear-gradient(135deg, rgba(255, 149, 0, 0.1), rgba(255, 204, 0, 0.05));
-            border: 1px solid rgba(255, 149, 0, 0.3);
-            border-radius: 16px;
-            padding: 16px;
+            background: linear-gradient(135deg, rgba(255, 149, 0, 0.15), rgba(255, 204, 0, 0.05));
+            border: 2px solid rgba(255, 149, 0, 0.4);
+            border-radius: 20px;
+            padding: 20px;
             margin-bottom: 24px;
         }
 
         .bonus-title {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 700;
             color: #FF9500;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
+        }
+
+        .bonus-total {
+            text-align: center;
+            font-size: 14px;
+            color: #25D366;
+            font-weight: 600;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .bonus-total span {
+            text-decoration: line-through;
+            color: #ff4444;
         }
 
         .bonus-item {
             display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            padding: 10px 0;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
@@ -1095,14 +1111,43 @@
         }
 
         .bonus-icon {
-            width: 32px;
-            height: 32px;
-            background: rgba(255, 149, 0, 0.2);
-            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+        }
+
+        .bonus-icon.instagram {
+            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+            color: white;
+        }
+
+        .bonus-icon.tiktok {
+            background: #000000;
+            color: #25F4EE;
+        }
+
+        .bonus-icon.snapchat {
+            background: #FFFC00;
+            color: #000000;
+        }
+
+        .bonus-icon.location {
+            background: linear-gradient(135deg, #4285f4, #34a853);
+            color: white;
+        }
+
+        .bonus-icon.alerts {
+            background: linear-gradient(135deg, #ff4444, #ff6b6b);
+            color: white;
+        }
+
+        .bonus-icon.monitor {
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            color: white;
         }
 
         .bonus-icon svg {
@@ -1732,6 +1777,94 @@
             </div>
         </div>
 
+        <!-- Bonus Section - ACIMA do preço -->
+        <div class="bonus-section">
+            <div class="bonus-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+                Bonos Exclusivos (GRATIS)
+            </div>
+            <div class="bonus-total">Valor total: <span>$394</span> - ¡Tuyo GRATIS hoy!</div>
+            <div class="bonus-item">
+                <div class="bonus-icon instagram">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                    </svg>
+                </div>
+                <div class="bonus-info">
+                    <h4>Espía Instagram</h4>
+                    <p>Accede a DMs, stories vistos y seguidores secretos</p>
+                </div>
+                <span class="bonus-value">$79 GRATIS</span>
+            </div>
+            <div class="bonus-item">
+                <div class="bonus-icon tiktok">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                        <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z"/>
+                    </svg>
+                </div>
+                <div class="bonus-info">
+                    <h4>Espía TikTok</h4>
+                    <p>Ve videos privados, likes e historial de mensajes</p>
+                </div>
+                <span class="bonus-value">$69 GRATIS</span>
+            </div>
+            <div class="bonus-item">
+                <div class="bonus-icon snapchat">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                        <path d="M12.206.793c.99 0 4.347.276 5.93 3.821.529 1.193.403 3.219.299 4.847l-.003.06c-.012.18-.022.345-.03.51.075.045.203.09.401.09.3-.016.659-.12 1.033-.301.165-.088.344-.104.464-.104.182 0 .359.029.509.09.45.149.734.479.734.838.015.449-.39.839-1.213 1.168-.089.029-.209.075-.344.119-.45.135-1.139.36-1.333.81-.09.224-.061.524.12.868l.015.015c.06.136 1.526 3.475 4.791 4.014.255.044.435.27.42.509 0 .075-.015.149-.045.225-.24.569-1.273.988-3.146 1.271-.059.091-.12.375-.164.57-.029.179-.074.36-.134.553-.076.271-.27.405-.555.405h-.03a1.76 1.76 0 01-.168-.015c-.375-.045-.779-.09-1.229-.09-.449 0-.929.045-1.438.18-.509.119-.959.329-1.529.569-.795.33-1.695.705-3.009.705h-.075c-1.314 0-2.214-.375-3.009-.705-.57-.24-1.02-.45-1.529-.569-.509-.135-.989-.18-1.438-.18-.45 0-.854.045-1.229.09-.061.015-.12.015-.168.015-.284 0-.479-.134-.555-.405-.061-.193-.105-.375-.134-.553-.045-.195-.105-.479-.165-.57-1.872-.283-2.905-.702-3.146-1.271a.49.49 0 01-.044-.225.47.47 0 01.419-.509c3.264-.54 4.73-3.879 4.791-4.02l.016-.029c.18-.345.209-.645.119-.869-.195-.449-.884-.674-1.333-.809a3.96 3.96 0 01-.344-.119c-.823-.329-1.229-.72-1.214-1.168 0-.36.285-.689.735-.838.149-.06.326-.09.509-.09.119 0 .299.016.464.104.374.181.733.301 1.032.301.197 0 .326-.045.401-.09-.008-.165-.018-.33-.03-.51l-.003-.06c-.104-1.628-.23-3.654.299-4.847C7.86 1.069 11.216.793 12.206.793z"/>
+                    </svg>
+                </div>
+                <div class="bonus-info">
+                    <h4>Espía Snapchat</h4>
+                    <p>Recupera snaps eliminados y conversaciones secretas</p>
+                </div>
+                <span class="bonus-value">$59 GRATIS</span>
+            </div>
+            <div class="bonus-item">
+                <div class="bonus-icon location">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polygon points="12 2 12 12 17 7"/>
+                        <line x1="12" y1="12" x2="12" y2="22"/>
+                        <line x1="2" y1="12" x2="22" y2="12"/>
+                    </svg>
+                </div>
+                <div class="bonus-info">
+                    <h4>Rastreador GPS en Tiempo Real</h4>
+                    <p>Actualizaciones de ubicación en vivo cada 5 minutos</p>
+                </div>
+                <span class="bonus-value">$89 GRATIS</span>
+            </div>
+            <div class="bonus-item">
+                <div class="bonus-icon alerts">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 01-3.46 0"/>
+                    </svg>
+                </div>
+                <div class="bonus-info">
+                    <h4>Alertas Instantáneas</h4>
+                    <p>Recibe avisos de nuevos contactos y actividad sospechosa</p>
+                </div>
+                <span class="bonus-value">$49 GRATIS</span>
+            </div>
+            <div class="bonus-item">
+                <div class="bonus-icon monitor">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                </div>
+                <div class="bonus-info">
+                    <h4>Monitor 24/7 en Línea</h4>
+                    <p>Rastrea cuándo están en línea, incluso en modo oculto</p>
+                </div>
+                <span class="bonus-value">$49 GRATIS</span>
+            </div>
+        </div>
+
         <!-- Pricing -->
         <div class="pricing-section" id="pricing">
             <div class="discount-badge">81% DESCUENTO - TIEMPO LIMITADO</div>
@@ -1754,55 +1887,6 @@
                 <span class="payment-method">Tarjeta de Débito</span>
                 <span class="payment-method">PayPal</span>
                 <span class="payment-method">Apple Pay</span>
-            </div>
-        </div>
-
-        <!-- Bonus Section -->
-        <div class="bonus-section">
-            <div class="bonus-title">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                </svg>
-                Bonos Exclusivos (GRATIS)
-            </div>
-            <div class="bonus-item">
-                <div class="bonus-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
-                        <circle cx="12" cy="10" r="3"/>
-                    </svg>
-                </div>
-                <div class="bonus-info">
-                    <h4>Historial de Ubicaciones</h4>
-                    <p>Ve todos los lugares visitados en los últimos 30 días</p>
-                </div>
-                <span class="bonus-value">$49 GRATIS</span>
-            </div>
-            <div class="bonus-item">
-                <div class="bonus-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                        <path d="M13.73 21a2 2 0 01-3.46 0"/>
-                    </svg>
-                </div>
-                <div class="bonus-info">
-                    <h4>Alertas en Tiempo Real</h4>
-                    <p>Recibe notificaciones cuando interactúen con alguien nuevo</p>
-                </div>
-                <span class="bonus-value">$39 GRATIS</span>
-            </div>
-            <div class="bonus-item">
-                <div class="bonus-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <polyline points="12 6 12 12 16 14"/>
-                    </svg>
-                </div>
-                <div class="bonus-info">
-                    <h4>Monitor de Estado en Línea</h4>
-                    <p>Rastrea cuándo están en línea 24/7</p>
-                </div>
-                <span class="bonus-value">$29 GRATIS</span>
             </div>
         </div>
 
