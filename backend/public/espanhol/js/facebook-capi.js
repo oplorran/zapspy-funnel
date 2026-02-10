@@ -127,20 +127,35 @@ const FacebookCAPI = {
         });
     },
     
-    trackViewContent: function(contentName, contentCategory, value = 0) {
+    // ViewContent - when user views important content
+    // Default value based on Spanish funnel front-end ticket ($37)
+    trackViewContent: function(contentName, contentCategory, value = 37) {
         return this.trackEvent('ViewContent', {
             content_name: contentName,
             content_category: contentCategory,
-            value: value,
+            value: value > 0 ? value : 37,  // Ensure valid value for Facebook
             currency: 'USD'
         });
     },
     
-    trackLead: function(contentName = 'Lead Capture') {
+    // Lead - when user submits contact info
+    trackLead: function(email, userData = {}) {
+        // Get stored Facebook IDs for better matching
+        const fbc = this.getFbc();
+        const fbp = this.getFbp();
+        const visitorId = this.getVisitorId();
+        
         return this.trackEvent('Lead', {
-            content_name: contentName,
+            content_name: 'Lead Capture',
             currency: 'USD',
-            value: 0
+            value: 37,  // Lead value based on front-end ticket
+            // Include user data for better match quality
+            email: email,
+            phone: userData.phone || null,
+            firstName: userData.name || null,
+            fbc: fbc,
+            fbp: fbp,
+            externalId: visitorId
         });
     },
     
