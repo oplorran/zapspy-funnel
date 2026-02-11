@@ -106,9 +106,9 @@
                     </div>
                 </div>
                 
-                <div class="nav-section">
+                <div class="nav-section" id="navSectionConfig" style="display: none;">
                     <div class="nav-section-title">Configurações</div>
-                    <div class="nav-item" onclick="switchTab('settings')">
+                    <div class="nav-item" onclick="switchTab('settings')" id="navSettings">
                         <span class="nav-item-icon">⚙️</span>
                         Integrações
                     </div>
@@ -3457,6 +3457,13 @@ Estou aqui para esclarecer tudo! 😊`
         
         
         function switchTab(tabName) {
+            // Block restricted tabs for non-admin users
+            const adminOnlyTabs = ['settings', 'users'];
+            if (adminOnlyTabs.includes(tabName) && currentUser && currentUser.role !== 'admin') {
+                showToast('Acesso Restrito', 'Você não tem permissão para acessar esta seção', 'error');
+                return;
+            }
+            
             document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
             document.querySelector(`.nav-item[onclick="switchTab('${tabName}')"]`)?.classList.add('active');
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
@@ -3529,15 +3536,23 @@ Estou aqui para esclarecer tudo! 😊`
                 nameEl.textContent = user.name;
             }
             
+            const isAdmin = user.role === 'admin';
+            
+            // Show/hide entire config section (admin only - hidden for support/viewer)
+            const navSectionConfig = document.getElementById('navSectionConfig');
+            if (navSectionConfig) {
+                navSectionConfig.style.display = isAdmin ? 'block' : 'none';
+            }
+            
             // Show/hide admin-only elements
             const navUsers = document.getElementById('navUsers');
             if (navUsers) {
-                navUsers.style.display = user.role === 'admin' ? 'flex' : 'none';
+                navUsers.style.display = isAdmin ? 'flex' : 'none';
             }
             
             // Hide danger zone for non-admins
             const dangerZone = document.querySelector('.config-box[style*="border-color: var(--danger)"]');
-            if (dangerZone && user.role !== 'admin') {
+            if (dangerZone && !isAdmin) {
                 dangerZone.style.display = 'none';
             }
         }

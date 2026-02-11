@@ -1151,8 +1151,8 @@ app.get('/api/admin/pixel-stats', authenticateToken, async (req, res) => {
     }
 });
 
-// Database diagnostic endpoint (protected - admin only)
-app.get('/api/health/db', authenticateToken, async (req, res) => {
+// Database diagnostic endpoint (admin only)
+app.get('/api/health/db', authenticateToken, requireAdmin, async (req, res) => {
     try {
         const leadsCount = await pool.query('SELECT COUNT(*) FROM leads');
         const transactionsCount = await pool.query('SELECT COUNT(*) FROM transactions');
@@ -3667,8 +3667,8 @@ app.get('/api/admin/debug/sales-count', authenticateToken, async (req, res) => {
     }
 });
 
-// Debug endpoint to see recent postbacks (memory + DB)
-app.get('/api/admin/debug/postbacks', authenticateToken, async (req, res) => {
+// Debug endpoint to see recent postbacks (memory + DB) - admin only
+app.get('/api/admin/debug/postbacks', authenticateToken, requireAdmin, async (req, res) => {
     // Extract value fields from each postback for easy viewing
     const postbacksWithValueInfo = recentPostbacks.map(p => {
         const venda = p.body?.venda || {};
