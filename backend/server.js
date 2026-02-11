@@ -458,6 +458,21 @@ app.use('/espanhol', express.static(path.join(__dirname, 'public', 'espanhol')))
 app.use('/en', express.static(path.join(__dirname, 'public', 'ingles')));
 app.use('/es', express.static(path.join(__dirname, 'public', 'espanhol')));
 
+// Serve funnel files at root path based on domain
+// ingles.zappdetect.com/upsell/up1/ → public/ingles/upsell/up1/
+// espanhol.zappdetect.com/upsell/up1/ → public/espanhol/upsell/up1/
+// This is needed because Monetizze redirects to /upsell/up1/ (without /ingles/ prefix)
+app.use((req, res, next) => {
+    const host = req.hostname || req.headers.host || '';
+    if (host.includes('ingles') || host.includes('ingles.zappdetect')) {
+        express.static(path.join(__dirname, 'public', 'ingles'))(req, res, next);
+    } else if (host.includes('espanhol') || host.includes('espanhol.zappdetect')) {
+        express.static(path.join(__dirname, 'public', 'espanhol'))(req, res, next);
+    } else {
+        next();
+    }
+});
+
 // Rate limiting
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
