@@ -4570,6 +4570,31 @@ async function syncMonetizzeSalesCore(startDate, endDate) {
                 // Silently ignore - use Monetizze phone as fallback
             }
             
+            // CHECK: Is this transaction becoming "approved" for the first time?
+            // If so, we need to send a CAPI Purchase event in real-time
+            let wasNewlyApproved = false;
+            if (mappedStatus === 'approved') {
+                try {
+                    const existingTx = await pool.query(
+                        `SELECT status FROM transactions WHERE transaction_id = $1`,
+                        [transactionId]
+                    );
+                    // Newly approved if: didn't exist before, OR existed with different status
+                    if (existingTx.rows.length === 0 || existingTx.rows[0].status !== 'approved') {
+                        // Also check if CAPI was already sent (by postback handler)
+                        const capiExists = await pool.query(
+                            `SELECT id FROM capi_purchase_logs WHERE transaction_id = $1`,
+                            [transactionId]
+                        );
+                        if (capiExists.rows.length === 0) {
+                            wasNewlyApproved = true;
+                        }
+                    }
+                } catch (checkErr) {
+                    // Non-blocking
+                }
+            }
+            
             await pool.query(`
                 INSERT INTO transactions (
                     transaction_id, email, phone, name, product, value, 
@@ -4585,6 +4610,135 @@ async function syncMonetizzeSalesCore(startDate, endDate) {
                     phone = COALESCE($3, transactions.phone),
                     updated_at = NOW()
             `, [transactionId, email, finalPhone, name, productName, value, String(statusCode), mappedStatus, JSON.stringify(item), funnelLanguage, funnelSource, saleDate]);
+            
+            // REAL-TIME CAPI: Send Purchase event immediately when sync detects newly approved sale
+            if (wasNewlyApproved && email) {
+                try {
+                    console.log(`🔥 SYNC CAPI REAL-TIME: Transaction ${transactionId} (${email}) just became approved! Sending Purchase CAPI now...`);
+                    
+                    // Lead matching (simplified)
+                    let syncLeadData = null;
+                    let syncMatchMethod = 'none';
+                    
+                    // Match by email
+                    const syncLeadResult = await pool.query(
+                        `SELECT ip_address, user_agent, fbc, fbp, country, country_code, city, state, name, target_gender, whatsapp, visitor_id, referrer
+                         FROM leads WHERE LOWER(email) = LOWER($1) ORDER BY created_at DESC LIMIT 1`,
+                        [email]
+                    );
+                    if (syncLeadResult.rows.length > 0) {
+                        syncLeadData = syncLeadResult.rows[0];
+                        syncMatchMethod = 'email';
+                    }
+                    
+                    // Enrichment from funnel_events if missing fbc/fbp
+                    if (syncLeadData && (!syncLeadData.fbc || !syncLeadData.fbp) && syncLeadData.visitor_id) {
+                        try {
+                            const enrichResult = await pool.query(
+                                `SELECT fbc, fbp, ip_address, user_agent FROM funnel_events 
+                                 WHERE visitor_id = $1 AND (fbc IS NOT NULL OR fbp IS NOT NULL)
+                                 ORDER BY created_at DESC LIMIT 1`,
+                                [syncLeadData.visitor_id]
+                            );
+                            if (enrichResult.rows.length > 0) {
+                                const e = enrichResult.rows[0];
+                                if (!syncLeadData.fbc && e.fbc) syncLeadData.fbc = e.fbc;
+                                if (!syncLeadData.fbp && e.fbp) syncLeadData.fbp = e.fbp;
+                                if (!syncLeadData.ip_address && e.ip_address) syncLeadData.ip_address = e.ip_address;
+                                if (!syncLeadData.user_agent && e.user_agent) syncLeadData.user_agent = e.user_agent;
+                            }
+                        } catch (enrichErr) { /* non-blocking */ }
+                    }
+                    
+                    // If no lead by email, try IP from raw_data
+                    if (!syncLeadData) {
+                        let buyerIp = null;
+                        try {
+                            buyerIp = item?.comprador?.ip || null;
+                        } catch (e) { /* ignore */ }
+                        if (buyerIp) {
+                            const ipResult = await pool.query(
+                                `SELECT visitor_id, ip_address, user_agent, fbc, fbp FROM funnel_events 
+                                 WHERE ip_address = $1 ORDER BY created_at DESC LIMIT 1`,
+                                [buyerIp]
+                            );
+                            if (ipResult.rows.length > 0) {
+                                const r = ipResult.rows[0];
+                                syncLeadData = {
+                                    ip_address: r.ip_address, user_agent: r.user_agent,
+                                    fbc: r.fbc, fbp: r.fbp,
+                                    country_code: null, city: null, state: null, target_gender: null,
+                                    name: name, whatsapp: finalPhone, visitor_id: r.visitor_id, referrer: null
+                                };
+                                syncMatchMethod = 'ip_events';
+                            }
+                        }
+                    }
+                    
+                    console.log(`📊 SYNC CAPI: Lead ${syncLeadData ? `matched [${syncMatchMethod}] fbc=${syncLeadData.fbc ? 'Yes' : 'No'} fbp=${syncLeadData.fbp ? 'Yes' : 'No'}` : 'NOT found'} for ${email}`);
+                    
+                    // Build CAPI data
+                    const brlToUsdRate = parseFloat(process.env.CONVERSION_BRL_TO_USD || '0.18');
+                    const valueBRL = parseFloat(value) || 0;
+                    const valueUSD = Math.round((valueBRL * brlToUsdRate) * 100) / 100;
+                    
+                    const syncFbUserData = {
+                        email, phone: syncLeadData?.whatsapp || finalPhone,
+                        firstName: syncLeadData?.name || name,
+                        ip: syncLeadData?.ip_address || null, userAgent: syncLeadData?.user_agent || null,
+                        fbc: syncLeadData?.fbc || null, fbp: syncLeadData?.fbp || null,
+                        country: syncLeadData?.country_code || null, city: syncLeadData?.city || null,
+                        state: syncLeadData?.state || null, gender: syncLeadData?.target_gender || null,
+                        externalId: syncLeadData?.visitor_id || null, referrer: syncLeadData?.referrer || null
+                    };
+                    const syncFbCustomData = {
+                        content_name: productName, content_ids: [String(statusCode) || transactionId],
+                        content_type: 'product', value: valueUSD, currency: 'USD',
+                        order_id: transactionId, num_items: 1, customer_segmentation: 'new_customer_to_business'
+                    };
+                    
+                    let syncEventSourceUrl;
+                    if (funnelSource === 'affiliate') {
+                        syncEventSourceUrl = funnelLanguage === 'es' ? 'https://afiliado.whatstalker.com/espanhol/' : 'https://afiliado.whatstalker.com/ingles/';
+                    } else {
+                        syncEventSourceUrl = funnelLanguage === 'es' ? 'https://espanhol.zappdetect.com/' : 'https://ingles.zappdetect.com/';
+                    }
+                    
+                    const syncPurchaseEventId = `monetizze_${transactionId}_purchase`;
+                    const syncCapiOptions = { language: funnelLanguage, eventTime: saleDate || null };
+                    
+                    const syncResults = await sendToFacebookCAPI('Purchase', syncFbUserData, syncFbCustomData, syncEventSourceUrl, syncPurchaseEventId, syncCapiOptions);
+                    const syncFirstResult = syncResults[0] || {};
+                    const syncCapiSuccess = syncFirstResult.success === true;
+                    const syncFbEventsReceived = syncFirstResult.result?.events_received || 0;
+                    
+                    console.log(`🔥 SYNC CAPI RESULT: ${email} → ${syncCapiSuccess ? '✅ SUCCESS' : '❌ FAILED'} (events_received: ${syncFbEventsReceived})`);
+                    
+                    // Log to capi_purchase_logs
+                    await pool.query(`
+                        INSERT INTO capi_purchase_logs (
+                            transaction_id, email, product, value, currency,
+                            funnel_language, funnel_source, event_source_url, event_id,
+                            pixel_id, pixel_name,
+                            has_email, has_fbc, has_fbp, has_ip, has_user_agent,
+                            has_external_id, has_country, has_phone, lead_found,
+                            capi_success, capi_response, fb_events_received, match_method
+                        ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24)
+                    `, [
+                        transactionId, email, productName, syncFbCustomData.value, 'USD',
+                        funnelLanguage, funnelSource, syncEventSourceUrl, syncPurchaseEventId,
+                        syncFirstResult.pixel || '', funnelLanguage === 'es' ? 'PIXEL SPY ESPANHOL' : '[PABLO NOVO] - [SPY INGLES]',
+                        true, !!(syncLeadData?.fbc), !!(syncLeadData?.fbp),
+                        !!(syncLeadData?.ip_address), !!(syncLeadData?.user_agent),
+                        !!(syncLeadData?.visitor_id), !!(syncLeadData?.country_code),
+                        !!(syncLeadData?.whatsapp || finalPhone), !!syncLeadData,
+                        syncCapiSuccess, JSON.stringify(syncResults), syncFbEventsReceived, syncMatchMethod
+                    ]);
+                    
+                } catch (capiErr) {
+                    console.error(`⚠️ SYNC CAPI error for ${transactionId}: ${capiErr.message}`);
+                }
+            }
             
             // Also create refund_requests entry for refunds/chargebacks so they appear in admin panel
             if (mappedStatus === 'refunded' || mappedStatus === 'chargeback') {
