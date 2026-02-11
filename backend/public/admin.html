@@ -8619,8 +8619,11 @@ Obrigado pela compreensão.`
                 const language = (activeFilter && activeFilter.getAttribute('data-filter')) || 'all';
                 const langParam = language === 'all' ? '' : language;
                 
+                const periodSelect = document.getElementById('pixelDateRange');
+                const period = periodSelect ? periodSelect.value : '';
                 let url = `${API_URL}/api/admin/capi-purchase-logs?limit=50`;
                 if (langParam) url += `&language=${langParam}`;
+                if (period) url += `&period=${period}`;
                 
                 const res = await fetch(url, { headers });
                 if (!res.ok) throw new Error('Erro ao buscar logs');

@@ -1245,23 +1245,41 @@ app.get('/api/admin/stats/trends', authenticateToken, async (req, res) => {
 // Purchase CAPI attribution logs (protected - for admin dashboard)
 app.get('/api/admin/capi-purchase-logs', authenticateToken, async (req, res) => {
     try {
-        const { language, limit = 50 } = req.query;
-        let query = `SELECT * FROM capi_purchase_logs WHERE 1=1`;
+        const { language, limit = 50, period } = req.query;
+        
+        // Build WHERE conditions for both queries (logs + summary)
+        const conditions = [];
         const params = [];
         let paramIdx = 1;
         
         if (language === 'en' || language === 'es') {
-            query += ` AND funnel_language = $${paramIdx}`;
+            conditions.push(`funnel_language = $${paramIdx}`);
             params.push(language);
             paramIdx++;
         }
         
-        query += ` ORDER BY created_at DESC LIMIT $${paramIdx}`;
+        // Period filter (matches the pixelDateRange dropdown)
+        if (period) {
+            const periodMap = {
+                '30min': '30 minutes', '1h': '1 hour', '2h': '2 hours', '6h': '6 hours',
+                '12h': '12 hours', '24h': '24 hours', '48h': '48 hours', '7d': '7 days',
+                '14d': '14 days', '30d': '30 days'
+            };
+            const interval = periodMap[period];
+            if (interval) {
+                conditions.push(`created_at >= NOW() - INTERVAL '${interval}'`);
+            }
+        }
+        
+        const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+        
+        // Logs query
+        const logsQuery = `SELECT * FROM capi_purchase_logs ${whereClause} ORDER BY created_at DESC LIMIT $${paramIdx}`;
         params.push(parseInt(limit) || 50);
+        const result = await pool.query(logsQuery, params);
         
-        const result = await pool.query(query, params);
-        
-        // Also get summary stats
+        // Summary query (same filters, without LIMIT)
+        const summaryParams = params.slice(0, -1); // Remove the LIMIT param
         const summary = await pool.query(`
             SELECT 
                 COUNT(*) as total,
@@ -1278,8 +1296,8 @@ app.get('/api/admin/capi-purchase-logs', authenticateToken, async (req, res) => 
                 COUNT(*) FILTER (WHERE funnel_source = 'affiliate') as affiliate_count,
                 COUNT(*) FILTER (WHERE funnel_source = 'main') as main_count,
                 COALESCE(SUM(value), 0) as total_value
-            FROM capi_purchase_logs
-        `);
+            FROM capi_purchase_logs ${whereClause}
+        `, summaryParams);
         
         res.json({
             logs: result.rows,
