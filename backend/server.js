@@ -202,9 +202,8 @@ async function sendToFacebookCAPI(eventName, userData, customData = {}, eventSou
         user_data: user_data
     };
     
-    if (eventSourceUrl) {
-        eventPayload.event_source_url = eventSourceUrl;
-    }
+    // Always include event_source_url (required for best match quality)
+    eventPayload.event_source_url = eventSourceUrl || 'https://zapspy-funnel-production.up.railway.app';
     
     // Add referrer URL if available (helps with attribution)
     if (userData.referrer) {
@@ -5165,6 +5164,12 @@ app.all('/api/postback/monetizze', async (req, res) => {
             if (statusStr === '4' || finalStatus === 'refunded') {
                 console.log(`📤 Sending Refund to Facebook CAPI (${funnelLanguage})...`);
                 await sendToFacebookCAPI('Refund', fbUserData, fbCustomData, eventSourceUrl, `${eventId}_refund`, capiOptions);
+            }
+            
+            // Status 8/9 = Chargeback -> Refund event (custom, same as refund for CAPI tracking)
+            if (statusStr === '8' || statusStr === '9' || finalStatus === 'chargeback') {
+                console.log(`📤 Sending Refund (chargeback) to Facebook CAPI (${funnelLanguage})...`);
+                await sendToFacebookCAPI('Refund', fbUserData, fbCustomData, eventSourceUrl, `${eventId}_chargeback`, capiOptions);
             }
             
         } catch (capiError) {

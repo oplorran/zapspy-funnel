@@ -2354,11 +2354,13 @@
                 FacebookCAPI.trackAddToCart(27.00, 'ZapSpy.ai VIP Access');
                 FacebookCAPI.trackInitiateCheckout(27.00, 'ZapSpy.ai VIP Access');
             } else if (typeof fbq !== 'undefined') {
+                // Fallback to browser only with eventID for deduplication
+                const checkoutEventId = 'InitiateCheckout_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
                 fbq('track', 'InitiateCheckout', {
                     content_name: 'ZapSpy.ai VIP Access',
                     currency: 'USD',
                     value: 27.00
-                });
+                }, { eventID: checkoutEventId });
             }
             
             // Track AddToCart for granular tracking
@@ -2501,7 +2503,8 @@
                 FacebookCAPI.trackAddToCart(13.50, '50% OFF Offer');
                 FacebookCAPI.trackInitiateCheckout(13.50, '50% OFF Offer');
             } else if (typeof fbq !== 'undefined') {
-                fbq('track', 'InitiateCheckout', { content_name: '50% OFF Offer', value: 13.50, currency: 'USD' });
+                const discountEventId = 'InitiateCheckout_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                fbq('track', 'InitiateCheckout', { content_name: '50% OFF Offer', value: 13.50, currency: 'USD' }, { eventID: discountEventId });
             }
             
             // Build checkout URL with preserved UTMs + internal tracking

@@ -127,7 +127,7 @@
         document.addEventListener('DOMContentLoaded', async function() {
             if (typeof FacebookCAPI !== 'undefined') {
                 FacebookCAPI.init('Phone Capture');
-                FacebookCAPI.trackViewContent('Phone Capture', 'Funnel - Lead Step', 0);
+                FacebookCAPI.trackViewContent('Phone Capture', 'Funnel - Lead Step', 37);
             }
             
             // Initialize A/B Testing
@@ -2512,13 +2512,18 @@
             if (typeof FacebookCAPI !== 'undefined') {
                 FacebookCAPI.trackEvent('Lead', {
                     content_name: 'Phone Number Submitted',
-                    content_category: 'WhatsApp Monitoring'
+                    content_category: 'WhatsApp Monitoring',
+                    value: 37,
+                    currency: 'USD'
                 });
             } else if (typeof fbq !== 'undefined') {
+                const leadEventId = 'Lead_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
                 fbq('track', 'Lead', {
                     content_name: 'Phone Number Submitted',
-                    content_category: 'WhatsApp Monitoring'
-                });
+                    content_category: 'WhatsApp Monitoring',
+                    value: 37,
+                    currency: 'USD'
+                }, { eventID: leadEventId });
             }
             
             // Display phone number on loading screen
@@ -2768,13 +2773,32 @@
             if (typeof FacebookCAPI !== 'undefined') {
                 FacebookCAPI.trackEvent('Lead', {
                     content_name: 'ZapSpy Lead Capture',
-                    content_category: 'phone_confirmation'
+                    content_category: 'phone_confirmation',
+                    value: 37,
+                    currency: 'USD'
+                });
+                // CompleteRegistration - helps Facebook optimize for users who complete registration
+                FacebookCAPI.trackEvent('CompleteRegistration', {
+                    content_name: 'ZapSpy Registration Complete',
+                    status: 'completed',
+                    value: 37,
+                    currency: 'USD'
                 });
             } else if (typeof fbq !== 'undefined') {
+                const leadEventId2 = 'Lead_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
                 fbq('track', 'Lead', {
                     content_name: 'ZapSpy Lead Capture',
-                    content_category: 'phone_confirmation'
-                });
+                    content_category: 'phone_confirmation',
+                    value: 37,
+                    currency: 'USD'
+                }, { eventID: leadEventId2 });
+                const regEventId = 'CompleteRegistration_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                fbq('track', 'CompleteRegistration', {
+                    content_name: 'ZapSpy Registration Complete',
+                    status: 'completed',
+                    value: 37,
+                    currency: 'USD'
+                }, { eventID: regEventId });
             }
             
             // Start hacking animation
