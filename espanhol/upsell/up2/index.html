@@ -68,9 +68,104 @@
     <link rel="stylesheet" href="../vip-overlay-styles.css?v=8.0">
     <link rel="stylesheet" href="upsell2-styles.css?v=8.0">
     <script type="text/javascript" src="https://app.monetizze.com.br/1buyclick.php?u=26c4eacebc0c89761c056441f43eb492"></script>
+    <style>
+    .scan-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;background:linear-gradient(135deg,#0a0014 0%,#1a0a2e 40%,#0d1b3a 100%);display:flex;align-items:center;justify-content:center;transition:opacity .8s ease,transform .8s ease;overflow:hidden}
+    .scan-overlay.fade-out{opacity:0;transform:scale(1.05);pointer-events:none}
+    .scan-overlay::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(138,43,226,.7),transparent);animation:scanLine2 2.5s linear infinite}
+    @keyframes scanLine2{0%{top:0}100%{top:100%}}
+    .scan-container{position:relative;z-index:2;width:90%;max-width:440px;text-align:center}
+    .radar-icon{font-size:48px;margin-bottom:10px;animation:radarSpin 3s linear infinite}
+    @keyframes radarSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+    .scan-title{font-family:'DM Sans',sans-serif;font-size:19px;font-weight:700;color:#fff;margin-bottom:6px}
+    .scan-subtitle{font-family:'DM Sans',sans-serif;font-size:13px;color:rgba(255,255,255,.45);margin-bottom:24px}
+    .scan-progress-wrap{background:rgba(255,255,255,.08);border-radius:20px;height:6px;overflow:hidden;margin-bottom:28px}
+    .scan-progress-bar{height:100%;width:0%;border-radius:20px;background:linear-gradient(90deg,#8a2be2,#da70d6,#8a2be2);background-size:200% 100%;animation:shimmer2 1.5s linear infinite;transition:width .4s ease}
+    @keyframes shimmer2{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    .scan-percent{font-family:'DM Sans',monospace;font-size:12px;color:rgba(255,255,255,.35);margin-top:6px;margin-bottom:20px}
+    .scan-platforms{text-align:left}
+    .platform-row{display:flex;align-items:center;gap:10px;padding:9px 14px;margin-bottom:5px;border-radius:10px;opacity:.3;transform:translateX(-15px);transition:all .5s cubic-bezier(.22,1,.36,1);font-family:'DM Sans',sans-serif;font-size:13.5px;color:rgba(255,255,255,.5)}
+    .platform-row.scanning{opacity:1;transform:translateX(0);color:rgba(255,255,255,.85);background:rgba(138,43,226,.08);border:1px solid rgba(138,43,226,.15)}
+    .platform-row.done{opacity:1;transform:translateX(0);color:rgba(255,255,255,.55);background:transparent;border:1px solid transparent}
+    .platform-icon-wrap{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:rgba(255,255,255,.05);flex-shrink:0}
+    .platform-row.scanning .platform-icon-wrap{background:rgba(138,43,226,.15)}
+    .platform-emoji{font-size:16px}
+    .platform-name{flex:1;font-weight:500}
+    .platform-status{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+    .platform-row.scanning .platform-status{color:#da70d6}
+    .platform-row.done .platform-status{color:#25D366}
+    .platform-row.done.alert-found .platform-status{color:#ff6b6b}
+    .platform-count{font-size:11px;color:rgba(255,255,255,.4);min-width:60px;text-align:right}
+    .platform-row.done .platform-count{color:rgba(255,255,255,.6)}
+    .platform-row.done.alert-found .platform-count{color:#ff6b6b;font-weight:600}
+    .scan-alert{display:none;margin-top:18px;padding:14px 18px;border-radius:12px;background:rgba(255,59,48,.08);border:1px solid rgba(255,59,48,.3);text-align:center}
+    .scan-alert.visible{display:block;animation:alertAppear .6s cubic-bezier(.22,1,.36,1)}
+    @keyframes alertAppear{0%{opacity:0;transform:translateY(15px) scale(.95)}100%{opacity:1;transform:translateY(0) scale(1)}}
+    .scan-alert-icon{font-size:22px;display:block;margin-bottom:6px;animation:alertBlink .6s ease-in-out infinite alternate}
+    @keyframes alertBlink{0%{opacity:.6}100%{opacity:1}}
+    .scan-alert-title{font-family:'DM Sans',sans-serif;font-weight:700;font-size:13px;color:#ff6b6b;margin-bottom:4px;letter-spacing:.5px}
+    .scan-alert-text{font-family:'DM Sans',sans-serif;font-size:11.5px;color:rgba(255,255,255,.55);line-height:1.5}
+    .scan-alert-text strong{color:#fff}
+    .page.hidden-content{opacity:0;pointer-events:none}
+    .page.reveal-content{animation:contentReveal .8s ease forwards}
+    @keyframes contentReveal{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
+    </style>
 </head>
 <body>
-    <div class="page">
+    <div class="scan-overlay" id="scanOverlay">
+        <div class="scan-container">
+            <div class="scan-header">
+                <div class="radar-icon">📡</div>
+                <h2 class="scan-title">Escaneo Multi-Plataforma en Progreso</h2>
+                <p class="scan-subtitle">Analizando huella digital del objetivo...</p>
+            </div>
+            
+            <div class="scan-progress-wrap">
+                <div class="scan-progress-bar" id="scanProgressBar"></div>
+            </div>
+            <div class="scan-percent" id="scanPercent">0%</div>
+
+            <div class="scan-platforms" id="scanPlatforms">
+                <div class="platform-row" data-platform="0">
+                    <span class="platform-icon-wrap"><span class="platform-emoji">💬</span></span>
+                    <span class="platform-name">WhatsApp</span>
+                    <span class="platform-status">—</span>
+                    <span class="platform-count"></span>
+                </div>
+                <div class="platform-row" data-platform="1">
+                    <span class="platform-icon-wrap"><span class="platform-emoji">📸</span></span>
+                    <span class="platform-name">Instagram</span>
+                    <span class="platform-status">—</span>
+                    <span class="platform-count"></span>
+                </div>
+                <div class="platform-row" data-platform="2">
+                    <span class="platform-icon-wrap"><span class="platform-emoji">🎵</span></span>
+                    <span class="platform-name">TikTok</span>
+                    <span class="platform-status">—</span>
+                    <span class="platform-count"></span>
+                </div>
+                <div class="platform-row" data-platform="3">
+                    <span class="platform-icon-wrap"><span class="platform-emoji">👻</span></span>
+                    <span class="platform-name">Snapchat</span>
+                    <span class="platform-status">—</span>
+                    <span class="platform-count"></span>
+                </div>
+                <div class="platform-row" data-platform="4">
+                    <span class="platform-icon-wrap"><span class="platform-emoji">📍</span></span>
+                    <span class="platform-name">Ubicación GPS</span>
+                    <span class="platform-status">—</span>
+                    <span class="platform-count"></span>
+                </div>
+            </div>
+
+            <div class="scan-alert" id="scanAlert">
+                <span class="scan-alert-icon">🚨</span>
+                <div class="scan-alert-title">ACTIVIDAD DETECTADA EN MÚLTIPLES PLATAFORMAS</div>
+                <div class="scan-alert-text">Conversaciones ocultas encontradas en <strong>3+ plataformas</strong>. Actualiza ahora para ver todo.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page hidden-content" id="mainPage">
         <main class="content">
             <div class="hero-section">
                 <div class="success-header">
@@ -108,5 +203,56 @@
     <script src="upsell2-script.js?v=8.0"></script>
     <!-- geo-restriction.js removed - prices always visible -->
     <script src="../upsell-tracking.js?v=1.0"></script>
+    <script>
+    (function(){
+        var o=document.getElementById('scanOverlay'),m=document.getElementById('mainPage'),
+            pb=document.getElementById('scanProgressBar'),pp=document.getElementById('scanPercent'),
+            rows=document.querySelectorAll('.platform-row'),da=document.getElementById('scanAlert');
+        if(!o||!m)return;
+
+        var platforms=[
+            {a:0,c:2500,p:18,scanning:'Escaneando...',done:'Conectado',count:'Activo',alert:false},
+            {a:2500,c:5500,p:40,scanning:'Detectando...',done:'⚠ Encontrado',count:'47 DMs ocultos',alert:true},
+            {a:5500,c:8500,p:60,scanning:'Analizando...',done:'⚠ Encontrado',count:'12 chats secretos',alert:true},
+            {a:8500,c:11000,p:78,scanning:'Buscando...',done:'⚠ Encontrado',count:'8 msgs efímeros',alert:true},
+            {a:11000,c:13000,p:95,scanning:'Rastreando...',done:'Localizado',count:'Tiempo real',alert:false}
+        ];
+
+        var TOTAL=15000,start=Date.now(),cp=0,alertShown=false,sa=[],sc=[];
+        for(var i=0;i<platforms.length;i++){sa.push(false);sc.push(false)}
+
+        function up(t){if(t>cp){cp=t;pb.style.width=cp+'%';pp.textContent=cp+'%'}}
+
+        function tick(){
+            var e=Date.now()-start;
+            for(var i=0;i<platforms.length;i++){
+                if(!sa[i]&&e>=platforms[i].a){
+                    sa[i]=true;
+                    rows[i].classList.add('scanning');
+                    rows[i].querySelector('.platform-status').textContent=platforms[i].scanning;
+                }
+                if(!sc[i]&&e>=platforms[i].c){
+                    sc[i]=true;
+                    rows[i].classList.remove('scanning');
+                    rows[i].classList.add('done');
+                    if(platforms[i].alert)rows[i].classList.add('alert-found');
+                    rows[i].querySelector('.platform-status').textContent=platforms[i].done;
+                    rows[i].querySelector('.platform-count').textContent=platforms[i].count;
+                    up(platforms[i].p);
+                }
+            }
+            if(e>=13000&&!alertShown){alertShown=true;da.classList.add('visible');if(navigator.vibrate)navigator.vibrate([100,50,100,50,200])}
+            for(var j=0;j<platforms.length;j++){
+                if(e>=platforms[j].a&&e<platforms[j].c){
+                    var sp=(e-platforms[j].a)/(platforms[j].c-platforms[j].a),prev=j>0?platforms[j-1].p:0;
+                    up(Math.floor(prev+(platforms[j].p-prev)*sp));break;
+                }
+            }
+            if(e>=TOTAL){up(100);pp.textContent='100%';setTimeout(function(){o.classList.add('fade-out');m.classList.remove('hidden-content');m.classList.add('reveal-content');setTimeout(function(){o.style.display='none'},800)},500);return}
+            requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+    })();
+    </script>
 </body>
 </html>

@@ -69,13 +69,78 @@
     <link rel="stylesheet" href="upsell3-styles.css?v=8.0">
     <!-- Monetizze Upsell Incorporado -->
     <script type="text/javascript" src="https://app.monetizze.com.br/upsell_incorporado.php"></script>
+    <style>
+        .hidden-content{display:none!important}
+        .qo-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#0a0a0a 0%,#1a0a0a 30%,#0a0a0a 100%);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;overflow-y:auto}
+        .qo-container{text-align:center;padding:40px 30px;max-width:500px;width:90%}
+        .qo-icon{font-size:60px;margin-bottom:20px;animation:qoPulse 2s ease-in-out infinite}
+        @keyframes qoPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+        .qo-title{font-size:24px;font-weight:700;color:#ef4444;margin-bottom:8px}
+        .qo-subtitle{font-size:14px;color:rgba(255,255,255,0.6);margin-bottom:25px}
+        .qo-box{background:rgba(255,255,255,0.03);border:1px solid rgba(239,68,68,0.2);border-radius:12px;padding:20px;margin-bottom:20px}
+        .qo-pos-label{font-size:12px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+        .qo-position{font-size:48px;font-weight:800;color:#ef4444;line-height:1;margin-bottom:5px}
+        .qo-total{font-size:13px;color:rgba(255,255,255,0.4)}
+        .qo-eta-box{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:15px;margin-bottom:20px;text-align:left}
+        .qo-eta-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
+        .qo-eta-row:last-child{border-bottom:none}
+        .qo-eta-label{font-size:13px;color:rgba(255,255,255,0.6)}
+        .qo-eta-value{font-size:13px;color:#ef4444;font-weight:600}
+        .qo-progress-wrap{background:rgba(255,255,255,0.1);border-radius:12px;height:24px;overflow:hidden;margin-bottom:8px;position:relative}
+        .qo-progress-bar{height:100%;width:0%;border-radius:12px;background:linear-gradient(90deg,#ef4444,#f97316);transition:width 0.3s ease;box-shadow:0 0 15px rgba(239,68,68,0.4)}
+        .qo-progress-text{font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:20px;display:block}
+        .qo-users{margin-bottom:20px;max-height:120px;overflow:hidden}
+        .qo-user-feed{text-align:left}
+        .qo-user-feed div{font-size:12px;color:rgba(255,255,255,0.4);padding:6px 12px;margin-bottom:4px;background:rgba(255,255,255,0.02);border-radius:6px;animation:qoFadeIn 0.5s ease}
+        @keyframes qoFadeIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+        .qo-vip{background:linear-gradient(135deg,rgba(239,68,68,0.15),rgba(249,115,22,0.15));border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:20px;display:none;animation:qoVipIn 0.5s ease}
+        @keyframes qoVipIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+        .qo-vip strong{color:#f97316}
+        .qo-vip p:first-child{font-size:16px;font-weight:700;color:#f97316;margin-bottom:8px}
+        .qo-vip p:last-child{font-size:13px;color:rgba(255,255,255,0.8);line-height:1.5}
+    </style>
 </head>
 <body>
-    <!-- VIP Processing Overlay REMOVED - direct content display for better conversion -->
+    <!-- Queue Overlay -->
+    <div id="queueOverlay" class="qo-overlay">
+        <div class="qo-container">
+            <div class="qo-icon">⏳</div>
+            <div class="qo-title">Procesando Tu Solicitud</div>
+            <div class="qo-subtitle">Has sido colocado en la cola de procesamiento estándar</div>
+            <div class="qo-box">
+                <div class="qo-pos-label">Tu posición en la cola</div>
+                <div class="qo-position" id="qoPosition">#2,847</div>
+                <div class="qo-total">de 3,102 usuarios esperando</div>
+            </div>
+            <div class="qo-eta-box">
+                <div class="qo-eta-row">
+                    <span class="qo-eta-label">⏱ Tiempo estimado de espera:</span>
+                    <span class="qo-eta-value" id="qoEta">~47 horas</span>
+                </div>
+                <div class="qo-eta-row">
+                    <span class="qo-eta-label">📊 Carga del servidor:</span>
+                    <span class="qo-eta-value" id="qoLoad">94% capacidad</span>
+                </div>
+                <div class="qo-eta-row">
+                    <span class="qo-eta-label">🔄 Velocidad de procesamiento:</span>
+                    <span class="qo-eta-value" id="qoSpeed">Estándar (lento)</span>
+                </div>
+            </div>
+            <div class="qo-progress-wrap">
+                <div class="qo-progress-bar" id="qoProgressBar"></div>
+            </div>
+            <span class="qo-progress-text" id="qoProgressText">Esperando en cola...</span>
+            <div class="qo-users">
+                <div class="qo-user-feed" id="qoFeed"></div>
+            </div>
+            <div class="qo-vip" id="qoVip">
+                <p>🚀 VÍA RÁPIDA VIP DISPONIBLE</p>
+                <p>Salta toda la cola. Obtén tus resultados en <strong>5 minutos en lugar de 47 horas</strong>.</p>
+            </div>
+        </div>
+    </div>
 
-    <!-- Loading Overlay REMOVED - was interfering with Monetizze 1-click processing -->
-
-    <div class="page">
+    <div class="page hidden-content" id="mainPage">
         <header class="access-banner" role="banner">
             <!-- Timer de Urgencia -->
             <div class="timer-bar" role="status" aria-live="polite">
@@ -230,5 +295,83 @@
     <script src="upsell3-script.js?v=8.0"></script>
     <!-- geo-restriction.js removed - prices always visible -->
     <script src="../upsell-tracking.js?v=1.0"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var overlay = document.getElementById('queueOverlay');
+        var mainPage = document.getElementById('mainPage');
+        var progressBar = document.getElementById('qoProgressBar');
+        var progressText = document.getElementById('qoProgressText');
+        var positionEl = document.getElementById('qoPosition');
+        var etaEl = document.getElementById('qoEta');
+        var loadEl = document.getElementById('qoLoad');
+        var vipBox = document.getElementById('qoVip');
+        var feed = document.getElementById('qoFeed');
+        var duration = 15000;
+        var startTime = Date.now();
+        var vipShown = false;
+        var names = ['Miguel T.','Sara K.','Alejandro P.','Carlos L.','Jordán R.','María M.','Diego W.','Julia H.','Andrea S.','Pablo D.','Sofía B.','Daniel N.'];
+        var statusMsgs = ['Esperando en cola...','Aún esperando...','Cola ocupada...','Alta demanda hoy...','Procesando lentamente...','Servidor sobrecargado...','Por favor ten paciencia...','Aún esperando...'];
+        var lastFeedTime = 0;
+        var feedIndex = 0;
+        var lastStatusIdx = 0;
+
+        function update() {
+            var elapsed = Date.now() - startTime;
+            var progress = Math.min(elapsed / duration, 1);
+            var barProgress = Math.min(progress * 0.15, 0.15);
+            if (progress >= 1) barProgress = 1;
+            progressBar.style.width = (barProgress * 100) + '%';
+
+            var pos = Math.max(2847 - Math.floor(progress * 30), 2817);
+            positionEl.textContent = '#' + pos.toLocaleString();
+
+            var etas = ['~47 horas','~48 horas','~51 horas','~53 horas','~56 horas'];
+            var etaIdx = Math.min(Math.floor(progress * etas.length), etas.length - 1);
+            etaEl.textContent = etas[etaIdx];
+
+            var loads = ['94%','95%','96%','97%','98%'];
+            var loadIdx = Math.min(Math.floor(progress * loads.length), loads.length - 1);
+            loadEl.textContent = loads[loadIdx] + ' capacidad';
+
+            var statusIdx = Math.min(Math.floor(elapsed / 2000), statusMsgs.length - 1);
+            if (statusIdx !== lastStatusIdx) {
+                progressText.textContent = statusMsgs[statusIdx];
+                lastStatusIdx = statusIdx;
+            }
+
+            if (elapsed - lastFeedTime > 2000 && feedIndex < names.length) {
+                var div = document.createElement('div');
+                div.textContent = '\u2705 ' + names[feedIndex] + ' \u2014 procesado (miembro VIP)';
+                if (feed.firstChild) {
+                    feed.insertBefore(div, feed.firstChild);
+                } else {
+                    feed.appendChild(div);
+                }
+                while (feed.children.length > 4) {
+                    feed.removeChild(feed.lastChild);
+                }
+                feedIndex++;
+                lastFeedTime = elapsed;
+            }
+
+            if (!vipShown && elapsed >= 12000) {
+                vipBox.style.display = 'block';
+                vipShown = true;
+            }
+
+            if (progress < 1) {
+                requestAnimationFrame(update);
+            } else {
+                overlay.style.transition = 'opacity 0.5s ease';
+                overlay.style.opacity = '0';
+                setTimeout(function() {
+                    overlay.style.display = 'none';
+                    mainPage.classList.remove('hidden-content');
+                }, 500);
+            }
+        }
+        requestAnimationFrame(update);
+    });
+    </script>
 </body>
 </html>

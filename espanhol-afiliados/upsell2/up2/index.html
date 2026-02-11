@@ -69,13 +69,96 @@
     <link rel="stylesheet" href="upsell2-styles.css?v=8.0">
     <!-- Monetizze Upsell Incorporado -->
     <script type="text/javascript" src="https://app.monetizze.com.br/upsell_incorporado.php"></script>
+    <style>
+        .hidden-content{display:none!important}
+        .so-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#0a0a1a 0%,#1a0a2e 30%,#0a0a1a 100%);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;overflow-y:auto}
+        .so-container{text-align:center;padding:40px 30px;max-width:500px;width:90%}
+        .so-radar{font-size:60px;margin-bottom:20px;animation:soSpin 3s linear infinite}
+        @keyframes soSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+        .so-title{font-size:22px;font-weight:700;color:#a855f7;margin-bottom:8px}
+        .so-subtitle{font-size:14px;color:rgba(255,255,255,0.6);margin-bottom:30px}
+        .so-progress-wrap{background:rgba(255,255,255,0.1);border-radius:12px;height:24px;overflow:hidden;margin-bottom:8px;position:relative}
+        .so-progress-bar{height:100%;width:0%;border-radius:12px;background:linear-gradient(90deg,#a855f7,#7c3aed);transition:width 0.3s ease;box-shadow:0 0 15px rgba(168,85,247,0.4)}
+        .so-percent{font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:30px;display:block}
+        .so-platforms{text-align:left;margin-bottom:30px}
+        .so-platform{display:flex;align-items:center;gap:12px;padding:12px 15px;margin-bottom:8px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid rgba(255,255,255,0.05);opacity:0.3;transition:all 0.5s ease}
+        .so-platform.active{opacity:1;border-color:rgba(168,85,247,0.3);background:rgba(168,85,247,0.05)}
+        .so-platform.completed{opacity:0.7}
+        .so-platform-icon{font-size:24px;width:30px;text-align:center}
+        .so-platform-name{font-size:14px;color:#fff;font-weight:600;flex:1}
+        .so-platform-status{font-size:11px;color:rgba(255,255,255,0.5);text-align:right}
+        .so-platform.active .so-platform-status{color:#a855f7}
+        .so-platform.completed .so-platform-status{color:#f59e0b}
+        .so-platform-count{font-size:11px;color:#f59e0b;display:none;margin-top:2px;text-align:right}
+        .so-platform.completed .so-platform-count{display:block}
+        .so-alert{background:linear-gradient(135deg,rgba(168,85,247,0.15),rgba(124,58,237,0.15));border:1px solid rgba(168,85,247,0.3);border-radius:12px;padding:20px;display:none;animation:soAlertIn 0.5s ease}
+        @keyframes soAlertIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+        .so-alert strong{color:#a855f7}
+        .so-alert p:first-child{font-size:16px;font-weight:700;color:#f59e0b;margin-bottom:8px}
+        .so-alert p:last-child{font-size:13px;color:rgba(255,255,255,0.8);line-height:1.5}
+    </style>
 </head>
 <body>
-    <!-- VIP Processing Overlay REMOVED - direct content display for better conversion -->
+    <!-- Scan Overlay -->
+    <div id="scanOverlay" class="so-overlay">
+        <div class="so-container">
+            <div class="so-radar">📡</div>
+            <div class="so-title">Escaneo Multi-Plataforma en Progreso</div>
+            <div class="so-subtitle">Analizando huella digital del objetivo...</div>
+            <div class="so-progress-wrap">
+                <div class="so-progress-bar" id="soProgressBar"></div>
+            </div>
+            <span class="so-percent" id="soPercent">0%</span>
+            <div class="so-platforms">
+                <div class="so-platform" data-platform="0">
+                    <span class="so-platform-icon">💬</span>
+                    <span class="so-platform-name">WhatsApp</span>
+                    <div style="text-align:right">
+                        <span class="so-platform-status">Escaneando</span>
+                        <div class="so-platform-count">Activo</div>
+                    </div>
+                </div>
+                <div class="so-platform" data-platform="1">
+                    <span class="so-platform-icon">📷</span>
+                    <span class="so-platform-name">Instagram</span>
+                    <div style="text-align:right">
+                        <span class="so-platform-status">Detectando</span>
+                        <div class="so-platform-count">47 DMs ocultos</div>
+                    </div>
+                </div>
+                <div class="so-platform" data-platform="2">
+                    <span class="so-platform-icon">🎵</span>
+                    <span class="so-platform-name">TikTok</span>
+                    <div style="text-align:right">
+                        <span class="so-platform-status">Analizando</span>
+                        <div class="so-platform-count">12 chats secretos</div>
+                    </div>
+                </div>
+                <div class="so-platform" data-platform="3">
+                    <span class="so-platform-icon">👻</span>
+                    <span class="so-platform-name">Snapchat</span>
+                    <div style="text-align:right">
+                        <span class="so-platform-status">Buscando</span>
+                        <div class="so-platform-count">8 msgs efímeros</div>
+                    </div>
+                </div>
+                <div class="so-platform" data-platform="4">
+                    <span class="so-platform-icon">📍</span>
+                    <span class="so-platform-name">Ubicación GPS</span>
+                    <div style="text-align:right">
+                        <span class="so-platform-status">Rastreando</span>
+                        <div class="so-platform-count">Tiempo real</div>
+                    </div>
+                </div>
+            </div>
+            <div class="so-alert" id="soAlert">
+                <p>🚨 ACTIVIDAD DETECTADA EN MÚLTIPLES PLATAFORMAS</p>
+                <p>Conversaciones ocultas encontradas en <strong>3+ plataformas</strong>. Actualiza ahora para ver todo.</p>
+            </div>
+        </div>
+    </div>
 
-    <!-- Loading Overlay REMOVED - was interfering with Monetizze 1-click processing -->
-
-    <div class="page">
+    <div class="page hidden-content" id="mainPage">
         <header class="urgency-section">
             <!-- Timer de Urgencia -->
             <div class="timer-bar" role="status" aria-live="polite">
@@ -248,5 +331,57 @@
     <script src="upsell2-script.js?v=8.0"></script>
     <!-- geo-restriction.js removed - prices always visible -->
     <script src="../upsell-tracking.js?v=1.0"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var overlay = document.getElementById('scanOverlay');
+        var mainPage = document.getElementById('mainPage');
+        var progressBar = document.getElementById('soProgressBar');
+        var percentText = document.getElementById('soPercent');
+        var alertBox = document.getElementById('soAlert');
+        var platforms = document.querySelectorAll('.so-platform');
+        var duration = 15000;
+        var startTime = Date.now();
+        var alertShown = false;
+        var timeline = [[0,2.5],[2.5,5.5],[5.5,8.5],[8.5,11],[11,13]];
+        var completedStatuses = ['Conectado','\u26a0 Encontrado','\u26a0 Encontrado','\u26a0 Encontrado','Localizado'];
+
+        function update() {
+            var elapsed = Date.now() - startTime;
+            var elapsedSec = elapsed / 1000;
+            var progress = Math.min(elapsed / duration, 1);
+            var pct = Math.round(progress * 100);
+            progressBar.style.width = pct + '%';
+            percentText.textContent = pct + '%';
+
+            for (var i = 0; i < platforms.length; i++) {
+                var t = timeline[i];
+                if (elapsedSec >= t[1]) {
+                    platforms[i].classList.remove('active');
+                    platforms[i].classList.add('completed');
+                    platforms[i].querySelector('.so-platform-status').textContent = completedStatuses[i];
+                } else if (elapsedSec >= t[0]) {
+                    platforms[i].classList.add('active');
+                }
+            }
+
+            if (!alertShown && elapsed >= 13000) {
+                alertBox.style.display = 'block';
+                alertShown = true;
+            }
+
+            if (progress < 1) {
+                requestAnimationFrame(update);
+            } else {
+                overlay.style.transition = 'opacity 0.5s ease';
+                overlay.style.opacity = '0';
+                setTimeout(function() {
+                    overlay.style.display = 'none';
+                    mainPage.classList.remove('hidden-content');
+                }, 500);
+            }
+        }
+        requestAnimationFrame(update);
+    });
+    </script>
 </body>
 </html>

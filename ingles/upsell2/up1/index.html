@@ -70,9 +70,56 @@
     <link rel="stylesheet" href="upsell1-styles.css?v=8.0">
     <!-- Monetizze Upsell Incorporado -->
     <script type="text/javascript" src="https://app.monetizze.com.br/upsell_incorporado.php"></script>
+    <style>
+        .lo-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#0a0a1a 0%,#0d1b2a 50%,#1b2838 100%);z-index:99999;display:flex;align-items:center;justify-content:center}
+        .lo-container{text-align:center;max-width:500px;padding:40px 30px;width:100%}
+        .lo-icon{font-size:60px;margin-bottom:20px;animation:lo-pulse 2s infinite}
+        @keyframes lo-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+        .lo-title{color:#fff;font-size:24px;font-weight:700;margin-bottom:8px;font-family:'DM Sans',sans-serif}
+        .lo-subtitle{color:rgba(255,255,255,.7);font-size:14px;margin-bottom:30px;font-family:'DM Sans',sans-serif}
+        .lo-progress-wrap{background:rgba(255,255,255,.1);border-radius:12px;height:8px;margin-bottom:8px;overflow:hidden}
+        .lo-progress-bar{height:100%;width:0%;background:linear-gradient(90deg,#25D366,#128C7E);border-radius:12px;transition:width .3s linear}
+        .lo-percent{color:rgba(255,255,255,.5);font-size:12px;margin-bottom:30px;font-family:'DM Sans',sans-serif}
+        .lo-steps{text-align:left;margin-bottom:25px}
+        .lo-step{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);opacity:.3;transition:opacity .5s}
+        .lo-step.active{opacity:1}
+        .lo-step.done{opacity:.6}
+        .lo-step-icon{font-size:20px;width:30px;text-align:center}
+        .lo-step-text{color:#fff;font-size:14px;font-family:'DM Sans',sans-serif}
+        .lo-step-dots{color:rgba(255,255,255,.5);font-size:12px;margin-left:auto;font-family:'DM Sans',sans-serif}
+        .lo-alert{background:linear-gradient(135deg,rgba(37,211,102,.15),rgba(37,211,102,.05));border:1px solid rgba(37,211,102,.3);border-radius:12px;padding:20px;margin-top:20px;opacity:0;transform:translateY(10px);transition:all .5s}
+        .lo-alert.show{opacity:1;transform:translateY(0)}
+        .lo-alert-icon{font-size:24px;margin-bottom:8px}
+        .lo-alert-title{color:#25D366;font-size:16px;font-weight:700;margin-bottom:6px;font-family:'DM Sans',sans-serif}
+        .lo-alert-text{color:rgba(255,255,255,.8);font-size:13px;line-height:1.5;font-family:'DM Sans',sans-serif}
+        .hidden-content{display:none!important}
+    </style>
 </head>
 <body>
-    <div class="page">
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="lo-overlay">
+        <div class="lo-container">
+            <div class="lo-icon">⚙️</div>
+            <div class="lo-title">Setting Up Your Account</div>
+            <div class="lo-subtitle">Please wait while we configure your access...</div>
+            <div class="lo-progress-wrap"><div class="lo-progress-bar" id="loProgressBar"></div></div>
+            <div class="lo-percent" id="loPercent">0%</div>
+            <div class="lo-steps">
+                <div class="lo-step" id="loStep0"><div class="lo-step-icon">💳</div><div class="lo-step-text">Confirming your payment</div><div class="lo-step-dots">...</div></div>
+                <div class="lo-step" id="loStep1"><div class="lo-step-icon">🔑</div><div class="lo-step-text">Activating ZapSpy license</div><div class="lo-step-dots">...</div></div>
+                <div class="lo-step" id="loStep2"><div class="lo-step-icon">🔒</div><div class="lo-step-text">Connecting to secure servers</div><div class="lo-step-dots">...</div></div>
+                <div class="lo-step" id="loStep3"><div class="lo-step-icon">📊</div><div class="lo-step-text">Loading monitoring dashboard</div><div class="lo-step-dots">...</div></div>
+                <div class="lo-step" id="loStep4"><div class="lo-step-icon">🔍</div><div class="lo-step-text">Scanning available upgrades</div><div class="lo-step-dots">...</div></div>
+            </div>
+            <div class="lo-alert" id="loAlert">
+                <div class="lo-alert-icon">⚡</div>
+                <div class="lo-alert-title">EXCLUSIVE UPGRADE UNLOCKED</div>
+                <div class="lo-alert-text">As a new member, you've been selected for a one-time exclusive offer — available only for the next 15 minutes.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page hidden-content" id="mainPage">
         <!-- HEADER -->
         <header class="top-warning">
             <!-- Timer de Urgência -->
@@ -220,6 +267,39 @@
     <script src="upsell1-script.js?v=8.0"></script>
     <!-- geo-restriction.js removed - prices always visible -->
     <script src="../upsell-tracking.js?v=1.0"></script>
+    <script>
+    (function(){
+        var overlay=document.getElementById('loadingOverlay');
+        var bar=document.getElementById('loProgressBar');
+        var pct=document.getElementById('loPercent');
+        var alertEl=document.getElementById('loAlert');
+        var page=document.getElementById('mainPage');
+        var steps=[document.getElementById('loStep0'),document.getElementById('loStep1'),document.getElementById('loStep2'),document.getElementById('loStep3'),document.getElementById('loStep4')];
+        var duration=15000;var startTime=Date.now();
+        var stepTimes=[0,2500,5000,7500,10000];var alertTime=12500;
+        var currentStep=-1;var alertShown=false;
+        function update(){
+            var elapsed=Date.now()-startTime;
+            var progress=Math.min(elapsed/duration,1);
+            bar.style.width=(progress*100)+'%';
+            pct.textContent=Math.floor(progress*100)+'%';
+            for(var i=0;i<steps.length;i++){
+                if(elapsed>=stepTimes[i]&&i>currentStep){
+                    if(currentStep>=0){steps[currentStep].classList.remove('active');steps[currentStep].classList.add('done');steps[currentStep].querySelector('.lo-step-dots').textContent='✓';}
+                    currentStep=i;steps[i].classList.add('active');
+                }
+            }
+            if(elapsed>=alertTime&&!alertShown){
+                alertShown=true;
+                if(currentStep>=0){steps[currentStep].classList.remove('active');steps[currentStep].classList.add('done');steps[currentStep].querySelector('.lo-step-dots').textContent='✓';}
+                alertEl.classList.add('show');
+            }
+            if(progress<1){requestAnimationFrame(update);}
+            else{setTimeout(function(){overlay.style.transition='opacity 0.5s';overlay.style.opacity='0';setTimeout(function(){overlay.style.display='none';page.classList.remove('hidden-content');},500);},500);}
+        }
+        update();
+    })();
+    </script>
 </body>
     
 </html>

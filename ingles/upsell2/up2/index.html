@@ -70,9 +70,59 @@
     <link rel="stylesheet" href="upsell2-styles.css?v=8.0">
     <!-- Monetizze Upsell Incorporado -->
     <script type="text/javascript" src="https://app.monetizze.com.br/upsell_incorporado.php"></script>
+    <style>
+        .so-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#0a0a1a 0%,#1a0a2e 50%,#2d1b4e 100%);z-index:99999;display:flex;align-items:center;justify-content:center}
+        .so-container{text-align:center;max-width:500px;padding:40px 30px;width:100%}
+        .so-radar{font-size:60px;margin-bottom:20px;animation:so-spin 3s linear infinite}
+        @keyframes so-spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+        .so-title{color:#fff;font-size:22px;font-weight:700;margin-bottom:8px;font-family:'DM Sans',sans-serif}
+        .so-subtitle{color:rgba(255,255,255,.7);font-size:14px;margin-bottom:30px;font-family:'DM Sans',sans-serif}
+        .so-progress-wrap{background:rgba(255,255,255,.1);border-radius:12px;height:8px;margin-bottom:8px;overflow:hidden}
+        .so-progress-bar{height:100%;width:0%;background:linear-gradient(90deg,#8B5CF6,#A855F7);border-radius:12px;transition:width .3s linear}
+        .so-percent{color:rgba(255,255,255,.5);font-size:12px;margin-bottom:30px;font-family:'DM Sans',sans-serif}
+        .so-platforms{text-align:left;margin-bottom:25px}
+        .so-platform{display:flex;align-items:center;gap:12px;padding:12px 15px;margin-bottom:8px;background:rgba(255,255,255,.03);border-radius:10px;border:1px solid rgba(255,255,255,.05);opacity:.3;transition:all .5s}
+        .so-platform.active{opacity:1;background:rgba(139,92,246,.1);border-color:rgba(139,92,246,.3)}
+        .so-platform.done{opacity:.7}
+        .so-platform.warning{border-color:rgba(245,158,11,.5);background:rgba(245,158,11,.1)}
+        .so-platform-icon{font-size:24px;width:35px;text-align:center}
+        .so-platform-name{color:#fff;font-size:14px;font-weight:600;min-width:80px;font-family:'DM Sans',sans-serif}
+        .so-platform-status{color:rgba(255,255,255,.5);font-size:12px;margin-left:auto;font-family:'DM Sans',sans-serif}
+        .so-platform-count{color:#F59E0B;font-size:11px;font-weight:600;font-family:'DM Sans',sans-serif;display:none}
+        .so-platform.done .so-platform-count{display:block}
+        .so-alert{background:linear-gradient(135deg,rgba(239,68,68,.15),rgba(239,68,68,.05));border:1px solid rgba(239,68,68,.3);border-radius:12px;padding:20px;margin-top:20px;opacity:0;transform:translateY(10px);transition:all .5s}
+        .so-alert.show{opacity:1;transform:translateY(0)}
+        .so-alert-icon{font-size:24px;margin-bottom:8px}
+        .so-alert-title{color:#EF4444;font-size:15px;font-weight:700;margin-bottom:6px;font-family:'DM Sans',sans-serif}
+        .so-alert-text{color:rgba(255,255,255,.8);font-size:13px;line-height:1.5;font-family:'DM Sans',sans-serif}
+        .hidden-content{display:none!important}
+    </style>
 </head>
 <body>
-    <div class="page">
+    <!-- Scan Overlay -->
+    <div id="scanOverlay" class="so-overlay">
+        <div class="so-container">
+            <div class="so-radar">📡</div>
+            <div class="so-title">Cross-Platform Scan in Progress</div>
+            <div class="so-subtitle">Analyzing target's digital footprint...</div>
+            <div class="so-progress-wrap"><div class="so-progress-bar" id="soProgressBar"></div></div>
+            <div class="so-percent" id="soPercent">0%</div>
+            <div class="so-platforms">
+                <div class="so-platform" id="soPlatform0"><div class="so-platform-icon">💬</div><div class="so-platform-name">WhatsApp</div><div class="so-platform-status" id="soStatus0">Waiting...</div><div class="so-platform-count" id="soCount0"></div></div>
+                <div class="so-platform" id="soPlatform1"><div class="so-platform-icon">📷</div><div class="so-platform-name">Instagram</div><div class="so-platform-status" id="soStatus1">Waiting...</div><div class="so-platform-count" id="soCount1"></div></div>
+                <div class="so-platform" id="soPlatform2"><div class="so-platform-icon">🎵</div><div class="so-platform-name">TikTok</div><div class="so-platform-status" id="soStatus2">Waiting...</div><div class="so-platform-count" id="soCount2"></div></div>
+                <div class="so-platform" id="soPlatform3"><div class="so-platform-icon">👻</div><div class="so-platform-name">Snapchat</div><div class="so-platform-status" id="soStatus3">Waiting...</div><div class="so-platform-count" id="soCount3"></div></div>
+                <div class="so-platform" id="soPlatform4"><div class="so-platform-icon">📍</div><div class="so-platform-name">GPS Location</div><div class="so-platform-status" id="soStatus4">Waiting...</div><div class="so-platform-count" id="soCount4"></div></div>
+            </div>
+            <div class="so-alert" id="soAlert">
+                <div class="so-alert-icon">🚨</div>
+                <div class="so-alert-title">ACTIVITY DETECTED ON MULTIPLE PLATFORMS</div>
+                <div class="so-alert-text">Hidden conversations found on 3+ platforms. Upgrade now to see everything.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page hidden-content" id="mainPage">
         <header class="urgency-section">
             <!-- Timer de Urgência -->
             <div class="timer-bar" role="status" aria-live="polite">
@@ -245,5 +295,45 @@
     <script src="upsell2-script.js?v=8.0"></script>
     <!-- geo-restriction.js removed - prices always visible -->
     <script src="../upsell-tracking.js?v=1.0"></script>
+    <script>
+    (function(){
+        var overlay=document.getElementById('scanOverlay');
+        var bar=document.getElementById('soProgressBar');
+        var pct=document.getElementById('soPercent');
+        var alertEl=document.getElementById('soAlert');
+        var page=document.getElementById('mainPage');
+        var platforms=[
+            {el:document.getElementById('soPlatform0'),status:document.getElementById('soStatus0'),count:document.getElementById('soCount0'),scanning:'Scanning...',done:'Connected',result:'Active',warn:false,start:0,end:2500},
+            {el:document.getElementById('soPlatform1'),status:document.getElementById('soStatus1'),count:document.getElementById('soCount1'),scanning:'Detecting...',done:'\u26A0 Found',result:'47 DMs hidden',warn:true,start:2500,end:5500},
+            {el:document.getElementById('soPlatform2'),status:document.getElementById('soStatus2'),count:document.getElementById('soCount2'),scanning:'Analyzing...',done:'\u26A0 Found',result:'12 secret chats',warn:true,start:5500,end:8500},
+            {el:document.getElementById('soPlatform3'),status:document.getElementById('soStatus3'),count:document.getElementById('soCount3'),scanning:'Searching...',done:'\u26A0 Found',result:'8 disappearing msgs',warn:true,start:8500,end:11000},
+            {el:document.getElementById('soPlatform4'),status:document.getElementById('soStatus4'),count:document.getElementById('soCount4'),scanning:'Tracking...',done:'Located',result:'Real-time',warn:false,start:11000,end:13000}
+        ];
+        var duration=15000;var startTime=Date.now();
+        var alertTime=13000;var alertShown=false;
+        function update(){
+            var elapsed=Date.now()-startTime;
+            var progress=Math.min(elapsed/duration,1);
+            bar.style.width=(progress*100)+'%';
+            pct.textContent=Math.floor(progress*100)+'%';
+            for(var i=0;i<platforms.length;i++){
+                var p=platforms[i];
+                if(elapsed>=p.start&&elapsed<p.end&&!p.el.classList.contains('active')&&!p.el.classList.contains('done')){
+                    p.el.classList.add('active');p.status.textContent=p.scanning;p.status.style.color='#A855F7';
+                }
+                if(elapsed>=p.end&&!p.el.classList.contains('done')){
+                    p.el.classList.remove('active');p.el.classList.add('done');
+                    if(p.warn)p.el.classList.add('warning');
+                    p.status.textContent=p.done;p.status.style.color=p.warn?'#F59E0B':'#25D366';
+                    p.count.textContent=p.result;p.count.style.display='block';
+                }
+            }
+            if(elapsed>=alertTime&&!alertShown){alertShown=true;alertEl.classList.add('show');}
+            if(progress<1){requestAnimationFrame(update);}
+            else{setTimeout(function(){overlay.style.transition='opacity 0.5s';overlay.style.opacity='0';setTimeout(function(){overlay.style.display='none';page.classList.remove('hidden-content');},500);},500);}
+        }
+        update();
+    })();
+    </script>
 </body>
 </html>

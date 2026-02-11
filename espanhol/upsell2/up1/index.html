@@ -69,9 +69,79 @@
     <link rel="stylesheet" href="upsell1-styles.css?v=8.0">
     <!-- Monetizze Upsell Incorporado -->
     <script type="text/javascript" src="https://app.monetizze.com.br/upsell_incorporado.php"></script>
+    <style>
+        .hidden-content{display:none!important}
+        .lo-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#0a1a0f 0%,#0d2818 30%,#0a1a0f 100%);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;overflow-y:auto}
+        .lo-container{text-align:center;padding:40px 30px;max-width:500px;width:90%}
+        .lo-icon{font-size:60px;margin-bottom:20px;animation:loPulse 2s ease-in-out infinite}
+        @keyframes loPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+        .lo-title{font-size:24px;font-weight:700;color:#25D366;margin-bottom:8px}
+        .lo-subtitle{font-size:14px;color:rgba(255,255,255,0.6);margin-bottom:30px}
+        .lo-progress-wrap{background:rgba(255,255,255,0.1);border-radius:12px;height:24px;overflow:hidden;margin-bottom:8px;position:relative}
+        .lo-progress-bar{height:100%;width:0%;border-radius:12px;background:linear-gradient(90deg,#25D366,#128C7E);transition:width 0.3s ease;box-shadow:0 0 15px rgba(37,211,102,0.4)}
+        .lo-percent{font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:30px;display:block}
+        .lo-steps{text-align:left;margin-bottom:30px}
+        .lo-step{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);opacity:0.3;transition:opacity 0.5s ease}
+        .lo-step.active{opacity:1}
+        .lo-step.completed{opacity:0.6}
+        .lo-step-icon{font-size:20px;width:30px;text-align:center}
+        .lo-step-text{font-size:14px;color:#fff}
+        .lo-step-dots{margin-left:auto;font-size:12px;color:rgba(255,255,255,0.4)}
+        .lo-step.active .lo-step-dots{color:#25D366}
+        .lo-step.completed .lo-step-dots{color:#25D366}
+        .lo-alert{background:linear-gradient(135deg,rgba(37,211,102,0.15),rgba(18,140,126,0.15));border:1px solid rgba(37,211,102,0.3);border-radius:12px;padding:20px;display:none;animation:loAlertIn 0.5s ease}
+        @keyframes loAlertIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+        .lo-alert strong{color:#25D366}
+        .lo-alert p:first-child{font-size:16px;font-weight:700;color:#25D366;margin-bottom:8px}
+        .lo-alert p:last-child{font-size:13px;color:rgba(255,255,255,0.8);line-height:1.5}
+    </style>
 </head>
 <body>
-    <div class="page">
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="lo-overlay">
+        <div class="lo-container">
+            <div class="lo-icon">⚙️</div>
+            <div class="lo-title">Configurando Tu Cuenta</div>
+            <div class="lo-subtitle">Por favor espera mientras configuramos tu acceso...</div>
+            <div class="lo-progress-wrap">
+                <div class="lo-progress-bar" id="loProgressBar"></div>
+            </div>
+            <span class="lo-percent" id="loPercent">0%</span>
+            <div class="lo-steps">
+                <div class="lo-step" data-step="0">
+                    <span class="lo-step-icon">💳</span>
+                    <span class="lo-step-text">Confirmando tu pago</span>
+                    <span class="lo-step-dots">...</span>
+                </div>
+                <div class="lo-step" data-step="1">
+                    <span class="lo-step-icon">🔑</span>
+                    <span class="lo-step-text">Activando licencia ZapSpy</span>
+                    <span class="lo-step-dots">...</span>
+                </div>
+                <div class="lo-step" data-step="2">
+                    <span class="lo-step-icon">🔒</span>
+                    <span class="lo-step-text">Conectando a servidores seguros</span>
+                    <span class="lo-step-dots">...</span>
+                </div>
+                <div class="lo-step" data-step="3">
+                    <span class="lo-step-icon">📊</span>
+                    <span class="lo-step-text">Cargando panel de monitoreo</span>
+                    <span class="lo-step-dots">...</span>
+                </div>
+                <div class="lo-step" data-step="4">
+                    <span class="lo-step-icon">🔄</span>
+                    <span class="lo-step-text">Buscando actualizaciones disponibles</span>
+                    <span class="lo-step-dots">...</span>
+                </div>
+            </div>
+            <div class="lo-alert" id="loAlert">
+                <p>⚡ ACTUALIZACIÓN EXCLUSIVA DESBLOQUEADA</p>
+                <p>Como nuevo miembro, has sido seleccionado para una <strong>oferta exclusiva única</strong> — disponible solo por los próximos 15 minutos.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="page hidden-content" id="mainPage">
         <!-- HEADER -->
         <header class="top-warning">
             <!-- Timer de Urgencia -->
@@ -219,6 +289,57 @@
     <script src="upsell1-script.js?v=8.0"></script>
     <!-- geo-restriction.js removed - prices always visible -->
     <script src="../upsell-tracking.js?v=1.0"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var overlay = document.getElementById('loadingOverlay');
+        var mainPage = document.getElementById('mainPage');
+        var progressBar = document.getElementById('loProgressBar');
+        var percentText = document.getElementById('loPercent');
+        var alertBox = document.getElementById('loAlert');
+        var steps = document.querySelectorAll('.lo-step');
+        var duration = 15000;
+        var startTime = Date.now();
+        var stepTimes = [0, 0.2, 0.4, 0.6, 0.8];
+        var alertShown = false;
+
+        function update() {
+            var elapsed = Date.now() - startTime;
+            var progress = Math.min(elapsed / duration, 1);
+            var pct = Math.round(progress * 100);
+            progressBar.style.width = pct + '%';
+            percentText.textContent = pct + '%';
+
+            for (var i = 0; i < steps.length; i++) {
+                var stepThreshold = stepTimes[i];
+                var nextThreshold = i < steps.length - 1 ? stepTimes[i + 1] : 1;
+                if (progress >= nextThreshold) {
+                    steps[i].classList.remove('active');
+                    steps[i].classList.add('completed');
+                    steps[i].querySelector('.lo-step-dots').textContent = '✓';
+                } else if (progress >= stepThreshold) {
+                    steps[i].classList.add('active');
+                }
+            }
+
+            if (!alertShown && elapsed >= 12500) {
+                alertBox.style.display = 'block';
+                alertShown = true;
+            }
+
+            if (progress < 1) {
+                requestAnimationFrame(update);
+            } else {
+                overlay.style.transition = 'opacity 0.5s ease';
+                overlay.style.opacity = '0';
+                setTimeout(function() {
+                    overlay.style.display = 'none';
+                    mainPage.classList.remove('hidden-content');
+                }, 500);
+            }
+        }
+        requestAnimationFrame(update);
+    });
+    </script>
 </body>
     
 </html>

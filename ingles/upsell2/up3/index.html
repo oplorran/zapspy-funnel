@@ -70,13 +70,66 @@
     <link rel="stylesheet" href="upsell3-styles.css?v=8.0">
     <!-- Monetizze Upsell Incorporado -->
     <script type="text/javascript" src="https://app.monetizze.com.br/upsell_incorporado.php"></script>
+    <style>
+        .qo-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#0a0a0a 0%,#1a0a0a 50%,#2a1515 100%);z-index:99999;display:flex;align-items:center;justify-content:center}
+        .qo-container{text-align:center;max-width:500px;padding:40px 30px;width:100%}
+        .qo-icon{font-size:50px;margin-bottom:20px;animation:qo-pulse 2s infinite}
+        @keyframes qo-pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.05);opacity:.8}}
+        .qo-title{color:#fff;font-size:22px;font-weight:700;margin-bottom:8px;font-family:'DM Sans',sans-serif}
+        .qo-subtitle{color:rgba(255,255,255,.6);font-size:14px;margin-bottom:25px;font-family:'DM Sans',sans-serif}
+        .qo-box{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:25px;margin-bottom:20px}
+        .qo-pos-label{color:rgba(255,255,255,.5);font-size:12px;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-family:'DM Sans',sans-serif}
+        .qo-position{color:#EF4444;font-size:48px;font-weight:800;font-family:'DM Sans',sans-serif}
+        .qo-total{color:rgba(255,255,255,.4);font-size:13px;margin-top:5px;font-family:'DM Sans',sans-serif}
+        .qo-eta-box{display:flex;flex-direction:column;gap:8px;margin-top:15px;padding-top:15px;border-top:1px solid rgba(255,255,255,.1)}
+        .qo-eta-row{display:flex;justify-content:space-between;align-items:center}
+        .qo-eta-label{color:rgba(255,255,255,.5);font-size:13px;font-family:'DM Sans',sans-serif}
+        .qo-eta-value{color:#F59E0B;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif}
+        .qo-progress-wrap{background:rgba(255,255,255,.1);border-radius:12px;height:8px;margin-bottom:8px;overflow:hidden}
+        .qo-progress-bar{height:100%;width:0%;background:linear-gradient(90deg,#EF4444,#F59E0B);border-radius:12px;transition:width .3s linear}
+        .qo-progress-text{color:rgba(255,255,255,.4);font-size:12px;margin-bottom:20px;font-family:'DM Sans',sans-serif}
+        .qo-users{margin-top:15px}
+        .qo-user-feed{text-align:left;max-height:120px;overflow:hidden}
+        .qo-feed-item{color:rgba(255,255,255,.4);font-size:12px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.03);font-family:'DM Sans',sans-serif}
+        .qo-vip{background:linear-gradient(135deg,rgba(239,68,68,.15),rgba(245,158,11,.1));border:1px solid rgba(239,68,68,.3);border-radius:12px;padding:20px;margin-top:20px;opacity:0;transform:translateY(10px);transition:all .5s}
+        .qo-vip.show{opacity:1;transform:translateY(0)}
+        .qo-vip-icon{font-size:24px;margin-bottom:8px}
+        .qo-vip-title{color:#EF4444;font-size:16px;font-weight:700;margin-bottom:6px;font-family:'DM Sans',sans-serif}
+        .qo-vip-text{color:rgba(255,255,255,.8);font-size:13px;line-height:1.5;font-family:'DM Sans',sans-serif}
+        .hidden-content{display:none!important}
+    </style>
 </head>
 <body>
-    <!-- VIP Processing Overlay REMOVED - direct content display for better conversion -->
+    <!-- Queue Overlay -->
+    <div id="queueOverlay" class="qo-overlay">
+        <div class="qo-container">
+            <div class="qo-icon">⏳</div>
+            <div class="qo-title">Processing Your Request</div>
+            <div class="qo-subtitle">You've been placed in the standard processing queue</div>
+            <div class="qo-box">
+                <div class="qo-pos-label">Your position in queue</div>
+                <div class="qo-position" id="qoPosition">#2,847</div>
+                <div class="qo-total">of 3,102 users waiting</div>
+                <div class="qo-eta-box">
+                    <div class="qo-eta-row"><span class="qo-eta-label">Estimated wait time:</span><span class="qo-eta-value" id="qoEta">~47 hours</span></div>
+                    <div class="qo-eta-row"><span class="qo-eta-label">Server load:</span><span class="qo-eta-value" id="qoLoad">94% capacity</span></div>
+                    <div class="qo-eta-row"><span class="qo-eta-label">Processing speed:</span><span class="qo-eta-value" id="qoSpeed">Standard (slow)</span></div>
+                </div>
+            </div>
+            <div class="qo-progress-wrap"><div class="qo-progress-bar" id="qoProgressBar"></div></div>
+            <div class="qo-progress-text" id="qoProgressText">Waiting in queue...</div>
+            <div class="qo-users">
+                <div class="qo-user-feed" id="qoFeed"></div>
+            </div>
+            <div class="qo-vip" id="qoVip">
+                <div class="qo-vip-icon">🚀</div>
+                <div class="qo-vip-title">VIP FAST LANE AVAILABLE</div>
+                <div class="qo-vip-text">Skip the entire queue. Get your results in 5 minutes instead of 47 hours.</div>
+            </div>
+        </div>
+    </div>
 
-    <!-- Loading Overlay REMOVED - was interfering with Monetizze 1-click processing -->
-
-    <div class="page">
+    <div class="page hidden-content" id="mainPage">
         <header class="access-banner" role="banner">
             <!-- Timer de Urgência -->
             <div class="timer-bar" role="status" aria-live="polite">
@@ -231,5 +284,49 @@
     <script src="upsell3-script.js?v=8.0"></script>
     <!-- geo-restriction.js removed - prices always visible -->
     <script src="../upsell-tracking.js?v=1.0"></script>
+    <script>
+    (function(){
+        var overlay=document.getElementById('queueOverlay');
+        var bar=document.getElementById('qoProgressBar');
+        var text=document.getElementById('qoProgressText');
+        var pos=document.getElementById('qoPosition');
+        var eta=document.getElementById('qoEta');
+        var load=document.getElementById('qoLoad');
+        var speed=document.getElementById('qoSpeed');
+        var feed=document.getElementById('qoFeed');
+        var vip=document.getElementById('qoVip');
+        var page=document.getElementById('mainPage');
+        var duration=15000;var startTime=Date.now();
+        var vipTime=12000;var vipShown=false;
+        var msgs=['Waiting in queue...','Still waiting...','Queue is busy...','Server overloaded...','Processing delayed...','High demand detected...','Your turn is coming...','Almost there...'];
+        var msgIdx=0;var lastMsg=0;
+        var positions=[2847,2845,2844,2843,2842,2841,2840,2839,2838,2837];
+        var etas=['~47 hours','~48 hours','~49 hours','~51 hours','~52 hours','~54 hours','~55 hours','~56 hours'];
+        var loads=['94%','95%','96%','97%','97%','98%','98%','99%'];
+        var feedMsgs=['User #3,041 just joined the queue...','User #3,042 added to queue...','Server processing batch #847...','User #3,043 just joined...','Queue growing... 3,105 users waiting','User #3,044 added to queue...','VIP user skipped to front...','Processing speed decreased...','User #3,045 joined queue...','Another VIP user processed instantly...'];
+        var feedIdx=0;var lastFeed=0;
+        function update(){
+            var elapsed=Date.now()-startTime;
+            var progress=Math.min(elapsed/duration,1);
+            var queueProgress=Math.min(progress*0.15,0.15);
+            bar.style.width=(queueProgress*100)+'%';
+            var posIdx=Math.min(Math.floor(elapsed/1500),positions.length-1);
+            pos.textContent='#'+positions[posIdx].toLocaleString();
+            var etaIdx=Math.min(Math.floor(elapsed/1800),etas.length-1);
+            eta.textContent=etas[etaIdx];
+            var loadIdx=Math.min(Math.floor(elapsed/1800),loads.length-1);
+            load.textContent=loads[loadIdx]+' capacity';
+            if(elapsed-lastMsg>2000){lastMsg=elapsed;text.textContent=msgs[msgIdx%msgs.length];msgIdx++;}
+            if(elapsed-lastFeed>1500&&feedIdx<feedMsgs.length){
+                lastFeed=elapsed;var item=document.createElement('div');item.className='qo-feed-item';
+                item.textContent=feedMsgs[feedIdx];feed.insertBefore(item,feed.firstChild);feedIdx++;
+            }
+            if(elapsed>=vipTime&&!vipShown){vipShown=true;vip.classList.add('show');}
+            if(progress<1){requestAnimationFrame(update);}
+            else{setTimeout(function(){overlay.style.transition='opacity 0.5s';overlay.style.opacity='0';setTimeout(function(){overlay.style.display='none';page.classList.remove('hidden-content');},500);},500);}
+        }
+        update();
+    })();
+    </script>
 </body>
 </html>
