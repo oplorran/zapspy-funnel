@@ -1226,6 +1226,59 @@ app.get('/api/admin/stats/trends', authenticateToken, async (req, res) => {
     }
 });
 
+// Purchase CAPI attribution logs (protected - for admin dashboard)
+app.get('/api/admin/capi-purchase-logs', authenticateToken, async (req, res) => {
+    try {
+        const { language, limit = 50 } = req.query;
+        let query = `SELECT * FROM capi_purchase_logs WHERE 1=1`;
+        const params = [];
+        let paramIdx = 1;
+        
+        if (language === 'en' || language === 'es') {
+            query += ` AND funnel_language = $${paramIdx}`;
+            params.push(language);
+            paramIdx++;
+        }
+        
+        query += ` ORDER BY created_at DESC LIMIT $${paramIdx}`;
+        params.push(parseInt(limit) || 50);
+        
+        const result = await pool.query(query, params);
+        
+        // Also get summary stats
+        const summary = await pool.query(`
+            SELECT 
+                COUNT(*) as total,
+                COUNT(*) FILTER (WHERE capi_success = true) as success,
+                COUNT(*) FILTER (WHERE capi_success = false) as failed,
+                COUNT(*) FILTER (WHERE has_fbc = true) as with_fbc,
+                COUNT(*) FILTER (WHERE has_fbp = true) as with_fbp,
+                COUNT(*) FILTER (WHERE has_ip = true) as with_ip,
+                COUNT(*) FILTER (WHERE has_user_agent = true) as with_ua,
+                COUNT(*) FILTER (WHERE lead_found = true) as with_lead,
+                COUNT(*) FILTER (WHERE has_email = true) as with_email,
+                COUNT(*) FILTER (WHERE funnel_language = 'en') as en_count,
+                COUNT(*) FILTER (WHERE funnel_language = 'es') as es_count,
+                COUNT(*) FILTER (WHERE funnel_source = 'affiliate') as affiliate_count,
+                COUNT(*) FILTER (WHERE funnel_source = 'main') as main_count,
+                COALESCE(SUM(value), 0) as total_value
+            FROM capi_purchase_logs
+        `);
+        
+        res.json({
+            logs: result.rows,
+            summary: summary.rows[0] || {}
+        });
+    } catch (error) {
+        // Table might not exist yet
+        if (error.message.includes('does not exist')) {
+            return res.json({ logs: [], summary: {} });
+        }
+        console.error('Error fetching CAPI purchase logs:', error);
+        res.status(500).json({ error: 'Failed to fetch CAPI purchase logs' });
+    }
+});
+
 // Pixel & CAPI aggregated stats (protected - for admin dashboard)
 app.get('/api/admin/pixel-stats', authenticateToken, async (req, res) => {
     try {
@@ -6407,24 +6460,67 @@ app.all('/api/postback/monetizze', async (req, res) => {
                 if (!isFinalized) {
                     console.log(`⚠️ Status ${statusStr} but dataFinalizada invalid (${dataFinalizada || 'empty'}) - sending Purchase anyway (status confirms payment)`);
                 }
-                // Log detailed attribution data for debugging
+                
+                const purchaseEventId = `${eventId}_purchase`;
+                const purchaseAttrData = {
+                    hasEmail: !!emailForCAPI,
+                    hasFbc: !!(leadData?.fbc),
+                    hasFbp: !!(leadData?.fbp),
+                    hasIp: !!(leadData?.ip_address),
+                    hasUa: !!(leadData?.user_agent),
+                    hasExternalId: !!(leadData?.visitor_id),
+                    hasCountry: !!(leadData?.country_code),
+                    hasPhone: !!(leadData?.whatsapp || finalPhone || buyerPhone),
+                    leadFound: !!leadData
+                };
+                
                 console.log(`📤 PURCHASE CAPI DEBUG:`, {
-                    language: funnelLanguage,
-                    email: emailForCAPI ? 'YES' : 'NO',
-                    fbc: leadData?.fbc ? 'YES' : 'NO',
-                    fbp: leadData?.fbp ? 'YES' : 'NO',
-                    ip: leadData?.ip_address ? 'YES' : 'NO',
-                    ua: leadData?.user_agent ? 'YES (length: ' + (leadData?.user_agent || '').length + ')' : 'NO',
-                    externalId: leadData?.visitor_id ? 'YES' : 'NO',
-                    eventSourceUrl: eventSourceUrl,
+                    ...purchaseAttrData,
+                    eventSourceUrl,
                     value: fbCustomData.value,
                     currency: fbCustomData.currency,
-                    eventId: `${eventId}_purchase`,
-                    leadFound: leadData ? 'YES' : 'NO'
+                    eventId: purchaseEventId,
+                    language: funnelLanguage,
+                    source: funnelSource
                 });
-                console.log(`📤 Sending Purchase to Facebook CAPI (${funnelLanguage}) - payment confirmed (status ${statusStr})...`);
-                const purchaseResults = await sendToFacebookCAPI('Purchase', fbUserData, fbCustomData, eventSourceUrl, `${eventId}_purchase`, capiOptions);
-                console.log(`📤 Purchase CAPI results:`, JSON.stringify(purchaseResults));
+                
+                console.log(`📤 Sending Purchase to Facebook CAPI (${funnelLanguage}/${funnelSource}) - payment confirmed (status ${statusStr})...`);
+                const purchaseResults = await sendToFacebookCAPI('Purchase', fbUserData, fbCustomData, eventSourceUrl, purchaseEventId, capiOptions);
+                
+                // Determine success and pixel info from results
+                const firstResult = purchaseResults[0] || {};
+                const capiSuccess = firstResult.success === true;
+                const fbEventsReceived = firstResult.result?.events_received || 0;
+                const pixelId = firstResult.pixel || '';
+                const pixelName = capiOptions.language === 'es' ? 'PIXEL SPY ESPANHOL' : '[PABLO NOVO] - [SPY INGLES]';
+                
+                console.log(`📤 Purchase CAPI result: ${capiSuccess ? '✅ SUCCESS' : '❌ FAILED'} (events_received: ${fbEventsReceived})`);
+                
+                // Save to capi_purchase_logs for admin panel tracking
+                try {
+                    await pool.query(`
+                        INSERT INTO capi_purchase_logs (
+                            transaction_id, email, product, value, currency,
+                            funnel_language, funnel_source, event_source_url, event_id,
+                            pixel_id, pixel_name,
+                            has_email, has_fbc, has_fbp, has_ip, has_user_agent,
+                            has_external_id, has_country, has_phone, lead_found,
+                            capi_success, capi_response, fb_events_received
+                        ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23)
+                    `, [
+                        chave_unica, emailForCAPI, productName,
+                        fbCustomData.value, fbCustomData.currency,
+                        funnelLanguage, funnelSource, eventSourceUrl, purchaseEventId,
+                        pixelId, pixelName,
+                        purchaseAttrData.hasEmail, purchaseAttrData.hasFbc, purchaseAttrData.hasFbp,
+                        purchaseAttrData.hasIp, purchaseAttrData.hasUa,
+                        purchaseAttrData.hasExternalId, purchaseAttrData.hasCountry,
+                        purchaseAttrData.hasPhone, purchaseAttrData.leadFound,
+                        capiSuccess, JSON.stringify(purchaseResults), fbEventsReceived
+                    ]);
+                } catch (logErr) {
+                    console.error('Error saving purchase CAPI log:', logErr.message);
+                }
             }
             
             // Status 3 = Cancelled -> Send custom Cancel event
@@ -8725,6 +8821,37 @@ async function initDatabase() {
                 id SERIAL PRIMARY KEY,
                 content_type VARCHAR(255),
                 body JSONB,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+        
+        // Create capi_purchase_logs table for tracking Purchase event attribution
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS capi_purchase_logs (
+                id SERIAL PRIMARY KEY,
+                transaction_id VARCHAR(255),
+                email VARCHAR(255),
+                product VARCHAR(500),
+                value DECIMAL(10,2),
+                currency VARCHAR(10) DEFAULT 'USD',
+                funnel_language VARCHAR(10),
+                funnel_source VARCHAR(20),
+                event_source_url TEXT,
+                event_id VARCHAR(255),
+                pixel_id VARCHAR(50),
+                pixel_name VARCHAR(255),
+                has_email BOOLEAN DEFAULT FALSE,
+                has_fbc BOOLEAN DEFAULT FALSE,
+                has_fbp BOOLEAN DEFAULT FALSE,
+                has_ip BOOLEAN DEFAULT FALSE,
+                has_user_agent BOOLEAN DEFAULT FALSE,
+                has_external_id BOOLEAN DEFAULT FALSE,
+                has_country BOOLEAN DEFAULT FALSE,
+                has_phone BOOLEAN DEFAULT FALSE,
+                lead_found BOOLEAN DEFAULT FALSE,
+                capi_success BOOLEAN DEFAULT FALSE,
+                capi_response JSONB,
+                fb_events_received INTEGER DEFAULT 0,
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
             );
         `);

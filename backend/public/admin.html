@@ -1753,7 +1753,7 @@
                             <button class="btn-secondary pixel-filter" data-filter="en" onclick="filterPixelData('en')">🇺🇸 Inglês</button>
                             <button class="btn-secondary pixel-filter" data-filter="es" onclick="filterPixelData('es')">🇪🇸 Espanhol</button>
                             <span style="font-size: 12px; color: var(--text-muted); align-self: center; margin-left: 8px;">Período:</span>
-                            <select class="form-input" id="pixelDateRange" style="width: auto; padding: 8px 12px;" onchange="loadPixelStats()">
+                            <select class="form-input" id="pixelDateRange" style="width: auto; padding: 8px 12px;" onchange="loadPixelStats(); loadPurchaseCAPILogs()">
                                 <option value="30min">Últimos 30 min</option>
                                 <option value="1h">Última 1h</option>
                                 <option value="2h">Últimas 2h</option>
@@ -1962,6 +1962,41 @@
                                 </thead>
                                 <tbody id="capiEventsTableBody">
                                     <tr><td colspan="6"><div class="loading"><div class="spinner"></div>Carregando...</div></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Purchase CAPI Attribution Log -->
+                    <div class="panel" style="margin-top: 24px;">
+                        <div class="panel-header">
+                            <div class="panel-title">
+                                <h2>🛒 Purchase Events - Log de Atribuição</h2>
+                                <span class="lead-count" id="purchaseLogCount">0 eventos</span>
+                            </div>
+                            <button class="btn-secondary" onclick="loadPurchaseCAPILogs()" style="font-size: 12px; padding: 6px 12px;">🔄 Atualizar</button>
+                        </div>
+                        
+                        <!-- Purchase Summary Cards -->
+                        <div id="purchaseSummaryCards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 16px; padding: 0 16px;">
+                        </div>
+                        
+                        <div class="table-scroll-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Data/Hora</th>
+                                        <th>Email</th>
+                                        <th>Produto</th>
+                                        <th>Valor</th>
+                                        <th>Pixel</th>
+                                        <th>Domínio</th>
+                                        <th>Atribuição</th>
+                                        <th>Status CAPI</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="purchaseLogTableBody">
+                                    <tr><td colspan="8" style="text-align: center; padding: 40px; color: var(--text-muted);">Aguardando primeiro Purchase event...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -3577,7 +3612,7 @@ Estou aqui para esclarecer tudo! 😊`
                 document.getElementById('syncEndDate').value = today;
             }
             else if (tabName === 'users') loadUsers();
-            else if (tabName === 'pixel') loadPixelStats();
+            else if (tabName === 'pixel') { loadPixelStats(); loadPurchaseCAPILogs(); }
             else if (tabName === 'abtests') loadABTests();
             if (window.innerWidth <= 768 && document.body.classList.contains('sidebar-open')) toggleSidebarMobile();
         }
@@ -8484,11 +8519,144 @@ Obrigado pela compreensão.`
             }
         }
         
+        // ==================== PURCHASE CAPI ATTRIBUTION LOG ====================
+        async function loadPurchaseCAPILogs() {
+            const tableBody = document.getElementById('purchaseLogTableBody');
+            const summaryCards = document.getElementById('purchaseSummaryCards');
+            const countEl = document.getElementById('purchaseLogCount');
+            
+            if (!tableBody) return;
+            
+            try {
+                const headers = { 'Authorization': `Bearer ${authToken}` };
+                const activeFilter = document.querySelector('.pixel-filter.active');
+                const language = (activeFilter && activeFilter.getAttribute('data-filter')) || 'all';
+                const langParam = language === 'all' ? '' : language;
+                
+                let url = `${API_URL}/api/admin/capi-purchase-logs?limit=50`;
+                if (langParam) url += `&language=${langParam}`;
+                
+                const res = await fetch(url, { headers });
+                if (!res.ok) throw new Error('Erro ao buscar logs');
+                const data = await res.json();
+                const logs = data.logs || [];
+                const summary = data.summary || {};
+                
+                countEl.textContent = `${logs.length} eventos`;
+                
+                // Render summary cards
+                const total = parseInt(summary.total) || 0;
+                const success = parseInt(summary.success) || 0;
+                const failed = parseInt(summary.failed) || 0;
+                const withFbc = parseInt(summary.with_fbc) || 0;
+                const withFbp = parseInt(summary.with_fbp) || 0;
+                const withLead = parseInt(summary.with_lead) || 0;
+                const totalValue = parseFloat(summary.total_value) || 0;
+                const fbcRate = total > 0 ? ((withFbc / total) * 100).toFixed(0) : 0;
+                const fbpRate = total > 0 ? ((withFbp / total) * 100).toFixed(0) : 0;
+                const leadRate = total > 0 ? ((withLead / total) * 100).toFixed(0) : 0;
+                const successRate = total > 0 ? ((success / total) * 100).toFixed(0) : 0;
+                
+                summaryCards.innerHTML = `
+                    <div style="background: var(--bg-tertiary); border-radius: 10px; padding: 14px; text-align: center;">
+                        <div style="font-size: 22px; font-weight: 700; color: var(--text-primary);">${total}</div>
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Total Purchases</div>
+                    </div>
+                    <div style="background: var(--bg-tertiary); border-radius: 10px; padding: 14px; text-align: center;">
+                        <div style="font-size: 22px; font-weight: 700; color: ${parseInt(successRate) >= 90 ? '#22c55e' : '#f59e0b'};">${successRate}%</div>
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">CAPI Sucesso</div>
+                    </div>
+                    <div style="background: var(--bg-tertiary); border-radius: 10px; padding: 14px; text-align: center;">
+                        <div style="font-size: 22px; font-weight: 700; color: ${parseInt(fbcRate) >= 50 ? '#22c55e' : '#ef4444'};">${fbcRate}%</div>
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Com FBC</div>
+                    </div>
+                    <div style="background: var(--bg-tertiary); border-radius: 10px; padding: 14px; text-align: center;">
+                        <div style="font-size: 22px; font-weight: 700; color: ${parseInt(fbpRate) >= 50 ? '#22c55e' : '#ef4444'};">${fbpRate}%</div>
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Com FBP</div>
+                    </div>
+                    <div style="background: var(--bg-tertiary); border-radius: 10px; padding: 14px; text-align: center;">
+                        <div style="font-size: 22px; font-weight: 700; color: ${parseInt(leadRate) >= 70 ? '#22c55e' : '#f59e0b'};">${leadRate}%</div>
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Lead Encontrado</div>
+                    </div>
+                    <div style="background: var(--bg-tertiary); border-radius: 10px; padding: 14px; text-align: center;">
+                        <div style="font-size: 22px; font-weight: 700; color: var(--text-primary);">$${totalValue.toFixed(0)}</div>
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Valor Total</div>
+                    </div>
+                `;
+                
+                if (logs.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: var(--text-muted);">Nenhum Purchase event registrado ainda. Os logs aparecerão automaticamente quando uma compra for processada.</td></tr>';
+                    return;
+                }
+                
+                tableBody.innerHTML = logs.map(log => {
+                    const date = new Date(log.created_at);
+                    const dateStr = date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) + ' ' + 
+                                   date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    
+                    const email = log.email ? (log.email.length > 20 ? log.email.substring(0, 20) + '...' : log.email) : '-';
+                    const product = log.product ? (log.product.length > 25 ? log.product.substring(0, 25) + '...' : log.product) : '-';
+                    const value = `${log.currency || 'USD'} ${parseFloat(log.value || 0).toFixed(2)}`;
+                    
+                    // Pixel info
+                    const langFlag = log.funnel_language === 'es' ? '🇪🇸' : '🇺🇸';
+                    const sourceIcon = log.funnel_source === 'affiliate' ? '🤝' : '🏠';
+                    const pixelLabel = `${langFlag} ${sourceIcon}`;
+                    
+                    // Domain
+                    let domainDisplay = '-';
+                    if (log.event_source_url) {
+                        try {
+                            const u = new URL(log.event_source_url);
+                            domainDisplay = u.hostname;
+                        } catch(e) {
+                            domainDisplay = log.event_source_url.substring(0, 30);
+                        }
+                    }
+                    
+                    // Attribution badges
+                    const attrs = [];
+                    if (log.has_fbc) attrs.push('<span style="background: #22c55e20; color: #22c55e; padding: 1px 5px; border-radius: 3px; font-size: 10px; font-weight: 600;">FBC</span>');
+                    else attrs.push('<span style="background: #ef444420; color: #ef4444; padding: 1px 5px; border-radius: 3px; font-size: 10px; font-weight: 600;">FBC</span>');
+                    if (log.has_fbp) attrs.push('<span style="background: #22c55e20; color: #22c55e; padding: 1px 5px; border-radius: 3px; font-size: 10px; font-weight: 600;">FBP</span>');
+                    else attrs.push('<span style="background: #ef444420; color: #ef4444; padding: 1px 5px; border-radius: 3px; font-size: 10px; font-weight: 600;">FBP</span>');
+                    if (log.has_ip) attrs.push('<span style="background: #22c55e20; color: #22c55e; padding: 1px 5px; border-radius: 3px; font-size: 10px; font-weight: 600;">IP</span>');
+                    if (log.has_user_agent) attrs.push('<span style="background: #22c55e20; color: #22c55e; padding: 1px 5px; border-radius: 3px; font-size: 10px; font-weight: 600;">UA</span>');
+                    if (log.has_email) attrs.push('<span style="background: #22c55e20; color: #22c55e; padding: 1px 5px; border-radius: 3px; font-size: 10px; font-weight: 600;">EM</span>');
+                    if (log.lead_found) attrs.push('<span style="background: #3b82f620; color: #3b82f6; padding: 1px 5px; border-radius: 3px; font-size: 10px; font-weight: 600;">LEAD</span>');
+                    
+                    // CAPI status
+                    let capiStatus;
+                    if (log.capi_success) {
+                        capiStatus = `<span class="status-badge approved">✅ Enviado (${log.fb_events_received || 0})</span>`;
+                    } else {
+                        capiStatus = `<span class="status-badge refunded">❌ Falhou</span>`;
+                    }
+                    
+                    return `<tr>
+                        <td style="font-size: 11px; white-space: nowrap;">${dateStr}</td>
+                        <td style="font-size: 11px;" title="${log.email || ''}">${email}</td>
+                        <td style="font-size: 11px;" title="${log.product || ''}">${product}</td>
+                        <td style="font-size: 12px; font-weight: 600;">${value}</td>
+                        <td style="font-size: 12px; text-align: center;">${pixelLabel}</td>
+                        <td style="font-size: 10px; color: var(--text-muted);" title="${log.event_source_url || ''}">${domainDisplay}</td>
+                        <td style="font-size: 10px; display: flex; flex-wrap: wrap; gap: 2px;">${attrs.join('')}</td>
+                        <td>${capiStatus}</td>
+                    </tr>`;
+                }).join('');
+                
+            } catch (error) {
+                console.error('Error loading purchase CAPI logs:', error);
+                tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: #f87171;">Erro ao carregar logs</td></tr>';
+            }
+        }
+        
         // Filter pixel data by type
         function filterPixelData(filterType) {
             document.querySelectorAll('.pixel-filter').forEach(btn => btn.classList.remove('active'));
             document.querySelector(`.pixel-filter[data-filter="${filterType}"]`)?.classList.add('active');
             loadPixelStats();
+            loadPurchaseCAPILogs();
         }
 
         async function exportPixelStatsCSV() {
