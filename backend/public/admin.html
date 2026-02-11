@@ -11022,7 +11022,7 @@ Posso ajudar em algo mais? 😊`
                 } catch (error) {
                     updateRealtimeIndicator(false);
                 }
-            }, 15000); // 15 seconds for faster updates
+            }, 30000); // 30 seconds - balanced between real-time and server load
             
             // Initial count
             initializeCounts();
@@ -11182,13 +11182,13 @@ Posso ajudar em algo mais? 😊`
             // Load immediately
             loadActiveUsers();
             
-            // Refresh every 15 seconds
+            // Refresh every 30 seconds
             if (activeUsersInterval) clearInterval(activeUsersInterval);
             activeUsersInterval = setInterval(() => {
                 if (!document.hidden) {
                     loadActiveUsers();
                 }
-            }, 15000);
+            }, 30000);
         }
         
         // Start active users tracking when authenticated
@@ -11787,16 +11787,15 @@ Posso ajudar em algo mais? 😊`
             container.innerHTML = html;
         }
         
-        // Load all new charts on page load
+        // Load additional charts on page load (not already in loadAllData)
         document.addEventListener('DOMContentLoaded', () => {
             if (authToken) {
                 setTimeout(() => {
-                    loadHeatmapData();
                     loadTopCountriesChart();
                     loadWeeklyPerformanceChart();
                     loadConversionFunnel();
-                    loadTrendsData();
-                }, 1000);
+                    // loadHeatmapData and loadTrendsData already called in loadAllData()
+                }, 1500);
             }
         });
         
@@ -12205,7 +12204,7 @@ Posso ajudar em algo mais? 😊`
         // Update badges periodically
         if (authToken) {
             setTimeout(updateSidebarBadges, 2000);
-            setInterval(() => { if (!document.hidden) updateSidebarBadges(); }, 30000);
+            setInterval(() => { if (!document.hidden) updateSidebarBadges(); }, 60000); // Every 60 seconds
         }
         
         // ==================== KEYBOARD SHORTCUTS ====================

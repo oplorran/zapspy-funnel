@@ -470,10 +470,12 @@ const leadLimiter = rateLimit({
     message: { error: 'Too many submissions, please try again later.' }
 });
 
-// Admin rate limiter (generous but protective)
+// Admin rate limiter (very generous - admin panel auto-refreshes frequently)
+// Dashboard makes ~14 API calls per refresh cycle (every 15s) + active users + badges
+// That's ~70 calls/min = ~1050/15min, so limit must be well above that
 const adminLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 300, // 300 req/15min for admin panel (auto-refresh + user actions)
+    max: 5000, // 5000 req/15min - admin panel has many concurrent API calls + auto-refresh
     message: { error: 'Too many admin requests, please slow down.' },
     standardHeaders: true,
     legacyHeaders: false
