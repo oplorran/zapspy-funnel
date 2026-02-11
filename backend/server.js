@@ -4254,8 +4254,9 @@ async function syncMonetizzeSalesCore(startDate, endDate) {
     const params = new URLSearchParams();
     if (startDate) params.append('date_min', `${startDate} 00:00:00`);
     if (endDate) params.append('date_max', `${endDate} 23:59:59`);
-    // Include ALL statuses: 1=Pending, 2=Approved, 3=Cancelled, 4=Refunded, 5=Blocked, 6=Complete, 7=Abandoned, 8=Chargeback, 9=Chargeback
-    ['1','2','3','4','5','6','7','8','9'].forEach(s => params.append('status[]', s));
+    // Monetizze API only supports status 1-6. Chargebacks (8/9) come via postback only.
+    // 1=Pending, 2=Approved, 3=Cancelled, 4=Refunded/Devolvida, 5=Blocked, 6=Complete
+    ['1','2','3','4','5','6'].forEach(s => params.append('status[]', s));
     
     const validProductCodes = [
         '341972', '349241', '349242', '349243',
@@ -4286,10 +4287,16 @@ async function syncMonetizzeSalesCore(startDate, endDate) {
     else if (Array.isArray(data.vendas)) salesArray = data.vendas;
     else if (Array.isArray(data.recordset)) salesArray = data.recordset;
     
-    // Handle pagination
-    const totalPages = data.paginas || 1;
+    // Log pagination info for debugging
+    console.log(`📄 API response - pagina: ${data.pagina}, paginas: ${data.paginas}, registros: ${data.registros}, first page items: ${salesArray.length}`);
+    
+    // Handle pagination - keep fetching until no more results
+    const totalPages = data.paginas || 0;
+    const totalRecords = data.registros || 0;
+    
     if (totalPages > 1) {
-        for (let page = 2; page <= totalPages; page++) {
+        console.log(`📄 Pagination: ${totalPages} pages, ${totalRecords} total records`);
+        for (let page = 2; page <= Math.min(totalPages, 50); page++) { // Max 50 pages safety limit
             try {
                 const pageParams = new URLSearchParams(params.toString());
                 pageParams.set('pagina', String(page));
@@ -4299,10 +4306,42 @@ async function syncMonetizzeSalesCore(startDate, endDate) {
                 });
                 if (pageResponse.ok) {
                     const pageData = await pageResponse.json();
-                    salesArray = salesArray.concat(pageData.dados || pageData.vendas || []);
+                    const pageItems = pageData.dados || pageData.vendas || [];
+                    salesArray = salesArray.concat(pageItems);
+                    console.log(`📄 Page ${page}/${totalPages}: ${pageItems.length} items (total: ${salesArray.length})`);
+                    if (pageItems.length === 0) break; // No more data
                 }
             } catch (pageError) {
                 console.error(`❌ Error fetching page ${page}:`, pageError.message);
+            }
+        }
+    } else if (salesArray.length >= 100 && totalPages === 0) {
+        // API might not return paginas field - try fetching more pages manually
+        console.log(`⚠️ Got ${salesArray.length} items but no pagination info. Trying to fetch more pages...`);
+        for (let page = 2; page <= 50; page++) {
+            try {
+                const pageParams = new URLSearchParams(params.toString());
+                pageParams.set('pagina', String(page));
+                const pageResponse = await fetch(`https://api.monetizze.com.br/2.1/transactions?${pageParams.toString()}`, {
+                    method: 'GET',
+                    headers: { 'TOKEN': monetizzeToken, 'Accept': 'application/json' }
+                });
+                if (pageResponse.ok) {
+                    const pageData = await pageResponse.json();
+                    const pageItems = pageData.dados || pageData.vendas || [];
+                    if (pageItems.length === 0) {
+                        console.log(`📄 Page ${page}: empty - pagination complete`);
+                        break;
+                    }
+                    salesArray = salesArray.concat(pageItems);
+                    console.log(`📄 Page ${page}: ${pageItems.length} items (total: ${salesArray.length})`);
+                } else {
+                    console.log(`📄 Page ${page}: HTTP ${pageResponse.status} - stopping pagination`);
+                    break;
+                }
+            } catch (pageError) {
+                console.error(`❌ Page ${page} error:`, pageError.message);
+                break;
             }
         }
     }
@@ -4586,21 +4625,42 @@ async function runRefundBackfill() {
 }
 
 async function runDeepSync() {
-    // Deep sync: fetch last 30 days to catch all refunds/chargebacks that may have been missed
+    // Deep sync: fetch day-by-day to avoid pagination limits
     try {
         const consumerKey = process.env.MONETIZZE_CONSUMER_KEY;
         if (!consumerKey) return;
         
         const today = new Date();
-        const thirtyDaysAgo = new Date(today);
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        let totalSynced = 0;
+        let totalSkipped = 0;
+        let totalFetched = 0;
         
-        const startDate = thirtyDaysAgo.toISOString().split('T')[0];
-        const endDate = today.toISOString().split('T')[0];
+        console.log(`🔍 Deep sync starting (last 60 days, day-by-day to avoid pagination limits)...`);
         
-        console.log(`🔍 Deep sync starting (last 30 days: ${startDate} to ${endDate})...`);
-        const result = await syncMonetizzeSalesCore(startDate, endDate);
-        console.log(`✅ Deep sync complete: ${result.synced} new/updated, ${result.skipped} skipped, ${result.total} total`);
+        // Sync day by day for the last 60 days to ensure we get ALL transactions including refunds
+        for (let daysBack = 0; daysBack <= 60; daysBack++) {
+            const targetDate = new Date(today);
+            targetDate.setDate(targetDate.getDate() - daysBack);
+            const dateStr = targetDate.toISOString().split('T')[0];
+            
+            try {
+                const result = await syncMonetizzeSalesCore(dateStr, dateStr);
+                totalSynced += result.synced || 0;
+                totalSkipped += result.skipped || 0;
+                totalFetched += result.total || 0;
+                
+                if (result.synced > 0 || result.total > 0) {
+                    console.log(`📅 Day ${dateStr}: ${result.total} fetched, ${result.synced} synced`);
+                }
+            } catch (dayError) {
+                console.error(`❌ Error syncing ${dateStr}:`, dayError.message);
+            }
+            
+            // Small delay between API calls to be respectful
+            await new Promise(resolve => setTimeout(resolve, 300));
+        }
+        
+        console.log(`✅ Deep sync complete: ${totalSynced} new/updated, ${totalSkipped} skipped, ${totalFetched} total fetched across 60 days`);
     } catch (error) {
         console.error('❌ Deep sync error:', error.message);
     }
@@ -4791,16 +4851,155 @@ async function recheckApprovedTransactions() {
     }
 }
 
+// Re-process old postback logs to fix entries that were incorrectly mapped due to the priority bug
+// (refund/chargeback status was being overridden to 'approved' by venda.status text check)
+async function reprocessPostbackLogs() {
+    try {
+        console.log('🔄 Reprocessing postback logs for missed refunds/chargebacks...');
+        
+        // Fetch all postback logs
+        const logs = await pool.query(`
+            SELECT id, body, created_at FROM postback_logs 
+            WHERE content_type != 'ERROR_NO_EMAIL' 
+              AND content_type != 'CRITICAL_ERROR'
+              AND content_type != 'DB_ERROR'
+            ORDER BY created_at DESC
+        `);
+        
+        if (logs.rows.length === 0) {
+            console.log('No postback logs to reprocess');
+            return;
+        }
+        
+        console.log(`📦 Found ${logs.rows.length} postback logs to scan`);
+        let fixed = 0;
+        
+        for (const log of logs.rows) {
+            try {
+                let body;
+                if (typeof log.body === 'string') {
+                    body = JSON.parse(log.body);
+                } else {
+                    body = log.body;
+                }
+                
+                if (!body) continue;
+                
+                // Check for dot-notation keys
+                const hasDotKeys = Object.keys(body).some(k => k.includes('.'));
+                function unflattenObj(obj) {
+                    const result = {};
+                    for (const key of Object.keys(obj)) {
+                        if (key.includes('.')) {
+                            const parts = key.split('.');
+                            let current = result;
+                            for (let i = 0; i < parts.length - 1; i++) {
+                                if (!current[parts[i]] || typeof current[parts[i]] !== 'object') current[parts[i]] = {};
+                                current = current[parts[i]];
+                            }
+                            current[parts[parts.length - 1]] = obj[key];
+                        } else if (result[key] === undefined) {
+                            result[key] = obj[key];
+                        }
+                    }
+                    return result;
+                }
+                const parsed = hasDotKeys ? { ...unflattenObj(body), ...body } : body;
+                
+                const tipoEvento = (parsed.tipoEvento && typeof parsed.tipoEvento === 'object') ? parsed.tipoEvento : {};
+                const venda = (parsed.venda && typeof parsed.venda === 'object') ? parsed.venda : {};
+                const comprador = (parsed.comprador && typeof parsed.comprador === 'object') ? parsed.comprador : {};
+                
+                const statusCode = String(tipoEvento.codigo || parsed['tipoEvento.codigo'] || parsed['tipoEvento[codigo]'] || '');
+                const eventoDesc = (tipoEvento.descricao || '').toLowerCase();
+                const vendaStatus = (venda.status || '').toLowerCase();
+                const transactionId = parsed.chave_unica || venda.codigo || parsed['venda.codigo'] || '';
+                const email = comprador.email || parsed.email || parsed['comprador.email'] || '';
+                
+                if (!transactionId || !email) continue;
+                
+                // Detect refund/chargeback
+                let newStatus = null;
+                
+                if (statusCode === '4' || vendaStatus.includes('devolvida') || vendaStatus.includes('reembolso') || eventoDesc.includes('reembolso')) {
+                    newStatus = 'refunded';
+                }
+                if (statusCode === '8' || statusCode === '9' || vendaStatus.includes('chargeback') || eventoDesc.includes('chargeback') || eventoDesc.includes('disputa')) {
+                    newStatus = 'chargeback';
+                }
+                
+                if (!newStatus) continue;
+                
+                // Check if this transaction exists in our DB with wrong status
+                const existing = await pool.query(
+                    `SELECT transaction_id, status FROM transactions WHERE transaction_id = $1`,
+                    [transactionId]
+                );
+                
+                if (existing.rows.length > 0 && existing.rows[0].status !== newStatus) {
+                    console.log(`🔧 FIXING postback log ${log.id}: tx ${transactionId} (${email}) - was "${existing.rows[0].status}" → should be "${newStatus}" (code: ${statusCode})`);
+                    
+                    // Update transaction status
+                    await pool.query(
+                        `UPDATE transactions SET status = $1, monetizze_status = $2, updated_at = NOW() WHERE transaction_id = $3`,
+                        [newStatus, statusCode, transactionId]
+                    );
+                    
+                    // Create refund_requests entry
+                    const refundProtocol = `MON-${String(transactionId).substring(0, 12).toUpperCase()}`;
+                    const existingRefund = await pool.query('SELECT id FROM refund_requests WHERE transaction_id = $1', [transactionId]);
+                    
+                    if (existingRefund.rows.length === 0) {
+                        const produto = (parsed.produto && typeof parsed.produto === 'object') ? parsed.produto : {};
+                        const productName = produto.nome || parsed['produto.nome'] || 'Unknown Product';
+                        const valor = venda.valor || parsed.valor || parsed['venda.valor'] || '0';
+                        const buyerName = comprador.nome || parsed.nome || parsed['comprador.nome'] || 'N/A';
+                        const buyerPhone = comprador.telefone || parsed.telefone || parsed['comprador.telefone'] || null;
+                        
+                        await pool.query(`
+                            INSERT INTO refund_requests (
+                                protocol, full_name, email, phone, product, reason, 
+                                status, source, refund_type, transaction_id, value, funnel_language, created_at
+                            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+                            ON CONFLICT (protocol) DO NOTHING
+                        `, [
+                            refundProtocol, buyerName, email, buyerPhone,
+                            productName,
+                            newStatus === 'chargeback' ? 'Chargeback - Disputa de cartão' : 'Reembolso via Monetizze',
+                            'approved', 'monetizze_postback_reprocess', newStatus === 'chargeback' ? 'chargeback' : 'refund',
+                            transactionId, parseFloat(valor) || 0, 'en', log.created_at || new Date()
+                        ]);
+                    }
+                    
+                    fixed++;
+                } else if (existing.rows.length === 0) {
+                    // Transaction doesn't exist - it may have been skipped
+                    console.log(`⚠️ Postback log ${log.id}: tx ${transactionId} (${email}) is ${newStatus} but NOT in transactions table`);
+                }
+            } catch (logError) {
+                // Skip individual log errors
+                continue;
+            }
+        }
+        
+        console.log(`✅ Postback log reprocessing complete: ${fixed} transactions fixed`);
+    } catch (error) {
+        console.error('❌ Postback reprocessing error:', error.message);
+    }
+}
+
 function startAutoSync() {
-    // Run first deep sync 30 seconds after server start (fetch last 30 days)
+    // Run startup tasks 30 seconds after server start
     setTimeout(async () => {
-        // First: deep sync last 30 days to catch all refunds/chargebacks
+        // Step 1: Deep sync last 60 days (day-by-day to avoid pagination limits)
         await runDeepSync();
-        // Then: re-check each approved transaction individually for status changes
+        // Step 2: Reprocess old postback logs (fix the priority bug that overrode refunds)
+        await reprocessPostbackLogs();
+        // Step 3: Re-check each approved transaction individually for status changes
         await recheckApprovedTransactions();
-        // Then: backfill any missing refund_requests from transactions table
+        // Step 4: Backfill any missing refund_requests from transactions table
         await runRefundBackfill();
-        // Run diagnostic to see what's in the DB
+        // Step 5: Run diagnostic to see what's in the DB
         await runDiagnosticLog();
         // Regular sync every 30 minutes (just yesterday + today)
         autoSyncInterval = setInterval(runAutoSync, 30 * 60 * 1000);
@@ -4847,8 +5046,8 @@ app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (re
         if (startDate) params.append('date_min', `${startDate} 00:00:00`);
         if (endDate) params.append('date_max', `${endDate} 23:59:59`);
         // Get all statuses so we have complete data
-        // 1=Pending, 2=Approved, 3=Cancelled, 4=Refunded, 5=Blocked, 6=Complete, 7=Abandoned, 8=Chargeback, 9=Chargeback
-        ['1','2','3','4','5','6','7','8','9'].forEach(s => params.append('status[]', s));
+        // Monetizze API supports status 1-6. Chargebacks (8/9) only come via postback.
+        ['1','2','3','4','5','6'].forEach(s => params.append('status[]', s));
         
         // Only fetch our 16 specific products (8 main + 8 affiliate)
         // English Main: 341972 (Front), 349241 (UP1), 349242 (UP2), 349243 (UP3)
@@ -4921,14 +5120,15 @@ app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (re
         }
         
         console.log(`📦 First page: ${salesArray.length} transactions`);
+        console.log(`📄 API pagination info - pagina: ${data.pagina}, paginas: ${data.paginas}, registros: ${data.registros}`);
         
         // Handle pagination - fetch all pages
-        const totalPages = data.paginas || 1;
+        const totalPages = data.paginas || 0;
         const totalRecords = data.registros || salesArray.length;
         
         if (totalPages > 1) {
             console.log(`📄 Pagination detected: ${totalPages} pages, ${totalRecords} total records`);
-            for (let page = 2; page <= totalPages; page++) {
+            for (let page = 2; page <= Math.min(totalPages, 50); page++) {
                 try {
                     console.log(`📄 Fetching page ${page}/${totalPages}...`);
                     const pageParams = new URLSearchParams(params.toString());
@@ -4947,9 +5147,39 @@ app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (re
                         const pageItems = pageData.dados || pageData.vendas || [];
                         salesArray = salesArray.concat(pageItems);
                         console.log(`📄 Page ${page}: ${pageItems.length} transactions (total: ${salesArray.length})`);
+                        if (pageItems.length === 0) break;
                     }
                 } catch (pageError) {
                     console.error(`❌ Error fetching page ${page}:`, pageError.message);
+                }
+            }
+        } else if (salesArray.length >= 100 && totalPages === 0) {
+            // API might not return paginas field - try fetching more pages manually
+            console.log(`⚠️ Got ${salesArray.length} items but no pagination info. Probing for more pages...`);
+            for (let page = 2; page <= 50; page++) {
+                try {
+                    const pageParams = new URLSearchParams(params.toString());
+                    pageParams.set('pagina', String(page));
+                    const pageResponse = await fetch(`https://api.monetizze.com.br/2.1/transactions?${pageParams.toString()}`, {
+                        method: 'GET',
+                        headers: { 'TOKEN': monetizzeToken, 'Accept': 'application/json' }
+                    });
+                    if (pageResponse.ok) {
+                        const pageData = await pageResponse.json();
+                        const pageItems = pageData.dados || pageData.vendas || [];
+                        if (pageItems.length === 0) {
+                            console.log(`📄 Page ${page}: empty - pagination complete`);
+                            break;
+                        }
+                        salesArray = salesArray.concat(pageItems);
+                        console.log(`📄 Page ${page}: ${pageItems.length} items (total: ${salesArray.length})`);
+                    } else {
+                        console.log(`📄 Page ${page}: HTTP ${pageResponse.status} - stopping pagination`);
+                        break;
+                    }
+                } catch (pageError) {
+                    console.error(`❌ Page ${page} error:`, pageError.message);
+                    break;
                 }
             }
         }
@@ -5605,26 +5835,38 @@ app.all('/api/postback/monetizze', async (req, res) => {
         const statusStr = String(statusCode);
         console.log('🔍 Purchase check:', { statusStr, isFinalized, dataFinalizada: dataFinalizada || '(empty)', dataFinalizadaRaw: dataFinalizadaRaw || '(null)' });
         
-        // Check venda.status text for the REAL status
+        // Check venda.status text for additional status info
+        // IMPORTANT: NEVER override refunded/chargeback status with approved!
         const vendaStatus = (venda.status || '').toLowerCase();
+        const isAlreadyRefundOrChargeback = (finalStatus === 'refunded' || finalStatus === 'chargeback');
         
-        if (vendaStatus.includes('cancelada') || vendaStatus.includes('cancel')) {
-            finalStatus = 'cancelled';
-        } else if (vendaStatus.includes('aguardando') || vendaStatus.includes('pending')) {
-            finalStatus = 'pending_payment';
-        } else if (vendaStatus.includes('finalizada') || vendaStatus.includes('aprovada')) {
-            // Only mark as approved if dataFinalizada is valid
-            if (isFinalized) {
-                finalStatus = 'approved';
-            } else {
+        if (!isAlreadyRefundOrChargeback) {
+            // Only apply venda.status text overrides if status is NOT already refund/chargeback
+            if (vendaStatus.includes('cancelada') || vendaStatus.includes('cancel')) {
+                finalStatus = 'cancelled';
+            } else if (vendaStatus.includes('aguardando') || vendaStatus.includes('pending')) {
+                finalStatus = 'pending_payment';
+            } else if (vendaStatus.includes('finalizada') || vendaStatus.includes('aprovada')) {
+                if (isFinalized) {
+                    finalStatus = 'approved';
+                } else {
+                    finalStatus = 'pending_payment';
+                }
+            } else if (!isFinalized && statusCode === '2') {
                 finalStatus = 'pending_payment';
             }
-        } else if (!isFinalized && statusCode === '2') {
-            // Status code says approved but no valid dataFinalizada
-            finalStatus = 'pending_payment';
+        } else {
+            console.log(`🔒 POSTBACK: Preserving ${finalStatus} status (not overriding with vendaStatus="${venda.status}")`);
         }
         
-        const mappedStatus = finalStatus; // Use finalStatus which includes all detection logic
+        // Also check venda.status text for refund/chargeback keywords (may catch additional cases)
+        if (vendaStatus.includes('chargeback') || vendaStatus.includes('disputa') || vendaStatus.includes('contestação') || vendaStatus.includes('contestacao')) {
+            finalStatus = 'chargeback';
+        } else if (vendaStatus.includes('devolvida') || vendaStatus.includes('reembolso') || vendaStatus.includes('reembolsada') || vendaStatus.includes('refund')) {
+            finalStatus = 'refunded';
+        }
+        
+        const mappedStatus = finalStatus;
         const buyerEmail = email;
         const buyerPhone = telefone;
         const buyerName = nome;
