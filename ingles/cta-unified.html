@@ -2415,14 +2415,7 @@
                 fetch(capiUrl, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({...capiData, eventName: 'InitiateCheckout', eventId: checkoutEventId, value: currentValue, currency: 'USD', content_name: 'ZapSpy.ai VIP Access'}) }).catch(() => {});
             }
             
-            // Track AddToCart for granular tracking
-            if (typeof ZapSpyTracking !== 'undefined') {
-                ZapSpyTracking.trackStandardEvent('AddToCart', {
-                    content_name: 'ZapSpy.ai VIP Access',
-                    currency: 'USD',
-                    value: currentValue
-                });
-            }
+            // AddToCart already tracked above by FacebookCAPI.trackAddToCart() with deduplication
             
             // Track checkout click in funnel
             if (typeof FunnelTracker !== 'undefined') {

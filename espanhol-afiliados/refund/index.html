@@ -46,7 +46,8 @@
         if (st) userData.st = st.toLowerCase().replace(/[^a-z]/g, '');
     } catch(e) {}
     fbq('init', '534495082571779', userData);
-    fbq('track', 'PageView');
+    var pvId = 'PageView_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    fbq('track', 'PageView', {}, { eventID: pvId });
     </script>
     <noscript><img height="1" width="1" style="display:none"
     src="https://www.facebook.com/tr?id=534495082571779&ev=PageView&noscript=1"

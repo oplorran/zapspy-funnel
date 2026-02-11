@@ -44,7 +44,8 @@
     } catch(e) {}
     
     fbq('init', '726299943423075', userData);
-    fbq('track', 'PageView');
+    var pvId = 'PageView_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    fbq('track', 'PageView', {}, { eventID: pvId });
     </script>
     <noscript><img height="1" width="1" style="display:none"
     src="https://www.facebook.com/tr?id=726299943423075&ev=PageView&noscript=1"
