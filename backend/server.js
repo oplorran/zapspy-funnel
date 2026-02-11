@@ -1038,7 +1038,7 @@ app.get('/api/admin/active-users', authenticateToken, async (req, res) => {
                 COUNT(DISTINCT CASE WHEN metadata->>'funnelLanguage' = 'es' THEN visitor_id END) AS active_es,
                 COUNT(*) AS total_events
             FROM funnel_events
-            WHERE created_at >= NOW() - ($1 || ' minutes')::interval
+            WHERE created_at >= NOW() - make_interval(mins => $1)
         `, [cappedMinutes]);
 
         // Also get page breakdown
@@ -1047,7 +1047,7 @@ app.get('/api/admin/active-users', authenticateToken, async (req, res) => {
                 page,
                 COUNT(DISTINCT visitor_id) AS visitors
             FROM funnel_events
-            WHERE created_at >= NOW() - ($1 || ' minutes')::interval
+            WHERE created_at >= NOW() - make_interval(mins => $1)
                 AND page IS NOT NULL
             GROUP BY page
             ORDER BY visitors DESC
@@ -1073,73 +1073,68 @@ app.get('/api/admin/active-users', authenticateToken, async (req, res) => {
 // Trends comparison endpoint - current vs previous period (protected)
 app.get('/api/admin/stats/trends', authenticateToken, async (req, res) => {
     try {
-        const days = parseInt(req.query.days) || 7; // Default: compare last 7 days vs prior 7 days
+        const days = parseInt(req.query.days) || 7;
         const cappedDays = Math.min(Math.max(days, 1), 90);
 
-        // Current period: last N days
-        // Previous period: N days before that
-        const queries = {
-            // Leads: current period
-            leadsCurrent: pool.query(
-                `SELECT COUNT(*) as count FROM leads WHERE created_at >= NOW() - ($1 || ' days')::interval`,
+        // Run all queries in parallel with Promise.allSettled to avoid unhandled rejections
+        const [
+            leadsCurrent, leadsPrevious,
+            salesCurrent, salesPrevious,
+            leadsSparkline, salesSparkline,
+            checkoutCurrent, checkoutPrevious
+        ] = await Promise.allSettled([
+            pool.query(
+                `SELECT COUNT(*) as count FROM leads WHERE created_at >= NOW() - make_interval(days => $1)`,
                 [cappedDays]
             ),
-            // Leads: previous period
-            leadsPrevious: pool.query(
+            pool.query(
                 `SELECT COUNT(*) as count FROM leads 
-                 WHERE created_at >= NOW() - ($1 || ' days')::interval 
-                   AND created_at < NOW() - ($2 || ' days')::interval`,
+                 WHERE created_at >= NOW() - make_interval(days => $1) 
+                   AND created_at < NOW() - make_interval(days => $2)`,
                 [cappedDays * 2, cappedDays]
             ),
-            // Sales: current period
-            salesCurrent: pool.query(
-                `SELECT COUNT(*) as count, COALESCE(SUM(CASE WHEN value > 0 THEN value ELSE 0 END), 0) as revenue 
-                 FROM transactions WHERE status = 'approved' AND created_at >= NOW() - ($1 || ' days')::interval`,
+            pool.query(
+                `SELECT COUNT(*) as count, COALESCE(SUM(CASE WHEN CAST(value AS numeric) > 0 THEN CAST(value AS numeric) ELSE 0 END), 0) as revenue 
+                 FROM transactions WHERE status = 'approved' AND created_at >= NOW() - make_interval(days => $1)`,
                 [cappedDays]
             ),
-            // Sales: previous period
-            salesPrevious: pool.query(
-                `SELECT COUNT(*) as count, COALESCE(SUM(CASE WHEN value > 0 THEN value ELSE 0 END), 0) as revenue 
+            pool.query(
+                `SELECT COUNT(*) as count, COALESCE(SUM(CASE WHEN CAST(value AS numeric) > 0 THEN CAST(value AS numeric) ELSE 0 END), 0) as revenue 
                  FROM transactions WHERE status = 'approved' 
-                   AND created_at >= NOW() - ($1 || ' days')::interval 
-                   AND created_at < NOW() - ($2 || ' days')::interval`,
+                   AND created_at >= NOW() - make_interval(days => $1) 
+                   AND created_at < NOW() - make_interval(days => $2)`,
                 [cappedDays * 2, cappedDays]
             ),
-            // Sparkline data: leads per day (last N days)
-            leadsSparkline: pool.query(
+            pool.query(
                 `SELECT DATE(created_at AT TIME ZONE 'America/Sao_Paulo') as day, COUNT(*) as count 
-                 FROM leads WHERE created_at >= NOW() - ($1 || ' days')::interval 
+                 FROM leads WHERE created_at >= NOW() - make_interval(days => $1) 
                  GROUP BY day ORDER BY day ASC`,
                 [cappedDays]
             ),
-            // Sparkline data: sales per day (last N days)
-            salesSparkline: pool.query(
+            pool.query(
                 `SELECT DATE(created_at AT TIME ZONE 'America/Sao_Paulo') as day, COUNT(*) as count,
-                        COALESCE(SUM(CASE WHEN value > 0 THEN value ELSE 0 END), 0) as revenue
-                 FROM transactions WHERE status = 'approved' AND created_at >= NOW() - ($1 || ' days')::interval 
+                        COALESCE(SUM(CASE WHEN CAST(value AS numeric) > 0 THEN CAST(value AS numeric) ELSE 0 END), 0) as revenue
+                 FROM transactions WHERE status = 'approved' AND created_at >= NOW() - make_interval(days => $1) 
                  GROUP BY day ORDER BY day ASC`,
                 [cappedDays]
             ),
-            // Checkout events: current period
-            checkoutCurrent: pool.query(
+            pool.query(
                 `SELECT COUNT(DISTINCT visitor_id) as count FROM funnel_events 
-                 WHERE event LIKE 'page_view_cta%' AND created_at >= NOW() - ($1 || ' days')::interval`,
+                 WHERE event LIKE 'page_view_cta%' AND created_at >= NOW() - make_interval(days => $1)`,
                 [cappedDays]
             ),
-            // Checkout events: previous period
-            checkoutPrevious: pool.query(
+            pool.query(
                 `SELECT COUNT(DISTINCT visitor_id) as count FROM funnel_events 
                  WHERE event LIKE 'page_view_cta%' 
-                   AND created_at >= NOW() - ($1 || ' days')::interval 
-                   AND created_at < NOW() - ($2 || ' days')::interval`,
+                   AND created_at >= NOW() - make_interval(days => $1) 
+                   AND created_at < NOW() - make_interval(days => $2)`,
                 [cappedDays * 2, cappedDays]
             )
-        };
+        ]);
 
-        const results = {};
-        for (const [key, promise] of Object.entries(queries)) {
-            results[key] = await promise;
-        }
+        // Helper to safely extract result
+        const getRows = (result) => result.status === 'fulfilled' ? result.value.rows : [];
+        const getFirst = (result) => (getRows(result)[0]) || {};
 
         const calcChange = (current, previous) => {
             if (previous === 0 && current === 0) return 0;
@@ -1147,14 +1142,14 @@ app.get('/api/admin/stats/trends', authenticateToken, async (req, res) => {
             return ((current - previous) / previous * 100);
         };
 
-        const lc = parseInt(results.leadsCurrent.rows[0]?.count) || 0;
-        const lp = parseInt(results.leadsPrevious.rows[0]?.count) || 0;
-        const sc = parseInt(results.salesCurrent.rows[0]?.count) || 0;
-        const sp = parseInt(results.salesPrevious.rows[0]?.count) || 0;
-        const rc = parseFloat(results.salesCurrent.rows[0]?.revenue) || 0;
-        const rp = parseFloat(results.salesPrevious.rows[0]?.revenue) || 0;
-        const cc = parseInt(results.checkoutCurrent.rows[0]?.count) || 0;
-        const cp = parseInt(results.checkoutPrevious.rows[0]?.count) || 0;
+        const lc = parseInt(getFirst(leadsCurrent).count) || 0;
+        const lp = parseInt(getFirst(leadsPrevious).count) || 0;
+        const sc = parseInt(getFirst(salesCurrent).count) || 0;
+        const sp = parseInt(getFirst(salesPrevious).count) || 0;
+        const rc = parseFloat(getFirst(salesCurrent).revenue) || 0;
+        const rp = parseFloat(getFirst(salesPrevious).revenue) || 0;
+        const cc = parseInt(getFirst(checkoutCurrent).count) || 0;
+        const cp = parseInt(getFirst(checkoutPrevious).count) || 0;
 
         res.json({
             period_days: cappedDays,
@@ -1163,8 +1158,8 @@ app.get('/api/admin/stats/trends', authenticateToken, async (req, res) => {
             revenue: { current: rc, previous: rp, change: calcChange(rc, rp).toFixed(1) },
             checkout: { current: cc, previous: cp, change: calcChange(cc, cp).toFixed(1) },
             sparklines: {
-                leads: results.leadsSparkline.rows.map(r => ({ day: r.day, count: parseInt(r.count) })),
-                sales: results.salesSparkline.rows.map(r => ({ day: r.day, count: parseInt(r.count), revenue: parseFloat(r.revenue) }))
+                leads: getRows(leadsSparkline).map(r => ({ day: r.day, count: parseInt(r.count) })),
+                sales: getRows(salesSparkline).map(r => ({ day: r.day, count: parseInt(r.count), revenue: parseFloat(r.revenue) }))
             },
             timestamp: new Date().toISOString()
         });
