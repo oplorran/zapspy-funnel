@@ -4254,7 +4254,8 @@ async function syncMonetizzeSalesCore(startDate, endDate) {
     const params = new URLSearchParams();
     if (startDate) params.append('date_min', `${startDate} 00:00:00`);
     if (endDate) params.append('date_max', `${endDate} 23:59:59`);
-    ['1','2','3','4','5','6'].forEach(s => params.append('status[]', s));
+    // Include ALL statuses: 1=Pending, 2=Approved, 3=Cancelled, 4=Refunded, 5=Blocked, 6=Complete, 7=Abandoned, 8=Chargeback, 9=Chargeback
+    ['1','2','3','4','5','6','7','8','9'].forEach(s => params.append('status[]', s));
     
     const validProductCodes = [
         '341972', '349241', '349242', '349243',
@@ -4423,6 +4424,56 @@ async function syncMonetizzeSalesCore(startDate, endDate) {
                     updated_at = NOW()
             `, [transactionId, email, finalPhone, name, productName, value, String(statusCode), mappedStatus, JSON.stringify(item), funnelLanguage, funnelSource, saleDate]);
             
+            // Also create refund_requests entry for refunds/chargebacks so they appear in admin panel
+            if (mappedStatus === 'refunded' || mappedStatus === 'chargeback') {
+                try {
+                    const refundProtocol = `MON-${String(transactionId).substring(0, 12).toUpperCase()}`;
+                    const refundType = mappedStatus === 'chargeback' ? 'chargeback' : 'refund';
+                    
+                    // Check if already exists to avoid duplicates
+                    const existing = await pool.query(
+                        'SELECT id FROM refund_requests WHERE transaction_id = $1',
+                        [String(transactionId)]
+                    );
+                    
+                    if (existing.rows.length === 0) {
+                        await pool.query(`
+                            INSERT INTO refund_requests (
+                                protocol, full_name, email, phone, product, reason, 
+                                status, source, refund_type, transaction_id, value, funnel_language, created_at
+                            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, COALESCE($13, NOW()))
+                        `, [
+                            refundProtocol,
+                            name || 'N/A',
+                            email,
+                            finalPhone || null,
+                            productName,
+                            refundType === 'chargeback' ? 'Chargeback - Disputa de cartão' : 'Reembolso via Monetizze',
+                            'approved', // Monetizze already processed it
+                            'monetizze',
+                            refundType,
+                            String(transactionId),
+                            parseFloat(value) || 0,
+                            funnelLanguage,
+                            saleDate
+                        ]);
+                        
+                        console.log(`📥 SYNC: ${refundType.toUpperCase()} registered: ${refundProtocol} - ${email} - ${productName}`);
+                    } else {
+                        // Update existing entry if status changed (e.g., refund -> chargeback)
+                        await pool.query(`
+                            UPDATE refund_requests SET 
+                                refund_type = $1, 
+                                status = 'approved',
+                                updated_at = NOW()
+                            WHERE transaction_id = $2 AND refund_type != $1
+                        `, [refundType, String(transactionId)]);
+                    }
+                } catch (refundError) {
+                    console.error(`⚠️ Error registering refund_request during sync: ${refundError.message}`);
+                }
+            }
+            
             synced++;
         } catch (saleError) {
             errors.push({ sale: item?.venda?.codigo || 'unknown', error: saleError.message });
@@ -4461,10 +4512,56 @@ async function runAutoSync() {
     }
 }
 
+async function runRefundBackfill() {
+    try {
+        console.log('🔄 Running automatic refund backfill...');
+        const result = await pool.query(`
+            SELECT t.transaction_id, t.email, t.phone, t.name, t.product, t.value, 
+                   t.status, t.funnel_language, t.created_at
+            FROM transactions t
+            LEFT JOIN refund_requests rr ON rr.transaction_id = t.transaction_id
+            WHERE t.status IN ('refunded', 'chargeback')
+              AND rr.id IS NULL
+            ORDER BY t.created_at DESC
+        `);
+        
+        let created = 0;
+        for (const tx of result.rows) {
+            try {
+                const refundProtocol = `MON-${String(tx.transaction_id).substring(0, 12).toUpperCase()}`;
+                const refundType = tx.status === 'chargeback' ? 'chargeback' : 'refund';
+                
+                await pool.query(`
+                    INSERT INTO refund_requests (
+                        protocol, full_name, email, phone, product, reason, 
+                        status, source, refund_type, transaction_id, value, funnel_language, created_at
+                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+                    ON CONFLICT (protocol) DO NOTHING
+                `, [
+                    refundProtocol, tx.name || 'N/A', tx.email, tx.phone || null,
+                    tx.product,
+                    refundType === 'chargeback' ? 'Chargeback - Disputa de cartão' : 'Reembolso via Monetizze',
+                    'approved', 'monetizze', refundType, String(tx.transaction_id),
+                    parseFloat(tx.value) || 0, tx.funnel_language || 'en', tx.created_at || new Date()
+                ]);
+                created++;
+            } catch (err) { /* skip duplicates */ }
+        }
+        
+        if (created > 0) {
+            console.log(`✅ Backfill: ${created} refund_requests created from ${result.rows.length} orphaned transactions`);
+        }
+    } catch (error) {
+        console.error('⚠️ Refund backfill error:', error.message);
+    }
+}
+
 function startAutoSync() {
     // Run first sync 30 seconds after server start (let DB initialize first)
-    setTimeout(() => {
-        runAutoSync();
+    setTimeout(async () => {
+        await runAutoSync();
+        // Backfill any missing refund_requests after sync
+        await runRefundBackfill();
         // Then run every 30 minutes
         autoSyncInterval = setInterval(runAutoSync, 30 * 60 * 1000);
         console.log('🔄 Auto-sync scheduled: every 30 minutes');
@@ -4508,8 +4605,8 @@ app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (re
         if (startDate) params.append('date_min', `${startDate} 00:00:00`);
         if (endDate) params.append('date_max', `${endDate} 23:59:59`);
         // Get all statuses so we have complete data
-        // 1=Aguardando, 2=Finalizada, 3=Cancelada, 4=Devolvida, 5=Bloqueada, 6=Completa
-        ['1','2','3','4','5','6'].forEach(s => params.append('status[]', s));
+        // 1=Pending, 2=Approved, 3=Cancelled, 4=Refunded, 5=Blocked, 6=Complete, 7=Abandoned, 8=Chargeback, 9=Chargeback
+        ['1','2','3','4','5','6','7','8','9'].forEach(s => params.append('status[]', s));
         
         // Only fetch our 16 specific products (8 main + 8 affiliate)
         // English Main: 341972 (Front), 349241 (UP1), 349242 (UP2), 349243 (UP3)
@@ -4763,6 +4860,50 @@ app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (re
                     saleDate
                 ]);
                 
+                // Also create refund_requests entry for refunds/chargebacks in manual sync
+                if (mappedStatus === 'refunded' || mappedStatus === 'chargeback') {
+                    try {
+                        const refundProtocol = `MON-${String(transactionId).substring(0, 12).toUpperCase()}`;
+                        const refundType = mappedStatus === 'chargeback' ? 'chargeback' : 'refund';
+                        
+                        const existing = await pool.query(
+                            'SELECT id FROM refund_requests WHERE transaction_id = $1',
+                            [String(transactionId)]
+                        );
+                        
+                        if (existing.rows.length === 0) {
+                            await pool.query(`
+                                INSERT INTO refund_requests (
+                                    protocol, full_name, email, phone, product, reason, 
+                                    status, source, refund_type, transaction_id, value, funnel_language, created_at
+                                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, COALESCE($13, NOW()))
+                            `, [
+                                refundProtocol,
+                                name || 'N/A',
+                                email,
+                                phone || null,
+                                productName,
+                                refundType === 'chargeback' ? 'Chargeback - Disputa de cartão' : 'Reembolso via Monetizze',
+                                'approved',
+                                'monetizze',
+                                refundType,
+                                String(transactionId),
+                                parseFloat(value) || 0,
+                                funnelLanguage,
+                                saleDate
+                            ]);
+                            console.log(`📥 MANUAL SYNC: ${refundType.toUpperCase()} registered: ${refundProtocol} - ${email}`);
+                        } else {
+                            await pool.query(`
+                                UPDATE refund_requests SET refund_type = $1, status = 'approved', updated_at = NOW()
+                                WHERE transaction_id = $2 AND refund_type != $1
+                            `, [refundType, String(transactionId)]);
+                        }
+                    } catch (refundError) {
+                        console.error(`⚠️ Error registering refund_request during manual sync: ${refundError.message}`);
+                    }
+                }
+                
                 console.log(`✅ Synced: ${transactionId} - ${email} - ${productName}`);
                 synced++;
                 
@@ -4790,6 +4931,79 @@ app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (re
             error: 'Sync failed',
             message: error.message
         });
+    }
+});
+
+// Backfill: sync existing transactions with refunded/chargeback status to refund_requests table
+// This is a one-time operation to catch transactions that were synced before the refund_requests fix
+app.post('/api/admin/backfill-refunds', authenticateToken, requireAdmin, async (req, res) => {
+    try {
+        console.log('🔄 Starting refund backfill...');
+        
+        // Find all transactions with refunded/chargeback status that DON'T have a refund_requests entry
+        const result = await pool.query(`
+            SELECT t.transaction_id, t.email, t.phone, t.name, t.product, t.value, 
+                   t.status, t.funnel_language, t.created_at
+            FROM transactions t
+            LEFT JOIN refund_requests rr ON rr.transaction_id = t.transaction_id
+            WHERE t.status IN ('refunded', 'chargeback')
+              AND rr.id IS NULL
+            ORDER BY t.created_at DESC
+        `);
+        
+        const missing = result.rows;
+        console.log(`📦 Found ${missing.length} transactions without refund_requests entries`);
+        
+        let created = 0;
+        let errors = 0;
+        
+        for (const tx of missing) {
+            try {
+                const refundProtocol = `MON-${String(tx.transaction_id).substring(0, 12).toUpperCase()}`;
+                const refundType = tx.status === 'chargeback' ? 'chargeback' : 'refund';
+                
+                await pool.query(`
+                    INSERT INTO refund_requests (
+                        protocol, full_name, email, phone, product, reason, 
+                        status, source, refund_type, transaction_id, value, funnel_language, created_at
+                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+                    ON CONFLICT (protocol) DO NOTHING
+                `, [
+                    refundProtocol,
+                    tx.name || 'N/A',
+                    tx.email,
+                    tx.phone || null,
+                    tx.product,
+                    refundType === 'chargeback' ? 'Chargeback - Disputa de cartão' : 'Reembolso via Monetizze',
+                    'approved',
+                    'monetizze',
+                    refundType,
+                    String(tx.transaction_id),
+                    parseFloat(tx.value) || 0,
+                    tx.funnel_language || 'en',
+                    tx.created_at || new Date()
+                ]);
+                
+                created++;
+                console.log(`📥 Backfill: ${refundType.toUpperCase()} - ${refundProtocol} - ${tx.email}`);
+            } catch (err) {
+                errors++;
+                console.error(`⚠️ Backfill error for ${tx.transaction_id}: ${err.message}`);
+            }
+        }
+        
+        console.log(`✅ Backfill complete: ${created} created, ${errors} errors, ${missing.length} total found`);
+        
+        res.json({
+            success: true,
+            message: `Backfill complete: ${created} refund_requests created`,
+            found: missing.length,
+            created,
+            errors
+        });
+    } catch (error) {
+        console.error('❌ Backfill error:', error);
+        res.status(500).json({ error: 'Backfill failed', message: error.message });
     }
 });
 
