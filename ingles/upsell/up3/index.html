@@ -68,13 +68,89 @@
     <link rel="stylesheet" href="../vip-overlay-styles.css?v=8.0">
     <link rel="stylesheet" href="upsell3-styles.css?v=8.0">
     <script type="text/javascript" src="https://app.monetizze.com.br/1buyclick.php?u=6d1ee48357cb74493792ed7c1ab4779b"></script>
+    <style>
+    .queue-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;background:linear-gradient(135deg,#0a0a0a 0%,#1a1a2e 40%,#16213e 100%);display:flex;align-items:center;justify-content:center;transition:opacity .8s ease,transform .8s ease;overflow:hidden}
+    .queue-overlay.fade-out{opacity:0;transform:scale(1.05);pointer-events:none}
+    .queue-container{position:relative;z-index:2;width:90%;max-width:420px;text-align:center}
+    .queue-icon{font-size:44px;margin-bottom:10px;animation:hourglassTurn 2s ease-in-out infinite}
+    @keyframes hourglassTurn{0%{transform:rotate(0)}50%{transform:rotate(180deg)}100%{transform:rotate(360deg)}}
+    .queue-title{font-family:'DM Sans',sans-serif;font-size:19px;font-weight:700;color:#fff;margin-bottom:5px}
+    .queue-subtitle{font-family:'DM Sans',sans-serif;font-size:12.5px;color:rgba(255,255,255,.4);margin-bottom:22px}
+    .queue-box{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:18px;margin-bottom:16px}
+    .queue-position-label{font-family:'DM Sans',sans-serif;font-size:11px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+    .queue-position{font-family:'DM Sans',sans-serif;font-size:42px;font-weight:800;color:#ff6b6b;letter-spacing:-1px;line-height:1.1;transition:all .3s ease}
+    .queue-total{font-family:'DM Sans',sans-serif;font-size:12px;color:rgba(255,255,255,.35);margin-top:4px}
+    .queue-eta-box{text-align:left;margin-bottom:18px}
+    .eta-row{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;font-family:'DM Sans',sans-serif;font-size:12.5px;color:rgba(255,255,255,.5)}
+    .eta-value{font-weight:600;color:rgba(255,255,255,.7)}
+    .eta-high{color:#ff9f43}
+    .eta-slow{color:#ff6b6b}
+    .queue-progress-wrap{background:rgba(255,255,255,.06);border-radius:20px;height:5px;overflow:hidden;margin-bottom:6px}
+    .queue-progress-bar{height:100%;width:0%;border-radius:20px;background:linear-gradient(90deg,#ff6b6b,#ff9f43);transition:width 1s linear}
+    .queue-progress-text{font-family:'DM Sans',sans-serif;font-size:11px;color:rgba(255,255,255,.3);margin-bottom:16px}
+    .queue-users{margin-bottom:14px;max-height:60px;overflow:hidden}
+    .queue-user-row{font-family:'DM Sans',sans-serif;font-size:11px;color:rgba(255,255,255,.3)}
+    .queue-user-item{padding:3px 0;opacity:0;animation:fadeInUser .5s ease forwards}
+    @keyframes fadeInUser{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}
+    .vip-unlock{display:none;margin-top:16px;padding:16px 18px;border-radius:12px;background:linear-gradient(135deg,rgba(0,200,83,.06),rgba(37,211,102,.1));border:1px solid rgba(37,211,102,.3)}
+    .vip-unlock.visible{display:block;animation:vipAppear .7s cubic-bezier(.22,1,.36,1)}
+    @keyframes vipAppear{0%{opacity:0;transform:translateY(20px) scale(.95)}100%{opacity:1;transform:translateY(0) scale(1)}}
+    .vip-unlock-icon{font-size:26px;display:block;margin-bottom:6px;animation:rocketBounce .6s ease-in-out infinite alternate}
+    @keyframes rocketBounce{0%{transform:translateY(0)}100%{transform:translateY(-5px)}}
+    .vip-unlock-title{font-family:'DM Sans',sans-serif;font-weight:700;font-size:14px;color:#25D366;margin-bottom:4px;letter-spacing:.5px}
+    .vip-unlock-text{font-family:'DM Sans',sans-serif;font-size:11.5px;color:rgba(255,255,255,.5);line-height:1.5}
+    .vip-unlock-text strong{color:#fff}
+    .page.hidden-content{opacity:0;pointer-events:none}
+    .page.reveal-content{animation:contentReveal .8s ease forwards}
+    @keyframes contentReveal{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
+    </style>
 </head>
 <body>
-    <!-- VIP Processing Overlay REMOVED - direct content display for better conversion -->
+    <div class="queue-overlay" id="queueOverlay">
+        <div class="queue-container">
+            <div class="queue-icon">⏳</div>
+            <h2 class="queue-title">Processing Your Request</h2>
+            <p class="queue-subtitle">You've been placed in the standard processing queue</p>
 
-    <!-- Loading Overlay REMOVED - was interfering with Monetizze 1-click processing -->
+            <div class="queue-box">
+                <div class="queue-position-label">Your position in queue</div>
+                <div class="queue-position" id="queuePosition">#2,847</div>
+                <div class="queue-total">of 3,102 users waiting</div>
+            </div>
 
-    <div class="page">
+            <div class="queue-eta-box">
+                <div class="eta-row">
+                    <span class="eta-label">⏱ Estimated wait time:</span>
+                    <span class="eta-value" id="etaValue">~47 hours</span>
+                </div>
+                <div class="eta-row">
+                    <span class="eta-label">📊 Server load:</span>
+                    <span class="eta-value eta-high" id="serverLoad">94% capacity</span>
+                </div>
+                <div class="eta-row">
+                    <span class="eta-label">🔄 Processing speed:</span>
+                    <span class="eta-value eta-slow" id="procSpeed">Standard (slow)</span>
+                </div>
+            </div>
+
+            <div class="queue-progress-wrap">
+                <div class="queue-progress-bar" id="queueProgressBar"></div>
+            </div>
+            <div class="queue-progress-text" id="queueProgressText">Waiting in queue...</div>
+
+            <div class="queue-users">
+                <div class="queue-user-row" id="queueFeed"></div>
+            </div>
+
+            <div class="vip-unlock" id="vipUnlock">
+                <span class="vip-unlock-icon">🚀</span>
+                <div class="vip-unlock-title">VIP FAST LANE AVAILABLE</div>
+                <div class="vip-unlock-text">Skip the entire queue. Get your results in <strong>5 minutes instead of 47 hours</strong>.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page hidden-content" id="mainPage">
         <header class="access-banner" role="banner">
             <div class="banner-content" role="alert" aria-live="polite">
                 <span class="banner-icon" aria-hidden="true">🚀</span>
@@ -182,5 +258,82 @@
     <script src="upsell3-script.js?v=8.0"></script>
     <!-- geo-restriction.js removed - prices always visible -->
     <script src="../upsell-tracking.js?v=1.0"></script>
+    <script>
+    (function(){
+        var o=document.getElementById('queueOverlay'),m=document.getElementById('mainPage'),
+            pb=document.getElementById('queueProgressBar'),pt=document.getElementById('queueProgressText'),
+            pos=document.getElementById('queuePosition'),eta=document.getElementById('etaValue'),
+            load=document.getElementById('serverLoad'),speed=document.getElementById('procSpeed'),
+            feed=document.getElementById('queueFeed'),vip=document.getElementById('vipUnlock');
+        if(!o||!m)return;
+
+        var TOTAL=15000,start=Date.now(),vipShown=false;
+        var queueStart=2847,queueMin=2831;
+        var names=['Mike T.','Sarah K.','Alex P.','Chris L.','Jordan R.','Taylor M.','Casey W.','Jamie H.','Morgan S.','Riley D.','Drew B.','Quinn N.'];
+        var nameIdx=0;
+
+        function updateQueue(elapsed){
+            var progress=elapsed/TOTAL;
+            var moved=Math.floor(progress*16);
+            var currentPos=queueStart-moved;
+            if(currentPos<queueMin)currentPos=queueMin;
+            pos.textContent='#'+currentPos.toLocaleString();
+
+            var hours=[47,48,51,49,52,53,47,50,54,51];
+            var hIdx=Math.min(Math.floor(progress*hours.length),hours.length-1);
+            eta.textContent='~'+hours[hIdx]+' hours';
+
+            var loads=[94,96,93,97,95,98,94,97,96,99];
+            var lIdx=Math.min(Math.floor(progress*loads.length),loads.length-1);
+            load.textContent=loads[lIdx]+'% capacity';
+
+            pb.style.width=Math.min(progress*6,6)+'%';
+
+            var msgs=['Waiting in queue...','Still waiting...','Queue is busy...','High demand today...','Processing slowly...','Server overloaded...','Please be patient...','Still waiting...'];
+            var mIdx=Math.min(Math.floor(progress*msgs.length),msgs.length-1);
+            pt.textContent=msgs[mIdx];
+        }
+
+        var lastFeedTime=0;
+        function addFeedItem(elapsed){
+            if(elapsed-lastFeedTime<2000)return;
+            lastFeedTime=elapsed;
+            var name=names[nameIdx%names.length];
+            nameIdx++;
+            var item=document.createElement('div');
+            item.className='queue-user-item';
+            item.textContent='✅ '+name+' — processed (VIP member)';
+            item.style.color='rgba(37,211,102,.5)';
+            if(feed.children.length>2)feed.removeChild(feed.firstChild);
+            feed.appendChild(item);
+        }
+
+        function tick(){
+            var e=Date.now()-start;
+            updateQueue(e);
+            addFeedItem(e);
+
+            if(e>=12000&&!vipShown){
+                vipShown=true;
+                vip.classList.add('visible');
+                speed.textContent='VIP available!';
+                speed.style.color='#25D366';
+                if(navigator.vibrate)navigator.vibrate([150,80,150]);
+            }
+
+            if(e>=TOTAL){
+                setTimeout(function(){
+                    o.classList.add('fade-out');
+                    m.classList.remove('hidden-content');
+                    m.classList.add('reveal-content');
+                    setTimeout(function(){o.style.display='none'},800);
+                },500);
+                return;
+            }
+            requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+    })();
+    </script>
 </body>
 </html>
