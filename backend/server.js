@@ -7652,9 +7652,10 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
         }
         
         const [totalResult, approvedResult, refundedResult, revenueResult, cancelledResult, lostRevenueResult, upsellRevenueResult, totalAttemptsResult, approvedAttemptsResult] = await Promise.all([
-            // Count unique customers (not total transactions) for more accurate metrics
-            pool.query(`SELECT COUNT(DISTINCT email) FROM transactions WHERE 1=1 ${langCondition}${sourceCondition}${dateCondition}`, langParams),
-            pool.query(`SELECT COUNT(DISTINCT email) FROM transactions WHERE status = 'approved' ${langCondition}${sourceCondition}${dateCondition}`, langParams),
+            // Count ALL transactions (each transaction = 1 sale attempt, even if same buyer)
+            pool.query(`SELECT COUNT(*) FROM transactions WHERE 1=1 ${langCondition}${sourceCondition}${dateCondition}`, langParams),
+            // Count ALL approved transactions (each approved tx = 1 sale, even if same buyer bought multiple products)
+            pool.query(`SELECT COUNT(*) FROM transactions WHERE status = 'approved' ${langCondition}${sourceCondition}${dateCondition}`, langParams),
             // Count actual refunded/chargeback transactions (not unique customers)
             pool.query(`SELECT COUNT(*) FROM transactions WHERE status IN ('refunded', 'chargeback') ${langCondition}${sourceCondition}${dateCondition}`, langParams),
             pool.query(`SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total FROM transactions WHERE status = 'approved' ${langCondition}${sourceCondition}${dateCondition}`, langParams),
@@ -7696,10 +7697,10 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
             pool.query(`SELECT COUNT(DISTINCT email) FROM transactions WHERE status = 'approved' ${langCondition}${sourceCondition}${dateCondition}`, langParams)
         ]);
         
-        // Get today and this week (using Brazil timezone) - count unique customers
+        // Get today and this week (using Brazil timezone) - count ALL approved transactions (not unique customers)
         const [todayResult, weekResult] = await Promise.all([
-            pool.query(`SELECT COUNT(DISTINCT email) FROM transactions WHERE status = 'approved' AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date = (NOW() AT TIME ZONE 'America/Sao_Paulo')::date ${langCondition}${sourceCondition}${dateCondition}`, langParams),
-            pool.query(`SELECT COUNT(DISTINCT email) FROM transactions WHERE status = 'approved' AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '7 days')::date ${langCondition}${sourceCondition}${dateCondition}`, langParams)
+            pool.query(`SELECT COUNT(*) FROM transactions WHERE status = 'approved' AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date = (NOW() AT TIME ZONE 'America/Sao_Paulo')::date ${langCondition}${sourceCondition}${dateCondition}`, langParams),
+            pool.query(`SELECT COUNT(*) FROM transactions WHERE status = 'approved' AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '7 days')::date ${langCondition}${sourceCondition}${dateCondition}`, langParams)
         ]);
         
         // Calculate checkout abandonment (clicked checkout but no approved transaction)
