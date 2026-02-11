@@ -4535,15 +4535,17 @@ async function syncMonetizzeSalesCore(startDate, endDate) {
             } else if (vendaStatus.includes('aguardando') || vendaStatus.includes('pending')) {
                 mappedStatus = 'pending_payment';
             } else if (vendaStatus.includes('finalizada') || vendaStatus.includes('aprovada')) {
-                // Only mark as approved if dataFinalizada is valid
-                if (isFinalized) {
-                    mappedStatus = 'approved';
-                } else {
-                    mappedStatus = 'pending_payment';
+                // Monetizze says "Finalizada"/"Aprovada" - trust it as approved
+                mappedStatus = 'approved';
+                if (!isFinalized) {
+                    console.log(`⚠️ SYNC: vendaStatus says "${vendaData.status}" but dataFinalizada invalid - trusting as approved`);
                 }
-            } else if (!isFinalized && statusCode === '2') {
-                // Status code says approved but no valid dataFinalizada
-                mappedStatus = 'pending_payment';
+            } else if (statusCode === '2' || statusCode === '6') {
+                // Status code 2/6 = Monetizze confirmed payment - always mark as approved
+                mappedStatus = 'approved';
+                if (!isFinalized) {
+                    console.log(`⚠️ SYNC: statusCode=${statusCode} (approved) but dataFinalizada invalid - trusting statusCode`);
+                }
             }
             
             // Final debug log for refund/chargeback after all status resolution
@@ -6206,13 +6208,15 @@ app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (re
                 } else if (vendaStatus.includes('aguardando') || vendaStatus.includes('pending')) {
                     mappedStatus = 'pending_payment';
                 } else if (vendaStatus.includes('finalizada') || vendaStatus.includes('aprovada')) {
-                    if (isFinalized) {
-                        mappedStatus = 'approved';
-                    } else {
-                        mappedStatus = 'pending_payment';
+                    mappedStatus = 'approved';
+                    if (!isFinalized) {
+                        console.log(`⚠️ REPROCESS: vendaStatus says "${vendaData.status}" but dataFinalizada invalid - trusting as approved`);
                     }
-                } else if (!isFinalized && statusCode === '2') {
-                    mappedStatus = 'pending_payment';
+                } else if (statusCode === '2' || statusCode === '6') {
+                    mappedStatus = 'approved';
+                    if (!isFinalized) {
+                        console.log(`⚠️ REPROCESS: statusCode=${statusCode} (approved) but dataFinalizada invalid - trusting statusCode`);
+                    }
                 }
                 
                 if (!email || !transactionId) {
@@ -6763,13 +6767,18 @@ app.all('/api/postback/monetizze', async (req, res) => {
             } else if (vendaStatus.includes('aguardando') || vendaStatus.includes('pending')) {
                 finalStatus = 'pending_payment';
             } else if (vendaStatus.includes('finalizada') || vendaStatus.includes('aprovada')) {
-                if (isFinalized) {
-                    finalStatus = 'approved';
-                } else {
-                    finalStatus = 'pending_payment';
+                // If Monetizze says "Finalizada"/"Aprovada" in text, trust it as approved
+                // Don't downgrade to pending_payment just because dataFinalizada is missing
+                finalStatus = 'approved';
+                if (!isFinalized) {
+                    console.log(`⚠️ POSTBACK: vendaStatus says "${venda.status}" but dataFinalizada invalid - trusting vendaStatus as approved`);
                 }
-            } else if (!isFinalized && statusCode === '2') {
-                finalStatus = 'pending_payment';
+            } else if (statusStr === '2' || statusStr === '6') {
+                // Status code 2/6 = Monetizze confirmed payment - always mark as approved
+                finalStatus = 'approved';
+                if (!isFinalized) {
+                    console.log(`⚠️ POSTBACK: statusCode=${statusStr} (approved) but dataFinalizada invalid - trusting statusCode`);
+                }
             }
         } else {
             console.log(`🔒 POSTBACK: Preserving ${finalStatus} status (not overriding with vendaStatus="${venda.status}")`);
