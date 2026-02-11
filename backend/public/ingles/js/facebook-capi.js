@@ -172,11 +172,11 @@ const FacebookCAPI = {
     
     // ViewContent - when user views important content
     // Default value based on English funnel front-end ticket ($47)
-    trackViewContent: function(contentName, contentCategory, value = 37) {
+    trackViewContent: function(contentName, contentCategory, value = 49) {
         return this.trackEvent('ViewContent', {
             content_name: contentName,
             content_category: contentCategory,
-            value: value > 0 ? value : 37,  // Ensure valid value for Facebook
+            value: value > 0 ? value : 49,  // Ensure valid value for Facebook
             currency: 'USD'
         });
     },
@@ -191,7 +191,7 @@ const FacebookCAPI = {
         return this.trackEvent('Lead', {
             content_name: 'Lead Capture',
             currency: 'USD',
-            value: 37,  // Lead value based on front-end ticket
+            value: 49,  // Lead value based on front-end ticket
             // Include user data for better match quality
             email: email,
             phone: userData.phone || null,

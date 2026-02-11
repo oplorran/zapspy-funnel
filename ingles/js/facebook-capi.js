@@ -166,11 +166,11 @@ const FacebookCAPI = {
     },
 
     // ViewContent - when user views important content
-    trackViewContent: function(contentName, contentCategory, value = 37) {
+    trackViewContent: function(contentName, contentCategory, value = 49) {
         return this.trackEvent('ViewContent', {
             content_name: contentName,
             content_category: contentCategory,
-            value: value > 0 ? value : 37,
+            value: value > 0 ? value : 49,
             currency: 'USD'
         });
     },
@@ -184,7 +184,7 @@ const FacebookCAPI = {
         return this.trackEvent('Lead', {
             content_name: 'Lead Capture',
             currency: 'USD',
-            value: 37,
+            value: 49,
             email: email,
             phone: userData.phone || null,
             firstName: userData.name || null,

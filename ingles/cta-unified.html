@@ -63,7 +63,7 @@
     <script src="js/ab-testing.js"></script>
     <script>
         // Default product value (can be overridden by A/B testing)
-        window.productValue = 37;
+        window.productValue = 49;
         window.checkoutCode = 'KKM446018';
         
         document.addEventListener('DOMContentLoaded', async function() {
@@ -1948,7 +1948,7 @@
         <div class="pricing-section" id="pricing">
             <div class="discount-badge" data-ab-discount>76% OFF - LIMITED TIME</div>
             <div class="price-original" data-ab-original-price>$197</div>
-            <div class="price-current" data-ab-price>$37</div>
+            <div class="price-current" data-ab-price>$49</div>
             <div class="price-savings" data-ab-savings>You save $160 today!</div>
             <div class="price-info">One-time payment • Instant access • 30-day guarantee</div>
             <button class="cta-button" onclick="handlePurchase()" aria-label="Unlock full access to ZapSpy.ai">
@@ -2386,7 +2386,7 @@
         // Proceed to checkout with all tracking
         function proceedToCheckout() {
             // Get current product value (may be modified by A/B testing)
-            const currentValue = window.productValue || 37;
+            const currentValue = window.productValue || 49;
             const currentCheckoutCode = window.checkoutCode || 'KKM446018';
             
             if (typeof FacebookCAPI !== 'undefined') {
@@ -2541,11 +2541,11 @@
                 FunnelTracker.track('checkout_50off_clicked', { discount: '50%' });
             }
             if (typeof FacebookCAPI !== 'undefined') {
-                FacebookCAPI.trackAddToCart(18.50, '50% OFF Offer');
-                FacebookCAPI.trackInitiateCheckout(18.50, '50% OFF Offer');
+                FacebookCAPI.trackAddToCart(24.50, '50% OFF Offer');
+                FacebookCAPI.trackInitiateCheckout(24.50, '50% OFF Offer');
             } else if (typeof fbq !== 'undefined') {
                 const discountEventId = 'InitiateCheckout_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                fbq('track', 'InitiateCheckout', { content_name: '50% OFF Offer', value: 18.50, currency: 'USD' }, { eventID: discountEventId });
+                fbq('track', 'InitiateCheckout', { content_name: '50% OFF Offer', value: 24.50, currency: 'USD' }, { eventID: discountEventId });
             }
             
             // Build checkout URL with preserved UTMs + internal tracking

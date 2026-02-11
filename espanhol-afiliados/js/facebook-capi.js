@@ -140,11 +140,11 @@ const FacebookCAPI = {
         return this.trackEvent('PageView', { content_name: pageName || document.title });
     },
 
-    trackViewContent: function(contentName, contentCategory, value = 27) {
+    trackViewContent: function(contentName, contentCategory, value = 39) {
         return this.trackEvent('ViewContent', {
             content_name: contentName,
             content_category: contentCategory,
-            value: value > 0 ? value : 27,
+            value: value > 0 ? value : 39,
             currency: 'USD'
         });
     },
@@ -156,7 +156,7 @@ const FacebookCAPI = {
         return this.trackEvent('Lead', {
             content_name: 'Lead Capture',
             currency: 'USD',
-            value: 27,
+            value: 39,
             email: email,
             phone: userData.phone || null,
             firstName: userData.name || null,
