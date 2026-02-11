@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="version" content="2.1.0-20260211">
     <title>ZapSpy.ai - Dashboard Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -10,7 +14,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <link rel="stylesheet" href="css/admin-styles.css">
+    <link rel="stylesheet" href="css/admin-styles.css?v=20260211">
 </head>
 <body>
     <!-- Toast Container -->
@@ -2829,6 +2833,10 @@ Posso ajudar com alguma dúvida?</textarea>
     </div>
 
     <script>
+        // Version check - if you see this in console, cache was cleared successfully
+        console.log('%c🚀 ZapSpy Admin v2.1.0 (Build 20260211) - EDIT BUTTON FIXED', 'background: #10b981; color: white; padding: 8px 12px; border-radius: 4px; font-weight: bold; font-size: 14px;');
+        console.log('%c✅ Team section improvements loaded', 'color: #10b981; font-weight: bold;');
+        
         const API_URL = window.location.origin;
         let authToken = localStorage.getItem('adminToken');
         let token = authToken; // Sync token with authToken for backward compatibility
