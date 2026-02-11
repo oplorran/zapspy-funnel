@@ -1459,14 +1459,17 @@ app.get('/api/health/db', authenticateToken, (req, res, next) => {
     }
 });
 
-// Root route
+// Root route - serves HTML with Facebook domain verification meta tag
 app.get('/', (req, res) => {
-    res.json({ 
-        name: 'ZapSpy.ai API',
-        version: '1.0.0',
-        status: 'running',
-        admin: '/admin.html'
-    });
+    res.send(`<!DOCTYPE html>
+<html><head>
+<meta name="facebook-domain-verification" content="88bg7nb3af9s66oo1b7oekmo287t2i" />
+<title>ZapSpy.ai</title>
+</head><body>
+<h1>ZapSpy.ai API</h1>
+<p>Status: running</p>
+<p><a href="/admin.html">Admin Panel</a></p>
+</body></html>`);
 });
 
 // Capture lead (from frontend form)
