@@ -8,6 +8,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
@@ -298,6 +299,9 @@ app.use(helmet({
     crossOriginEmbedderPolicy: false
 }));
 
+// Gzip compression for all responses
+app.use(compression({ threshold: 512 }));
+
 // Origens permitidas para CORS (funis + admin). FRONTEND_URL sobrescreve se definido.
 const ALLOWED_ORIGINS = [
     'https://ingles.zappdetect.com',
@@ -465,6 +469,49 @@ const leadLimiter = rateLimit({
     max: 10, // limit each IP to 10 leads per minute
     message: { error: 'Too many submissions, please try again later.' }
 });
+
+// Admin rate limiter (generous but protective)
+const adminLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 300, // 300 req/15min for admin panel (auto-refresh + user actions)
+    message: { error: 'Too many admin requests, please slow down.' },
+    standardHeaders: true,
+    legacyHeaders: false
+});
+
+// Bulk operations limiter
+const bulkLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 10,
+    message: { error: 'Too many bulk operations, try again later.' }
+});
+
+// ==================== IN-MEMORY CACHE ====================
+const apiCache = new Map();
+
+function getCached(key, ttlMs) {
+    const entry = apiCache.get(key);
+    if (entry && (Date.now() - entry.time) < ttlMs) return entry.data;
+    return null;
+}
+
+function setCache(key, data) {
+    apiCache.set(key, { data, time: Date.now() });
+    // Cleanup old entries periodically (max 200 entries)
+    if (apiCache.size > 200) {
+        const oldest = [...apiCache.entries()].sort((a, b) => a[1].time - b[1].time);
+        for (let i = 0; i < 50; i++) apiCache.delete(oldest[i][0]);
+    }
+}
+
+function invalidateCache(prefix) {
+    for (const key of apiCache.keys()) {
+        if (key.startsWith(prefix)) apiCache.delete(key);
+    }
+}
+
+// Apply admin rate limiter to all admin routes
+app.use('/api/admin', adminLimiter);
 
 // JWT Authentication middleware
 const authenticateToken = (req, res, next) => {
@@ -1076,6 +1123,11 @@ app.get('/api/admin/stats/trends', authenticateToken, async (req, res) => {
         const days = parseInt(req.query.days) || 7;
         const cappedDays = Math.min(Math.max(days, 1), 90);
 
+        // Check cache (TTL: 3 min)
+        const cacheKey = `trends-${cappedDays}`;
+        const cached = getCached(cacheKey, 3 * 60 * 1000);
+        if (cached) return res.json(cached);
+
         // Run all queries in parallel with Promise.allSettled to avoid unhandled rejections
         const [
             leadsCurrent, leadsPrevious,
@@ -1151,7 +1203,7 @@ app.get('/api/admin/stats/trends', authenticateToken, async (req, res) => {
         const cc = parseInt(getFirst(checkoutCurrent).count) || 0;
         const cp = parseInt(getFirst(checkoutPrevious).count) || 0;
 
-        res.json({
+        const response = {
             period_days: cappedDays,
             leads: { current: lc, previous: lp, change: calcChange(lc, lp).toFixed(1) },
             sales: { current: sc, previous: sp, change: calcChange(sc, sp).toFixed(1) },
@@ -1162,7 +1214,9 @@ app.get('/api/admin/stats/trends', authenticateToken, async (req, res) => {
                 sales: getRows(salesSparkline).map(r => ({ day: r.day, count: parseInt(r.count), revenue: parseFloat(r.revenue) }))
             },
             timestamp: new Date().toISOString()
-        });
+        };
+        setCache(cacheKey, response);
+        res.json(response);
     } catch (error) {
         console.error('Error fetching trends:', error);
         res.status(500).json({ error: 'Failed to fetch trends' });
@@ -1453,6 +1507,10 @@ app.post('/api/leads', leadLimiter, async (req, res) => {
         // with proper eventID for deduplication. Sending another here with null eventID would cause duplicates.
         // The /api/leads endpoint only stores the lead data now.
         console.log(`📊 Lead stored. CAPI Lead event handled by frontend with deduplication.`);
+        
+        // Invalidate relevant caches
+        invalidateCache('trends');
+        invalidateCache('traffic-sources');
         
         res.status(201).json({
             success: true,
@@ -2394,6 +2452,48 @@ app.get('/api/admin/stats/countries-sales', authenticateToken, async (req, res) 
     } catch (error) {
         console.error('Error fetching countries sales:', error);
         res.status(500).json({ error: 'Failed to fetch countries sales' });
+    }
+});
+
+// Get traffic sources from UTM and referrer data
+app.get('/api/admin/stats/traffic-sources', authenticateToken, async (req, res) => {
+    try {
+        // Check cache first (TTL: 5 min)
+        const cacheKey = 'traffic-sources';
+        const cached = getCached(cacheKey, 5 * 60 * 1000);
+        if (cached) return res.json(cached);
+
+        const result = await pool.query(`
+            SELECT 
+                CASE 
+                    WHEN utm_source IS NOT NULL AND utm_source != '' AND LOWER(utm_source) LIKE '%fb%' THEN 'Facebook Ads'
+                    WHEN utm_source IS NOT NULL AND utm_source != '' AND LOWER(utm_source) LIKE '%facebook%' THEN 'Facebook Ads'
+                    WHEN utm_source IS NOT NULL AND utm_source != '' AND LOWER(utm_source) LIKE '%ig%' THEN 'Instagram Ads'
+                    WHEN utm_source IS NOT NULL AND utm_source != '' AND LOWER(utm_source) LIKE '%google%' THEN 'Google Ads'
+                    WHEN utm_source IS NOT NULL AND utm_source != '' AND LOWER(utm_source) LIKE '%tiktok%' THEN 'TikTok Ads'
+                    WHEN utm_source IS NOT NULL AND utm_source != '' AND LOWER(utm_source) LIKE '%youtube%' THEN 'YouTube'
+                    WHEN utm_source IS NOT NULL AND utm_source != '' THEN INITCAP(utm_source)
+                    WHEN referrer IS NOT NULL AND referrer != '' AND referrer LIKE '%facebook%' THEN 'Facebook'
+                    WHEN referrer IS NOT NULL AND referrer != '' AND referrer LIKE '%google%' THEN 'Google Organico'
+                    WHEN referrer IS NOT NULL AND referrer != '' AND referrer LIKE '%instagram%' THEN 'Instagram'
+                    WHEN referrer IS NOT NULL AND referrer != '' AND referrer LIKE '%tiktok%' THEN 'TikTok'
+                    WHEN referrer IS NULL OR referrer = '' THEN 'Trafego Direto'
+                    ELSE 'Outro'
+                END as source,
+                COUNT(*) as count
+            FROM leads
+            WHERE created_at >= NOW() - INTERVAL '30 days'
+            GROUP BY source
+            ORDER BY count DESC
+            LIMIT 8
+        `);
+
+        const response = { sources: result.rows.map(r => ({ source: r.source, count: parseInt(r.count) })) };
+        setCache(cacheKey, response);
+        res.json(response);
+    } catch (error) {
+        console.error('Error fetching traffic sources:', error);
+        res.status(500).json({ error: 'Failed to fetch traffic sources' });
     }
 });
 

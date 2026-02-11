@@ -261,7 +261,7 @@
                     <div class="stats-grid stats-grid-6" style="margin-bottom: 20px;">
                         <div class="stat-card" style="border-left: 4px solid #3b82f6;">
                             <div class="stat-header">
-                                <span class="stat-label">Leads</span>
+                                <span class="stat-label">Leads <span class="info-tooltip" data-tip="Total de leads capturados no formulario de telefone">?</span></span>
                                 <span class="trend-badge neutral" id="trendLeads" style="display:none;">--</span>
                             </div>
                             <div class="stat-value blue" id="overviewLeads">0</div>
@@ -270,7 +270,7 @@
                         </div>
                         <div class="stat-card" style="border-left: 4px solid #06b6d4;">
                             <div class="stat-header">
-                                <span class="stat-label">Initiate Checkout</span>
+                                <span class="stat-label">Initiate Checkout <span class="info-tooltip" data-tip="Leads que clicaram no botao de checkout">?</span></span>
                                 <span class="trend-badge neutral" id="trendCheckout" style="display:none;">--</span>
                             </div>
                             <div class="stat-value" style="color: #06b6d4;" id="overviewInitiateCheckout">0</div>
@@ -294,7 +294,7 @@
                         </div>
                         <div class="stat-card" style="border-left: 4px solid #10b981;">
                             <div class="stat-header">
-                                <span class="stat-label">Vendas</span>
+                                <span class="stat-label">Vendas <span class="info-tooltip" data-tip="Total de vendas aprovadas pela Monetizze">?</span></span>
                                 <span class="trend-badge neutral" id="trendSales" style="display:none;">--</span>
                             </div>
                             <div class="stat-value green" id="overviewSales">0</div>
@@ -303,7 +303,7 @@
                         </div>
                         <div class="stat-card" style="border-left: 4px solid #10b981;">
                             <div class="stat-header">
-                                <span class="stat-label">Faturamento</span>
+                                <span class="stat-label">Faturamento <span class="info-tooltip" data-tip="Receita total de vendas aprovadas">?</span></span>
                                 <span class="trend-badge neutral" id="trendRevenue" style="display:none;">--</span>
                             </div>
                             <div class="stat-value" style="color: #10b981;" id="overviewRevenue">R$ 0</div>
@@ -417,7 +417,7 @@
                         </div>
                     </div>
 
-                    <!-- Charts -->
+                    <!-- Charts Row 1: Leads + Revenue -->
                     <div class="charts-grid">
                         <div class="chart-card">
                             <div class="chart-header">
@@ -433,10 +433,32 @@
                         </div>
                         <div class="chart-card">
                             <div class="chart-header">
+                                <span class="chart-title">Receita por Dia</span>
+                                <span style="font-size: 11px; color: var(--text-muted);">Ultimos 7 dias</span>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="revenueChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Charts Row 2: Status + Traffic Sources -->
+                    <div class="charts-grid" style="margin-top: 0;">
+                        <div class="chart-card">
+                            <div class="chart-header">
                                 <span class="chart-title">Status dos Leads</span>
                             </div>
                             <div class="chart-container">
                                 <canvas id="statusChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <span class="chart-title">Fontes de Trafego</span>
+                                <span class="info-tooltip" data-tip="Baseado no UTM source e referrer dos leads">?</span>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="trafficSourcesChart"></canvas>
                             </div>
                         </div>
                     </div>
@@ -510,7 +532,11 @@
                                 <span style="font-size: 11px; color: var(--text-muted);">Últimos 7 dias</span>
                             </div>
                             <div id="topCountriesChart" style="padding: 20px; min-height: 280px;">
-                                <div style="text-align: center; padding: 40px; color: var(--text-muted);">Carregando...</div>
+                                <div style="display: flex; flex-direction: column; gap: 16px;">
+                                    <div style="display:flex;align-items:center;gap:14px;"><div class="skeleton skeleton-circle"></div><div style="flex:1"><div class="skeleton skeleton-line long"></div><div class="skeleton skeleton-bar" style="height:6px;"></div></div></div>
+                                    <div style="display:flex;align-items:center;gap:14px;"><div class="skeleton skeleton-circle"></div><div style="flex:1"><div class="skeleton skeleton-line medium"></div><div class="skeleton skeleton-bar" style="height:6px;"></div></div></div>
+                                    <div style="display:flex;align-items:center;gap:14px;"><div class="skeleton skeleton-circle"></div><div style="flex:1"><div class="skeleton skeleton-line short"></div><div class="skeleton skeleton-bar" style="height:6px;"></div></div></div>
+                                </div>
                             </div>
                         </div>
                         
@@ -532,7 +558,12 @@
                             <button class="btn-secondary" onclick="loadConversionFunnel()" style="font-size: 12px; padding: 6px 12px;">🔄</button>
                         </div>
                         <div id="conversionFunnelChart" style="padding: 20px;">
-                            <div style="text-align: center; padding: 40px; color: var(--text-muted);">Carregando...</div>
+                            <div style="display: flex; flex-direction: column; gap: 6px; align-items: center;">
+                                <div class="skeleton" style="width:90%;height:52px;border-radius:10px;"></div>
+                                <div class="skeleton" style="width:72%;height:52px;border-radius:10px;"></div>
+                                <div class="skeleton" style="width:54%;height:52px;border-radius:10px;"></div>
+                                <div class="skeleton" style="width:36%;height:52px;border-radius:10px;"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -4186,6 +4217,8 @@ Estou aqui para esclarecer tudo! 😊`
                 if (data.sparklines?.sales?.length > 1) {
                     drawSparkline('sparkSales', data.sparklines.sales.map(d => d.count), '#10b981');
                     drawSparkline('sparkRevenue', data.sparklines.sales.map(d => d.revenue), '#10b981');
+                    // Update Revenue chart
+                    updateRevenueChart(data.sparklines.sales);
                 }
                 
             } catch (error) {
@@ -11712,38 +11745,39 @@ Posso ajudar em algo mais? 😊`
             
             const maxValue = Math.max(...stages.map(s => s.value), 1);
             
-            let html = '<div style="display: flex; flex-direction: column; gap: 8px;">';
+            let html = '<div style="display: flex; flex-direction: column; align-items: center; gap: 0;">';
             
             stages.forEach((stage, index) => {
-                const width = Math.max((stage.value / maxValue) * 100, 10);
+                const widthPercent = Math.max((stage.value / maxValue) * 100, 18);
                 const conversionRate = index > 0 && stages[index - 1].value > 0 
                     ? ((stage.value / stages[index - 1].value) * 100).toFixed(1) 
                     : 100;
+                const dropoff = index > 0 ? stages[index - 1].value - stage.value : 0;
+                const delay = index * 0.12;
+                
+                // Drop-off indicator between stages
+                if (index > 0) {
+                    const dropColor = parseFloat(conversionRate) >= 50 ? '#10b981' : parseFloat(conversionRate) >= 20 ? '#f59e0b' : '#ef4444';
+                    html += `
+                        <div class="funnel-dropoff" style="animation: fadeInUp 0.4s ease forwards; animation-delay: ${delay - 0.06}s; opacity: 0;">
+                            <span style="color: ${dropColor}; font-weight: 700;">${conversionRate}%</span>
+                            <span style="margin: 0 6px; color: rgba(255,255,255,0.2);">|</span>
+                            <span style="color: #ef4444; font-size: 10px;">-${dropoff.toLocaleString('pt-BR')}</span>
+                            <span style="margin-left: 4px;">↓</span>
+                        </div>
+                    `;
+                }
                 
                 html += `
-                    <div style="display: flex; align-items: center; gap: 16px;">
-                        <div style="width: 140px; display: flex; align-items: center; gap: 8px;">
-                            <span style="font-size: 18px;">${stage.icon}</span>
-                            <span style="font-size: 13px; color: var(--text-secondary);">${stage.name}</span>
-                        </div>
-                        <div style="flex: 1; position: relative;">
-                            <div style="
-                                height: 40px;
-                                width: ${width}%;
-                                background: linear-gradient(90deg, ${stage.color}, ${stage.color}99);
-                                border-radius: 8px;
-                                display: flex;
-                                align-items: center;
-                                justify-content: flex-end;
-                                padding-right: 16px;
-                                transition: width 0.5s ease;
-                                box-shadow: 0 2px 8px ${stage.color}40;
-                            ">
-                                <span style="font-weight: 700; color: #fff; font-size: 14px;">${stage.value.toLocaleString('pt-BR')}</span>
-                            </div>
-                        </div>
-                        <div style="width: 60px; text-align: right;">
-                            ${index > 0 ? `<span style="font-size: 12px; color: ${parseFloat(conversionRate) >= 50 ? '#10b981' : parseFloat(conversionRate) >= 20 ? '#f59e0b' : '#ef4444'}; font-weight: 600;">${conversionRate}%</span>` : ''}
+                    <div class="funnel-stage" style="width: 100%; animation-delay: ${delay}s;">
+                        <div class="funnel-trapezoid" style="
+                            width: ${widthPercent}%;
+                            background: linear-gradient(135deg, ${stage.color}, ${stage.color}bb);
+                            box-shadow: 0 4px 20px ${stage.color}30;
+                        ">
+                            <span style="font-size: 20px;">${stage.icon}</span>
+                            <span style="color: #fff; font-weight: 600; font-size: 13px;">${stage.name}</span>
+                            <span style="color: rgba(255,255,255,0.9); font-weight: 800; font-size: 18px; margin-left: 8px;">${stage.value.toLocaleString('pt-BR')}</span>
                         </div>
                     </div>
                 `;
@@ -11976,6 +12010,334 @@ Posso ajudar em algo mais? 😊`
         //         setTimeout(toggleFocusMode, 500);
         //     }
         // });
+        
+        // ==================== REVENUE CHART ====================
+        let revenueChart = null;
+        
+        function initRevenueChart() {
+            const ctx = document.getElementById('revenueChart')?.getContext('2d');
+            if (!ctx) return;
+            
+            const grad = ctx.createLinearGradient(0, 0, 0, 280);
+            grad.addColorStop(0, 'rgba(34, 197, 94, 0.25)');
+            grad.addColorStop(0.5, 'rgba(34, 197, 94, 0.08)');
+            grad.addColorStop(1, 'rgba(34, 197, 94, 0)');
+            
+            revenueChart = new Chart(ctx, {
+                type: 'line',
+                data: { labels: [], datasets: [{
+                    label: 'Receita',
+                    data: [],
+                    borderColor: '#22c55e',
+                    backgroundColor: grad,
+                    fill: true,
+                    tension: 0.45,
+                    borderWidth: 2.5,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#22c55e',
+                    pointHoverRadius: 6,
+                    pointHoverBackgroundColor: '#22c55e',
+                    pointHoverBorderColor: '#fff',
+                    pointHoverBorderWidth: 2
+                }]},
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 15, 23, 0.95)',
+                            titleColor: '#fff', bodyColor: '#a1a1aa',
+                            borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
+                            cornerRadius: 10, padding: 12, displayColors: false,
+                            callbacks: {
+                                label: (item) => `  R$ ${item.parsed.y.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#52525b', font: { size: 11 } } },
+                        y: { grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false }, ticks: { color: '#52525b', font: { size: 11 }, padding: 8, callback: (v) => 'R$' + v }, beginAtZero: true }
+                    },
+                    animation: { duration: 800, easing: 'easeOutQuart' }
+                }
+            });
+        }
+        
+        function updateRevenueChart(sparklineData) {
+            if (!revenueChart || !sparklineData || sparklineData.length < 1) return;
+            const labels = sparklineData.map(d => {
+                const dt = new Date(d.day);
+                return dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+            });
+            revenueChart.data.labels = labels;
+            revenueChart.data.datasets[0].data = sparklineData.map(d => d.revenue || 0);
+            revenueChart.update();
+        }
+        
+        // ==================== TRAFFIC SOURCES CHART ====================
+        let trafficChart = null;
+        
+        function initTrafficSourcesChart() {
+            const ctx = document.getElementById('trafficSourcesChart')?.getContext('2d');
+            if (!ctx) return;
+            
+            trafficChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Facebook Ads', 'Google', 'Direto', 'Organico', 'Outro'],
+                    datasets: [{
+                        data: [0, 0, 0, 0, 0],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.85)',
+                            'rgba(239, 68, 68, 0.85)',
+                            'rgba(168, 85, 247, 0.85)',
+                            'rgba(16, 185, 129, 0.85)',
+                            'rgba(107, 114, 128, 0.85)'
+                        ],
+                        hoverBackgroundColor: ['#3b82f6', '#ef4444', '#a855f7', '#10b981', '#6b7280'],
+                        borderWidth: 0,
+                        spacing: 3,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#a1a1aa', padding: 12, usePointStyle: true, pointStyle: 'circle', font: { size: 11 } } },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 15, 23, 0.95)',
+                            titleColor: '#fff', bodyColor: '#a1a1aa',
+                            borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
+                            cornerRadius: 10, padding: 12
+                        }
+                    },
+                    animation: { animateRotate: true, duration: 1000, easing: 'easeOutQuart' }
+                }
+            });
+        }
+        
+        async function loadTrafficSources() {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/stats/traffic-sources`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (!res.ok) return;
+                const data = await res.json();
+                
+                if (trafficChart && data.sources) {
+                    const labels = data.sources.map(s => s.source);
+                    const counts = data.sources.map(s => s.count);
+                    trafficChart.data.labels = labels;
+                    trafficChart.data.datasets[0].data = counts;
+                    // Ensure enough colors
+                    const colors = ['rgba(59,130,246,0.85)','rgba(239,68,68,0.85)','rgba(168,85,247,0.85)','rgba(16,185,129,0.85)','rgba(245,158,11,0.85)','rgba(6,182,212,0.85)','rgba(107,114,128,0.85)'];
+                    trafficChart.data.datasets[0].backgroundColor = labels.map((_, i) => colors[i % colors.length]);
+                    trafficChart.update();
+                }
+            } catch (e) {
+                console.log('Traffic sources error:', e);
+            }
+        }
+        
+        // Init new charts on load
+        document.addEventListener('DOMContentLoaded', () => {
+            initRevenueChart();
+            initTrafficSourcesChart();
+            if (authToken) {
+                setTimeout(() => { loadTrafficSources(); }, 1200);
+            }
+        });
+        
+        // Update revenue chart when trends load (hook into existing loadTrendsData)
+        const _origLoadTrends = typeof loadTrendsData === 'function' ? loadTrendsData : null;
+        if (_origLoadTrends) {
+            // Monkey-patch to also update revenue chart
+            const _origFetch = window.fetch;
+        }
+        // We'll update revenue chart from trends response in a modified loadTrendsData
+        
+        // ==================== SIDEBAR BADGES ====================
+        async function updateSidebarBadges() {
+            try {
+                const [statsRes, refundsRes] = await Promise.all([
+                    fetch(`${API_URL}/api/admin/stats`, { headers: { 'Authorization': `Bearer ${authToken}` } }).catch(() => null),
+                    fetch(`${API_URL}/api/admin/refunds?status=pending`, { headers: { 'Authorization': `Bearer ${authToken}` } }).catch(() => null)
+                ]);
+                
+                const stats = statsRes?.ok ? await statsRes.json() : {};
+                const refunds = refundsRes?.ok ? await refundsRes.json() : {};
+                
+                // New leads today badge
+                const newToday = stats.today || 0;
+                setBadge('badgeLeads', newToday > 0 ? newToday : 0);
+                
+                // Pending refunds badge
+                const pendingRefunds = (refunds.refunds || []).filter(r => r.status === 'pending').length;
+                setBadge('badgeRefunds', pendingRefunds);
+                
+            } catch (e) { console.log('Badge update error:', e); }
+        }
+        
+        function setBadge(id, count) {
+            let badge = document.getElementById(id);
+            if (count <= 0) {
+                if (badge) badge.remove();
+                return;
+            }
+            if (!badge) {
+                // Find parent nav-item
+                const targets = { 'badgeLeads': 'leads', 'badgeRefunds': 'refunds' };
+                const tabName = targets[id];
+                const navItem = document.querySelector(`.nav-item[onclick="switchTab('${tabName}')"]`);
+                if (!navItem) return;
+                badge = document.createElement('span');
+                badge.id = id;
+                badge.className = 'nav-badge';
+                navItem.appendChild(badge);
+            }
+            badge.textContent = count > 99 ? '99+' : count;
+        }
+        
+        // Update badges periodically
+        if (authToken) {
+            setTimeout(updateSidebarBadges, 2000);
+            setInterval(() => { if (!document.hidden) updateSidebarBadges(); }, 30000);
+        }
+        
+        // ==================== KEYBOARD SHORTCUTS ====================
+        const shortcutsModalHTML = `
+        <div class="shortcuts-modal-overlay" id="shortcutsModal">
+            <div class="shortcuts-modal">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                    <h3 style="color:#fff;font-size:16px;font-weight:700;">Atalhos de Teclado</h3>
+                    <button onclick="toggleShortcutsModal()" style="background:none;border:none;color:var(--text-muted);font-size:18px;cursor:pointer;">&times;</button>
+                </div>
+                <div class="shortcut-row"><span style="color:var(--text-secondary);font-size:13px;">Busca rapida</span><span class="shortcut-key"><kbd>Ctrl</kbd><kbd>K</kbd></span></div>
+                <div class="shortcut-row"><span style="color:var(--text-secondary);font-size:13px;">Visao Geral</span><span class="shortcut-key"><kbd>1</kbd></span></div>
+                <div class="shortcut-row"><span style="color:var(--text-secondary);font-size:13px;">Leads</span><span class="shortcut-key"><kbd>2</kbd></span></div>
+                <div class="shortcut-row"><span style="color:var(--text-secondary);font-size:13px;">Funil</span><span class="shortcut-key"><kbd>3</kbd></span></div>
+                <div class="shortcut-row"><span style="color:var(--text-secondary);font-size:13px;">Vendas</span><span class="shortcut-key"><kbd>4</kbd></span></div>
+                <div class="shortcut-row"><span style="color:var(--text-secondary);font-size:13px;">Pixel & CAPI</span><span class="shortcut-key"><kbd>5</kbd></span></div>
+                <div class="shortcut-row"><span style="color:var(--text-secondary);font-size:13px;">Paises</span><span class="shortcut-key"><kbd>6</kbd></span></div>
+                <div class="shortcut-row"><span style="color:var(--text-secondary);font-size:13px;">Mostrar atalhos</span><span class="shortcut-key"><kbd>?</kbd></span></div>
+                <div class="shortcut-row"><span style="color:var(--text-secondary);font-size:13px;">Fechar modal</span><span class="shortcut-key"><kbd>Esc</kbd></span></div>
+            </div>
+        </div>`;
+        
+        const quickSearchHTML = `
+        <div class="quick-search-overlay" id="quickSearchModal">
+            <div class="quick-search-box">
+                <input class="quick-search-input" id="quickSearchInput" placeholder="Buscar paginas, acoes..." autocomplete="off" />
+                <div class="quick-search-results" id="quickSearchResults"></div>
+            </div>
+        </div>`;
+        
+        // Insert modals
+        document.body.insertAdjacentHTML('beforeend', shortcutsModalHTML);
+        document.body.insertAdjacentHTML('beforeend', quickSearchHTML);
+        
+        function toggleShortcutsModal() {
+            document.getElementById('shortcutsModal')?.classList.toggle('active');
+        }
+        
+        function toggleQuickSearch() {
+            const modal = document.getElementById('quickSearchModal');
+            const isActive = modal?.classList.toggle('active');
+            if (isActive) {
+                const input = document.getElementById('quickSearchInput');
+                input.value = '';
+                input.focus();
+                renderQuickSearchResults('');
+            }
+        }
+        
+        const quickSearchItems = [
+            { icon: '📊', label: 'Visao Geral', action: () => switchTab('overview') },
+            { icon: '👥', label: 'Leads', action: () => switchTab('leads') },
+            { icon: '🔄', label: 'Recuperacao', action: () => switchTab('recovery') },
+            { icon: '📈', label: 'Funil', action: () => switchTab('funnel') },
+            { icon: '💰', label: 'Vendas', action: () => switchTab('sales') },
+            { icon: '🔄', label: 'Reembolsos', action: () => switchTab('refunds') },
+            { icon: '🌍', label: 'Paises', action: () => switchTab('countries') },
+            { icon: '📋', label: 'Exportar Dados', action: () => switchTab('reports') },
+            { icon: '📡', label: 'Pixel & CAPI', action: () => switchTab('pixel') },
+            { icon: '🧪', label: 'Testes A/B', action: () => switchTab('abtests') },
+            { icon: '⚙️', label: 'Configuracoes', action: () => switchTab('settings') },
+            { icon: '👤', label: 'Usuarios', action: () => switchTab('users') },
+        ];
+        
+        function renderQuickSearchResults(query) {
+            const container = document.getElementById('quickSearchResults');
+            if (!container) return;
+            const q = query.toLowerCase().trim();
+            const filtered = q ? quickSearchItems.filter(i => i.label.toLowerCase().includes(q)) : quickSearchItems;
+            container.innerHTML = filtered.map((item, i) => 
+                `<div class="quick-search-item${i === 0 ? ' active' : ''}" onclick="quickSearchItems[${quickSearchItems.indexOf(item)}].action(); toggleQuickSearch();">
+                    <span class="qs-icon">${item.icon}</span>
+                    <span>${item.label}</span>
+                </div>`
+            ).join('') || '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">Nenhum resultado</div>';
+        }
+        
+        document.getElementById('quickSearchInput')?.addEventListener('input', (e) => {
+            renderQuickSearchResults(e.target.value);
+        });
+        
+        // Keyboard shortcuts handler
+        document.addEventListener('keydown', (e) => {
+            // Ignore if typing in input/textarea
+            const tag = e.target.tagName;
+            const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.target.isContentEditable;
+            
+            // Ctrl+K or Cmd+K = Quick Search
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                toggleQuickSearch();
+                return;
+            }
+            
+            // Escape = close modals
+            if (e.key === 'Escape') {
+                document.getElementById('shortcutsModal')?.classList.remove('active');
+                document.getElementById('quickSearchModal')?.classList.remove('active');
+                return;
+            }
+            
+            if (isInput) return;
+            
+            // ? = Show shortcuts
+            if (e.key === '?') {
+                e.preventDefault();
+                toggleShortcutsModal();
+                return;
+            }
+            
+            // / = Quick search
+            if (e.key === '/') {
+                e.preventDefault();
+                toggleQuickSearch();
+                return;
+            }
+            
+            // Number keys for tab switching
+            const tabMap = { '1': 'overview', '2': 'leads', '3': 'funnel', '4': 'sales', '5': 'pixel', '6': 'countries' };
+            if (tabMap[e.key]) {
+                e.preventDefault();
+                switchTab(tabMap[e.key]);
+            }
+        });
+        
+        // Close modals on overlay click
+        document.getElementById('quickSearchModal')?.addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) toggleQuickSearch();
+        });
+        document.getElementById('shortcutsModal')?.addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) toggleShortcutsModal();
+        });
     </script>
 </body>
 </html>
