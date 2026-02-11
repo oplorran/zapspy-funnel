@@ -5487,12 +5487,14 @@ app.get('/api/admin/recovery/segments', authenticateToken, async (req, res) => {
     try {
         const { language, startDate, endDate } = req.query;
         
-        // Build date filter
-        let dateFilter = '';
+        // Build date filters (with table prefix to avoid ambiguity in JOINs)
         let dateParams = [];
+        let feDateFilter = '';  // for funnel_events queries
+        let plainDateFilter = '';  // for single-table queries
         if (startDate && endDate) {
-            dateFilter = `AND created_at >= $1 AND created_at <= $2`;
             dateParams = [startDate, endDate + ' 23:59:59'];
+            feDateFilter = `AND fe.created_at >= $1 AND fe.created_at <= $2`;
+            plainDateFilter = `AND created_at >= $1 AND created_at <= $2`;
         }
         
         // 1. Checkout Abandoned - People who clicked checkout but don't have approved transaction
@@ -5507,7 +5509,7 @@ app.get('/api/admin/recovery/segments', authenticateToken, async (req, res) => {
                 WHERE LOWER(t.email) = LOWER(COALESCE(l.email, ''))
                 AND t.status = 'approved'
             )
-            ${dateFilter.replace(/\$1/g, `$${dateParams.length > 0 ? 1 : 1}`).replace(/\$2/g, `$${dateParams.length > 0 ? 2 : 2}`)}
+            ${feDateFilter}
         `, dateParams);
         
         // 2. Payment Failed - Transactions with failed status
@@ -5516,7 +5518,7 @@ app.get('/api/admin/recovery/segments', authenticateToken, async (req, res) => {
             FROM transactions
             WHERE status IN ('cancelled', 'refused', 'pending', 'waiting_payment')
             ${language ? `AND funnel_language = '${language}'` : ''}
-            ${dateFilter}
+            ${plainDateFilter}
         `, dateParams);
         
         // 3. Refund Requests - Current refund requests that are pending or handling
@@ -5525,7 +5527,7 @@ app.get('/api/admin/recovery/segments', authenticateToken, async (req, res) => {
             FROM refund_requests
             WHERE status IN ('pending', 'handling', 'processing')
             ${language ? `AND funnel_language = '${language}'` : ''}
-            ${dateFilter}
+            ${plainDateFilter}
         `, dateParams);
         
         // 4. Upsell Declined - People who bought front but declined upsells
@@ -5540,7 +5542,7 @@ app.get('/api/admin/recovery/segments', authenticateToken, async (req, res) => {
                 WHERE LOWER(t.email) = LOWER(l.email)
                 AND t.status = 'approved'
             )
-            ${dateFilter}
+            ${feDateFilter}
         `, dateParams);
         
         // Calculate potential values
@@ -5606,10 +5608,16 @@ app.get('/api/admin/recovery/:segment', authenticateToken, async (req, res) => {
         let leads = [];
         let totalCount = 0;
         
-        // Build common date filter
-        let dateFilter = '';
+        // Build date filters with table prefixes to avoid ambiguity in JOINs
+        let feDateFilter = '';   // for funnel_events queries (prefix: fe.)
+        let tDateFilter = '';    // for transactions queries (prefix: t.)
+        let rDateFilter = '';    // for refund_requests queries (prefix: r.)
+        let plainDateFilter = ''; // for single-table/count queries
         if (startDate && endDate) {
-            dateFilter = `AND created_at >= '${startDate}' AND created_at <= '${endDate} 23:59:59'`;
+            feDateFilter = `AND fe.created_at >= '${startDate}' AND fe.created_at <= '${endDate} 23:59:59'`;
+            tDateFilter = `AND t.created_at >= '${startDate}' AND t.created_at <= '${endDate} 23:59:59'`;
+            rDateFilter = `AND r.created_at >= '${startDate}' AND r.created_at <= '${endDate} 23:59:59'`;
+            plainDateFilter = `AND created_at >= '${startDate}' AND created_at <= '${endDate} 23:59:59'`;
         }
         
         // Ensure recovery_contacts table exists before queries
@@ -5655,7 +5663,7 @@ app.get('/api/admin/recovery/:segment', authenticateToken, async (req, res) => {
                     WHERE LOWER(t.email) = LOWER(COALESCE(l.email, ''))
                     AND t.status = 'approved'
                 )
-                ${dateFilter}
+                ${feDateFilter}
                 ORDER BY COALESCE(l.email, fe.visitor_id), fe.created_at DESC
                 LIMIT $1 OFFSET $2
             `, [parseInt(limit), offset]);
@@ -5674,7 +5682,7 @@ app.get('/api/admin/recovery/:segment', authenticateToken, async (req, res) => {
                     WHERE LOWER(t.email) = LOWER(COALESCE(l.email, ''))
                     AND t.status = 'approved'
                 )
-                ${dateFilter}
+                ${feDateFilter}
             `);
             totalCount = parseInt(countResult.rows[0]?.count || 0);
             
@@ -5701,7 +5709,7 @@ app.get('/api/admin/recovery/:segment', authenticateToken, async (req, res) => {
                 LEFT JOIN leads l ON LOWER(t.email) = LOWER(l.email)
                 WHERE t.status IN ('cancelled', 'refused', 'pending', 'waiting_payment')
                 ${language ? `AND t.funnel_language = '${language}'` : ''}
-                ${dateFilter}
+                ${tDateFilter}
                 ORDER BY t.created_at DESC
                 LIMIT $1 OFFSET $2
             `, [parseInt(limit), offset]);
@@ -5712,7 +5720,7 @@ app.get('/api/admin/recovery/:segment', authenticateToken, async (req, res) => {
                 SELECT COUNT(*) as count FROM transactions
                 WHERE status IN ('cancelled', 'refused', 'pending', 'waiting_payment')
                 ${language ? `AND funnel_language = '${language}'` : ''}
-                ${dateFilter}
+                ${plainDateFilter}
             `);
             totalCount = parseInt(countResult.rows[0]?.count || 0);
             
@@ -5740,7 +5748,7 @@ app.get('/api/admin/recovery/:segment', authenticateToken, async (req, res) => {
                 FROM refund_requests r
                 WHERE r.status IN ('pending', 'handling', 'processing')
                 ${language ? `AND r.funnel_language = '${language}'` : ''}
-                ${dateFilter}
+                ${rDateFilter}
                 ORDER BY r.created_at DESC
                 LIMIT $1 OFFSET $2
             `, [parseInt(limit), offset]);
@@ -5751,7 +5759,7 @@ app.get('/api/admin/recovery/:segment', authenticateToken, async (req, res) => {
                 SELECT COUNT(*) as count FROM refund_requests
                 WHERE status IN ('pending', 'handling', 'processing')
                 ${language ? `AND funnel_language = '${language}'` : ''}
-                ${dateFilter}
+                ${plainDateFilter}
             `);
             totalCount = parseInt(countResult.rows[0]?.count || 0);
             
@@ -5788,7 +5796,7 @@ app.get('/api/admin/recovery/:segment', authenticateToken, async (req, res) => {
                     WHERE LOWER(t.email) = LOWER(l.email)
                     AND t.status = 'approved'
                 )
-                ${dateFilter}
+                ${feDateFilter}
                 ORDER BY l.email, fe.created_at DESC
                 LIMIT $1 OFFSET $2
             `, [parseInt(limit), offset]);
@@ -5806,7 +5814,7 @@ app.get('/api/admin/recovery/:segment', authenticateToken, async (req, res) => {
                     WHERE LOWER(t.email) = LOWER(l.email)
                     AND t.status = 'approved'
                 )
-                ${dateFilter}
+                ${feDateFilter}
             `);
             totalCount = parseInt(countResult.rows[0]?.count || 0);
             
