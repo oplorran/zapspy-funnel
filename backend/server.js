@@ -310,16 +310,62 @@ const ALLOWED_ORIGINS = [
     'http://127.0.0.1:3000',
     'http://127.0.0.1:5500'
 ];
+
+// Auto-detectar URL pública do Railway para permitir admin panel
+if (process.env.RAILWAY_PUBLIC_DOMAIN) {
+    ALLOWED_ORIGINS.push(`https://${process.env.RAILWAY_PUBLIC_DOMAIN}`);
+}
+if (process.env.RAILWAY_STATIC_URL) {
+    ALLOWED_ORIGINS.push(process.env.RAILWAY_STATIC_URL.startsWith('http') 
+        ? process.env.RAILWAY_STATIC_URL 
+        : `https://${process.env.RAILWAY_STATIC_URL}`);
+}
+
+// Cache para o domínio do próprio servidor (detectado dinamicamente via Host header)
+const selfOrigins = new Set();
+
+// Auto-detectar host do servidor ANTES do CORS (para admin panel funcionar em qualquer deploy)
+app.use((req, res, next) => {
+    const host = req.headers.host;
+    if (host) {
+        const httpsOrigin = `https://${host}`;
+        const httpOrigin = `http://${host}`;
+        if (!selfOrigins.has(httpsOrigin)) {
+            selfOrigins.add(httpsOrigin);
+            selfOrigins.add(httpOrigin);
+            console.log(`🔒 Auto-detected server origin: ${httpsOrigin}`);
+        }
+    }
+    next();
+});
+
 app.use(cors({
     origin: function(origin, callback) {
         if (!origin) return callback(null, true); // same-origin ou Postman
-        const allowed = process.env.FRONTEND_URL
+
+        // Allow same-origin requests (admin panel served from same server)
+        if (selfOrigins.has(origin)) return callback(null, true);
+
+        // Build allowed list
+        let allowed = process.env.FRONTEND_URL
             ? process.env.FRONTEND_URL.split(',').map(s => s.trim())
-            : ALLOWED_ORIGINS;
+            : [...ALLOWED_ORIGINS];
+
+        // Always include Railway domain even when FRONTEND_URL overrides
+        if (process.env.RAILWAY_PUBLIC_DOMAIN) {
+            allowed.push(`https://${process.env.RAILWAY_PUBLIC_DOMAIN}`);
+        }
+        if (process.env.RAILWAY_STATIC_URL) {
+            allowed.push(process.env.RAILWAY_STATIC_URL.startsWith('http')
+                ? process.env.RAILWAY_STATIC_URL
+                : `https://${process.env.RAILWAY_STATIC_URL}`);
+        }
+
         if (allowed.includes('*') || allowed.includes(origin)) return callback(null, true);
+        console.error(`CORS blocked origin: ${origin} (allowed: ${allowed.join(', ')})`);
         callback(new Error('CORS not allowed'), false);
     },
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true
 }));
 
@@ -7827,6 +7873,13 @@ app.get('/api/admin/debug/journey-by-email/:email', authenticateToken, async (re
 app.listen(PORT, async () => {
     console.log(`🚀 ZapSpy API running on port ${PORT}`);
     console.log(`📊 Admin panel: http://localhost:${PORT}/admin`);
+    if (process.env.RAILWAY_PUBLIC_DOMAIN) {
+        console.log(`🌐 Railway domain: https://${process.env.RAILWAY_PUBLIC_DOMAIN}`);
+    }
+    if (process.env.FRONTEND_URL) {
+        console.log(`🔗 FRONTEND_URL: ${process.env.FRONTEND_URL}`);
+    }
+    console.log(`🔒 CORS allowed origins: ${ALLOWED_ORIGINS.join(', ')}`);
     
     // Initialize database
     await initDatabase();
