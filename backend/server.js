@@ -4296,7 +4296,7 @@ async function syncMonetizzeSalesCore(startDate, endDate) {
     
     if (totalPages > 1) {
         console.log(`📄 Pagination: ${totalPages} pages, ${totalRecords} total records`);
-        for (let page = 2; page <= Math.min(totalPages, 50); page++) { // Max 50 pages safety limit
+        for (let page = 2; page <= Math.min(totalPages, 15); page++) { // Max 15 pages (1500 items) safety limit
             try {
                 const pageParams = new URLSearchParams(params.toString());
                 pageParams.set('pagina', String(page));
@@ -4318,7 +4318,7 @@ async function syncMonetizzeSalesCore(startDate, endDate) {
     } else if (salesArray.length >= 100 && totalPages === 0) {
         // API might not return paginas field - try fetching more pages manually
         console.log(`⚠️ Got ${salesArray.length} items but no pagination info. Trying to fetch more pages...`);
-        for (let page = 2; page <= 50; page++) {
+        for (let page = 2; page <= 15; page++) { // Max 15 pages (1500 items)
             try {
                 const pageParams = new URLSearchParams(params.toString());
                 pageParams.set('pagina', String(page));
@@ -4625,7 +4625,9 @@ async function runRefundBackfill() {
 }
 
 async function runDeepSync() {
-    // Deep sync: fetch day-by-day to avoid pagination limits
+    // Deep sync strategy:
+    // 1. Sync last 7 days day-by-day (full sync - catches all new transactions + status changes)
+    // 2. Then do a targeted refund-only sync for last 60 days (only status 3,4 = cancelled/refunded)
     try {
         const consumerKey = process.env.MONETIZZE_CONSUMER_KEY;
         if (!consumerKey) return;
@@ -4635,10 +4637,9 @@ async function runDeepSync() {
         let totalSkipped = 0;
         let totalFetched = 0;
         
-        console.log(`🔍 Deep sync starting (last 60 days, day-by-day to avoid pagination limits)...`);
-        
-        // Sync day by day for the last 60 days to ensure we get ALL transactions including refunds
-        for (let daysBack = 0; daysBack <= 60; daysBack++) {
+        // PHASE 1: Full sync of last 7 days (day-by-day to get ALL transactions including status changes)
+        console.log(`🔍 Deep sync PHASE 1: Full sync of last 7 days (day-by-day)...`);
+        for (let daysBack = 0; daysBack <= 7; daysBack++) {
             const targetDate = new Date(today);
             targetDate.setDate(targetDate.getDate() - daysBack);
             const dateStr = targetDate.toISOString().split('T')[0];
@@ -4656,11 +4657,188 @@ async function runDeepSync() {
                 console.error(`❌ Error syncing ${dateStr}:`, dayError.message);
             }
             
-            // Small delay between API calls to be respectful
             await new Promise(resolve => setTimeout(resolve, 300));
         }
         
-        console.log(`✅ Deep sync complete: ${totalSynced} new/updated, ${totalSkipped} skipped, ${totalFetched} total fetched across 60 days`);
+        console.log(`✅ Phase 1 complete: ${totalSynced} synced, ${totalFetched} fetched across 7 days`);
+        
+        // PHASE 2: Targeted refund sync for last 60 days
+        // Only fetch status 3 (cancelled) and 4 (refunded/devolvida) - much fewer results
+        console.log(`🔍 Deep sync PHASE 2: Targeted refund sync (last 60 days, only refunded/cancelled)...`);
+        let refundSynced = 0;
+        let refundFetched = 0;
+        
+        try {
+            let monetizzeToken;
+            try {
+                monetizzeToken = await getMonetizzeToken();
+            } catch (e) {
+                console.error('❌ Phase 2: Monetizze auth failed');
+                return;
+            }
+            
+            const sixtyDaysAgo = new Date(today);
+            sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+            const startDate = sixtyDaysAgo.toISOString().split('T')[0];
+            const endDate = today.toISOString().split('T')[0];
+            
+            // Fetch ONLY refunded/cancelled transactions (status 3=cancelled, 4=refunded)
+            const params = new URLSearchParams();
+            params.append('date_min', `${startDate} 00:00:00`);
+            params.append('date_max', `${endDate} 23:59:59`);
+            // Only refund-related statuses
+            ['3', '4'].forEach(s => params.append('status[]', s));
+            
+            const validProductCodes = [
+                '341972', '349241', '349242', '349243',
+                '330254', '341443', '341444', '341448',
+                '349260', '349261', '349266', '349267',
+                '338375', '341452', '341453', '341454'
+            ];
+            validProductCodes.forEach(code => params.append('product[]', code));
+            
+            const txUrl = `https://api.monetizze.com.br/2.1/transactions?${params.toString()}`;
+            console.log(`🌐 Fetching refunded/cancelled transactions (${startDate} to ${endDate})...`);
+            
+            const response = await fetch(txUrl, {
+                method: 'GET',
+                headers: { 'TOKEN': monetizzeToken, 'Accept': 'application/json' }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                let refundArray = [];
+                if (Array.isArray(data)) refundArray = data;
+                else if (Array.isArray(data.dados)) refundArray = data.dados;
+                else if (Array.isArray(data.vendas)) refundArray = data.vendas;
+                
+                console.log(`📄 Refund query: first page ${refundArray.length} items (paginas: ${data.paginas || 'N/A'})`);
+                
+                // Handle pagination for refunds
+                const totalPages = data.paginas || 0;
+                if (totalPages > 1) {
+                    for (let page = 2; page <= Math.min(totalPages, 20); page++) {
+                        try {
+                            const pageParams = new URLSearchParams(params.toString());
+                            pageParams.set('pagina', String(page));
+                            const pageResponse = await fetch(`https://api.monetizze.com.br/2.1/transactions?${pageParams.toString()}`, {
+                                method: 'GET',
+                                headers: { 'TOKEN': monetizzeToken, 'Accept': 'application/json' }
+                            });
+                            if (pageResponse.ok) {
+                                const pageData = await pageResponse.json();
+                                const pageItems = pageData.dados || pageData.vendas || [];
+                                refundArray = refundArray.concat(pageItems);
+                                if (pageItems.length === 0) break;
+                            }
+                        } catch (e) { break; }
+                    }
+                } else if (refundArray.length >= 100 && totalPages === 0) {
+                    // Probe for more pages
+                    for (let page = 2; page <= 20; page++) {
+                        try {
+                            const pageParams = new URLSearchParams(params.toString());
+                            pageParams.set('pagina', String(page));
+                            const pageResponse = await fetch(`https://api.monetizze.com.br/2.1/transactions?${pageParams.toString()}`, {
+                                method: 'GET',
+                                headers: { 'TOKEN': monetizzeToken, 'Accept': 'application/json' }
+                            });
+                            if (pageResponse.ok) {
+                                const pageData = await pageResponse.json();
+                                const pageItems = Array.isArray(pageData) ? pageData : (pageData.dados || pageData.vendas || []);
+                                if (pageItems.length === 0) break;
+                                refundArray = refundArray.concat(pageItems);
+                            } else break;
+                        } catch (e) { break; }
+                    }
+                }
+                
+                console.log(`📦 Total refund/cancelled transactions fetched: ${refundArray.length}`);
+                refundFetched = refundArray.length;
+                
+                // Process each refund transaction
+                for (const item of refundArray) {
+                    try {
+                        const vendaData = item.venda || item;
+                        const tipoEvento = item.tipoEvento || {};
+                        const compradorData = item.comprador || {};
+                        
+                        const transactionId = String(vendaData.codigo || item.codigo || '');
+                        const email = compradorData.email || '';
+                        if (!transactionId || !email) continue;
+                        
+                        const statusCode = String(tipoEvento.codigo || vendaData.statusCodigo || '');
+                        const vendaStatus = (vendaData.status || '').toLowerCase();
+                        const eventoDesc = (tipoEvento.descricao || '').toLowerCase();
+                        
+                        // Determine status
+                        let mappedStatus = 'cancelled';
+                        if (statusCode === '4' || vendaStatus.includes('devolvida') || vendaStatus.includes('reembolso') || eventoDesc.includes('reembolso')) {
+                            mappedStatus = 'refunded';
+                        }
+                        if (vendaStatus.includes('chargeback') || eventoDesc.includes('chargeback') || eventoDesc.includes('disputa') || statusCode === '8' || statusCode === '9') {
+                            mappedStatus = 'chargeback';
+                        }
+                        
+                        const productName = (item.produto || {}).nome || 'Unknown';
+                        const value = vendaData.valorLiquido || vendaData.comissao || vendaData.valor || '0';
+                        const buyerName = compradorData.nome || '';
+                        const buyerPhone = compradorData.telefone || '';
+                        
+                        // Update or insert transaction
+                        const upsert = await pool.query(`
+                            INSERT INTO transactions (transaction_id, email, phone, name, product, value, monetizze_status, status, raw_data, created_at)
+                            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                            ON CONFLICT (transaction_id) DO UPDATE SET
+                                status = CASE 
+                                    WHEN $8 IN ('refunded', 'chargeback') THEN $8
+                                    WHEN transactions.status IN ('refunded', 'chargeback') THEN transactions.status
+                                    ELSE $8
+                                END,
+                                monetizze_status = $7,
+                                raw_data = $9,
+                                updated_at = NOW()
+                            RETURNING (xmax = 0) as is_insert
+                        `, [
+                            transactionId, email, buyerPhone, buyerName, productName,
+                            value, statusCode, mappedStatus, JSON.stringify(item),
+                            vendaData.dataInicio ? new Date(vendaData.dataInicio.replace(' ', 'T') + '-03:00') : new Date()
+                        ]);
+                        
+                        // Create refund_requests for refunded/chargebacked
+                        if (mappedStatus === 'refunded' || mappedStatus === 'chargeback') {
+                            const refundProtocol = `MON-${String(transactionId).substring(0, 12).toUpperCase()}`;
+                            const existingRefund = await pool.query('SELECT id FROM refund_requests WHERE transaction_id = $1', [transactionId]);
+                            
+                            if (existingRefund.rows.length === 0) {
+                                await pool.query(`
+                                    INSERT INTO refund_requests (
+                                        protocol, full_name, email, phone, product, reason,
+                                        status, source, refund_type, transaction_id, value, created_at
+                                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
+                                    ON CONFLICT (protocol) DO NOTHING
+                                `, [
+                                    refundProtocol, buyerName || 'N/A', email, buyerPhone || null,
+                                    productName,
+                                    mappedStatus === 'chargeback' ? 'Chargeback - Disputa' : 'Reembolso via Monetizze',
+                                    'approved', 'monetizze_deep_sync',
+                                    mappedStatus === 'chargeback' ? 'chargeback' : 'refund',
+                                    transactionId, parseFloat(value) || 0
+                                ]);
+                                refundSynced++;
+                                console.log(`🔴 REFUND FOUND: ${transactionId} (${email}) → ${mappedStatus} - ${productName} - R$${value}`);
+                            }
+                        }
+                    } catch (itemError) {
+                        continue;
+                    }
+                }
+            }
+        } catch (phase2Error) {
+            console.error('❌ Phase 2 error:', phase2Error.message);
+        }
+        
+        console.log(`✅ Deep sync complete! Phase 1: ${totalSynced} synced/${totalFetched} fetched (7 days) | Phase 2: ${refundSynced} refunds found/${refundFetched} fetched (60 days)`);
     } catch (error) {
         console.error('❌ Deep sync error:', error.message);
     }
@@ -5156,7 +5334,7 @@ app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (re
         } else if (salesArray.length >= 100 && totalPages === 0) {
             // API might not return paginas field - try fetching more pages manually
             console.log(`⚠️ Got ${salesArray.length} items but no pagination info. Probing for more pages...`);
-            for (let page = 2; page <= 50; page++) {
+            for (let page = 2; page <= 15; page++) { // Max 15 pages (1500 items)
                 try {
                     const pageParams = new URLSearchParams(params.toString());
                     pageParams.set('pagina', String(page));
