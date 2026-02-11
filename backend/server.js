@@ -4669,6 +4669,12 @@ async function runAutoSync() {
         console.log(`🔄 Auto-sync starting (${startDate} to ${endDate})...`);
         const result = await syncMonetizzeSalesCore(startDate, endDate);
         console.log(`✅ Auto-sync complete: ${result.synced} new/updated, ${result.skipped} skipped, ${result.total} total from Monetizze`);
+        
+        // After sync, check for newly approved transactions that need CAPI Purchase events
+        if (result.synced > 0) {
+            console.log('🔄 Auto-sync found new/updated transactions - running CAPI catch-up...');
+            await sendMissingCAPIPurchases();
+        }
     } catch (error) {
         console.error('❌ Auto-sync error:', error.message);
     }
@@ -5260,6 +5266,264 @@ async function reprocessPostbackLogs() {
     }
 }
 
+// ==================== CAPI CATCH-UP: Send Purchase events for approved sales missing from capi_purchase_logs ====================
+// This handles the case where background sync updates a transaction to 'approved' but doesn't trigger CAPI
+async function sendMissingCAPIPurchases() {
+    try {
+        console.log('🔍 CAPI CATCH-UP: Checking for approved transactions missing Purchase CAPI events...');
+        
+        // Find approved transactions from the last 7 days that DON'T have a capi_purchase_logs entry
+        const missingResult = await pool.query(`
+            SELECT t.transaction_id, t.email, t.phone, t.name, t.product, t.value, 
+                   t.funnel_language, t.funnel_source, t.raw_data, t.created_at
+            FROM transactions t
+            LEFT JOIN capi_purchase_logs c ON t.transaction_id = c.transaction_id
+            WHERE t.status = 'approved' 
+              AND c.transaction_id IS NULL
+              AND t.created_at >= NOW() - INTERVAL '7 days'
+              AND t.email IS NOT NULL
+            ORDER BY t.created_at DESC
+        `);
+        
+        if (missingResult.rows.length === 0) {
+            console.log('✅ CAPI CATCH-UP: No missing Purchase events found. All approved sales have CAPI logs.');
+            return;
+        }
+        
+        console.log(`📤 CAPI CATCH-UP: Found ${missingResult.rows.length} approved transactions without CAPI Purchase events. Sending now...`);
+        
+        const brlToUsdRate = parseFloat(process.env.CONVERSION_BRL_TO_USD || '0.18');
+        let sent = 0;
+        let failed = 0;
+        
+        for (const tx of missingResult.rows) {
+            try {
+                const email = tx.email;
+                const transactionId = tx.transaction_id;
+                const funnelLanguage = tx.funnel_language || 'en';
+                const funnelSource = tx.funnel_source || 'main';
+                const productName = tx.product || 'Unknown Product';
+                
+                // Try to extract product code from raw_data
+                let productCode = null;
+                try {
+                    const rawData = typeof tx.raw_data === 'string' ? JSON.parse(tx.raw_data) : tx.raw_data;
+                    if (rawData) {
+                        productCode = rawData.produto?.codigo || rawData['produto.codigo'] || null;
+                    }
+                } catch (e) { /* ignore parse errors */ }
+                
+                // ===== LEAD MATCHING (simplified version of postback handler) =====
+                let leadData = null;
+                let matchMethod = 'none';
+                
+                // Level 1: Match by email in leads table
+                if (email) {
+                    const leadResult = await pool.query(
+                        `SELECT ip_address, user_agent, fbc, fbp, country, country_code, city, state, name, target_gender, whatsapp, visitor_id, referrer
+                         FROM leads WHERE LOWER(email) = LOWER($1) ORDER BY created_at DESC LIMIT 1`,
+                        [email]
+                    );
+                    if (leadResult.rows.length > 0) {
+                        leadData = leadResult.rows[0];
+                        matchMethod = 'email';
+                    }
+                }
+                
+                // Level 2: Match by phone in leads table
+                if (!leadData && tx.phone) {
+                    const cleanPhone = tx.phone.replace(/\D/g, '');
+                    if (cleanPhone.length >= 7) {
+                        const phoneResult = await pool.query(
+                            `SELECT ip_address, user_agent, fbc, fbp, country, country_code, city, state, name, target_gender, whatsapp, visitor_id, referrer
+                             FROM leads WHERE REPLACE(REPLACE(REPLACE(whatsapp, '+', ''), '-', ''), ' ', '') LIKE $1 
+                             ORDER BY created_at DESC LIMIT 1`,
+                            [`%${cleanPhone.slice(-7)}%`]
+                        );
+                        if (phoneResult.rows.length > 0) {
+                            leadData = phoneResult.rows[0];
+                            matchMethod = 'phone';
+                        }
+                    }
+                }
+                
+                // Level 3: Try funnel_events for fbc/fbp by IP match
+                if (!leadData) {
+                    // Try to extract buyer IP from raw_data
+                    let buyerIp = null;
+                    try {
+                        const rawData = typeof tx.raw_data === 'string' ? JSON.parse(tx.raw_data) : tx.raw_data;
+                        buyerIp = rawData?.comprador?.ip || rawData?.['comprador.ip'] || null;
+                    } catch (e) { /* ignore */ }
+                    
+                    if (buyerIp) {
+                        const eventResult = await pool.query(
+                            `SELECT visitor_id, ip_address, user_agent, fbc, fbp 
+                             FROM funnel_events WHERE ip_address = $1 
+                             ORDER BY created_at DESC LIMIT 1`,
+                            [buyerIp]
+                        );
+                        if (eventResult.rows.length > 0) {
+                            const eventRow = eventResult.rows[0];
+                            leadData = {
+                                ip_address: eventRow.ip_address, user_agent: eventRow.user_agent,
+                                fbc: eventRow.fbc, fbp: eventRow.fbp,
+                                country_code: null, city: null, state: null, target_gender: null,
+                                name: tx.name, whatsapp: tx.phone, visitor_id: eventRow.visitor_id,
+                                funnel_language: funnelLanguage, referrer: null
+                            };
+                            matchMethod = 'ip_events';
+                        }
+                    }
+                }
+                
+                // ENRICHMENT: If lead found but missing fbc/fbp, try to fill from funnel_events
+                if (leadData && (!leadData.fbc || !leadData.fbp) && leadData.visitor_id) {
+                    try {
+                        const enrichResult = await pool.query(
+                            `SELECT fbc, fbp, ip_address, user_agent 
+                             FROM funnel_events WHERE visitor_id = $1 AND (fbc IS NOT NULL OR fbp IS NOT NULL)
+                             ORDER BY created_at DESC LIMIT 1`,
+                            [leadData.visitor_id]
+                        );
+                        if (enrichResult.rows.length > 0) {
+                            const enrichRow = enrichResult.rows[0];
+                            if (!leadData.fbc && enrichRow.fbc) leadData.fbc = enrichRow.fbc;
+                            if (!leadData.fbp && enrichRow.fbp) leadData.fbp = enrichRow.fbp;
+                            if (!leadData.ip_address && enrichRow.ip_address) leadData.ip_address = enrichRow.ip_address;
+                            if (!leadData.user_agent && enrichRow.user_agent) leadData.user_agent = enrichRow.user_agent;
+                        }
+                    } catch (enrichErr) { /* non-blocking */ }
+                }
+                
+                if (leadData) {
+                    console.log(`📊 CAPI CATCH-UP: Lead matched [${matchMethod}] for ${email} (tx: ${transactionId}) - fbc=${leadData.fbc ? 'Yes' : 'No'}, fbp=${leadData.fbp ? 'Yes' : 'No'}, IP=${leadData.ip_address ? 'Yes' : 'No'}`);
+                } else {
+                    console.log(`📊 CAPI CATCH-UP: No lead found for ${email} (tx: ${transactionId}) - sending with minimal params`);
+                }
+                
+                // Build Facebook user data
+                const fbUserData = {
+                    email: email,
+                    phone: leadData?.whatsapp || tx.phone,
+                    firstName: leadData?.name || tx.name,
+                    ip: leadData?.ip_address || null,
+                    userAgent: leadData?.user_agent || null,
+                    fbc: leadData?.fbc || null,
+                    fbp: leadData?.fbp || null,
+                    country: leadData?.country_code || null,
+                    city: leadData?.city || null,
+                    state: leadData?.state || null,
+                    gender: leadData?.target_gender || null,
+                    externalId: leadData?.visitor_id || null,
+                    referrer: leadData?.referrer || null
+                };
+                
+                // Convert BRL to USD
+                const valueBRL = parseFloat(tx.value) || 0;
+                const valueUSD = Math.round((valueBRL * brlToUsdRate) * 100) / 100;
+                
+                // Build Facebook custom data
+                const fbCustomData = {
+                    content_name: productName,
+                    content_ids: [productCode || transactionId],
+                    content_type: 'product',
+                    value: valueUSD,
+                    currency: 'USD',
+                    order_id: transactionId,
+                    num_items: 1,
+                    customer_segmentation: 'new_customer_to_business'
+                };
+                
+                // Build event source URL
+                let eventSourceUrl;
+                if (funnelSource === 'affiliate') {
+                    eventSourceUrl = funnelLanguage === 'es' 
+                        ? 'https://afiliado.whatstalker.com/espanhol/' 
+                        : 'https://afiliado.whatstalker.com/ingles/';
+                } else {
+                    eventSourceUrl = funnelLanguage === 'es' 
+                        ? 'https://espanhol.zappdetect.com/' 
+                        : 'https://ingles.zappdetect.com/';
+                }
+                
+                // Event ID (status-agnostic for dedup)
+                const purchaseEventId = `monetizze_${transactionId}_purchase`;
+                
+                // Use the actual sale date from the transaction
+                const capiOptions = { language: funnelLanguage, eventTime: tx.created_at || null };
+                
+                // SEND Purchase event
+                console.log(`📤 CAPI CATCH-UP: Sending Purchase for ${email} (tx: ${transactionId}, value: $${valueUSD}, lang: ${funnelLanguage})...`);
+                const purchaseResults = await sendToFacebookCAPI('Purchase', fbUserData, fbCustomData, eventSourceUrl, purchaseEventId, capiOptions);
+                
+                // Determine success
+                const firstResult = purchaseResults[0] || {};
+                const capiSuccess = firstResult.success === true;
+                const fbEventsReceived = firstResult.result?.events_received || 0;
+                const pixelId = firstResult.pixel || '';
+                const pixelName = funnelLanguage === 'es' ? 'PIXEL SPY ESPANHOL' : '[PABLO NOVO] - [SPY INGLES]';
+                
+                // Attribution data
+                const purchaseAttrData = {
+                    hasEmail: !!email,
+                    hasFbc: !!(leadData?.fbc),
+                    hasFbp: !!(leadData?.fbp),
+                    hasIp: !!(leadData?.ip_address),
+                    hasUa: !!(leadData?.user_agent),
+                    hasExternalId: !!(leadData?.visitor_id),
+                    hasCountry: !!(leadData?.country_code),
+                    hasPhone: !!(leadData?.whatsapp || tx.phone),
+                    leadFound: !!leadData
+                };
+                
+                console.log(`📤 CAPI CATCH-UP: Result for ${email}: ${capiSuccess ? '✅ SUCCESS' : '❌ FAILED'} (events_received: ${fbEventsReceived})`);
+                
+                // Save to capi_purchase_logs
+                try {
+                    await pool.query(`
+                        INSERT INTO capi_purchase_logs (
+                            transaction_id, email, product, value, currency,
+                            funnel_language, funnel_source, event_source_url, event_id,
+                            pixel_id, pixel_name,
+                            has_email, has_fbc, has_fbp, has_ip, has_user_agent,
+                            has_external_id, has_country, has_phone, lead_found,
+                            capi_success, capi_response, fb_events_received, match_method
+                        ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24)
+                    `, [
+                        transactionId, email, productName,
+                        fbCustomData.value, fbCustomData.currency,
+                        funnelLanguage, funnelSource, eventSourceUrl, purchaseEventId,
+                        pixelId, pixelName,
+                        purchaseAttrData.hasEmail, purchaseAttrData.hasFbc, purchaseAttrData.hasFbp,
+                        purchaseAttrData.hasIp, purchaseAttrData.hasUa,
+                        purchaseAttrData.hasExternalId, purchaseAttrData.hasCountry,
+                        purchaseAttrData.hasPhone, purchaseAttrData.leadFound,
+                        capiSuccess, JSON.stringify(purchaseResults), fbEventsReceived, matchMethod
+                    ]);
+                } catch (logErr) {
+                    console.error(`CAPI CATCH-UP: Error saving log for ${transactionId}:`, logErr.message);
+                }
+                
+                if (capiSuccess) sent++;
+                else failed++;
+                
+                // Small delay between CAPI calls to avoid rate limits
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+            } catch (txErr) {
+                console.error(`CAPI CATCH-UP: Error processing tx ${tx.transaction_id}:`, txErr.message);
+                failed++;
+            }
+        }
+        
+        console.log(`✅ CAPI CATCH-UP complete: ${sent} sent, ${failed} failed, ${missingResult.rows.length} total checked`);
+        
+    } catch (error) {
+        console.error('❌ CAPI CATCH-UP error:', error.message);
+    }
+}
+
 function startAutoSync() {
     // Run startup tasks 30 seconds after server start
     setTimeout(async () => {
@@ -5273,11 +5537,15 @@ function startAutoSync() {
         await runRefundBackfill();
         // Step 5: Run diagnostic to see what's in the DB
         await runDiagnosticLog();
+        // Step 6: Send CAPI Purchase for approved sales missing from capi_purchase_logs
+        await sendMissingCAPIPurchases();
         // Regular sync every 5 minutes (just yesterday + today) - near real-time
         autoSyncInterval = setInterval(runAutoSync, 5 * 60 * 1000);
         // Re-check approved transactions every 6 hours for status changes
         setInterval(recheckApprovedTransactions, 6 * 60 * 60 * 1000);
-        console.log('🔄 Auto-sync scheduled: every 5 minutes | Re-check: every 6 hours');
+        // Check for missing CAPI Purchase events every 10 minutes
+        setInterval(sendMissingCAPIPurchases, 10 * 60 * 1000);
+        console.log('🔄 Auto-sync scheduled: every 5 minutes | Re-check: every 6 hours | CAPI catch-up: every 10 min');
     }, 30000);
 }
 

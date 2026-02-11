@@ -8579,23 +8579,36 @@ Obrigado pela compreensão.`
                 const usd = s.total_value_usd_approx != null ? parseFloat(s.total_value_usd_approx) : 0;
                 document.getElementById('pixelSalesPeriod').textContent = brl > 0 ? `R$ ${brl.toFixed(0)} · ≈ $${usd.toFixed(0)} USD` : 'R$ 0';
                 
-                // Fetch CAPI events filtered by language (same filter as quality data)
-                let txUrl = `${API_URL}/api/admin/transactions?limit=20`;
-                if (langParam) txUrl += `&language=${langParam}`;
-                const txRes = await fetch(txUrl, { headers });
-                const txData = await txRes.json();
-                const transactions = txData.transactions || [];
-                document.getElementById('capiEventsCount').textContent = `${transactions.length} eventos`;
-                if (transactions.length === 0) {
+                // Fetch REAL CAPI events from capi_purchase_logs (not transactions)
+                let capiUrl = `${API_URL}/api/admin/capi-purchase-logs?limit=15`;
+                if (langParam) capiUrl += `&language=${langParam}`;
+                const periodSelect2 = document.getElementById('pixelDateRange');
+                const period2 = periodSelect2 ? periodSelect2.value : '';
+                if (period2) capiUrl += `&period=${period2}`;
+                const capiRes = await fetch(capiUrl, { headers });
+                const capiData = await capiRes.json();
+                const capiLogs = capiData.logs || [];
+                document.getElementById('capiEventsCount').textContent = `${capiLogs.length} eventos`;
+                if (capiLogs.length === 0) {
                     eventsTable.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">Nenhum evento CAPI registrado ainda</td></tr>';
                 } else {
-                    eventsTable.innerHTML = transactions.slice(0, 15).map(tx => {
-                        const date = new Date(tx.transaction_date || tx.created_at);
+                    eventsTable.innerHTML = capiLogs.map(log => {
+                        const date = new Date(log.created_at);
                         const dateStr = date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-                        const eventType = tx.status === 'approved' ? 'Purchase' : tx.status === 'refunded' ? 'Refund' : tx.status === 'pending' ? 'InitiateCheckout' : 'Other';
-                        const pixelName = tx.funnel_language === 'es' ? '🇪🇸 Espanhol' : '🇺🇸 Inglês';
-                        const params = (tx.email ? ['em'] : []).concat('ip', 'ua', 'value', 'currency');
-                        return `<tr><td style="font-size: 12px;">${dateStr}</td><td><span class="status-badge ${tx.status === 'approved' ? 'approved' : tx.status === 'refunded' ? 'refunded' : 'pending'}">${eventType}</span></td><td style="font-size: 11px;">${pixelName}</td><td style="font-size: 12px;">${tx.email ? tx.email.substring(0, 15) + '...' : '-'}</td><td><code style="font-size: 10px; background: var(--bg-tertiary); padding: 2px 4px; border-radius: 3px;">${params.join(', ')}</code></td><td><span class="status-badge approved">✅ Enviado</span></td></tr>`;
+                        const pixelName = log.funnel_language === 'es' ? '🇪🇸 Espanhol' : '🇺🇸 Inglês';
+                        const params = [];
+                        if (log.has_email) params.push('em');
+                        if (log.has_fbc) params.push('fbc');
+                        if (log.has_fbp) params.push('fbp');
+                        if (log.has_ip) params.push('ip');
+                        if (log.has_user_agent) params.push('ua');
+                        if (log.has_external_id) params.push('ext_id');
+                        if (log.has_country) params.push('country');
+                        if (log.has_phone) params.push('ph');
+                        const statusBadge = log.capi_success 
+                            ? '<span class="status-badge approved">✅ Enviado</span>' 
+                            : '<span class="status-badge refunded">❌ Falhou</span>';
+                        return `<tr><td style="font-size: 12px;">${dateStr}</td><td><span class="status-badge approved">Purchase</span></td><td style="font-size: 11px;">${pixelName}</td><td style="font-size: 12px;">${log.email ? log.email.substring(0, 20) + (log.email.length > 20 ? '...' : '') : '-'}</td><td><code style="font-size: 10px; background: var(--bg-tertiary); padding: 2px 4px; border-radius: 3px;">${params.join(', ')}</code></td><td>${statusBadge}</td></tr>`;
                     }).join('');
                 }
             } catch (error) {
