@@ -4675,18 +4675,35 @@ async function syncMonetizzeSalesCore(startDate, endDate) {
                         }
                     }
                     
-                    // Extract fbc/fbp/vid from raw_data (checkout URL params stored by Monetizze)
+                    // Extract fbc/fbp/vid from transactions table first (saved by postback handler), then fallback to raw_data
                     let syncRawFbc = null, syncRawFbp = null, syncRawVid = null;
+                    
+                    // Try transactions table columns first (most reliable - from real-time postback)
                     try {
-                        const venda = (item?.venda && typeof item.venda === 'object') ? item.venda : {};
-                        syncRawFbc = item?.zs_fbc || venda.zs_fbc || null;
-                        syncRawFbp = item?.zs_fbp || venda.zs_fbp || null;
-                        syncRawVid = item?.vid || venda.vid || null;
-                        if (!syncRawFbc) {
-                            const fbclid = item?.fbclid || venda.fbclid || null;
-                            if (fbclid) syncRawFbc = `fb.1.${Date.now()}.${fbclid}`;
+                        const txDataResult = await pool.query(
+                            `SELECT fbc, fbp, visitor_id FROM transactions WHERE transaction_id = $1`,
+                            [transactionId]
+                        );
+                        if (txDataResult.rows.length > 0) {
+                            syncRawFbc = txDataResult.rows[0].fbc || null;
+                            syncRawFbp = txDataResult.rows[0].fbp || null;
+                            syncRawVid = txDataResult.rows[0].visitor_id || null;
                         }
                     } catch (e) { /* ignore */ }
+                    
+                    // Fallback: extract from Monetizze API raw item data
+                    if (!syncRawFbc || !syncRawFbp) {
+                        try {
+                            const venda = (item?.venda && typeof item.venda === 'object') ? item.venda : {};
+                            if (!syncRawFbc) syncRawFbc = item?.zs_fbc || venda.zs_fbc || null;
+                            if (!syncRawFbp) syncRawFbp = item?.zs_fbp || venda.zs_fbp || null;
+                            if (!syncRawVid) syncRawVid = item?.vid || venda.vid || null;
+                            if (!syncRawFbc) {
+                                const fbclid = item?.fbclid || venda.fbclid || null;
+                                if (fbclid) syncRawFbc = `fb.1.${Date.now()}.${fbclid}`;
+                            }
+                        } catch (e) { /* ignore */ }
+                    }
                     
                     // If no lead found but we have raw_data params, create minimal lead
                     if (!syncLeadData && (syncRawFbc || syncRawFbp)) {
@@ -5088,7 +5105,7 @@ async function runDeepSync() {
                         const buyerName = compradorData.nome || '';
                         const buyerPhone = compradorData.telefone || '';
                         
-                        // Update or insert transaction
+                        // Update or insert transaction (PRESERVE fbc/fbp/visitor_id from postback - don't overwrite)
                         const upsert = await pool.query(`
                             INSERT INTO transactions (transaction_id, email, phone, name, product, value, monetizze_status, status, raw_data, created_at)
                             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
@@ -5101,7 +5118,7 @@ async function runDeepSync() {
                                 monetizze_status = $7,
                                 raw_data = $9,
                                 updated_at = NOW()
-                            RETURNING (xmax = 0) as is_insert
+                            RETURNING (xmax = 0) as is_insert, transactions.fbc, transactions.fbp, transactions.visitor_id
                         `, [
                             transactionId, email, buyerPhone, buyerName, productName,
                             value, statusCode, mappedStatus, JSON.stringify(item),
@@ -5478,7 +5495,8 @@ async function sendMissingCAPIPurchases() {
         // Find approved transactions from the last 7 days that DON'T have a capi_purchase_logs entry
         const missingResult = await pool.query(`
             SELECT t.transaction_id, t.email, t.phone, t.name, t.product, t.value, 
-                   t.funnel_language, t.funnel_source, t.raw_data, t.created_at
+                   t.funnel_language, t.funnel_source, t.raw_data, t.created_at,
+                   t.fbc AS tx_fbc, t.fbp AS tx_fbp, t.visitor_id AS tx_visitor_id
             FROM transactions t
             LEFT JOIN capi_purchase_logs c ON t.transaction_id = c.transaction_id
             WHERE t.status = 'approved' 
@@ -5580,25 +5598,31 @@ async function sendMissingCAPIPurchases() {
                     }
                 }
                 
-                // Level 4: Extract fbc/fbp/vid from raw_data (checkout URL params stored by Monetizze)
-                let rawFbc = null, rawFbp = null, rawVid = null;
-                try {
-                    const rawData = typeof tx.raw_data === 'string' ? JSON.parse(tx.raw_data) : tx.raw_data;
-                    if (rawData) {
-                        const venda = (rawData.venda && typeof rawData.venda === 'object') ? rawData.venda : {};
-                        rawFbc = rawData.zs_fbc || venda.zs_fbc || rawData['zs_fbc'] || null;
-                        rawFbp = rawData.zs_fbp || venda.zs_fbp || rawData['zs_fbp'] || null;
-                        rawVid = rawData.vid || venda.vid || rawData['vid'] || null;
-                        
-                        // Build fbc from fbclid if zs_fbc not available
-                        if (!rawFbc) {
-                            const fbclid = rawData.fbclid || venda.fbclid || null;
-                            if (fbclid) {
-                                rawFbc = `fb.1.${Date.now()}.${fbclid}`;
+                // Level 4: Get fbc/fbp/vid - FIRST from transactions table columns (saved by postback), then fallback to raw_data parsing
+                let rawFbc = tx.tx_fbc || null;
+                let rawFbp = tx.tx_fbp || null;
+                let rawVid = tx.tx_visitor_id || null;
+                
+                // If not in transactions columns, try raw_data JSON (postback body)
+                if (!rawFbc || !rawFbp) {
+                    try {
+                        const rawData = typeof tx.raw_data === 'string' ? JSON.parse(tx.raw_data) : tx.raw_data;
+                        if (rawData) {
+                            const venda = (rawData.venda && typeof rawData.venda === 'object') ? rawData.venda : {};
+                            if (!rawFbc) rawFbc = rawData.zs_fbc || venda.zs_fbc || rawData['zs_fbc'] || null;
+                            if (!rawFbp) rawFbp = rawData.zs_fbp || venda.zs_fbp || rawData['zs_fbp'] || null;
+                            if (!rawVid) rawVid = rawData.vid || venda.vid || rawData['vid'] || null;
+                            
+                            // Build fbc from fbclid if zs_fbc not available
+                            if (!rawFbc) {
+                                const fbclid = rawData.fbclid || venda.fbclid || null;
+                                if (fbclid) {
+                                    rawFbc = `fb.1.${Date.now()}.${fbclid}`;
+                                }
                             }
                         }
-                    }
-                } catch (e) { /* ignore parse errors */ }
+                    } catch (e) { /* ignore parse errors */ }
+                }
                 
                 // If no lead found but we have raw_data params, create minimal lead
                 if (!leadData && (rawFbc || rawFbp)) {
@@ -5640,9 +5664,9 @@ async function sendMissingCAPIPurchases() {
                 }
                 
                 if (leadData) {
-                    console.log(`📊 CAPI CATCH-UP: Lead matched [${matchMethod}] for ${email} (tx: ${transactionId}) - fbc=${leadData.fbc ? 'Yes' : 'No'}, fbp=${leadData.fbp ? 'Yes' : 'No'}, IP=${leadData.ip_address ? 'Yes' : 'No'}, rawFbc=${rawFbc ? 'Yes' : 'No'}`);
+                    console.log(`📊 CAPI CATCH-UP: Lead matched [${matchMethod}] for ${email} (tx: ${transactionId}) - fbc=${leadData.fbc ? 'Yes' : 'No'}, fbp=${leadData.fbp ? 'Yes' : 'No'}, IP=${leadData.ip_address ? 'Yes' : 'No'}, txFbc=${tx.tx_fbc ? 'Yes' : 'No'}, txFbp=${tx.tx_fbp ? 'Yes' : 'No'}`);
                 } else {
-                    console.log(`📊 CAPI CATCH-UP: No lead found for ${email} (tx: ${transactionId}) - rawFbc=${rawFbc ? 'Yes' : 'No'}, rawFbp=${rawFbp ? 'Yes' : 'No'}`);
+                    console.log(`📊 CAPI CATCH-UP: No lead found for ${email} (tx: ${transactionId}) - txFbc=${tx.tx_fbc ? 'Yes' : 'No'}, txFbp=${tx.tx_fbp ? 'Yes' : 'No'}, rawFbc=${rawFbc ? 'Yes' : 'No'}, rawFbp=${rawFbp ? 'Yes' : 'No'}`);
                 }
                 
                 // Build Facebook user data
@@ -5767,9 +5791,65 @@ async function sendMissingCAPIPurchases() {
     }
 }
 
+// Backfill fbc/fbp/visitor_id from raw_data for transactions that have it in their postback body but not in the columns
+async function backfillTransactionFbcFbp() {
+    try {
+        console.log('🔄 Backfilling fbc/fbp/visitor_id from raw_data to transactions table...');
+        const result = await pool.query(`
+            SELECT transaction_id, raw_data FROM transactions
+            WHERE (fbc IS NULL OR fbp IS NULL OR visitor_id IS NULL)
+              AND raw_data IS NOT NULL
+              AND created_at >= NOW() - INTERVAL '30 days'
+        `);
+        
+        if (result.rows.length === 0) {
+            console.log('✅ Backfill: No transactions need fbc/fbp/vid update.');
+            return;
+        }
+        
+        let updated = 0;
+        for (const tx of result.rows) {
+            try {
+                const rawData = typeof tx.raw_data === 'string' ? JSON.parse(tx.raw_data) : tx.raw_data;
+                if (!rawData) continue;
+                
+                const venda = (rawData.venda && typeof rawData.venda === 'object') ? rawData.venda : {};
+                let fbc = rawData.zs_fbc || venda.zs_fbc || rawData['zs_fbc'] || null;
+                const fbp = rawData.zs_fbp || venda.zs_fbp || rawData['zs_fbp'] || null;
+                const vid = rawData.vid || venda.vid || rawData['vid'] || null;
+                
+                // Build fbc from fbclid if not available
+                if (!fbc) {
+                    const fbclid = rawData.fbclid || venda.fbclid || null;
+                    if (fbclid) fbc = `fb.1.${Date.now()}.${fbclid}`;
+                }
+                
+                if (fbc || fbp || vid) {
+                    await pool.query(`
+                        UPDATE transactions SET 
+                            fbc = COALESCE(transactions.fbc, $2),
+                            fbp = COALESCE(transactions.fbp, $3),
+                            visitor_id = COALESCE(transactions.visitor_id, $4),
+                            updated_at = NOW()
+                        WHERE transaction_id = $1 AND (fbc IS NULL OR fbp IS NULL OR visitor_id IS NULL)
+                    `, [tx.transaction_id, fbc, fbp, vid]);
+                    updated++;
+                }
+            } catch (e) { /* skip individual errors */ }
+        }
+        
+        console.log(`✅ Backfill complete: ${updated}/${result.rows.length} transactions updated with fbc/fbp/vid from raw_data.`);
+    } catch (error) {
+        console.error('❌ Backfill error:', error.message);
+    }
+}
+
 function startAutoSync() {
-    // Run CAPI catch-up IMMEDIATELY (10 seconds after start) - don't wait for heavy sync
+    // Run backfill + CAPI catch-up IMMEDIATELY (10 seconds after start) - don't wait for heavy sync
     setTimeout(async () => {
+        // First, backfill fbc/fbp from raw_data into transactions columns
+        await backfillTransactionFbcFbp();
+        
         console.log('🚀 Running CAPI catch-up immediately (before heavy sync)...');
         await sendMissingCAPIPurchases();
         // Schedule recurring CAPI catch-up every 10 minutes
@@ -5821,9 +5901,12 @@ app.post('/api/admin/capi-clear-resend', authenticateToken, requireAdmin, async 
         );
         const deleted = result.rowCount || 0;
         
-        console.log(`🗑️ Deleted ${deleted} CAPI logs without FBC. Running catch-up to resend...`);
+        console.log(`🗑️ Deleted ${deleted} CAPI logs without FBC. Running backfill + catch-up to resend...`);
         
-        // Immediately run catch-up to resend them with correct fbc/fbp from raw_data
+        // First backfill fbc/fbp from raw_data into transactions columns
+        await backfillTransactionFbcFbp();
+        
+        // Then run catch-up to resend them with correct fbc/fbp
         await sendMissingCAPIPurchases();
         
         res.json({ success: true, message: `${deleted} eventos limpos e reenviados com FBC/FBP.`, deleted });
@@ -6837,8 +6920,9 @@ app.all('/api/postback/monetizze', async (req, res) => {
             await pool.query(`
                 INSERT INTO transactions (
                     transaction_id, email, phone, name, product, value, 
-                    monetizze_status, status, raw_data, funnel_language, funnel_source, created_at
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, COALESCE($12, NOW()))
+                    monetizze_status, status, raw_data, funnel_language, funnel_source, created_at,
+                    fbc, fbp, visitor_id
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, COALESCE($12, NOW()), $13, $14, $15)
                 ON CONFLICT (transaction_id) 
                 DO UPDATE SET 
                     monetizze_status = $7,
@@ -6847,6 +6931,9 @@ app.all('/api/postback/monetizze', async (req, res) => {
                     funnel_language = $10,
                     funnel_source = $11,
                     phone = COALESCE($3, transactions.phone),
+                    fbc = COALESCE($13, transactions.fbc),
+                    fbp = COALESCE($14, transactions.fbp),
+                    visitor_id = COALESCE($15, transactions.visitor_id),
                     updated_at = NOW()
             `, [
                 transactionId,
@@ -6860,7 +6947,10 @@ app.all('/api/postback/monetizze', async (req, res) => {
                 JSON.stringify(req.body),
                 funnelLanguage,
                 funnelSource,
-                saleDate
+                saleDate,
+                postbackFbc || null,
+                postbackFbp || null,
+                resolvedVid || null
             ]);
             console.log(`✅ Transaction saved: ${transactionId}`);
         } catch (dbError) {
@@ -6930,8 +7020,16 @@ app.all('/api/postback/monetizze', async (req, res) => {
         // Monetizze may return these as venda.src, body.vid, UTM params, or flat fields
         const postbackVid = body.vid || venda.vid || body['venda.vid'] || body['venda[vid]'] || 
                            body.zs_vid || venda.zs_vid || null;
-        const postbackFbc = body.zs_fbc || venda.zs_fbc || body['venda.zs_fbc'] || body['venda[zs_fbc]'] || null;
+        let postbackFbc = body.zs_fbc || venda.zs_fbc || body['venda.zs_fbc'] || body['venda[zs_fbc]'] || null;
         const postbackFbp = body.zs_fbp || venda.zs_fbp || body['venda.zs_fbp'] || body['venda[zs_fbp]'] || null;
+        
+        // Build fbc from fbclid if zs_fbc not available
+        if (!postbackFbc) {
+            const postbackFbclid = body.fbclid || venda.fbclid || body['venda.fbclid'] || body['venda[fbclid]'] || null;
+            if (postbackFbclid) {
+                postbackFbc = `fb.1.${Date.now()}.${postbackFbclid}`;
+            }
+        }
         
         // Also try to extract vid from UTM fields (Monetizze sometimes maps custom params to UTM fields)
         const utmSource = body.utm_source || venda.utm_source || body['venda.utm_source'] || null;
@@ -9639,6 +9737,11 @@ async function initDatabase() {
         // Add fbc/fbp columns to funnel_events for CAPI attribution matching
         await pool.query(`ALTER TABLE funnel_events ADD COLUMN IF NOT EXISTS fbc VARCHAR(255);`);
         await pool.query(`ALTER TABLE funnel_events ADD COLUMN IF NOT EXISTS fbp VARCHAR(255);`);
+        
+        // Add fbc/fbp columns to transactions for CAPI attribution (from postback params)
+        await pool.query(`ALTER TABLE transactions ADD COLUMN IF NOT EXISTS fbc VARCHAR(500);`);
+        await pool.query(`ALTER TABLE transactions ADD COLUMN IF NOT EXISTS fbp VARCHAR(255);`);
+        await pool.query(`ALTER TABLE transactions ADD COLUMN IF NOT EXISTS visitor_id VARCHAR(255);`);
         
         // Add match_method column to capi_purchase_logs for attribution monitoring
         await pool.query(`ALTER TABLE capi_purchase_logs ADD COLUMN IF NOT EXISTS match_method VARCHAR(50);`);
