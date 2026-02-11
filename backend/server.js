@@ -1024,6 +1024,52 @@ app.get('/api/capi/status', async (req, res) => {
     }
 });
 
+// Real-time active users count (protected - for admin dashboard)
+app.get('/api/admin/active-users', authenticateToken, async (req, res) => {
+    try {
+        const minutes = parseInt(req.query.minutes) || 5; // Default: last 5 minutes
+        const cappedMinutes = Math.min(Math.max(minutes, 1), 60); // Clamp 1-60
+
+        // Count distinct visitor_ids with events in the last N minutes from funnel_events
+        const result = await pool.query(`
+            SELECT 
+                COUNT(DISTINCT visitor_id) AS total_active,
+                COUNT(DISTINCT CASE WHEN COALESCE(metadata->>'funnelLanguage', 'en') = 'en' THEN visitor_id END) AS active_en,
+                COUNT(DISTINCT CASE WHEN metadata->>'funnelLanguage' = 'es' THEN visitor_id END) AS active_es,
+                COUNT(*) AS total_events
+            FROM funnel_events
+            WHERE created_at >= NOW() - ($1 || ' minutes')::interval
+        `, [cappedMinutes]);
+
+        // Also get page breakdown
+        const pageBreakdown = await pool.query(`
+            SELECT 
+                page,
+                COUNT(DISTINCT visitor_id) AS visitors
+            FROM funnel_events
+            WHERE created_at >= NOW() - ($1 || ' minutes')::interval
+                AND page IS NOT NULL
+            GROUP BY page
+            ORDER BY visitors DESC
+            LIMIT 10
+        `, [cappedMinutes]);
+
+        const row = result.rows[0] || {};
+        res.json({
+            active_users: parseInt(row.total_active) || 0,
+            active_en: parseInt(row.active_en) || 0,
+            active_es: parseInt(row.active_es) || 0,
+            total_events: parseInt(row.total_events) || 0,
+            interval_minutes: cappedMinutes,
+            pages: pageBreakdown.rows.map(r => ({ page: r.page, visitors: parseInt(r.visitors) })),
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Error fetching active users:', error);
+        res.status(500).json({ error: 'Failed to fetch active users' });
+    }
+});
+
 // Pixel & CAPI aggregated stats (protected - for admin dashboard)
 app.get('/api/admin/pixel-stats', authenticateToken, async (req, res) => {
     try {

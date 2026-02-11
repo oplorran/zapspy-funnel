@@ -206,6 +206,46 @@
                 <!-- Tab: Overview -->
                 <div class="tab-content active" id="tab-overview">
 
+                    <!-- Real-Time Active Users Widget -->
+                    <div id="activeUsersWidget" style="margin-bottom: 20px;">
+                        <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%); border-radius: 16px; padding: 20px 28px; border: 1px solid rgba(59, 130, 246, 0.3); position: relative; overflow: hidden;">
+                            <!-- Animated background glow -->
+                            <div style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 30% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 50%); animation: activeGlow 4s ease-in-out infinite alternate;"></div>
+                            
+                            <div style="position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+                                <!-- Left: Main counter -->
+                                <div style="display: flex; align-items: center; gap: 16px;">
+                                    <div style="position: relative;">
+                                        <div id="activeUsersPulse" style="width: 14px; height: 14px; background: #10b981; border-radius: 50%; box-shadow: 0 0 12px rgba(16, 185, 129, 0.6);"></div>
+                                        <div style="position: absolute; top: 0; left: 0; width: 14px; height: 14px; background: #10b981; border-radius: 50%; animation: activePulse 2s ease-in-out infinite;"></div>
+                                    </div>
+                                    <div>
+                                        <div style="display: flex; align-items: baseline; gap: 10px;">
+                                            <span id="activeUsersCount" style="font-size: 36px; font-weight: 800; color: #fff; letter-spacing: -1px; font-variant-numeric: tabular-nums; transition: all 0.5s ease;">-</span>
+                                            <span style="font-size: 14px; color: rgba(255,255,255,0.6); font-weight: 500;">usuários ativos agora</span>
+                                        </div>
+                                        <div style="margin-top: 4px; display: flex; gap: 14px; font-size: 12px; color: rgba(255,255,255,0.45);">
+                                            <span>🇺🇸 EN: <strong id="activeUsersEN" style="color: rgba(255,255,255,0.7);">-</strong></span>
+                                            <span>🇪🇸 ES: <strong id="activeUsersES" style="color: rgba(255,255,255,0.7);">-</strong></span>
+                                            <span>⚡ <span id="activeUsersEvents">-</span> eventos nos últimos <span id="activeUsersInterval">5</span> min</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Right: Page breakdown mini-chart -->
+                                <div style="display: flex; align-items: center; gap: 20px;">
+                                    <div id="activeUsersPages" style="display: flex; gap: 8px; flex-wrap: wrap; max-width: 400px;">
+                                        <!-- Filled dynamically -->
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <div style="font-size: 10px; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 1px;">Atualizado</div>
+                                        <div id="activeUsersTime" style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 2px;">--:--:--</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Smart Alerts Panel -->
                     <div id="alertsPanel" style="margin-bottom: 20px; display: none;">
                         <div class="chart-card" style="border-left: 4px solid #f59e0b; background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(245, 158, 11, 0.02));">
@@ -10849,6 +10889,111 @@ Posso ajudar em algo mais? 😊`
         // Start auto-refresh when dashboard loads
         if (authToken) {
             startAutoRefresh();
+        }
+        
+        // ==================== REAL-TIME ACTIVE USERS ====================
+        let activeUsersInterval = null;
+        let lastActiveUsersCount = null;
+        
+        async function loadActiveUsers() {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/active-users?minutes=5`, {
+                    headers: { 'Authorization': `Bearer ${authToken}`, 'Cache-Control': 'no-cache' }
+                });
+                
+                if (!res.ok) return;
+                const data = await res.json();
+                
+                const countEl = document.getElementById('activeUsersCount');
+                const enEl = document.getElementById('activeUsersEN');
+                const esEl = document.getElementById('activeUsersES');
+                const eventsEl = document.getElementById('activeUsersEvents');
+                const intervalEl = document.getElementById('activeUsersInterval');
+                const timeEl = document.getElementById('activeUsersTime');
+                const pagesEl = document.getElementById('activeUsersPages');
+                
+                // Animate count change
+                const newCount = data.active_users || 0;
+                if (countEl) {
+                    if (lastActiveUsersCount !== null && newCount !== lastActiveUsersCount) {
+                        countEl.style.transform = 'translateY(-8px)';
+                        countEl.style.opacity = '0.3';
+                        setTimeout(() => {
+                            countEl.textContent = newCount.toLocaleString('pt-BR');
+                            countEl.style.transform = 'translateY(0)';
+                            countEl.style.opacity = '1';
+                        }, 200);
+                    } else {
+                        countEl.textContent = newCount.toLocaleString('pt-BR');
+                    }
+                    lastActiveUsersCount = newCount;
+                }
+                
+                if (enEl) enEl.textContent = (data.active_en || 0).toLocaleString('pt-BR');
+                if (esEl) esEl.textContent = (data.active_es || 0).toLocaleString('pt-BR');
+                if (eventsEl) eventsEl.textContent = (data.total_events || 0).toLocaleString('pt-BR');
+                if (intervalEl) intervalEl.textContent = data.interval_minutes || 5;
+                if (timeEl) timeEl.textContent = new Date().toLocaleTimeString('pt-BR');
+                
+                // Update page breakdown badges
+                if (pagesEl && data.pages && data.pages.length > 0) {
+                    const pageLabels = {
+                        'page_view_landing': '🏠 Landing',
+                        'page_view_phone': '📱 Phone',
+                        'page_view_conversation': '💬 Chat',
+                        'page_view_cta': '🎯 CTA',
+                        'page_view_checkout': '🛒 Checkout',
+                        'page_view_upsell': '⬆️ Upsell',
+                        'page_view_upsell2': '⬆️ Upsell 2',
+                        'page_view_upsell3': '⬆️ Upsell 3',
+                        'page_view_thankyou': '✅ Thank You',
+                        'page_view_refund': '🔄 Refund'
+                    };
+                    
+                    pagesEl.innerHTML = data.pages.slice(0, 5).map(p => {
+                        const label = pageLabels[p.page] || p.page.replace('page_view_', '📄 ');
+                        return `<span class="active-page-badge">${label} <span class="page-count">${p.visitors}</span></span>`;
+                    }).join('');
+                } else if (pagesEl) {
+                    pagesEl.innerHTML = '<span style="font-size: 11px; color: rgba(255,255,255,0.3);">Sem dados de páginas</span>';
+                }
+                
+                // Update pulse color based on count
+                const pulseEl = document.getElementById('activeUsersPulse');
+                if (pulseEl) {
+                    if (newCount === 0) {
+                        pulseEl.style.background = '#6b7280';
+                        pulseEl.style.boxShadow = '0 0 12px rgba(107, 114, 128, 0.4)';
+                    } else if (newCount < 10) {
+                        pulseEl.style.background = '#f59e0b';
+                        pulseEl.style.boxShadow = '0 0 12px rgba(245, 158, 11, 0.6)';
+                    } else {
+                        pulseEl.style.background = '#10b981';
+                        pulseEl.style.boxShadow = '0 0 12px rgba(16, 185, 129, 0.6)';
+                    }
+                }
+                
+            } catch (error) {
+                console.log('Active users fetch error:', error);
+            }
+        }
+        
+        function startActiveUsersRefresh() {
+            // Load immediately
+            loadActiveUsers();
+            
+            // Refresh every 15 seconds
+            if (activeUsersInterval) clearInterval(activeUsersInterval);
+            activeUsersInterval = setInterval(() => {
+                if (!document.hidden) {
+                    loadActiveUsers();
+                }
+            }, 15000);
+        }
+        
+        // Start active users tracking when authenticated
+        if (authToken) {
+            startActiveUsersRefresh();
         }
         
         // ==================== ROI CALCULATOR ====================
