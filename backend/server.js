@@ -4383,11 +4383,20 @@ async function syncMonetizzeSalesCore(startDate, endDate) {
                 console.log(`🔴 REFUND/CHARGEBACK DETECTED - ID: ${transactionId}, statusCode: ${statusCode}, vendaStatus: "${vendaData.status}", eventoDesc: "${tipoEvento.descricao}", mappedStatus (before text check): ${mappedStatus}`);
             }
             
-            // Priority: Check for refund/chargeback FIRST (they override everything else)
+            // Text-based status detection can UPGRADE to refund/chargeback but should NEVER
+            // downgrade from refunded/chargeback back to approved/cancelled/etc.
+            // The statusCode from tipoEvento.codigo is the most reliable source for refund/chargeback detection.
+            const statusCodeIsRefund = (statusCode === '4' || statusCode === '8' || statusCode === '9');
+            
+            // Check text for refund/chargeback indicators (can upgrade status)
             if (combinedStatus.includes('chargeback') || combinedStatus.includes('disputa') || combinedStatus.includes('contestação') || combinedStatus.includes('contestacao')) {
                 mappedStatus = 'chargeback';
             } else if (combinedStatus.includes('devolvida') || combinedStatus.includes('reembolso') || combinedStatus.includes('reembolsada') || combinedStatus.includes('refund')) {
                 mappedStatus = 'refunded';
+            } else if (statusCodeIsRefund) {
+                // StatusCode says refund/chargeback - KEEP IT, don't let text override change it
+                // This handles cases where vendaStatus says "Finalizada" but statusCode is 4/8/9
+                console.log(`🔒 Preserving ${mappedStatus} from statusCode=${statusCode} (vendaStatus text was: "${vendaData.status}")`);
             } else if (vendaStatus.includes('cancelada') || vendaStatus.includes('cancel')) {
                 mappedStatus = 'cancelled';
             } else if (vendaStatus.includes('aguardando') || vendaStatus.includes('pending')) {
@@ -4402,6 +4411,11 @@ async function syncMonetizzeSalesCore(startDate, endDate) {
             } else if (!isFinalized && statusCode === '2') {
                 // Status code says approved but no valid dataFinalizada
                 mappedStatus = 'pending_payment';
+            }
+            
+            // Final debug log for refund/chargeback after all status resolution
+            if (mappedStatus === 'refunded' || mappedStatus === 'chargeback') {
+                console.log(`✅ FINAL STATUS: ${transactionId} → ${mappedStatus} (email: ${email}, product: ${productName}, value: ${value})`);
             }
             
             if (!email || !transactionId) {
@@ -4849,24 +4863,27 @@ app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (re
                 const eventoDesc = (tipoEvento.descricao || '').toLowerCase();
                 const combinedStatus = `${vendaStatus} ${eventoDesc}`;
                 
-                // Priority: Check for refund/chargeback FIRST (they override everything else)
+                // Text-based status detection: NEVER downgrade from refunded/chargeback
+                const statusCodeIsRefund = (statusCode === '4' || statusCode === '8' || statusCode === '9');
+                
                 if (combinedStatus.includes('chargeback') || combinedStatus.includes('disputa') || combinedStatus.includes('contestação') || combinedStatus.includes('contestacao')) {
                     mappedStatus = 'chargeback';
                 } else if (combinedStatus.includes('devolvida') || combinedStatus.includes('reembolso') || combinedStatus.includes('reembolsada') || combinedStatus.includes('refund')) {
                     mappedStatus = 'refunded';
+                } else if (statusCodeIsRefund) {
+                    // StatusCode says refund/chargeback - KEEP IT, don't let text override
+                    console.log(`🔒 Preserving ${mappedStatus} from statusCode=${statusCode} (vendaStatus: "${vendaData.status}")`);
                 } else if (vendaStatus.includes('cancelada') || vendaStatus.includes('cancel')) {
                     mappedStatus = 'cancelled';
                 } else if (vendaStatus.includes('aguardando') || vendaStatus.includes('pending')) {
                     mappedStatus = 'pending_payment';
                 } else if (vendaStatus.includes('finalizada') || vendaStatus.includes('aprovada')) {
-                    // Only mark as approved if dataFinalizada is valid
                     if (isFinalized) {
                         mappedStatus = 'approved';
                     } else {
                         mappedStatus = 'pending_payment';
                     }
                 } else if (!isFinalized && statusCode === '2') {
-                    // Status code says approved but no valid dataFinalizada
                     mappedStatus = 'pending_payment';
                 }
                 
