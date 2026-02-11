@@ -1033,6 +1033,62 @@
                             </div>
                             <div class="stat-value purple" id="salesPerCustomer">0</div>
                         </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-label">Taxa Aprovação</span>
+                                <div class="stat-icon green">✔️</div>
+                            </div>
+                            <div class="stat-value green" id="salesApprovalRate">0%</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-label">Checkout Abandonado</span>
+                                <div class="stat-icon red">🚪</div>
+                            </div>
+                            <div class="stat-value red" id="salesCheckoutAbandoned">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-label">Receita Perdida</span>
+                                <div class="stat-icon red">📉</div>
+                            </div>
+                            <div class="stat-value red" id="salesLostRevenue">R$ 0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-label">Vendas Perdidas</span>
+                                <div class="stat-icon red">❌</div>
+                            </div>
+                            <div class="stat-value red" id="salesCancelled">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-label">Faturamento Upsells</span>
+                                <div class="stat-icon blue">💎</div>
+                            </div>
+                            <div class="stat-value blue" id="salesUpsellRevenue">R$ 0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-label">Taxa Upsell</span>
+                                <div class="stat-icon purple">📈</div>
+                            </div>
+                            <div class="stat-value purple" id="salesUpsellTakeRate">0%</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-label">Clientes Únicos</span>
+                                <div class="stat-icon green">🧑</div>
+                            </div>
+                            <div class="stat-value green" id="salesUniqueCustomers">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-label">Checkouts Iniciados</span>
+                                <div class="stat-icon purple">🛒</div>
+                            </div>
+                            <div class="stat-value purple" id="salesCheckoutClicked">0</div>
+                        </div>
                     </div>
                     
                     <!-- Products Performance -->
@@ -6541,6 +6597,36 @@ Estou aqui para esclarecer tudo! 😊`
                 // Vendas por Cliente (approved transactions / unique customers)
                 const salesPerCustomer = uniqueCustomers > 0 ? (approved / uniqueCustomers).toFixed(1) : '0';
                 document.getElementById('salesPerCustomer').textContent = salesPerCustomer;
+                
+                // Taxa Aprovacao (unique customers who attempted vs approved)
+                const approvalRate = stats.totalAttempts > 0
+                    ? ((stats.approvedAttempts / stats.totalAttempts) * 100).toFixed(1)
+                    : 0;
+                document.getElementById('salesApprovalRate').textContent = approvalRate + '%';
+                
+                // Checkout Abandonado
+                document.getElementById('salesCheckoutAbandoned').textContent = (stats.checkoutAbandoned || 0).toLocaleString('pt-BR');
+                
+                // Receita Perdida
+                document.getElementById('salesLostRevenue').textContent = 'R$ ' + (stats.lostRevenue || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                
+                // Vendas Perdidas (clientes cancelados que nunca compraram)
+                document.getElementById('salesCancelled').textContent = (stats.cancelled || 0).toLocaleString('pt-BR');
+                
+                // Faturamento Upsells
+                document.getElementById('salesUpsellRevenue').textContent = 'R$ ' + (stats.upsellRevenue || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                
+                // Taxa Upsell (% dos compradores front que compraram algum upsell)
+                const upsellTakeRate = stats.upsellStats?.front > 0
+                    ? ((stats.upsellStats.total / stats.upsellStats.front) * 100).toFixed(1)
+                    : 0;
+                document.getElementById('salesUpsellTakeRate').textContent = upsellTakeRate + '%';
+                
+                // Clientes Unicos
+                document.getElementById('salesUniqueCustomers').textContent = uniqueCustomers.toLocaleString('pt-BR');
+                
+                // Checkouts Iniciados
+                document.getElementById('salesCheckoutClicked').textContent = (stats.checkoutClicked || 0).toLocaleString('pt-BR');
                 
                 // Product stats are now shown only in the table
                 
