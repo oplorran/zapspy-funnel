@@ -5810,6 +5810,29 @@ app.post('/api/admin/capi-catchup', authenticateToken, requireAdmin, async (req,
     }
 });
 
+// Clear CAPI logs missing FBC so they can be resent with correct data
+app.post('/api/admin/capi-clear-resend', authenticateToken, requireAdmin, async (req, res) => {
+    try {
+        console.log('🗑️ Admin requested: clear CAPI logs without FBC for resend...');
+        
+        // Delete logs that were sent without fbc (these will be resent by catch-up with raw_data extraction)
+        const result = await pool.query(
+            `DELETE FROM capi_purchase_logs WHERE has_fbc = false`
+        );
+        const deleted = result.rowCount || 0;
+        
+        console.log(`🗑️ Deleted ${deleted} CAPI logs without FBC. Running catch-up to resend...`);
+        
+        // Immediately run catch-up to resend them with correct fbc/fbp from raw_data
+        await sendMissingCAPIPurchases();
+        
+        res.json({ success: true, message: `${deleted} eventos limpos e reenviados com FBC/FBP.`, deleted });
+    } catch (error) {
+        console.error('CAPI clear-resend error:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // Sync sales from Monetizze API (protected - admin only)
 // Uses 2-step auth: GET /token with X_CONSUMER_KEY → then GET /transactions with TOKEN
 app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (req, res) => {

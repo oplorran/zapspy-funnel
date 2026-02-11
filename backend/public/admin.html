@@ -2031,6 +2031,7 @@
                                 <span class="lead-count" id="purchaseLogCount">0 eventos</span>
                             </div>
                             <div style="display: flex; gap: 8px;">
+                                <button class="btn-secondary" onclick="runCAPIClearResend()" style="font-size: 12px; padding: 6px 12px; background: #dc2626; border-color: #dc2626;" id="capiClearResendBtn">🔁 Limpar e Reenviar sem FBC</button>
                                 <button class="btn-secondary" onclick="runCAPICatchup()" style="font-size: 12px; padding: 6px 12px;" id="capiCatchupBtn">🚀 Enviar Faltantes</button>
                                 <button class="btn-secondary" onclick="loadPurchaseCAPILogs()" style="font-size: 12px; padding: 6px 12px;">🔄 Atualizar</button>
                             </div>
@@ -8619,6 +8620,31 @@ Obrigado pela compreensão.`
                 qualityTable.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: #f87171;">Erro ao carregar dados</td></tr>';
                 eventsTable.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #f87171;">Erro ao carregar eventos</td></tr>';
             }
+        }
+        
+        // ==================== CAPI CLEAR & RESEND ====================
+        async function runCAPIClearResend() {
+            if (!confirm('Isso vai apagar todos os logs de Purchase SEM FBC e reenviar com os dados corretos. Continuar?')) return;
+            const btn = document.getElementById('capiClearResendBtn');
+            const originalText = btn.textContent;
+            btn.textContent = '⏳ Limpando e reenviando...';
+            btn.disabled = true;
+            try {
+                const res = await fetch(`${API_URL}/api/admin/capi-clear-resend`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    btn.textContent = `✅ ${data.deleted} reenviados!`;
+                    setTimeout(() => { loadPurchaseCAPILogs(); loadPixelStats(); }, 2000);
+                } else {
+                    btn.textContent = '❌ Erro';
+                }
+            } catch (err) {
+                btn.textContent = '❌ Erro';
+            }
+            setTimeout(() => { btn.textContent = originalText; btn.disabled = false; }, 5000);
         }
         
         // ==================== CAPI CATCH-UP (MANUAL TRIGGER) ====================
