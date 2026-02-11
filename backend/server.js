@@ -5052,6 +5052,59 @@ app.get('/api/admin/refund-diagnostic', authenticateToken, async (req, res) => {
         // 6. Get total refund_requests
         const totalRefundRequests = await pool.query('SELECT COUNT(*) FROM refund_requests');
         
+        // 7. Sample of CANCELLED transactions to see if refunds are hiding as cancellations
+        const cancelledSample = await pool.query(`
+            SELECT transaction_id, email, status, monetizze_status, product, value,
+                   raw_data->'venda'->>'status' as venda_status_text,
+                   raw_data->'tipoEvento'->>'codigo' as evento_codigo,
+                   raw_data->'tipoEvento'->>'descricao' as evento_descricao,
+                   raw_data->'venda'->>'dataFinalizada' as data_finalizada,
+                   created_at
+            FROM transactions 
+            WHERE status = 'cancelled'
+            ORDER BY created_at DESC LIMIT 10
+        `);
+        
+        // 8. Search ALL raw_data for any mention of refund keywords (broader search)
+        const broadSearch = await pool.query(`
+            SELECT transaction_id, email, status, product, value,
+                   raw_data->'venda'->>'status' as venda_status_text,
+                   raw_data->'tipoEvento'->>'codigo' as evento_codigo,
+                   raw_data->'tipoEvento'->>'descricao' as evento_descricao,
+                   monetizze_status
+            FROM transactions 
+            WHERE LOWER(CAST(raw_data AS text)) LIKE '%devolv%'
+               OR LOWER(CAST(raw_data AS text)) LIKE '%chargeback%'
+               OR LOWER(CAST(raw_data AS text)) LIKE '%reembolso%'
+               OR LOWER(CAST(raw_data AS text)) LIKE '%disputa%'
+               OR LOWER(CAST(raw_data AS text)) LIKE '%refund%'
+               OR monetizze_status IN ('4', '8', '9')
+            LIMIT 20
+        `);
+        
+        // 9. Get distinct vendaStatus values to see all possible status texts
+        const distinctStatuses = await pool.query(`
+            SELECT raw_data->'venda'->>'status' as venda_status, 
+                   raw_data->'tipoEvento'->>'codigo' as evento_codigo,
+                   raw_data->'tipoEvento'->>'descricao' as evento_descricao,
+                   COUNT(*) as count
+            FROM transactions
+            WHERE raw_data IS NOT NULL
+            GROUP BY raw_data->'venda'->>'status', raw_data->'tipoEvento'->>'codigo', raw_data->'tipoEvento'->>'descricao'
+            ORDER BY count DESC
+        `);
+        
+        // 10. Check specific transaction IDs from Monetizze (the ones shown in the screenshot)
+        const specificCheck = await pool.query(`
+            SELECT transaction_id, email, status, monetizze_status, product, value,
+                   raw_data->'venda'->>'status' as venda_status_text,
+                   raw_data->'tipoEvento'->>'codigo' as evento_codigo
+            FROM transactions
+            WHERE transaction_id LIKE '5580%' OR transaction_id LIKE '5579%' 
+               OR transaction_id LIKE '5578%' OR transaction_id LIKE '5577%' OR transaction_id LIKE '5576%'
+            ORDER BY created_at DESC LIMIT 20
+        `);
+        
         res.json({
             transactions_by_status: txStatusCounts.rows,
             refund_requests_summary: refundCounts.rows,
@@ -5059,7 +5112,11 @@ app.get('/api/admin/refund-diagnostic', authenticateToken, async (req, res) => {
             refunded_transactions: refundedTx.rows,
             orphaned_refunds: orphans.rows,
             missed_refunds_in_transactions: missedRefunds.rows,
-            diagnostic_note: 'If missed_refunds_in_transactions has entries, these are transactions the API returned as refunded/chargeback but our code mapped to wrong status'
+            cancelled_sample: cancelledSample.rows,
+            broad_refund_search: broadSearch.rows,
+            distinct_api_statuses: distinctStatuses.rows,
+            specific_monetizze_ids: specificCheck.rows,
+            diagnostic_note: 'cancelled_sample shows recent cancelled transactions raw data. broad_refund_search finds any refund keywords in raw_data. distinct_api_statuses shows all unique status combinations from Monetizze API. specific_monetizze_ids checks for the transaction IDs visible in Monetizze dashboard.'
         });
     } catch (error) {
         console.error('Diagnostic error:', error);

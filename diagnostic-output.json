@@ -1,0 +1,35 @@
+{
+  "transactions_by_status": [
+    {
+      "status": "cancelled",
+      "count": "764"
+    },
+    {
+      "status": "approved",
+      "count": "198"
+    },
+    {
+      "status": "abandoned_checkout",
+      "count": "1"
+    }
+  ],
+  "refund_requests_summary": [
+    {
+      "refund_type": "refund",
+      "source": "form",
+      "status": "pending",
+      "count": "38"
+    },
+    {
+      "refund_type": "refund",
+      "source": "monetizze",
+      "status": "approved",
+      "count": "1"
+    }
+  ],
+  "total_refund_requests": 39,
+  "refunded_transactions": [],
+  "orphaned_refunds": [],
+  "missed_refunds_in_transactions": [],
+  "diagnostic_note": "If missed_refunds_in_transactions has entries, these are transactions the API returned as refunded/chargeback but our code mapped to wrong status"
+}
