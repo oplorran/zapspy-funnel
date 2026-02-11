@@ -4669,18 +4669,144 @@ async function runDiagnosticLog() {
     }
 }
 
+// Re-check approved transactions by querying Monetizze API individually
+// The Monetizze /transactions list API doesn't reflect chargeback status changes,
+// but individual transaction queries or re-fetching by date MIGHT show updated status.
+// As a workaround, we re-fetch transactions by venda.codigo to check for status changes.
+async function recheckApprovedTransactions() {
+    try {
+        const consumerKey = process.env.MONETIZZE_CONSUMER_KEY;
+        if (!consumerKey) return;
+        
+        console.log('🔍 Re-checking approved transactions for status changes...');
+        
+        // Get all approved transactions from the last 60 days
+        const approved = await pool.query(`
+            SELECT transaction_id, email, name, phone, product, value, funnel_language, created_at
+            FROM transactions 
+            WHERE status = 'approved' 
+              AND created_at >= NOW() - INTERVAL '60 days'
+            ORDER BY created_at DESC
+        `);
+        
+        if (approved.rows.length === 0) {
+            console.log('No approved transactions to re-check');
+            return;
+        }
+        
+        console.log(`📦 Re-checking ${approved.rows.length} approved transactions...`);
+        
+        // Get a fresh Monetizze token
+        let monetizzeToken;
+        try {
+            monetizzeToken = await getMonetizzeToken();
+        } catch (e) {
+            console.error('❌ Cannot re-check: Monetizze auth failed');
+            return;
+        }
+        
+        let updated = 0;
+        let refundsFound = 0;
+        
+        // Query each transaction individually using Monetizze API
+        // We'll batch by querying each transaction_id (venda.codigo)
+        for (const tx of approved.rows) {
+            try {
+                // Query Monetizze for this specific transaction
+                const txUrl = `https://api.monetizze.com.br/2.1/transactions?codigo=${tx.transaction_id}`;
+                const response = await fetch(txUrl, {
+                    method: 'GET',
+                    headers: { 'TOKEN': monetizzeToken, 'Accept': 'application/json' }
+                });
+                
+                if (!response.ok) continue;
+                
+                const data = await response.json();
+                const items = Array.isArray(data) ? data : (data.dados || data.vendas || []);
+                
+                if (items.length === 0) continue;
+                
+                const item = items[0];
+                const vendaData = item.venda || item;
+                const tipoEvento = item.tipoEvento || {};
+                const vendaStatus = (vendaData.status || '').toLowerCase();
+                const eventoDesc = (tipoEvento.descricao || '').toLowerCase();
+                const eventoCodigo = String(tipoEvento.codigo || '');
+                
+                // Check if this transaction is now refunded or chargebacked
+                const isRefund = eventoCodigo === '4' || vendaStatus.includes('devolvida') || vendaStatus.includes('reembolso');
+                const isChargeback = eventoCodigo === '8' || eventoCodigo === '9' || 
+                    vendaStatus.includes('chargeback') || eventoDesc.includes('chargeback') || 
+                    eventoDesc.includes('disputa');
+                
+                if (isRefund || isChargeback) {
+                    const newStatus = isChargeback ? 'chargeback' : 'refunded';
+                    const refundType = isChargeback ? 'chargeback' : 'refund';
+                    
+                    console.log(`🔴 STATUS CHANGE DETECTED: ${tx.transaction_id} (${tx.email}) was approved → now ${newStatus} (vendaStatus: "${vendaData.status}", eventoDesc: "${tipoEvento.descricao}")`);
+                    
+                    // Update transaction status
+                    await pool.query(
+                        `UPDATE transactions SET status = $1, monetizze_status = $2, updated_at = NOW() WHERE transaction_id = $3`,
+                        [newStatus, eventoCodigo || '4', tx.transaction_id]
+                    );
+                    
+                    // Create refund_requests entry
+                    const refundProtocol = `MON-${String(tx.transaction_id).substring(0, 12).toUpperCase()}`;
+                    const existing = await pool.query('SELECT id FROM refund_requests WHERE transaction_id = $1', [tx.transaction_id]);
+                    
+                    if (existing.rows.length === 0) {
+                        await pool.query(`
+                            INSERT INTO refund_requests (
+                                protocol, full_name, email, phone, product, reason, 
+                                status, source, refund_type, transaction_id, value, funnel_language, created_at
+                            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+                            ON CONFLICT (protocol) DO NOTHING
+                        `, [
+                            refundProtocol, tx.name || 'N/A', tx.email, tx.phone || null,
+                            tx.product,
+                            isChargeback ? 'Chargeback - Disputa de cartão' : 'Reembolso via Monetizze',
+                            'approved', 'monetizze', refundType, tx.transaction_id,
+                            parseFloat(tx.value) || 0, tx.funnel_language || 'en', tx.created_at || new Date()
+                        ]);
+                        refundsFound++;
+                    }
+                    
+                    updated++;
+                }
+                
+                // Small delay to avoid rate limiting Monetizze API
+                await new Promise(resolve => setTimeout(resolve, 200));
+                
+            } catch (txError) {
+                // Skip errors for individual transactions
+                continue;
+            }
+        }
+        
+        console.log(`✅ Re-check complete: ${updated} status changes found, ${refundsFound} refund_requests created (out of ${approved.rows.length} checked)`);
+        
+    } catch (error) {
+        console.error('❌ Re-check error:', error.message);
+    }
+}
+
 function startAutoSync() {
     // Run first deep sync 30 seconds after server start (fetch last 30 days)
     setTimeout(async () => {
         // First: deep sync last 30 days to catch all refunds/chargebacks
         await runDeepSync();
+        // Then: re-check each approved transaction individually for status changes
+        await recheckApprovedTransactions();
         // Then: backfill any missing refund_requests from transactions table
         await runRefundBackfill();
         // Run diagnostic to see what's in the DB
         await runDiagnosticLog();
         // Regular sync every 30 minutes (just yesterday + today)
         autoSyncInterval = setInterval(runAutoSync, 30 * 60 * 1000);
-        console.log('🔄 Auto-sync scheduled: every 30 minutes');
+        // Re-check approved transactions every 6 hours for status changes
+        setInterval(recheckApprovedTransactions, 6 * 60 * 60 * 1000);
+        console.log('🔄 Auto-sync scheduled: every 30 minutes | Re-check: every 6 hours');
     }, 30000);
 }
 
