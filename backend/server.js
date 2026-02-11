@@ -9191,6 +9191,67 @@ async function initDatabase() {
     }
 }
 
+// Debug endpoint: Customer journey - see all events for a specific email or visitor_id
+app.get('/api/admin/debug/customer-journey', authenticateToken, async (req, res) => {
+    try {
+        const { email, visitor_id } = req.query;
+        if (!email && !visitor_id) {
+            return res.status(400).json({ error: 'Provide email or visitor_id query parameter' });
+        }
+        
+        // Find lead
+        let lead = null;
+        let vid = visitor_id;
+        if (email) {
+            const leadResult = await pool.query(
+                `SELECT * FROM leads WHERE LOWER(email) = LOWER($1) ORDER BY created_at DESC LIMIT 1`,
+                [email]
+            );
+            if (leadResult.rows.length > 0) {
+                lead = leadResult.rows[0];
+                vid = lead.visitor_id;
+            }
+        }
+        
+        // Get all funnel events for this visitor
+        const events = vid ? await pool.query(
+            `SELECT event, page, created_at, metadata FROM funnel_events WHERE visitor_id = $1 ORDER BY created_at ASC`,
+            [vid]
+        ) : { rows: [] };
+        
+        // Get all transactions for this email
+        const transactions = email ? await pool.query(
+            `SELECT transaction_id, product, value, status, monetizze_status, funnel_language, funnel_source, created_at FROM transactions WHERE LOWER(email) = LOWER($1) ORDER BY created_at ASC`,
+            [email]
+        ) : (lead ? await pool.query(
+            `SELECT transaction_id, product, value, status, monetizze_status, funnel_language, funnel_source, created_at FROM transactions WHERE LOWER(email) = LOWER($1) ORDER BY created_at ASC`,
+            [lead.email]
+        ) : { rows: [] });
+        
+        // Get CAPI purchase logs
+        const capiLogs = email ? await pool.query(
+            `SELECT * FROM capi_purchase_logs WHERE LOWER(email) = LOWER($1) ORDER BY created_at ASC`,
+            [email]
+        ) : { rows: [] };
+        
+        res.json({
+            lead: lead ? { id: lead.id, email: lead.email, name: lead.name, visitor_id: lead.visitor_id, status: lead.status, funnel_language: lead.funnel_language, products_purchased: lead.products_purchased, total_spent: lead.total_spent, created_at: lead.created_at } : null,
+            visitor_id: vid,
+            funnel_events: events.rows,
+            transactions: transactions.rows,
+            capi_purchase_logs: capiLogs.rows,
+            summary: {
+                total_events: events.rows.length,
+                total_transactions: transactions.rows.length,
+                upsell_events: events.rows.filter(e => e.event.includes('upsell')).map(e => ({ event: e.event, page: e.page, time: e.created_at }))
+            }
+        });
+    } catch (error) {
+        console.error('Customer journey error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Debug endpoint: Upsell tracking analysis
 // Find upsell events that might be orphaned (not linked to leads)
 app.get('/api/admin/debug/upsell-tracking', authenticateToken, async (req, res) => {
