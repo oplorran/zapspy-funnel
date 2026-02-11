@@ -5892,6 +5892,78 @@ app.post('/api/admin/capi-catchup', authenticateToken, requireAdmin, async (req,
     }
 });
 
+// ==================== ENRICH PURCHASE: Capture fbc/fbp from thank-you/upsell page ====================
+// Called from upsell pages where the buyer's browser still has _fbc/_fbp cookies
+// This associates the Facebook click/browser IDs with the transaction for CAPI attribution
+app.post('/api/enrich-purchase', async (req, res) => {
+    try {
+        const { email, fbc, fbp, visitorId, ip, userAgent } = req.body;
+        
+        if (!email) {
+            return res.status(400).json({ success: false, error: 'email required' });
+        }
+        
+        if (!fbc && !fbp && !visitorId) {
+            return res.status(200).json({ success: true, message: 'no enrichment data' });
+        }
+        
+        console.log(`📊 ENRICH-PURCHASE: ${email} - fbc=${fbc ? 'Yes' : 'No'}, fbp=${fbp ? 'Yes' : 'No'}, vid=${visitorId || 'none'}`);
+        
+        // Update ALL recent transactions for this email that are missing fbc/fbp
+        const result = await pool.query(`
+            UPDATE transactions SET
+                fbc = COALESCE(transactions.fbc, $2),
+                fbp = COALESCE(transactions.fbp, $3),
+                visitor_id = COALESCE(transactions.visitor_id, $4),
+                updated_at = NOW()
+            WHERE LOWER(email) = LOWER($1)
+              AND created_at >= NOW() - INTERVAL '24 hours'
+              AND (fbc IS NULL OR fbp IS NULL OR visitor_id IS NULL)
+        `, [email, fbc || null, fbp || null, visitorId || null]);
+        
+        const updated = result.rowCount || 0;
+        console.log(`📊 ENRICH-PURCHASE: Updated ${updated} transactions for ${email}`);
+        
+        // Also update the lead record with fbc/fbp if missing
+        if (fbc || fbp) {
+            try {
+                await pool.query(`
+                    UPDATE leads SET
+                        fbc = COALESCE(leads.fbc, $2),
+                        fbp = COALESCE(leads.fbp, $3),
+                        visitor_id = COALESCE(leads.visitor_id, $4),
+                        ip_address = COALESCE(leads.ip_address, $5),
+                        user_agent = COALESCE(leads.user_agent, $6),
+                        updated_at = NOW()
+                    WHERE LOWER(email) = LOWER($1)
+                      AND (fbc IS NULL OR fbp IS NULL)
+                `, [email, fbc || null, fbp || null, visitorId || null, ip || null, userAgent || null]);
+            } catch (leadErr) { /* non-blocking */ }
+        }
+        
+        // If we enriched approved transactions that were missing CAPI logs, trigger catch-up
+        if (updated > 0 && (fbc || fbp)) {
+            const missingCapi = await pool.query(`
+                SELECT t.transaction_id FROM transactions t
+                LEFT JOIN capi_purchase_logs c ON t.transaction_id = c.transaction_id
+                WHERE LOWER(t.email) = LOWER($1) AND t.status = 'approved' AND c.transaction_id IS NULL
+                  AND t.created_at >= NOW() - INTERVAL '7 days'
+            `, [email]);
+            
+            if (missingCapi.rows.length > 0) {
+                console.log(`🔥 ENRICH-PURCHASE: Found ${missingCapi.rows.length} approved transactions for ${email} missing CAPI - triggering catch-up...`);
+                // Trigger catch-up asynchronously (don't block the response)
+                sendMissingCAPIPurchases().catch(err => console.error('CAPI catch-up error:', err.message));
+            }
+        }
+        
+        res.json({ success: true, updated, message: `${updated} transactions enriched` });
+    } catch (error) {
+        console.error('ENRICH-PURCHASE error:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // Clear CAPI logs missing FBC so they can be resent with correct data
 app.post('/api/admin/capi-clear-resend', authenticateToken, requireAdmin, async (req, res) => {
     try {

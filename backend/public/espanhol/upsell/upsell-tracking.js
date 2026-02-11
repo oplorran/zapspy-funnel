@@ -371,9 +371,54 @@ const UpsellTracker = {
         });
     },
     
+    // Enrich purchase with fbc/fbp from browser (called on upsell page load)
+    // The buyer just completed checkout and landed on the upsell page
+    // Their browser still has _fbc/_fbp cookies - send them to backend to associate with transaction
+    enrichPurchase: function() {
+        const email = localStorage.getItem('userEmail');
+        if (!email) {
+            console.log('📊 Enrich: No email found, skipping');
+            return;
+        }
+        
+        const fbIds = this.getFacebookIds();
+        const visitorId = this.getVisitorId();
+        
+        if (!fbIds.fbc && !fbIds.fbp && !visitorId) {
+            console.log('📊 Enrich: No fbc/fbp/vid found, skipping');
+            return;
+        }
+        
+        const data = {
+            email: email,
+            fbc: fbIds.fbc,
+            fbp: fbIds.fbp,
+            visitorId: visitorId,
+            ip: null, // Will be detected server-side
+            userAgent: navigator.userAgent
+        };
+        
+        console.log(`📊 Enriching purchase for ${email}: fbc=${fbIds.fbc ? 'Yes' : 'No'}, fbp=${fbIds.fbp ? 'Yes' : 'No'}, vid=${visitorId || 'none'}`);
+        
+        fetch(`${this.API_URL}/api/enrich-purchase`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(r => r.json())
+        .then(result => {
+            console.log('📊 Enrich result:', result);
+        })
+        .catch(err => console.log('📊 Enrich error:', err));
+    },
+    
     // Initialize
     init: function() {
         const self = this;
+        
+        // Enrich purchase data on FIRST upsell page (buyer just completed checkout)
+        // This captures fbc/fbp from browser and associates with the transaction
+        this.enrichPurchase();
         
         // Track page view immediately
         this.trackPageView();
