@@ -3061,10 +3061,16 @@ Posso ajudar com alguma dúvida?</textarea>
             const startIndex = (state.currentPage - 1) * state.perPage;
             const endIndex = Math.min(startIndex + state.perPage, totalItems);
             
+            // Texto de página
+            const pageText = totalItems > 0 ? `Página ${state.currentPage} de ${state.totalPages}` : '';
+            
             let html = `
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: rgba(0,0,0,0.2); border-radius: var(--radius-md); margin-top: 16px; border: 1px solid var(--border);">
-                    <div style="color: var(--text-muted); font-size: 13px; font-weight: 500;">
-                        ${totalItems === 0 ? 'Nenhum registro' : `Mostrando ${startIndex + 1}-${endIndex} de ${totalItems}`}
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <span style="color: var(--text-muted); font-size: 13px; font-weight: 500;">
+                            ${totalItems === 0 ? 'Nenhum registro' : `Mostrando ${startIndex + 1}-${endIndex} de ${totalItems}`}
+                        </span>
+                        ${pageText ? `<span style="color: var(--text-muted); font-size: 12px;">${pageText}</span>` : ''}
                     </div>
                     <div style="display: flex; align-items: center; gap: 12px;">
                         <select onchange="changePaginationPerPage('${sectionId}', this.value)" 
@@ -4441,15 +4447,20 @@ Estou aqui para esclarecer tudo! 😊`
                 if (response.status === 401 || response.status === 403) { logout(); return; }
                 const data = await response.json();
                 
-                renderLeads(data.leads);
-                renderRecentLeads(data.leads.slice(0, 5));
-                renderPagination(data.pagination);
+                renderLeads(data.leads || []);
+                renderRecentLeads((data.leads || []).slice(0, 5));
+                
+                // Garantir que pagination existe com valores padrão
+                const pagination = data.pagination || { page: 1, total: 0, totalPages: 1, limit: leadsPerPage || 10 };
+                renderPagination(pagination);
                 
                 // Update count with language indicator
                 const langLabel = language === 'en' ? ' (Inglês)' : language === 'es' ? ' (Espanhol)' : '';
-                document.getElementById('panelLeadCount').textContent = `${data.pagination.total} leads${langLabel}`;
+                document.getElementById('panelLeadCount').textContent = `${pagination.total} leads${langLabel}`;
             } catch (error) {
                 console.error('Error loading leads:', error);
+                // Resetar paginação em caso de erro
+                renderPagination({ page: 1, total: 0, totalPages: 1, limit: leadsPerPage || 10 });
             }
         }
         
@@ -4562,9 +4573,11 @@ Estou aqui para esclarecer tudo! 😊`
         }
         
         function renderPagination(pagination) {
-            if (!pagination) return;
-            const { page, total, totalPages, limit } = pagination;
-            const perPage = limit || 10;
+            // Garantir valores padrão
+            const page = pagination?.page || 1;
+            const total = pagination?.total || 0;
+            const totalPages = pagination?.totalPages || 1;
+            const perPage = pagination?.limit || leadsPerPage || 10;
             const start = total > 0 ? (page - 1) * perPage + 1 : 0;
             const end = Math.min(page * perPage, total);
             
@@ -4573,7 +4586,14 @@ Estou aqui para esclarecer tudo! 😊`
             const buttonsEl = document.getElementById('leadsPaginationButtons');
             const perPageSelect = document.getElementById('leadsPerPageSelect');
             const hintEl = document.getElementById('leadsPaginationHint');
-            if (!infoEl || !buttonsEl) return;
+            
+            // Log para debug
+            console.log('renderPagination called:', { page, total, totalPages, perPage, infoEl: !!infoEl, buttonsEl: !!buttonsEl });
+            
+            if (!infoEl || !buttonsEl) {
+                console.error('Pagination elements not found');
+                return;
+            }
             
             infoEl.textContent = total === 0 ? 'Nenhum lead' : `Mostrando ${start}-${end} de ${total}`;
             if (perPageSelect) perPageSelect.value = String(perPage);
