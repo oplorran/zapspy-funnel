@@ -173,6 +173,11 @@
     <script src="../upsell-tracking.js?v=1.0"></script>
     <script>
     (function(){var o=document.getElementById('loadingOverlay'),m=document.getElementById('mainPage'),pb=document.getElementById('progressBar'),pp=document.getElementById('progressPercent'),steps=document.querySelectorAll('.loading-step'),da=document.getElementById('discoveryAlert');if(!o||!m)return;var timeline=[{a:0,c:2500,p:20},{a:2500,c:5000,p:40},{a:5000,c:7500,p:60},{a:7500,c:10000,p:80},{a:10000,c:12500,p:95}],start=Date.now(),cp=0,as=false,sa=[],sc=[];for(var i=0;i<timeline.length;i++){sa.push(false);sc.push(false)}function up(t){if(t>cp){cp=t;pb.style.width=cp+'%';pp.textContent=cp+'%'}}function tick(){var e=Date.now()-start;for(var i=0;i<timeline.length;i++){if(!sa[i]&&e>=timeline[i].a){sa[i]=true;steps[i].classList.add('active')}if(!sc[i]&&e>=timeline[i].c){sc[i]=true;steps[i].classList.remove('active');steps[i].classList.add('done');var ic=steps[i].querySelector('.step-icon');if(ic){ic.classList.remove('pending');ic.classList.add('check');ic.innerHTML='✓'}up(timeline[i].p)}}if(e>=12500&&!as){as=true;da.classList.add('visible');if(navigator.vibrate)navigator.vibrate([100,50,100])}for(var j=0;j<timeline.length;j++){if(e>=timeline[j].a&&e<timeline[j].c){var sp=(e-timeline[j].a)/(timeline[j].c-timeline[j].a),pp2=j>0?timeline[j-1].p:0;up(Math.floor(pp2+(timeline[j].p-pp2)*sp));break}}if(e>=15000){up(100);pp.textContent='100%';setTimeout(function(){o.classList.add('fade-out');m.classList.remove('hidden-content');m.classList.add('reveal-content');setTimeout(function(){o.style.display='none'},800)},500);return}requestAnimationFrame(tick)}requestAnimationFrame(tick)})();
+    
+    // Initialize upsell tracking
+    if (typeof UpsellTracker !== 'undefined') {
+        UpsellTracker.init();
+    }
     </script>
 </body>
 

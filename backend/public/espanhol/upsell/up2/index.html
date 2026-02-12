@@ -390,5 +390,11 @@
         requestAnimationFrame(tick);
     })();
     </script>
+
+    // Initialize upsell tracking
+    if (typeof UpsellTracker !== 'undefined') {
+        UpsellTracker.init();
+    }
+    </script>
 </body>
 </html>
