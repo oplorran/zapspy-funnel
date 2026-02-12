@@ -143,26 +143,4 @@
     // Initialize feed
     initActivityFeed();
 
-    // ============================================
-    // PREVENT PAGE EXIT
-    // ============================================
-    var isProcessingPayment = false;
-    
-    window.addEventListener('beforeunload', function (e) {
-        if (isProcessingPayment) {
-            return undefined;
-        }
-        e.preventDefault();
-        e.returnValue = '¿Estás seguro de que quieres salir? ¡Podrías perder tu oferta especial de actualización!';
-        return e.returnValue;
-    });
-
-    var ctaButtons = document.querySelectorAll('.btn-primary[data-upsell]');
-    
-    ctaButtons.forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-            isProcessingPayment = true;
-        });
-    });
-
 })();

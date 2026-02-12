@@ -1,4 +1,4 @@
-(function(){
+﻿(function(){
 
     // ============================================
     // VIP PROCESSING OVERLAY - 35 SECOND DELAY
@@ -414,34 +414,4 @@
             }
         });
     }
-
-    // ============================================
-    // PREVENT ACCIDENTAL PAGE EXIT
-    // ============================================
-    let isProcessingPayment = false;
-    
-    window.addEventListener('beforeunload', function (e) {
-        // If payment is being processed, ALLOW navigation (Monetizze is redirecting to next upsell)
-        if (isProcessingPayment) {
-            return undefined;
-        }
-        e.preventDefault();
-        e.returnValue = '¿Estás seguro de que quieres salir? ¡Podrías perder tu descuento especial!';
-        return e.returnValue;
-    });
-
-    // ============================================
-    // LOADING OVERLAY ON CTA CLICK - DISABLED
-    // ============================================
-    // Loading overlay removed to avoid interfering with Monetizze 1-click processing
-    
-    var ctaButtons = document.querySelectorAll('.btn-primary[data-upsell]');
-    
-    ctaButtons.forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-            // Just mark as processing for beforeunload warning
-            isProcessingPayment = true;
-        });
-    });
-
 })();

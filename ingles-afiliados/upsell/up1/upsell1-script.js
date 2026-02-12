@@ -1,4 +1,4 @@
-(function(){
+﻿(function(){
 
     // ============================================
     // VIP PROCESSING OVERLAY - REMOVED
@@ -165,35 +165,4 @@
             }
         });
     }
-
-    // ============================================
-    // PREVENT ACCIDENTAL PAGE EXIT
-    // ============================================
-    let isProcessingPayment = false;
-    
-    window.addEventListener('beforeunload', function (e) {
-        if (isProcessingPayment) {
-            return undefined;
-        }
-        e.preventDefault();
-        e.returnValue = 'Are you sure you want to leave? You may lose your special discount!';
-        return e.returnValue;
-    });
-
-    // ============================================
-    // LOADING OVERLAY ON CTA CLICK - DISABLED
-    // ============================================
-    // Loading overlay removed to avoid interfering with Monetizze 1-click processing
-    // The overlay was potentially blocking the Monetizze iframe/popup
-    
-    const ctaButtons = document.querySelectorAll('.btn-primary[data-upsell]');
-    
-    ctaButtons.forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-            // Just mark as processing for beforeunload warning
-            isProcessingPayment = true;
-            // Don't show overlay - let Monetizze handle the UI
-        });
-    });
-
 })();

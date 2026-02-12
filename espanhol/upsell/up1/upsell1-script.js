@@ -166,26 +166,4 @@
         });
     }
 
-    // ============================================
-    // PREVENT ACCIDENTAL PAGE EXIT
-    // ============================================
-    let isProcessingPayment = false;
-    
-    window.addEventListener('beforeunload', function (e) {
-        if (isProcessingPayment) {
-            return undefined;
-        }
-        e.preventDefault();
-        e.returnValue = '¿Estás seguro de que quieres salir? ¡Podrías perder tu descuento especial!';
-        return e.returnValue;
-    });
-
-    var ctaButtons = document.querySelectorAll('.btn-primary[data-upsell]');
-    
-    ctaButtons.forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-            isProcessingPayment = true;
-        });
-    });
-
 })();

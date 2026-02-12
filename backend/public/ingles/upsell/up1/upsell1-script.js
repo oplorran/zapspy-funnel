@@ -1,4 +1,4 @@
-(function(){
+﻿(function(){
 
     // ============================================
     // VIP PROCESSING OVERLAY - 35 SECOND DELAY
@@ -414,36 +414,4 @@
             }
         });
     }
-
-    // ============================================
-    // PREVENT ACCIDENTAL PAGE EXIT
-    // ============================================
-    // IMPORTANT: Do NOT block navigation when payment is processing!
-    // After 1-click buy, Monetizze redirects to the next upsell page.
-    // If we block that redirect, the customer never sees UP2/UP3.
-    let isProcessingPayment = false;
-    
-    window.addEventListener('beforeunload', function (e) {
-        // If payment is being processed, ALLOW navigation (Monetizze is redirecting to next upsell)
-        if (isProcessingPayment) {
-            return undefined;
-        }
-        // Only warn if user tries to leave WITHOUT buying (accidental exit)
-        e.preventDefault();
-        e.returnValue = 'Are you sure you want to leave? You may lose your special discount!';
-        return e.returnValue;
-    });
-
-    // ============================================
-    // CTA CLICK HANDLER
-    // ============================================
-    const ctaButtons = document.querySelectorAll('.btn-primary[data-upsell]');
-    
-    ctaButtons.forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-            // Mark as processing so beforeunload allows Monetizze redirect
-            isProcessingPayment = true;
-        });
-    });
-
 })();

@@ -1,4 +1,4 @@
-(function(){
+﻿(function(){
 
     // ============================================
     // VIP PROCESSING OVERLAY - 35 SECOND DELAY
@@ -414,38 +414,4 @@
             }
         });
     }
-
-    // ============================================
-    // PREVENT ACCIDENTAL PAGE EXIT
-    // ============================================
-    let isProcessingPayment = false;
-    
-    window.addEventListener('beforeunload', function (e) {
-        if (isProcessingPayment) {
-            return undefined;
-        }
-        e.preventDefault();
-        e.returnValue = '¿Estás seguro de que quieres salir? ¡Podrías perder tu descuento especial!';
-        return e.returnValue;
-    });
-
-    // ============================================
-    // LOADING OVERLAY ON CTA CLICK
-    // ============================================
-    const ctaButtons = document.querySelectorAll('.btn-primary[data-upsell]');
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    
-    ctaButtons.forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-            // Show loading overlay
-            if (loadingOverlay) {
-                isProcessingPayment = true;
-                loadingOverlay.classList.add('active');
-                
-                // Disable scrolling
-                document.body.style.overflow = 'hidden';
-            }
-        });
-    });
-
 })();

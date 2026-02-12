@@ -348,27 +348,7 @@ const UpsellTracker = {
             }
         }, { passive: true });
         
-        // Track exit (before unload)
-        window.addEventListener('beforeunload', function() {
-            const timeOnPage = Math.round((Date.now() - self.pageLoadTime) / 1000);
-            const exitEvent = upsell === 1 ? self.events.EXIT_UPSELL_1 : 
-                              upsell === 2 ? self.events.EXIT_UPSELL_2 : 
-                              self.events.EXIT_UPSELL_3;
-            
-            // Use sendBeacon for reliable exit tracking
-            const data = {
-                visitorId: self.getVisitorId(),
-                event: exitEvent,
-                page: window.location.pathname,
-                metadata: {
-                    timeOnPage: timeOnPage,
-                    scrollDepth: self.scrollDepth,
-                    exitType: 'beforeunload'
-                }
-            };
-            
-            navigator.sendBeacon(`${self.API_URL}/api/track`, JSON.stringify(data));
-        });
+        // beforeunload removed - was interfering with Monetizze redirects
     },
     
     // Enrich purchase with fbc/fbp from browser (called on upsell page load)

@@ -157,26 +157,4 @@
     });
 
 
-    // ============================================
-    // PREVENT PAGE EXIT
-    // ============================================
-    var isProcessingPayment = false;
-    
-    window.addEventListener('beforeunload', function (e) {
-        if (isProcessingPayment) {
-            return undefined;
-        }
-        e.preventDefault();
-        e.returnValue = 'Are you sure you want to leave? You may lose your VIP priority access forever!';
-        return e.returnValue;
-    });
-
-    var ctaButtons = document.querySelectorAll('.btn-primary[data-upsell]');
-    
-    ctaButtons.forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-            isProcessingPayment = true;
-        });
-    });
-
 })();

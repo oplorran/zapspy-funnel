@@ -1,4 +1,4 @@
-(function(){
+﻿(function(){
 
     // ============================================
     // VIP PROCESSING OVERLAY - REMOVED FOR BETTER CONVERSION
@@ -212,33 +212,4 @@
     // Initialize feed and start updates
     initActivityFeed();
     scheduleActivityUpdate();
-
-    // ============================================
-    // PREVENT PAGE EXIT
-    // ============================================
-    var isProcessingPayment = false;
-    
-    window.addEventListener('beforeunload', function (e) {
-        if (isProcessingPayment) {
-            return undefined;
-        }
-        e.preventDefault();
-        e.returnValue = '¿Estás seguro de que quieres salir? ¡Podrías perder tu oferta especial de actualización!';
-        return e.returnValue;
-    });
-
-    // ============================================
-    // LOADING OVERLAY ON CTA CLICK - DISABLED
-    // ============================================
-    // Loading overlay removed to avoid interfering with Monetizze 1-click processing
-    
-    var ctaButtons = document.querySelectorAll('.btn-primary[data-upsell]');
-    
-    ctaButtons.forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-            // Just mark as processing for beforeunload warning
-            isProcessingPayment = true;
-        });
-    });
-
 })();

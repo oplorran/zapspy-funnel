@@ -144,25 +144,9 @@
     initActivityFeed();
 
     // ============================================
-    // PREVENT PAGE EXIT
+    // FOOTER YEAR
     // ============================================
-    var isProcessingPayment = false;
-    
-    window.addEventListener('beforeunload', function (e) {
-        if (isProcessingPayment) {
-            return undefined;
-        }
-        e.preventDefault();
-        e.returnValue = 'Are you sure you want to leave? You may lose your special upgrade offer!';
-        return e.returnValue;
-    });
-
-    var ctaButtons = document.querySelectorAll('.btn-primary[data-upsell]');
-    
-    ctaButtons.forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-            isProcessingPayment = true;
-        });
-    });
+    var yearEl = document.getElementById('year');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
 
 })();

@@ -4,17 +4,12 @@
  * 
  * Pixel para funil espanhol:
  * - Pixel: 534495082571779 (PIXEL SPY ESPANHOL)
+ * - O backend gerencia os tokens via funnelLanguage: 'es'
  */
 
 const FacebookCAPI = {
     // Siempre usar el backend Railway para CAPI (los funnels pueden estar en otro dominio)
     API_URL: 'https://zapspy-funnel-production.up.railway.app',
-    
-    // Spanish funnel pixel ID
-    PIXEL_IDS: ['534495082571779'],
-    
-    // Access token for CAPI (shared between both pixels)
-    ACCESS_TOKEN: 'EAALZCphpZCmcIBQh5zHSNNj666RUi8XybMe3ZBRE31J9czSE04LBY4nZC9PBNG8SFNL4yCJf6zb9V88JkjNz55nTaIZC2wKSW22OhohIBY0IyYPYXTBFQTBVWUUIYDHhgZBf1CDVye724ekcSA6UbwSqJQPK8XYLEkvUfoJtXq7ktPv7qMOjloAx3jXdjUdJM3TgZDZD',
     
     generateEventId: function(eventName) {
         const timestamp = Date.now();
@@ -128,9 +123,6 @@ const FacebookCAPI = {
                 fbc: userData.fbc,
                 fbp: userData.fbp,
                 eventSourceUrl: window.location.href,
-                // Spanish funnel specific config
-                pixelIds: this.PIXEL_IDS,
-                accessToken: this.ACCESS_TOKEN,
                 funnelLanguage: 'es',
                 ...customData
             };

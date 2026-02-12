@@ -1,4 +1,4 @@
-(function(){
+﻿(function(){
 
     // ============================================
     // VIP PROCESSING OVERLAY - REMOVED FOR BETTER CONVERSION
@@ -225,32 +225,4 @@
         section.style.animationDelay = (index * 0.15) + 's';
         section.classList.add('fade-in');
     });
-
-
-    // ============================================
-    // PREVENT PAGE EXIT
-    // ============================================
-    var isProcessingPayment = false;
-    
-    window.addEventListener('beforeunload', function (e) {
-        // If payment is being processed, ALLOW navigation (Monetizze is redirecting to thankyou)
-        if (isProcessingPayment) {
-            return undefined;
-        }
-        e.preventDefault();
-        e.returnValue = 'Are you sure you want to leave? You may lose your VIP priority access forever!';
-        return e.returnValue;
-    });
-
-    // ============================================
-    // CTA CLICK HANDLER
-    // ============================================
-    var ctaButtons = document.querySelectorAll('.btn-primary[data-upsell]');
-    
-    ctaButtons.forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-            isProcessingPayment = true;
-        });
-    });
-
 })();
