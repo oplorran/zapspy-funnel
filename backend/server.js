@@ -2399,60 +2399,87 @@ app.get('/api/admin/stats/comparison', authenticateToken, async (req, res) => {
     }
 });
 
-// Get flexible period comparison (week, month, quarter)
+// Get flexible period comparison (day, week, month, quarter)
 app.get('/api/admin/stats/period-comparison', authenticateToken, async (req, res) => {
     try {
         const { type = 'week' } = req.query;
         
-        // Define intervals based on period type
-        let currentInterval, previousInterval;
-        switch (type) {
-            case 'day':
-                currentInterval = '1 day';
-                previousInterval = '2 days';
-                break;
-            case 'month':
-                currentInterval = '30 days';
-                previousInterval = '60 days';
-                break;
-            case 'quarter':
-                currentInterval = '90 days';
-                previousInterval = '180 days';
-                break;
-            case 'week':
-            default:
-                currentInterval = '7 days';
-                previousInterval = '14 days';
-                break;
+        let currentLeads, currentSales, previousLeads, previousSales;
+        
+        if (type === 'day') {
+            // Today vs Yesterday - use specific dates
+            // Today: from start of today until now
+            currentLeads = await pool.query(`
+                SELECT COUNT(*) FROM leads 
+                WHERE (created_at AT TIME ZONE 'America/Sao_Paulo')::date = (NOW() AT TIME ZONE 'America/Sao_Paulo')::date
+            `);
+            
+            currentSales = await pool.query(`
+                SELECT COUNT(*), COALESCE(SUM(CAST(value AS DECIMAL)), 0) as revenue
+                FROM transactions 
+                WHERE status = 'approved' 
+                AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date = (NOW() AT TIME ZONE 'America/Sao_Paulo')::date
+            `);
+            
+            // Yesterday: full day
+            previousLeads = await pool.query(`
+                SELECT COUNT(*) FROM leads 
+                WHERE (created_at AT TIME ZONE 'America/Sao_Paulo')::date = ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '1 day')::date
+            `);
+            
+            previousSales = await pool.query(`
+                SELECT COUNT(*), COALESCE(SUM(CAST(value AS DECIMAL)), 0) as revenue
+                FROM transactions 
+                WHERE status = 'approved' 
+                AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date = ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '1 day')::date
+            `);
+        } else {
+            // Week, month, quarter - use intervals
+            let currentInterval, previousInterval;
+            switch (type) {
+                case 'month':
+                    currentInterval = '30 days';
+                    previousInterval = '60 days';
+                    break;
+                case 'quarter':
+                    currentInterval = '90 days';
+                    previousInterval = '180 days';
+                    break;
+                case 'week':
+                default:
+                    currentInterval = '7 days';
+                    previousInterval = '14 days';
+                    break;
+            }
+            
+            // Current period stats
+            currentLeads = await pool.query(`
+                SELECT COUNT(*) FROM leads 
+                WHERE (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '${currentInterval}')::date
+            `);
+            
+            currentSales = await pool.query(`
+                SELECT COUNT(*), COALESCE(SUM(CAST(value AS DECIMAL)), 0) as revenue
+                FROM transactions 
+                WHERE status = 'approved' 
+                AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '${currentInterval}')::date
+            `);
+            
+            // Previous period stats
+            previousLeads = await pool.query(`
+                SELECT COUNT(*) FROM leads 
+                WHERE (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '${previousInterval}')::date 
+                AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date < ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '${currentInterval}')::date
+            `);
+            
+            previousSales = await pool.query(`
+                SELECT COUNT(*), COALESCE(SUM(CAST(value AS DECIMAL)), 0) as revenue
+                FROM transactions 
+                WHERE status = 'approved' 
+                AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '${previousInterval}')::date
+                AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date < ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '${currentInterval}')::date
+            `);
         }
-        
-        // Current period stats
-        const currentLeads = await pool.query(`
-            SELECT COUNT(*) FROM leads 
-            WHERE (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '${currentInterval}')::date
-        `);
-        
-        const currentSales = await pool.query(`
-            SELECT COUNT(*), COALESCE(SUM(CAST(value AS DECIMAL)), 0) as revenue
-            FROM transactions 
-            WHERE status = 'approved' 
-            AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '${currentInterval}')::date
-        `);
-        
-        // Previous period stats
-        const previousLeads = await pool.query(`
-            SELECT COUNT(*) FROM leads 
-            WHERE (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '${previousInterval}')::date 
-            AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date < ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '${currentInterval}')::date
-        `);
-        
-        const previousSales = await pool.query(`
-            SELECT COUNT(*), COALESCE(SUM(CAST(value AS DECIMAL)), 0) as revenue
-            FROM transactions 
-            WHERE status = 'approved' 
-            AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '${previousInterval}')::date
-            AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date < ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '${currentInterval}')::date
-        `);
         
         res.json({
             periodType: type,
