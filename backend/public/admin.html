@@ -3796,7 +3796,7 @@ Estou aqui para esclarecer tudo! 😊`
             loadCountriesData();
             loadTrendsData();
             loadClients(1);
-            loadFinancialData();
+            // loadFinancialData is only called when user opens the Financial tab (via switchTab)
         }
         
         // Global filter change handler (language + date + source)
@@ -11512,7 +11512,7 @@ Posso ajudar em algo mais? 😊`
                 
             } catch (error) {
                 console.error('Error loading financial data:', error);
-                showToast('Erro', 'Falha ao carregar dados financeiros', 'error');
+                showToast('Erro', 'Falha ao carregar dados financeiros: ' + error.message, 'error');
             }
         }
         

@@ -2489,10 +2489,12 @@ app.get('/api/admin/financial/summary', authenticateToken, async (req, res) => {
         
         const txWhere = txConditions.join(' AND ');
         
-        // Today's revenue and sales
+        console.log('📊 Financial summary request - days:', days, 'language:', language, 'source:', source);
+        
+        // Today's revenue and sales (use NULLIF to handle empty strings in value)
         const todayQuery = `
             SELECT 
-                COALESCE(SUM(CAST(t.value AS DECIMAL)), 0) as revenue,
+                COALESCE(SUM(CASE WHEN t.value ~ '^[0-9.]+$' THEN CAST(t.value AS DECIMAL) ELSE 0 END), 0) as revenue,
                 COUNT(*) as sales
             FROM transactions t
             WHERE ${txWhere}
@@ -2502,7 +2504,7 @@ app.get('/api/admin/financial/summary', authenticateToken, async (req, res) => {
         // This month's revenue and sales
         const monthQuery = `
             SELECT 
-                COALESCE(SUM(CAST(t.value AS DECIMAL)), 0) as revenue,
+                COALESCE(SUM(CASE WHEN t.value ~ '^[0-9.]+$' THEN CAST(t.value AS DECIMAL) ELSE 0 END), 0) as revenue,
                 COUNT(*) as sales
             FROM transactions t
             WHERE ${txWhere}
@@ -2532,7 +2534,7 @@ app.get('/api/admin/financial/summary', authenticateToken, async (req, res) => {
             WITH daily_revenue AS (
                 SELECT 
                     (t.created_at AT TIME ZONE 'America/Sao_Paulo')::date as day,
-                    COALESCE(SUM(CAST(t.value AS DECIMAL)), 0) as revenue,
+                    COALESCE(SUM(CASE WHEN t.value ~ '^[0-9.]+$' THEN CAST(t.value AS DECIMAL) ELSE 0 END), 0) as revenue,
                     COUNT(*) as sales
                 FROM transactions t
                 WHERE ${txWhere}
@@ -2571,7 +2573,7 @@ app.get('/api/admin/financial/summary', authenticateToken, async (req, res) => {
             WITH monthly_revenue AS (
                 SELECT 
                     date_trunc('month', (t.created_at AT TIME ZONE 'America/Sao_Paulo')::date)::date as month,
-                    COALESCE(SUM(CAST(t.value AS DECIMAL)), 0) as revenue,
+                    COALESCE(SUM(CASE WHEN t.value ~ '^[0-9.]+$' THEN CAST(t.value AS DECIMAL) ELSE 0 END), 0) as revenue,
                     COUNT(*) as sales
                 FROM transactions t
                 WHERE ${txWhere}
@@ -2598,14 +2600,58 @@ app.get('/api/admin/financial/summary', authenticateToken, async (req, res) => {
             LIMIT 12
         `;
         
-        const [todayResult, monthResult, todayCosts, monthCosts, dailyResult, monthlyResult] = await Promise.all([
-            pool.query(todayQuery, txParams),
-            pool.query(monthQuery, txParams),
-            pool.query(todayCostsQuery),
-            pool.query(monthCostsQuery),
-            pool.query(dailyQuery, txParams),
-            pool.query(monthlyQuery, txParams)
-        ]);
+        // Execute queries one by one for better error identification
+        let todayResult, monthResult, todayCosts, monthCosts, dailyResult, monthlyResult;
+        
+        try {
+            console.log('📊 Running todayQuery...');
+            todayResult = await pool.query(todayQuery, txParams);
+        } catch (e) {
+            console.error('❌ todayQuery failed:', e.message);
+            throw e;
+        }
+        
+        try {
+            console.log('📊 Running monthQuery...');
+            monthResult = await pool.query(monthQuery, txParams);
+        } catch (e) {
+            console.error('❌ monthQuery failed:', e.message);
+            throw e;
+        }
+        
+        try {
+            console.log('📊 Running todayCostsQuery...');
+            todayCosts = await pool.query(todayCostsQuery);
+        } catch (e) {
+            console.error('❌ todayCostsQuery failed:', e.message);
+            throw e;
+        }
+        
+        try {
+            console.log('📊 Running monthCostsQuery...');
+            monthCosts = await pool.query(monthCostsQuery);
+        } catch (e) {
+            console.error('❌ monthCostsQuery failed:', e.message);
+            throw e;
+        }
+        
+        try {
+            console.log('📊 Running dailyQuery...');
+            dailyResult = await pool.query(dailyQuery, txParams);
+        } catch (e) {
+            console.error('❌ dailyQuery failed:', e.message);
+            throw e;
+        }
+        
+        try {
+            console.log('📊 Running monthlyQuery...');
+            monthlyResult = await pool.query(monthlyQuery, txParams);
+        } catch (e) {
+            console.error('❌ monthlyQuery failed:', e.message);
+            throw e;
+        }
+        
+        console.log('✅ All financial queries completed successfully');
         
         const todayData = todayResult.rows[0] || {};
         const monthData = monthResult.rows[0] || {};
