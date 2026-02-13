@@ -940,8 +940,11 @@
                         <h2>💰 Vendas e Faturamento</h2>
                         <div id="salesLangIndicator"><span class="lang-badge all">🌍 Todos os Funis</span></div>
                     </div>
-                    <!-- Main Stats -->
-                    <div class="stats-grid">
+                    <!-- Section 1: Receita (4 main cards) -->
+                    <div style="margin-bottom: 8px;">
+                        <h3 style="font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin: 0; padding-left: 4px;">Receita</h3>
+                    </div>
+                    <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr) !important; margin-bottom: 28px;">
                         <div class="stat-card">
                             <div class="stat-header">
                                 <span class="stat-label">Vendas Aprovadas</span>
@@ -958,20 +961,6 @@
                         </div>
                         <div class="stat-card">
                             <div class="stat-header">
-                                <span class="stat-label">Taxa Conversão</span>
-                                <div class="stat-icon purple">📊</div>
-                            </div>
-                            <div class="stat-value" id="salesConversion">0%</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-header">
-                                <span class="stat-label">Reembolsos</span>
-                                <div class="stat-icon orange">↩️</div>
-                            </div>
-                            <div class="stat-value red" id="salesRefunded">0</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-header">
                                 <span class="stat-label">Ticket Médio</span>
                                 <div class="stat-icon blue">🎫</div>
                             </div>
@@ -979,11 +968,18 @@
                         </div>
                         <div class="stat-card">
                             <div class="stat-header">
-                                <span class="stat-label">Vendas/Cliente</span>
-                                <div class="stat-icon purple">👥</div>
+                                <span class="stat-label">Taxa Conversão</span>
+                                <div class="stat-icon purple">📊</div>
                             </div>
-                            <div class="stat-value purple" id="salesPerCustomer">0</div>
+                            <div class="stat-value" id="salesConversion">0%</div>
                         </div>
+                    </div>
+                    
+                    <!-- Section 2: Performance (5 cards) -->
+                    <div style="margin-bottom: 8px;">
+                        <h3 style="font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin: 0; padding-left: 4px;">Performance</h3>
+                    </div>
+                    <div class="stats-grid" style="grid-template-columns: repeat(5, 1fr) !important; margin-bottom: 28px;">
                         <div class="stat-card">
                             <div class="stat-header">
                                 <span class="stat-label">Taxa Aprovação</span>
@@ -993,24 +989,17 @@
                         </div>
                         <div class="stat-card">
                             <div class="stat-header">
-                                <span class="stat-label">Checkout Abandonado</span>
-                                <div class="stat-icon red">🚪</div>
+                                <span class="stat-label">Clientes Únicos</span>
+                                <div class="stat-icon green">🧑</div>
                             </div>
-                            <div class="stat-value red" id="salesCheckoutAbandoned">0</div>
+                            <div class="stat-value green" id="salesUniqueCustomers">0</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-header">
-                                <span class="stat-label">Receita Perdida</span>
-                                <div class="stat-icon red">📉</div>
+                                <span class="stat-label">Vendas/Cliente</span>
+                                <div class="stat-icon purple">👥</div>
                             </div>
-                            <div class="stat-value red" id="salesLostRevenue">R$ 0</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-header">
-                                <span class="stat-label">Vendas Perdidas</span>
-                                <div class="stat-icon red">❌</div>
-                            </div>
-                            <div class="stat-value red" id="salesCancelled">0</div>
+                            <div class="stat-value purple" id="salesPerCustomer">0</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-header">
@@ -1026,19 +1015,47 @@
                             </div>
                             <div class="stat-value purple" id="salesUpsellTakeRate">0%</div>
                         </div>
-                        <div class="stat-card">
-                            <div class="stat-header">
-                                <span class="stat-label">Clientes Únicos</span>
-                                <div class="stat-icon green">🧑</div>
-                            </div>
-                            <div class="stat-value green" id="salesUniqueCustomers">0</div>
-                        </div>
+                    </div>
+                    
+                    <!-- Section 3: Funil e Perdas (5 cards) -->
+                    <div style="margin-bottom: 8px;">
+                        <h3 style="font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin: 0; padding-left: 4px;">Funil e Perdas</h3>
+                    </div>
+                    <div class="stats-grid" style="grid-template-columns: repeat(5, 1fr) !important;">
                         <div class="stat-card">
                             <div class="stat-header">
                                 <span class="stat-label">Checkouts Iniciados</span>
                                 <div class="stat-icon purple">🛒</div>
                             </div>
                             <div class="stat-value purple" id="salesCheckoutClicked">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-label">Checkout Abandonado</span>
+                                <div class="stat-icon red">🚪</div>
+                            </div>
+                            <div class="stat-value red" id="salesCheckoutAbandoned">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-label">Vendas Perdidas</span>
+                                <div class="stat-icon red">❌</div>
+                            </div>
+                            <div class="stat-value red" id="salesCancelled">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-label">Receita Perdida</span>
+                                <div class="stat-icon red">📉</div>
+                            </div>
+                            <div class="stat-value red" id="salesLostRevenue">R$ 0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-label">Reembolsos</span>
+                                <div class="stat-icon orange">↩️</div>
+                            </div>
+                            <div class="stat-value red" id="salesRefunded">0</div>
                         </div>
                     </div>
                     
