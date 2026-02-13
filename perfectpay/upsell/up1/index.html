@@ -1,0 +1,603 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- UTMify tracking -->
+    <script src="https://cdn.utmify.com.br/scripts/utms/latest.js" data-utmify-prevent-xcod-sck data-utmify-prevent-subids async defer></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Recover Deleted Conversations, Photos and Videos</title>
+    
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    
+    // Advanced Matching - get user data from localStorage
+    var userData = {};
+    try {
+        var em = localStorage.getItem('userEmail');
+        var ph = localStorage.getItem('userWhatsApp');
+        var fn = localStorage.getItem('userName');
+        var ct = localStorage.getItem('userCity');
+        var co = localStorage.getItem('userCountryCode');
+        var ge = localStorage.getItem('targetGender');
+        var st = localStorage.getItem('userState');
+        if (em) userData.em = em.toLowerCase().trim();
+        if (ph) userData.ph = ph.replace(/\D/g, '');
+        if (fn) {
+            var names = fn.trim().split(' ');
+            userData.fn = names[0].toLowerCase();
+            if (names.length > 1) userData.ln = names.slice(1).join(' ').toLowerCase();
+        }
+        if (ct) userData.ct = ct.toLowerCase().replace(/[^a-z]/g, '');
+        if (co) userData.country = co.toLowerCase();
+        if (ge) userData.ge = ge === 'female' ? 'f' : 'm';
+        if (st) userData.st = st.toLowerCase().replace(/[^a-z]/g, '');
+    } catch(e) {}
+    
+    fbq('init', '726299943423075', userData);
+    var pvId = 'PageView_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    fbq('track', 'PageView', {}, { eventID: pvId });
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=726299943423075&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
+    
+    <!-- Facebook CAPI Client -->
+    <script src="../../js/facebook-capi.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof FacebookCAPI !== 'undefined') {
+                FacebookCAPI.init('Upsell 1 - Message Vault');
+                // Track ViewContent for CAPI
+                FacebookCAPI.trackViewContent('Upsell Page', 'Funnel - Upsell', 47);
+            }
+        });
+    </script>
+    
+    <meta name="description" content="Special offer: recover deleted conversations, photos and videos from the last 90 days.">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔓</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../vip-overlay-styles.css?v=8.0">
+    <link rel="stylesheet" href="upsell1-styles.css?v=8.0">
+    <!-- PerfectPay: upsells são gerenciados no painel da PerfectPay -->
+    <style>
+        /* ========== LOADING OVERLAY ========== */
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 99999;
+            background: linear-gradient(135deg, #0a0a1a 0%, #0d1b2a 40%, #1b2838 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.8s ease, transform 0.8s ease;
+            overflow: hidden;
+        }
+        .loading-overlay.fade-out {
+            opacity: 0;
+            transform: scale(1.05);
+            pointer-events: none;
+        }
+        .loading-overlay::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle at 30% 50%, rgba(0, 200, 83, 0.04) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 50%, rgba(37, 211, 102, 0.03) 0%, transparent 50%);
+            animation: bgPulse 4s ease-in-out infinite;
+        }
+        @keyframes bgPulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+        
+        /* Scan line effect */
+        .loading-overlay::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(37, 211, 102, 0.6), transparent);
+            animation: scanLine 3s linear infinite;
+        }
+        @keyframes scanLine {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+
+        .loading-container {
+            position: relative;
+            z-index: 2;
+            width: 90%;
+            max-width: 440px;
+            text-align: center;
+        }
+
+        /* Top icon */
+        .loading-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            animation: iconFloat 2s ease-in-out infinite;
+        }
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .loading-title {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 8px;
+            letter-spacing: -0.3px;
+        }
+        .loading-subtitle {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 28px;
+        }
+
+        /* Progress bar */
+        .progress-wrapper {
+            background: rgba(255,255,255,0.08);
+            border-radius: 20px;
+            height: 8px;
+            overflow: hidden;
+            margin-bottom: 32px;
+            position: relative;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            border-radius: 20px;
+            background: linear-gradient(90deg, #25D366, #00c853, #25D366);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s linear infinite;
+            transition: width 0.5s ease;
+        }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .progress-percent {
+            font-family: 'DM Sans', monospace;
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 8px;
+            margin-bottom: 24px;
+        }
+
+        /* Steps list */
+        .loading-steps {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            text-align: left;
+        }
+        .loading-step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            margin-bottom: 6px;
+            border-radius: 10px;
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+        }
+        .loading-step.active {
+            opacity: 1;
+            transform: translateX(0);
+            color: rgba(255,255,255,0.9);
+            background: rgba(255,255,255,0.03);
+        }
+        .loading-step.done {
+            opacity: 1;
+            transform: translateX(0);
+            color: rgba(255,255,255,0.5);
+        }
+        .loading-step .step-icon {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 14px;
+            flex-shrink: 0;
+            transition: all 0.4s ease;
+        }
+        .loading-step .step-icon.pending {
+            background: rgba(255,255,255,0.08);
+            border: 2px solid rgba(255,255,255,0.15);
+        }
+        .loading-step.active .step-icon.pending {
+            border-color: #25D366;
+            background: rgba(37, 211, 102, 0.1);
+        }
+        .loading-step.active .step-icon.pending::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #25D366;
+            animation: pulse 1s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.4); opacity: 0.5; }
+        }
+        .loading-step .step-icon.check {
+            background: #25D366;
+            border: 2px solid #25D366;
+            color: #fff;
+            font-size: 13px;
+            animation: checkPop 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        @keyframes checkPop {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+        .loading-step .step-text {
+            flex: 1;
+        }
+        .loading-step .step-dots {
+            display: none;
+        }
+        .loading-step.active .step-dots {
+            display: inline;
+            animation: dots 1.5s steps(4) infinite;
+        }
+        @keyframes dots {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+        }
+        .loading-step.active .step-dots::after {
+            content: '';
+            animation: dotContent 1.5s steps(1) infinite;
+        }
+        @keyframes dotContent {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+        }
+
+        /* Discovery alert */
+        .discovery-alert {
+            display: none;
+            margin-top: 20px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            background: rgba(255, 193, 7, 0.08);
+            border: 1px solid rgba(255, 193, 7, 0.25);
+            animation: alertSlide 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .discovery-alert.visible {
+            display: block;
+        }
+        @keyframes alertSlide {
+            0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .discovery-alert .alert-icon {
+            font-size: 24px;
+            display: block;
+            margin-bottom: 8px;
+            animation: alertPulse 0.8s ease-in-out infinite alternate;
+        }
+        @keyframes alertPulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+        .discovery-alert .alert-title {
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 700;
+            font-size: 15px;
+            color: #ffc107;
+            margin-bottom: 4px;
+        }
+        .discovery-alert .alert-text {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12px;
+            color: rgba(255,255,255,0.6);
+            line-height: 1.5;
+        }
+        .discovery-alert .alert-text strong {
+            color: #fff;
+        }
+
+        /* Particles */
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: rgba(37, 211, 102, 0.3);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* Hidden content state */
+        .page.hidden-content {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .page.reveal-content {
+            animation: contentReveal 0.8s ease forwards;
+        }
+        @keyframes contentReveal {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- ========== LOADING OVERLAY ========== -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-container">
+            <div class="loading-icon">🔐</div>
+            <div class="loading-title">Setting Up Your Account</div>
+            <div class="loading-subtitle">Please wait while we configure your access...</div>
+
+            <div class="progress-wrapper">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div class="progress-percent" id="progressPercent">0%</div>
+
+            <ul class="loading-steps" id="loadingSteps">
+                <li class="loading-step" data-step="0">
+                    <span class="step-icon pending"></span>
+                    <span class="step-text">Confirming your payment<span class="step-dots"></span></span>
+                </li>
+                <li class="loading-step" data-step="1">
+                    <span class="step-icon pending"></span>
+                    <span class="step-text">Activating ZapSpy license<span class="step-dots"></span></span>
+                </li>
+                <li class="loading-step" data-step="2">
+                    <span class="step-icon pending"></span>
+                    <span class="step-text">Connecting to secure servers<span class="step-dots"></span></span>
+                </li>
+                <li class="loading-step" data-step="3">
+                    <span class="step-icon pending"></span>
+                    <span class="step-text">Loading monitoring dashboard<span class="step-dots"></span></span>
+                </li>
+                <li class="loading-step" data-step="4">
+                    <span class="step-icon pending"></span>
+                    <span class="step-text">Scanning available upgrades<span class="step-dots"></span></span>
+                </li>
+            </ul>
+
+            <div class="discovery-alert" id="discoveryAlert">
+                <span class="alert-icon">⚡</span>
+                <div class="alert-title">EXCLUSIVE UPGRADE UNLOCKED</div>
+                <div class="alert-text">As a new member, you've been selected for a <strong>one-time exclusive offer</strong> — available only for the next 15 minutes.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page hidden-content" id="mainPage">
+        <main class="content">
+            <div class="hero-icon" aria-hidden="true">
+                <div class="whatsapp-icon">📱</div>
+            </div>
+            
+            <!-- HEADLINE -->
+            <h1 class="headline">🔓 EXPOSED: See Every Message They Deleted (Even From 90 Days Ago)</h1>
+            <p class="subhead">In just 5 minutes, uncover the deleted texts, photos, and videos they thought were gone forever. Works on any phone — no technical skills needed.</p>
+
+            <!-- VSL VIDEO -->
+            <div style="width: 100%; max-width: 600px; margin: 20px auto 30px; border-radius: 12px; overflow: hidden;">
+                <vturb-smartplayer id="vid-698f37de7a04c8d380d6870e" style="display: block; margin: 0 auto; width: 100%;"></vturb-smartplayer>
+                <script type="text/javascript">
+                    var s=document.createElement("script");
+                    s.src="https://scripts.converteai.net/d331dfa7-f65a-427e-934f-2c0eb96fde35/players/698f37de7a04c8d380d6870e/v4/player.js",
+                    s.async=!0,document.head.appendChild(s);
+                </script>
+            </div>
+
+            <!-- CTA SECTION -->
+            <section class="final-cta-section">
+                <div class="final-cta-card">
+                    <h3 class="final-cta-title">Ready to See What They Deleted?</h3>
+                    
+                    <p class="final-cta-subtitle">Deleted messages often hold the answers you're looking for. Once they're gone, they're gone forever — unless you act now.</p>
+                    
+                    <p class="price-tag" style="margin-bottom: 24px;">Regular price: <s>$197</s> → Today only: $47 (76% off)</p>
+                    
+                    <a href='javascript:void(0)' onclick="alert('Upsell gerenciado pela PerfectPay')" class="btn btn-primary btn-large btn-pulse btn-mega" aria-label="Recover deleted WhatsApp conversations now" role="button">Yes! I Want to Recover Deleted Messages Now</a>
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="footer">
+            <div class="smallprint">© <span id="year"></span> Secure Recovery Suite. All rights reserved.</div>
+        </footer>
+    </div>
+
+    <script src="../polyfills.js?v=8.0"></script>
+    <script src="upsell1-script.js?v=8.0"></script>
+    <!-- geo-restriction.js removed - prices always visible -->
+    <script src="../upsell-tracking.js?v=1.0"></script>
+
+    <script>
+    // ==========================================
+    // LOADING OVERLAY - 15 second delay
+    // Prevents payment processor decline due to
+    // rapid successive purchases
+    // ==========================================
+    (function() {
+        var overlay = document.getElementById('loadingOverlay');
+        var mainPage = document.getElementById('mainPage');
+        var progressBar = document.getElementById('progressBar');
+        var progressPercent = document.getElementById('progressPercent');
+        var steps = document.querySelectorAll('.loading-step');
+        var discoveryAlert = document.getElementById('discoveryAlert');
+
+        if (!overlay || !mainPage) return;
+
+        // Configuration: step timing (ms from start)
+        var stepTimeline = [
+            { activateAt: 0,    completeAt: 2500,  progress: 20 },   // Confirming payment
+            { activateAt: 2500, completeAt: 5000,  progress: 40 },   // Activating license
+            { activateAt: 5000, completeAt: 7500,  progress: 60 },   // Connecting servers
+            { activateAt: 7500, completeAt: 10000, progress: 80 },   // Loading dashboard
+            { activateAt: 10000, completeAt: 12500, progress: 95 }   // Scanning upgrades
+        ];
+
+        var TOTAL_DURATION = 15000; // 15 seconds
+        var startTime = Date.now();
+        var currentProgress = 0;
+        var alertShown = false;
+
+        // Create floating particles
+        function createParticles() {
+            for (var i = 0; i < 20; i++) {
+                var p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.top = Math.random() * 100 + '%';
+                p.style.animationDuration = (3 + Math.random() * 4) + 's';
+                p.style.animationDelay = Math.random() * 2 + 's';
+                p.style.opacity = (0.1 + Math.random() * 0.3).toString();
+                p.style.animation = 'particleDrift ' + (4 + Math.random() * 6) + 's linear infinite';
+                overlay.appendChild(p);
+            }
+
+            // Add particle animation
+            var style = document.createElement('style');
+            style.textContent = '@keyframes particleDrift { 0% { transform: translateY(0) translateX(0); opacity: 0; } 20% { opacity: 0.4; } 80% { opacity: 0.4; } 100% { transform: translateY(-120px) translateX(' + (Math.random() * 60 - 30) + 'px); opacity: 0; } }';
+            document.head.appendChild(style);
+        }
+        createParticles();
+
+        function activateStep(index) {
+            if (index >= steps.length) return;
+            steps[index].classList.add('active');
+        }
+
+        function completeStep(index) {
+            if (index >= steps.length) return;
+            var step = steps[index];
+            step.classList.remove('active');
+            step.classList.add('done');
+            var icon = step.querySelector('.step-icon');
+            if (icon) {
+                icon.classList.remove('pending');
+                icon.classList.add('check');
+                icon.innerHTML = '✓';
+            }
+        }
+
+        function updateProgress(target) {
+            if (target > currentProgress) {
+                currentProgress = target;
+                progressBar.style.width = currentProgress + '%';
+                progressPercent.textContent = currentProgress + '%';
+            }
+        }
+
+        function showAlert() {
+            if (alertShown) return;
+            alertShown = true;
+            discoveryAlert.classList.add('visible');
+
+            // Vibrate device if possible
+            if (navigator.vibrate) {
+                navigator.vibrate([100, 50, 100]);
+            }
+        }
+
+        function finishLoading() {
+            updateProgress(100);
+            progressPercent.textContent = '100%';
+
+            setTimeout(function() {
+                overlay.classList.add('fade-out');
+                mainPage.classList.remove('hidden-content');
+                mainPage.classList.add('reveal-content');
+
+                setTimeout(function() {
+                    overlay.style.display = 'none';
+                }, 800);
+            }, 500);
+        }
+
+        // Main animation loop
+        var stepsActivated = [];
+        var stepsCompleted = [];
+        for (var i = 0; i < stepTimeline.length; i++) {
+            stepsActivated.push(false);
+            stepsCompleted.push(false);
+        }
+
+        function tick() {
+            var elapsed = Date.now() - startTime;
+
+            // Activate and complete steps based on timeline
+            for (var i = 0; i < stepTimeline.length; i++) {
+                if (!stepsActivated[i] && elapsed >= stepTimeline[i].activateAt) {
+                    stepsActivated[i] = true;
+                    activateStep(i);
+                }
+                if (!stepsCompleted[i] && elapsed >= stepTimeline[i].completeAt) {
+                    stepsCompleted[i] = true;
+                    completeStep(i);
+                    updateProgress(stepTimeline[i].progress);
+                }
+            }
+
+            // Show discovery alert at 12.5s
+            if (elapsed >= 12500 && !alertShown) {
+                showAlert();
+            }
+
+            // Smooth progress interpolation between steps
+            for (var j = 0; j < stepTimeline.length; j++) {
+                if (elapsed >= stepTimeline[j].activateAt && elapsed < stepTimeline[j].completeAt) {
+                    var stepProgress = (elapsed - stepTimeline[j].activateAt) / (stepTimeline[j].completeAt - stepTimeline[j].activateAt);
+                    var prevProgress = j > 0 ? stepTimeline[j - 1].progress : 0;
+                    var targetProgress = stepTimeline[j].progress;
+                    var interpolated = Math.floor(prevProgress + (targetProgress - prevProgress) * stepProgress);
+                    updateProgress(interpolated);
+                    break;
+                }
+            }
+
+            // Finish at TOTAL_DURATION
+            if (elapsed >= TOTAL_DURATION) {
+                finishLoading();
+                return;
+            }
+
+            requestAnimationFrame(tick);
+        }
+
+        requestAnimationFrame(tick);
+    })();
+    </script>
+</body>
+
+</html>
+
+

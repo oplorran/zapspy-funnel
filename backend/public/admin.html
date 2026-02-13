@@ -64,6 +64,10 @@
                         <span class="nav-item-icon">👥</span>
                         Leads
                     </div>
+                    <div class="nav-item" onclick="switchTab('clients')">
+                        <span class="nav-item-icon">💎</span>
+                        Clientes
+                    </div>
                     <div class="nav-item" onclick="switchTab('recovery')">
                         <span class="nav-item-icon">🔄</span>
                         Recuperação
@@ -165,6 +169,7 @@
                             <option value="">📦 Todas as Origens</option>
                             <option value="main">🏠 Principal</option>
                             <option value="affiliate">🤝 Afiliados</option>
+                            <option value="perfectpay">💳 PerfectPay</option>
                         </select>
                         <select class="funnel-selector" id="globalDateFilter" onchange="onGlobalFilterChange()" title="Filtrar por período" style="min-width: 150px;">
                             <option value="today" selected>Hoje</option>
@@ -667,6 +672,89 @@
                         
                         <!-- Pagination container for Leads -->
                         <div id="leadsPaginationContainer"></div>
+                    </div>
+                </div>
+                
+                <!-- Tab: Clients -->
+                <div class="tab-content" id="tab-clients">
+                    <div class="funnel-page-header">
+                        <h2>💎 Clientes</h2>
+                        <div id="clientsLangIndicator"><span class="lang-badge all">🌍 Todos</span></div>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-label">Total de Clientes</span>
+                                <div class="stat-icon green">💎</div>
+                            </div>
+                            <div class="stat-value green" id="clientsTotal">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-label">Novos Hoje</span>
+                                <div class="stat-icon blue">📈</div>
+                            </div>
+                            <div class="stat-value blue" id="clientsToday">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-label">Receita Total</span>
+                                <div class="stat-icon purple">💰</div>
+                            </div>
+                            <div class="stat-value" id="clientsTotalRevenue">$0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <span class="stat-label">Ticket Médio</span>
+                                <div class="stat-icon orange">🎯</div>
+                            </div>
+                            <div class="stat-value" id="clientsAvgTicket">$0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="data-panel">
+                        <div class="panel-header">
+                            <div class="panel-title">
+                                <h2>Todos os Clientes</h2>
+                                <span class="panel-count" id="panelClientCount">0 clientes</span>
+                            </div>
+                            <div class="panel-actions" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                                <input type="text" id="clientSearchInput" placeholder="🔍 Buscar por nome, email..." class="funnel-selector" style="min-width: 220px;">
+                                <select class="funnel-selector" id="clientLanguageFilter" style="min-width: 150px;">
+                                    <option value="">🌍 Todos os Funis</option>
+                                    <option value="en">🇺🇸 Inglês</option>
+                                    <option value="es">🇪🇸 Espanhol</option>
+                                </select>
+                                <select class="funnel-selector" id="clientSourceFilter" style="min-width: 160px;">
+                                    <option value="">📦 Todas as Origens</option>
+                                    <option value="main">🏠 Principal</option>
+                                    <option value="affiliate">🤝 Afiliados</option>
+                                    <option value="perfectpay">💳 PerfectPay</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Email</th>
+                                    <th>WhatsApp</th>
+                                    <th>Produtos</th>
+                                    <th>Total Gasto</th>
+                                    <th>Origem</th>
+                                    <th>País</th>
+                                    <th>1ª Compra</th>
+                                    <th>Última Compra</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="clientsTableBody">
+                                <tr><td colspan="10"><div class="loading"><div class="spinner"></div>Carregando clientes...</div></td></tr>
+                            </tbody>
+                        </table>
+                        
+                        <div id="clientsPaginationContainer"></div>
                     </div>
                 </div>
                 
@@ -2364,6 +2452,31 @@
                     </div>
                     
                     <div class="config-box">
+                        <h3>⚙️ Webhook PerfectPay</h3>
+                        <p>Configure esta URL no painel da PerfectPay para receber notificações automáticas de vendas.</p>
+                        <div class="url-box">
+                            <code id="perfectpayWebhookUrl">-</code>
+                            <button class="btn-secondary" onclick="copyPerfectPayWebhookUrl()">📋 Copiar</button>
+                        </div>
+                        <div class="config-steps">
+                            <strong>Instruções:</strong><br>
+                            1. Acesse PerfectPay → Configurações → Webhook<br>
+                            2. Cole a URL acima como URL de destino<br>
+                            3. Selecione todos os eventos de venda<br>
+                            4. Salve a configuração<br>
+                            5. Funil PerfectPay: <a href="https://perfect.zappdetect.com/ingles/" target="_blank">perfect.zappdetect.com/ingles</a>
+                        </div>
+                        <div style="margin-top: 12px;">
+                            <button class="btn-secondary" onclick="testPerfectPayWebhook()">🧪 Testar Endpoint</button>
+                            <button class="btn-secondary" onclick="debugPerfectPayWebhooks()" style="margin-left: 8px;">📋 Ver Webhooks Recebidos</button>
+                        </div>
+                        <p style="margin-top: 12px; font-size: 12px; color: var(--text-muted);">
+                            <a href="https://support.perfectpay.com.br/doc/perfect-pay/postback/integracao-via-webhook-com-a-perfect-pay" target="_blank" rel="noopener">Documentação Webhook PerfectPay</a> •
+                            <a href="https://support.perfectpay.com.br/doc/perfect-pay/perfectpay-api/conhecendo-a-api" target="_blank" rel="noopener">API PerfectPay</a>
+                        </p>
+                    </div>
+                    
+                    <div class="config-box">
                         <h3>🧪 Testar Postback → Initiate Checkout / Purchase</h3>
                         <p>Simule um postback da Monetizze e confira se os eventos <strong>Initiate Checkout</strong> e <strong>Purchase</strong> são enviados ao Meta (CAPI). Os eventos vão para <strong>Test Events</strong> no Gerenciador de Eventos.</p>
                         <div style="margin-top: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
@@ -3192,6 +3305,7 @@ Posso ajudar com alguma dúvida?</textarea>
         const pageTitles = {
             'overview': { title: 'Visão Geral', subtitle: 'Acompanhe suas métricas em tempo real' },
             'leads': { title: 'Leads', subtitle: 'Gerencie todos os seus leads' },
+            'clients': { title: 'Clientes', subtitle: 'Clientes que realizaram compras' },
             'recovery': { title: 'Recuperação', subtitle: 'Recupere vendas perdidas' },
             'funnel': { title: 'Funil', subtitle: 'Visualize a jornada dos visitantes' },
             'sales': { title: 'Vendas', subtitle: 'Acompanhe suas transações' },
@@ -3651,6 +3765,7 @@ Estou aqui para esclarecer tudo! 😊`
             }
             
             if (tabName === 'leads') loadLeads(currentPage || 1);
+            else if (tabName === 'clients') loadClients(1);
             else if (tabName === 'funnel') loadFunnelData();
             else if (tabName === 'sales') loadSalesData();
             else if (tabName === 'recovery') initNewRecovery();
@@ -3659,6 +3774,7 @@ Estou aqui para esclarecer tudo! 😊`
             else if (tabName === 'reports') loadReportsStats();
             else if (tabName === 'settings') {
                 document.getElementById('postbackUrl').textContent = `${API_URL}/api/postback/monetizze`;
+                document.getElementById('perfectpayWebhookUrl').textContent = `${API_URL}/api/postback/perfectpay`;
                 // Initialize sync dates with today (local timezone)
                 const today = getLocalDateString();
                 document.getElementById('syncStartDate').value = today;
@@ -5802,7 +5918,7 @@ Estou aqui para esclarecer tudo! 😊`
                 const filterInfo = document.getElementById('funnelFilterInfo');
                 if (filterInfo) {
                     const langLabel = langFilter === 'en' ? '🇺🇸 Inglês' : langFilter === 'es' ? '🇪🇸 Espanhol' : '🌍 Todos os idiomas';
-                    const sourceLabel = sourceFilter === 'main' ? '🏠 Principal' : sourceFilter === 'affiliate' ? '🤝 Afiliados' : '📦 Todas as origens';
+                    const sourceLabel = sourceFilter === 'main' ? '🏠 Principal' : sourceFilter === 'affiliate' ? '🤝 Afiliados' : sourceFilter === 'perfectpay' ? '💳 PerfectPay' : '📦 Todas as origens';
                     filterInfo.textContent = `${langLabel} • ${sourceLabel}`;
                 }
                 
@@ -6844,6 +6960,8 @@ Estou aqui para esclarecer tudo! 😊`
         async function loadSalesData(page = 1) {
             transactionsCurrentPage = page;
             document.getElementById('postbackUrl').textContent = `${API_URL}/api/postback/monetizze`;
+            const ppUrlEl = document.getElementById('perfectpayWebhookUrl');
+            if (ppUrlEl) ppUrlEl.textContent = `${API_URL}/api/postback/perfectpay`;
             try {
                 const globalFilter = document.getElementById('globalFunnelFilter')?.value || '';
                 const sourceFilter = getGlobalSourceFilter();
@@ -10436,6 +10554,58 @@ Posso ajudar em algo mais? 😊`
             showToast('Copiado!', 'URL na área de transferência', 'success');
         }
         
+        function copyPerfectPayWebhookUrl() {
+            navigator.clipboard.writeText(document.getElementById('perfectpayWebhookUrl').textContent);
+            showToast('Copiado!', 'URL PerfectPay na área de transferência', 'success');
+        }
+        
+        async function testPerfectPayWebhook() {
+            try {
+                const response = await fetch(`${API_URL}/api/postback/perfectpay`, { method: 'GET' });
+                const data = await response.json();
+                if (data.status === 'ok') {
+                    showToast('Sucesso!', 'Endpoint PerfectPay está funcionando!', 'success');
+                } else {
+                    showToast('Erro', 'Endpoint não respondeu corretamente', 'error');
+                }
+            } catch (error) {
+                showToast('Erro', 'Falha ao testar endpoint: ' + error.message, 'error');
+            }
+        }
+        
+        async function debugPerfectPayWebhooks() {
+            try {
+                const response = await fetch(`${API_URL}/api/admin/debug/perfectpay-webhooks`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const data = await response.json();
+                
+                let html = '<div style="max-height: 500px; overflow-y: auto;">';
+                html += '<p><strong>Webhook URL:</strong> ' + data.webhookUrl + '</p>';
+                html += '<p><strong>Webhooks em memória:</strong> ' + data.memoryCount + '</p>';
+                html += '<p><strong>Logs no banco:</strong> ' + data.dbLogCount + '</p>';
+                
+                if (data.recentWebhooks && data.recentWebhooks.length > 0) {
+                    html += '<h4>Webhooks Recentes:</h4>';
+                    data.recentWebhooks.forEach((wh, i) => {
+                        const statusEnum = wh.body?.sale_status_enum || 'N/A';
+                        const email = wh.body?.customer?.email || 'N/A';
+                        const amount = wh.body?.sale_amount || 'N/A';
+                        html += '<div style="background: rgba(255,255,255,0.05); padding: 8px; border-radius: 6px; margin: 4px 0; font-size: 12px;">';
+                        html += '<strong>' + wh.timestamp + '</strong> | Status: ' + statusEnum + ' | Email: ' + email + ' | Valor: $' + amount;
+                        html += '</div>';
+                    });
+                } else {
+                    html += '<p style="color: var(--text-muted);">Nenhum webhook PerfectPay recebido ainda.</p>';
+                }
+                html += '</div>';
+                
+                showModal('Webhooks PerfectPay', html);
+            } catch (error) {
+                showToast('Erro', 'Falha ao carregar webhooks: ' + error.message, 'error');
+            }
+        }
+        
         async function viewPostbackDebug() {
             try {
                 showToast('Carregando...', 'Buscando postbacks recentes', 'success');
@@ -10604,6 +10774,249 @@ Posso ajudar em algo mais? 😊`
                 showToast('Erro', 'Falha ao carregar estatísticas: ' + error.message, 'error');
             }
         }
+        
+        // ==================== GENERIC MODAL ====================
+        function showModal(title, htmlContent) {
+            // Remove existing generic modal if any
+            const existing = document.getElementById('genericModal');
+            if (existing) existing.remove();
+            
+            const modal = document.createElement('div');
+            modal.id = 'genericModal';
+            modal.className = 'modal-overlay';
+            modal.style.cssText = 'display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 10000; align-items: center; justify-content: center; padding: 20px;';
+            modal.innerHTML = `
+                <div style="background: var(--bg-secondary, #1a1a2e); border-radius: 16px; max-width: 700px; width: 100%; max-height: 85vh; overflow-y: auto; border: 1px solid var(--border, #333); box-shadow: 0 20px 60px rgba(0,0,0,0.5);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid var(--border, #333);">
+                        <h3 style="margin: 0; font-size: 18px;">${title}</h3>
+                        <button onclick="document.getElementById('genericModal').remove()" style="background: none; border: none; color: var(--text-primary, #fff); font-size: 24px; cursor: pointer; padding: 4px 8px;">&times;</button>
+                    </div>
+                    <div style="padding: 24px;">
+                        ${htmlContent}
+                    </div>
+                </div>
+            `;
+            modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+            document.body.appendChild(modal);
+        }
+        
+        // ==================== CLIENTS TAB ====================
+        let clientsCurrentPage = 1;
+        
+        async function loadClients(page = 1) {
+            clientsCurrentPage = page;
+            try {
+                const search = document.getElementById('clientSearchInput')?.value || '';
+                const language = document.getElementById('clientLanguageFilter')?.value || '';
+                const source = document.getElementById('clientSourceFilter')?.value || '';
+                
+                let url = `${API_URL}/api/admin/clients?page=${page}&limit=50`;
+                if (search) url += `&search=${encodeURIComponent(search)}`;
+                if (language) url += `&language=${language}`;
+                if (source) url += `&source=${source}`;
+                
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!response.ok) throw new Error('Falha ao carregar clientes');
+                const data = await response.json();
+                
+                // Update stats
+                const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+                setEl('clientsTotal', (data.stats?.total || 0).toLocaleString('pt-BR'));
+                setEl('clientsToday', (data.stats?.today || 0).toLocaleString('pt-BR'));
+                setEl('clientsTotalRevenue', '$' + (data.stats?.totalRevenue || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+                setEl('clientsAvgTicket', '$' + (data.stats?.avgTicket || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+                setEl('panelClientCount', `${data.pagination?.total || 0} clientes`);
+                
+                // Render table
+                const tbody = document.getElementById('clientsTableBody');
+                if (!tbody) return;
+                
+                if (!data.clients || data.clients.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 40px; color: var(--text-muted);">Nenhum cliente encontrado</td></tr>';
+                    renderClientsPagination(data.pagination);
+                    return;
+                }
+                
+                tbody.innerHTML = data.clients.map(client => {
+                    const name = client.name || 'N/A';
+                    const email = client.email || 'N/A';
+                    const whatsapp = client.whatsapp || '-';
+                    
+                    // Products
+                    const products = client.products_purchased || [];
+                    const productBadges = products.length > 0 
+                        ? products.map(p => {
+                            const parts = p.split(':');
+                            const type = parts[0] || 'front';
+                            const pName = parts[1] || p;
+                            const colors = { 'front': '#10b981', 'upsell1': '#3b82f6', 'upsell2': '#8b5cf6', 'upsell3': '#f59e0b' };
+                            const labels = { 'front': 'FRONT', 'upsell1': 'UP1', 'upsell2': 'UP2', 'upsell3': 'UP3' };
+                            const color = colors[type] || '#6b7280';
+                            const label = labels[type] || type.toUpperCase();
+                            return `<span style="display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; background: ${color}20; color: ${color}; border: 1px solid ${color}40; margin: 1px;" title="${pName}">${label}</span>`;
+                        }).join(' ')
+                        : '<span style="color: var(--text-muted); font-size: 12px;">-</span>';
+                    
+                    // Total spent
+                    const totalSpent = parseFloat(client.total_spent || client.tx_total || 0);
+                    const totalStr = '$' + totalSpent.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    
+                    // Source
+                    const sourceLabels = { 'main': '🏠', 'affiliate': '🤝', 'perfectpay': '💳' };
+                    const sourceIcon = sourceLabels[client.funnel_source] || '📦';
+                    const langFlags = { 'en': '🇺🇸', 'es': '🇪🇸' };
+                    const langFlag = langFlags[client.funnel_language] || '🌍';
+                    
+                    // Country
+                    let countryFlag = '🌍';
+                    if (client.country_code) {
+                        const code = client.country_code.toUpperCase();
+                        countryFlag = code.split('').map(c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65)).join('');
+                    }
+                    
+                    // Dates
+                    const firstPurchase = client.first_purchase_at 
+                        ? new Date(client.first_purchase_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })
+                        : '-';
+                    const lastPurchase = client.last_purchase_at 
+                        ? new Date(client.last_purchase_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })
+                        : '-';
+                    
+                    // WhatsApp icon
+                    const whatsappIcon = client.whatsapp_verified === true ? '✅' : client.whatsapp_verified === false ? '❌' : '⏳';
+                    
+                    return `<tr>
+                        <td><strong>${name}</strong></td>
+                        <td style="font-size: 12px;">${email}</td>
+                        <td style="font-size: 12px;">${whatsappIcon} ${whatsapp}</td>
+                        <td>${productBadges}</td>
+                        <td style="font-weight: 600; color: #10b981;">${totalStr}</td>
+                        <td>${langFlag} ${sourceIcon}</td>
+                        <td>${countryFlag}</td>
+                        <td style="font-size: 12px;">${firstPurchase}</td>
+                        <td style="font-size: 12px;">${lastPurchase}</td>
+                        <td>
+                            <button class="btn-icon" onclick="sendWhatsAppTo('${whatsapp}')" title="Enviar WhatsApp" ${!client.whatsapp ? 'disabled' : ''}>💬</button>
+                            <button class="btn-icon" onclick="viewClientDetails(${client.id})" title="Ver detalhes">👁️</button>
+                        </td>
+                    </tr>`;
+                }).join('');
+                
+                renderClientsPagination(data.pagination);
+                
+            } catch (error) {
+                console.error('Error loading clients:', error);
+                const tbody = document.getElementById('clientsTableBody');
+                if (tbody) tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 40px; color: #ef4444;">Erro ao carregar clientes: ' + error.message + '</td></tr>';
+            }
+        }
+        
+        function renderClientsPagination(pagination) {
+            const container = document.getElementById('clientsPaginationContainer');
+            if (!container || !pagination) return;
+            
+            const { page, totalPages, total } = pagination;
+            if (totalPages <= 1) { container.innerHTML = ''; return; }
+            
+            let html = '<div class="pagination" style="display: flex; justify-content: center; align-items: center; gap: 8px; padding: 16px 0;">';
+            
+            html += `<button class="btn-secondary" onclick="loadClients(${page - 1})" ${page <= 1 ? 'disabled' : ''} style="padding: 6px 12px;">◀ Anterior</button>`;
+            
+            const startPage = Math.max(1, page - 2);
+            const endPage = Math.min(totalPages, page + 2);
+            
+            if (startPage > 1) {
+                html += `<button class="btn-secondary" onclick="loadClients(1)" style="padding: 6px 10px;">1</button>`;
+                if (startPage > 2) html += '<span style="color: var(--text-muted);">...</span>';
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const isActive = i === page;
+                html += `<button class="btn-secondary" onclick="loadClients(${i})" style="padding: 6px 10px; ${isActive ? 'background: var(--primary); color: white; border-color: var(--primary);' : ''}">${i}</button>`;
+            }
+            
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) html += '<span style="color: var(--text-muted);">...</span>';
+                html += `<button class="btn-secondary" onclick="loadClients(${totalPages})" style="padding: 6px 10px;">${totalPages}</button>`;
+            }
+            
+            html += `<button class="btn-secondary" onclick="loadClients(${page + 1})" ${page >= totalPages ? 'disabled' : ''} style="padding: 6px 12px;">Próximo ▶</button>`;
+            html += `<span style="color: var(--text-muted); font-size: 12px; margin-left: 12px;">Página ${page} de ${totalPages} (${total} clientes)</span>`;
+            html += '</div>';
+            
+            container.innerHTML = html;
+        }
+        
+        async function viewClientDetails(clientId) {
+            try {
+                const response = await fetch(`${API_URL}/api/admin/leads/${clientId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error('Falha ao carregar');
+                const lead = await response.json();
+                
+                // Get transactions for this client
+                let txHtml = '';
+                try {
+                    const txResponse = await fetch(`${API_URL}/api/admin/transactions?search=${encodeURIComponent(lead.email)}&limit=20`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (txResponse.ok) {
+                        const txData = await txResponse.json();
+                        const transactions = txData.transactions || txData.rows || [];
+                        if (transactions.length > 0) {
+                            txHtml = '<h4 style="margin-top: 20px; margin-bottom: 10px;">Transações</h4>';
+                            txHtml += '<div style="max-height: 300px; overflow-y: auto;">';
+                            transactions.forEach(tx => {
+                                const statusColors = { 'approved': '#10b981', 'pending_payment': '#f59e0b', 'cancelled': '#ef4444', 'refunded': '#ef4444', 'chargeback': '#dc2626' };
+                                const color = statusColors[tx.status] || '#6b7280';
+                                const date = new Date(tx.created_at).toLocaleDateString('pt-BR');
+                                txHtml += `<div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin: 4px 0; font-size: 13px; border-left: 3px solid ${color};">
+                                    <strong>${tx.product || 'Produto'}</strong> - $${tx.value || 0}<br>
+                                    <span style="color: ${color}; font-weight: 600;">${tx.status}</span> | ${date} | ${tx.transaction_id || '-'}
+                                </div>`;
+                            });
+                            txHtml += '</div>';
+                        }
+                    }
+                } catch (e) {}
+                
+                const products = (lead.products_purchased || []).join(', ') || 'Nenhum';
+                const html = `
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div>
+                            <p><strong>Nome:</strong> ${lead.name || 'N/A'}</p>
+                            <p><strong>Email:</strong> ${lead.email || 'N/A'}</p>
+                            <p><strong>WhatsApp:</strong> ${lead.whatsapp || 'N/A'}</p>
+                            <p><strong>País:</strong> ${lead.country || 'N/A'}</p>
+                            <p><strong>Cidade:</strong> ${lead.city || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p><strong>Total Gasto:</strong> <span style="color: #10b981; font-weight: 700;">$${(lead.total_spent || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span></p>
+                            <p><strong>Produtos:</strong> ${products}</p>
+                            <p><strong>1ª Compra:</strong> ${lead.first_purchase_at ? new Date(lead.first_purchase_at).toLocaleDateString('pt-BR') : 'N/A'}</p>
+                            <p><strong>Última Compra:</strong> ${lead.last_purchase_at ? new Date(lead.last_purchase_at).toLocaleDateString('pt-BR') : 'N/A'}</p>
+                            <p><strong>Origem:</strong> ${lead.funnel_source || 'main'} | ${lead.funnel_language || 'en'}</p>
+                        </div>
+                    </div>
+                    ${txHtml}
+                `;
+                
+                showModal('💎 Detalhes do Cliente', html);
+            } catch (error) {
+                showToast('Erro', 'Falha ao carregar detalhes: ' + error.message, 'error');
+            }
+        }
+        
+        // Clients search/filter event listeners
+        document.getElementById('clientSearchInput')?.addEventListener('input', debounce(() => loadClients(1), 500));
+        document.getElementById('clientLanguageFilter')?.addEventListener('change', () => loadClients(1));
+        document.getElementById('clientSourceFilter')?.addEventListener('change', () => loadClients(1));
+        
+        // ==================== END CLIENTS TAB ====================
         
         async function testPostbackEndpoint() {
             try {

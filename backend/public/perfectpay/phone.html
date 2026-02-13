@@ -1,0 +1,3280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- UTMify tracking -->
+    <script src="https://cdn.utmify.com.br/scripts/utms/latest.js" data-utmify-prevent-xcod-sck data-utmify-prevent-subids async defer></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>ZapSpy.ai - WhatsApp Spy & Deleted Messages Recovery</title>
+    <meta name="description" content="ZapSpy.ai - Recover deleted WhatsApp messages and discover the truth. Find out what they're hiding from you.">
+    <link rel="shortcut icon" href="imagens/icon-site.png">
+    <!-- Meta Pixel (topo do head para definir _fbp o mais cedo possível) -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    var userData = {};
+    try {
+        var em = localStorage.getItem('userEmail');
+        var ph = localStorage.getItem('userWhatsApp');
+        var fn = localStorage.getItem('userName');
+        var ct = localStorage.getItem('userCity');
+        var co = localStorage.getItem('userCountryCode');
+        var ge = localStorage.getItem('targetGender');
+        var st = localStorage.getItem('userState');
+        if (em) userData.em = em.toLowerCase().trim();
+        if (ph) userData.ph = ph.replace(/\D/g, '');
+        if (fn) {
+            var names = fn.trim().split(' ');
+            userData.fn = names[0].toLowerCase();
+            if (names.length > 1) userData.ln = names.slice(1).join(' ').toLowerCase();
+        }
+        if (ct) userData.ct = ct.toLowerCase().replace(/[^a-z]/g, '');
+        if (co) userData.country = co.toLowerCase();
+        if (ge) userData.ge = ge === 'female' ? 'f' : 'm';
+        if (st) userData.st = st.toLowerCase().replace(/[^a-z]/g, '');
+    } catch(e) {}
+    fbq('init', '726299943423075', userData);
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=726299943423075&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Shared CSS -->
+    <link rel="stylesheet" href="css/global.css">
+    
+    <!-- Shared Audio & Vibration Systems -->
+    <script src="js/audio-vibration.js"></script>
+    
+    <!-- Enhanced Tracking -->
+    <script src="js/tracking-utils.js"></script>
+    <script src="js/tracking.js"></script>
+    <script src="js/funnel-tracking.js"></script>
+    
+    <!-- Matrix Effect -->
+    <script src="js/matrix.js"></script>
+    
+    <script>
+        if (window.location.search.includes('reset=1')) {
+            localStorage.clear();
+            window.location.href = window.location.pathname;
+        }
+
+        // ========== REAL GEOLOCATION ==========
+        const GeoLocation = {
+            userCity: 'Unknown',
+            userCountry: 'US',
+            userLat: 0,
+            userLon: 0,
+            init: async function() {
+                try {
+                    // Use IP API for geolocation
+                    const response = await fetch('https://ipapi.co/json/');
+                    const data = await response.json();
+                    this.userCity = data.city || 'Unknown';
+                    this.userCountry = data.country_code || 'US';
+                    this.userLat = data.latitude || 0;
+                    this.userLon = data.longitude || 0;
+                    localStorage.setItem('userGeo', JSON.stringify({
+                        city: this.userCity,
+                        country: this.userCountry,
+                        lat: this.userLat,
+                        lon: this.userLon
+                    }));
+                    // Save individual geo keys for CAPI and Advanced Matching
+                    localStorage.setItem('userCity', this.userCity);
+                    localStorage.setItem('userState', data.region || '');
+                    if (!localStorage.getItem('userCountryCode')) {
+                        localStorage.setItem('userCountryCode', this.userCountry);
+                    }
+                } catch(e) {
+                    console.log('Geo error:', e);
+                }
+            },
+            getDistance: function() {
+                // Return realistic random distance
+                return (Math.random() * 15 + 2).toFixed(1);
+            }
+        };
+
+        // Initialize systems
+        document.addEventListener('DOMContentLoaded', () => {
+            WhatsAppAudio.init();
+            GeoLocation.init();
+        });
+
+        // Activate audio on first click
+        document.addEventListener('click', () => {
+            if (WhatsAppAudio.audioContext && WhatsAppAudio.audioContext.state === 'suspended') {
+                WhatsAppAudio.audioContext.resume();
+            }
+        }, { once: true });
+    </script>
+
+    <!-- Facebook CAPI Client -->
+    <script src="js/facebook-capi.js"></script>
+    <!-- A/B Testing -->
+    <script src="js/ab-testing.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            if (typeof FacebookCAPI !== 'undefined') {
+                FacebookCAPI.init('Phone Capture');
+                FacebookCAPI.trackViewContent('Phone Capture', 'Funnel - Lead Step', 49);
+            }
+            
+            // Initialize A/B Testing
+            if (typeof ABTesting !== 'undefined') {
+                await ABTesting.init('perfectpay');
+            }
+        });
+    </script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0f0d;
+            color: #E9EDEF;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 15px;
+            padding-top: 25px;
+            padding-bottom: 40px;
+            overflow-x: hidden;
+        }
+
+        /* Matrix Rain Effect */
+        #matrix-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.12;
+            pointer-events: none;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Logo */
+        .logo-text {
+            font-size: 32px;
+            font-weight: 800;
+            color: #25D366;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .logo-text svg {
+            width: 44px;
+            height: 44px;
+        }
+
+        /* Loading Screen */
+        .loading-container {
+            text-align: center;
+            padding: 30px 20px;
+        }
+
+        .loading-icon {
+            margin-bottom: 24px;
+        }
+
+        .loading-spinner {
+            width: 80px;
+            height: 80px;
+            stroke: #25D366;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #E9EDEF;
+            margin-bottom: 8px;
+        }
+
+        .loading-subtitle {
+            font-size: 14px;
+            color: #8696A0;
+            margin-bottom: 30px;
+        }
+
+        .loading-progress-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .loading-progress-bar {
+            flex: 1;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .loading-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #25D366, #128C7E);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .loading-percent {
+            font-size: 14px;
+            font-weight: 600;
+            color: #25D366;
+            min-width: 40px;
+        }
+
+        .loading-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            text-align: left;
+        }
+
+        .loading-step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            font-size: 14px;
+            color: #8696A0;
+            transition: all 0.3s ease;
+        }
+
+        .loading-step.active {
+            background: rgba(37, 211, 102, 0.1);
+            color: #E9EDEF;
+        }
+
+        .loading-step.completed {
+            background: rgba(37, 211, 102, 0.15);
+            color: #25D366;
+        }
+
+        .loading-step .step-icon {
+            font-size: 18px;
+        }
+
+        /* Headlines */
+        h1 {
+            font-size: clamp(24px, 6vw, 32px);
+            font-weight: 800;
+            line-height: 1.25;
+            margin-bottom: 14px;
+            color: #E9EDEF;
+        }
+
+        h1 .highlight {
+            color: #25D366;
+        }
+
+        h1 .red {
+            color: #ef4444;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #8696a0;
+            margin-bottom: 28px;
+            line-height: 1.5;
+        }
+
+        .subtitle strong {
+            color: #ef4444;
+        }
+
+        /* Stats Badge */
+        .stats-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 10px 18px;
+            border-radius: 30px;
+            margin-bottom: 28px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .stats-badge .dot {
+            width: 10px;
+            height: 10px;
+            background: #ef4444;
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .stats-badge span {
+            font-size: 14px;
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        /* Phone Input Section */
+        .phone-section {
+            background: rgba(17, 27, 33, 0.8);
+            border-radius: 20px;
+            padding: 28px 24px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(37, 211, 102, 0.2);
+        }
+
+        .phone-section h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 18px;
+            color: #E9EDEF;
+        }
+
+        .phone-input-wrapper {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .country-select {
+            background: #1f2c33;
+            border: 2px solid #2a3942;
+            border-radius: 14px;
+            padding: 14px 12px;
+            color: #E9EDEF;
+            font-size: 16px;
+            cursor: pointer;
+            min-width: 100px;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238696a0' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+        }
+
+        .country-select:focus {
+            outline: none;
+            border-color: #25D366;
+        }
+
+        .phone-input {
+            flex: 1;
+            background: #1f2c33;
+            border: 2px solid #2a3942;
+            border-radius: 14px;
+            padding: 14px 16px;
+            color: #E9EDEF;
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .phone-input:focus {
+            outline: none;
+            border-color: #25D366;
+            box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.15);
+        }
+
+        .phone-input::placeholder {
+            color: #667781;
+        }
+
+        /* Features Checkboxes */
+        .features-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            background: rgba(31, 44, 51, 0.6);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .feature-item:hover {
+            background: rgba(31, 44, 51, 0.9);
+        }
+
+        .feature-item.active {
+            background: rgba(37, 211, 102, 0.1);
+            border: 1px solid rgba(37, 211, 102, 0.3);
+        }
+
+        .feature-item.deleted {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .feature-checkbox {
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            border: 2px solid #3b4a54;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .feature-item.active .feature-checkbox {
+            background: #25D366;
+            border-color: #25D366;
+        }
+
+        .feature-item.deleted .feature-checkbox {
+            background: #ef4444;
+            border-color: #ef4444;
+        }
+
+        .feature-checkbox svg {
+            width: 14px;
+            height: 14px;
+            color: white;
+            opacity: 0;
+        }
+
+        .feature-item.active .feature-checkbox svg,
+        .feature-item.deleted .feature-checkbox svg {
+            opacity: 1;
+        }
+
+        .feature-text {
+            flex: 1;
+        }
+
+        .feature-text strong {
+            display: block;
+            font-size: 14px;
+            color: #E9EDEF;
+            margin-bottom: 2px;
+        }
+
+        .feature-text span {
+            font-size: 12px;
+            color: #8696a0;
+        }
+
+        .feature-text .red {
+            color: #ef4444;
+        }
+
+        .feature-badge {
+            background: #ef4444;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 6px;
+            animation: pulse 1.5s infinite;
+        }
+
+        /* Spy Button */
+        .spy-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            border: none;
+            border-radius: 14px;
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(37, 211, 102, 0.3);
+        }
+
+        .spy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(37, 211, 102, 0.4);
+        }
+
+        .spy-btn:active {
+            transform: translateY(0);
+        }
+
+        .spy-btn svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        /* Trust Badges */
+        .trust-section {
+            margin-top: 28px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .trust-badges {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .trust-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #8696a0;
+        }
+
+        .trust-badge svg {
+            width: 18px;
+            height: 18px;
+            color: #25D366;
+        }
+
+        /* Screens */
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Confirmation Screen */
+        .profile-card {
+            background: rgba(17, 27, 33, 0.9);
+            border-radius: 20px;
+            padding: 32px 24px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(37, 211, 102, 0.2);
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 4px solid #25D366;
+            object-fit: cover;
+        }
+
+        .profile-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #E9EDEF;
+            margin-bottom: 8px;
+        }
+
+        .profile-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(37, 211, 102, 0.15);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            color: #25D366;
+            margin-bottom: 20px;
+        }
+
+        .profile-status .dot {
+            width: 8px;
+            height: 8px;
+            background: #25D366;
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+
+        .profile-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            text-align: center;
+        }
+
+        .profile-info-item {
+            background: rgba(31, 44, 51, 0.6);
+            padding: 14px;
+            border-radius: 12px;
+        }
+
+        .profile-info-item .value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #E9EDEF;
+        }
+
+        .profile-info-item .value.red {
+            color: #ef4444;
+        }
+
+        .profile-info-item .label {
+            font-size: 12px;
+            color: #8696a0;
+            margin-top: 4px;
+        }
+
+        .confirm-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            border: none;
+            border-radius: 14px;
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 20px rgba(37, 211, 102, 0.3);
+        }
+
+        .back-btn {
+            background: transparent;
+            border: 2px solid #3b4a54;
+            color: #8696a0;
+            padding: 14px;
+            border-radius: 14px;
+            width: 100%;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* Hacking Screen */
+        .hacking-screen {
+            background: rgba(0, 0, 0, 0.95);
+            border-radius: 20px;
+            padding: 28px 20px;
+            border: 1px solid rgba(37, 211, 102, 0.3);
+        }
+
+        .hacking-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .hacking-header .icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(239, 68, 68, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 1.5s infinite;
+        }
+
+        .hacking-header .icon svg {
+            width: 26px;
+            height: 26px;
+            color: #ef4444;
+        }
+
+        .hacking-header h2 {
+            font-size: 20px;
+            color: #ef4444;
+        }
+
+        .terminal {
+            background: #0d1117;
+            border-radius: 12px;
+            padding: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            text-align: left;
+            max-height: 280px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border: 1px solid #21262d;
+        }
+
+        .terminal-line {
+            margin-bottom: 6px;
+            opacity: 0;
+            animation: terminalType 0.3s ease forwards;
+        }
+
+        @keyframes terminalType {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .terminal-line .prefix {
+            color: #25D366;
+        }
+
+        .terminal-line .command {
+            color: #8b949e;
+        }
+
+        .terminal-line .success {
+            color: #3fb950;
+        }
+
+        .terminal-line .warning {
+            color: #ffaa00;
+        }
+        
+        .terminal-line .info {
+            color: #00bcd4;
+        }
+        
+        .terminal-line .error {
+            color: #ff4444;
+        }
+        
+        .blink {
+            animation: blink 0.5s ease-in-out;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .pulse {
+            animation: pulse 0.5s ease-in-out;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .terminal-line .highlight {
+            color: #58a6ff;
+        }
+
+        /* Progress Section */
+        .progress-section {
+            margin-bottom: 20px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .progress-label span:first-child {
+            color: #8696a0;
+        }
+
+        .progress-label span:last-child {
+            color: #25D366;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #1f2c33;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #25D366, #128C7E);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        /* SMS Intercepted Box */
+        .sms-box {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            border-radius: 14px;
+            padding: 18px;
+            margin-bottom: 20px;
+            animation: glowPulse 2s infinite;
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.2); }
+            50% { box-shadow: 0 0 25px rgba(239, 68, 68, 0.4); }
+        }
+
+        .sms-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .sms-header svg {
+            width: 22px;
+            height: 22px;
+            color: #ef4444;
+        }
+
+        .sms-header span {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ef4444;
+        }
+
+        .sms-code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 28px;
+            font-weight: 700;
+            color: #E9EDEF;
+            letter-spacing: 4px;
+            text-align: center;
+        }
+
+        /* Backup Recovery Box */
+        .backup-box {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.05));
+            border: 2px solid rgba(239, 68, 68, 0.5);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            animation: glowPulse 2s infinite;
+        }
+
+        .backup-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .backup-header svg {
+            width: 28px;
+            height: 28px;
+            color: #ef4444;
+            animation: shake 0.5s infinite;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-5deg); }
+            75% { transform: rotate(5deg); }
+        }
+
+        .backup-header span {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ef4444;
+        }
+
+        .backup-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .backup-stat {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 14px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .backup-stat .number {
+            font-size: 26px;
+            font-weight: 800;
+            color: #ef4444;
+        }
+
+        .backup-stat .label {
+            font-size: 11px;
+            color: #8696a0;
+            margin-top: 4px;
+        }
+
+        /* Data Found Section */
+        .data-found {
+            background: rgba(17, 27, 33, 0.8);
+            border-radius: 14px;
+            padding: 18px;
+            margin-bottom: 20px;
+        }
+
+        .data-found h4 {
+            font-size: 14px;
+            color: #8696a0;
+            margin-bottom: 14px;
+            text-align: center;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .data-item {
+            text-align: center;
+            padding: 12px 8px;
+            background: rgba(31, 44, 51, 0.6);
+            border-radius: 10px;
+        }
+
+        .data-item .icon {
+            font-size: 20px;
+            margin-bottom: 6px;
+        }
+
+        .data-item .count {
+            font-size: 18px;
+            font-weight: 700;
+            color: #E9EDEF;
+        }
+
+        .data-item .count.red {
+            color: #ef4444;
+        }
+
+        .data-item .label {
+            font-size: 10px;
+            color: #8696a0;
+            margin-top: 2px;
+        }
+
+        /* Warning Alert */
+        .warning-alert {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .warning-alert svg {
+            width: 24px;
+            height: 24px;
+            color: #ef4444;
+            flex-shrink: 0;
+        }
+
+        .warning-alert p {
+            font-size: 13px;
+            color: #ef4444;
+            text-align: left;
+            line-height: 1.4;
+        }
+
+        /* Responsive */
+        @media (max-height: 700px) {
+            .logo-text {
+                font-size: 26px;
+                margin-bottom: 16px;
+            }
+            .logo-text svg {
+                width: 36px;
+                height: 36px;
+            }
+            h1 {
+                font-size: 22px;
+                margin-bottom: 10px;
+            }
+            .subtitle {
+                font-size: 14px;
+                margin-bottom: 16px;
+            }
+            .stats-badge {
+                padding: 8px 14px;
+                margin-bottom: 16px;
+            }
+            .phone-section {
+                padding: 18px 16px;
+                margin-bottom: 16px;
+            }
+            .phone-section h3 {
+                font-size: 16px;
+                margin-bottom: 12px;
+            }
+            .feature-item {
+                padding: 10px 12px;
+            }
+            .features-list {
+                gap: 8px;
+                margin-bottom: 14px;
+            }
+            .spy-btn {
+                padding: 14px 24px;
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .container {
+                padding: 0 10px;
+            }
+            .phone-section {
+                padding: 16px 14px;
+            }
+            .data-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            h1 {
+                font-size: 20px;
+            }
+        }
+        
+        /* ========== LEAD CAPTURE FORM ========== */
+        .capture-section {
+            background: rgba(17, 27, 33, 0.95);
+            border: 1px solid rgba(37, 211, 102, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 20px;
+            text-align: left;
+        }
+        
+        .capture-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .capture-header h3 {
+            color: #E9EDEF;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .capture-header p {
+            color: #8696a0;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        
+        .capture-benefits {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .capture-benefit {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(37, 211, 102, 0.1);
+            border: 1px solid rgba(37, 211, 102, 0.2);
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 12px;
+            color: #25D366;
+        }
+        
+        .capture-form-group {
+            margin-bottom: 16px;
+        }
+        
+        .capture-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #8696a0;
+            margin-bottom: 8px;
+        }
+        
+        .capture-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(31, 44, 52, 0.8);
+            border: 1px solid rgba(59, 74, 84, 0.5);
+            border-radius: 10px;
+            color: #E9EDEF;
+            font-size: 15px;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        
+        .capture-input::placeholder {
+            color: #6b7c85;
+        }
+        
+        .capture-input:focus {
+            border-color: #25D366;
+            box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.1);
+        }
+        
+        .capture-phone-row {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .capture-country-select {
+            width: 100px;
+            padding: 14px 8px;
+            background: rgba(31, 44, 52, 0.8);
+            border: 1px solid rgba(59, 74, 84, 0.5);
+            border-radius: 10px;
+            color: #E9EDEF;
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            cursor: pointer;
+        }
+        
+        .capture-country-select:focus {
+            border-color: #25D366;
+        }
+        
+        .capture-phone-input {
+            flex: 1;
+        }
+        
+        .capture-note {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            background: rgba(37, 211, 102, 0.05);
+            border: 1px solid rgba(37, 211, 102, 0.15);
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 16px;
+        }
+        
+        .capture-note-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        
+        .capture-note-text {
+            font-size: 12px;
+            color: #8696a0;
+            line-height: 1.5;
+        }
+        
+        .capture-note-text strong {
+            color: #25D366;
+        }
+        
+        .capture-error {
+            color: #ef4444;
+            font-size: 12px;
+            margin-top: 6px;
+            display: none;
+        }
+        
+        .capture-error.visible {
+            display: block;
+        }
+        
+        /* ===== VSL + HACKING STYLES ===== */
+        .vsl-hacking-container {
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .vsl-section {
+            max-width: 450px;
+            margin: 0 auto;
+        }
+        
+        .vsl-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .vsl-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #ff4444, #cc0000);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            animation: badgePulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes badgePulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.4); }
+            50% { box-shadow: 0 0 0 10px rgba(255, 68, 68, 0); }
+        }
+        
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: #fff;
+            border-radius: 50%;
+            animation: pulseDot 1s ease-in-out infinite;
+        }
+        
+        @keyframes pulseDot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+        
+        .vsl-title {
+            color: #25D366;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .vsl-subtitle {
+            color: #888;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        
+        .vsl-player-wrapper {
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(37, 211, 102, 0.2);
+            margin-bottom: 20px;
+        }
+        
+        /* Target Info Card */
+        .target-info-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: linear-gradient(135deg, rgba(37, 211, 102, 0.1), rgba(18, 140, 126, 0.1));
+            border: 1px solid rgba(37, 211, 102, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .target-photo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid #25D366;
+            object-fit: cover;
+            box-shadow: 0 0 15px rgba(37, 211, 102, 0.4);
+            animation: photoGlow 2s ease-in-out infinite;
+        }
+        
+        @keyframes photoGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(37, 211, 102, 0.4); }
+            50% { box-shadow: 0 0 25px rgba(37, 211, 102, 0.7); }
+        }
+        
+        .target-details {
+            flex: 1;
+        }
+        
+        .target-label {
+            font-size: 10px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        
+        .target-phone {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+        
+        .target-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 6px;
+            font-size: 11px;
+            color: #25D366;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #25D366;
+            border-radius: 50%;
+            animation: statusPulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes statusPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        
+        /* Mini Terminal Styles */
+        .mini-terminal-section {
+            background: linear-gradient(180deg, #1a1a2e 0%, #0d0d1a 100%);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(37, 211, 102, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .mini-terminal-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .terminal-dots {
+            display: flex;
+            gap: 6px;
+        }
+        
+        .terminal-dots .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        
+        .terminal-dots .dot.red { background: #ff5f56; }
+        .terminal-dots .dot.yellow { background: #ffbd2e; }
+        .terminal-dots .dot.green { background: #27ca40; }
+        
+        .terminal-title {
+            color: #666;
+            font-size: 11px;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+        
+        .mini-terminal {
+            padding: 15px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 11px;
+            min-height: 60px;
+            max-height: 80px;
+            overflow: hidden;
+        }
+        
+        .terminal-line {
+            display: flex;
+            gap: 8px;
+            color: #25D366;
+        }
+        
+        .terminal-line .prefix {
+            color: #ff6b6b;
+            white-space: nowrap;
+        }
+        
+        .terminal-line .command {
+            color: #25D366;
+        }
+        
+        .terminal-line .command.typing::after {
+            content: '|';
+            animation: blink 0.7s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        .mini-progress {
+            padding: 12px 15px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+        
+        .mini-progress-bar {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        
+        .mini-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #25D366, #128C7E);
+            border-radius: 3px;
+            transition: width 1s linear;
+            position: relative;
+        }
+        
+        .mini-progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .mini-progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #888;
+        }
+        
+        #miniProgressPercent {
+            color: #25D366;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- Matrix Rain Canvas -->
+    <canvas id="matrix-canvas"></canvas>
+    <div class="container">
+        <!-- Screen 1: Landing -->
+        <div class="screen active" id="screen1">
+            <div class="logo-text">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                </svg>
+                ZapSpy.ai
+            </div>
+
+            <h1>Discover <span class="red">What They're Hiding</span> From You</h1>
+            <p class="subtitle">Recover <strong>deleted messages</strong>, photos, and videos. Find out the truth about anyone's WhatsApp.</p>
+
+            <div class="stats-badge">
+                <div class="dot"></div>
+                <span id="suspiciousCount">3,892 suspicious activities detected today</span>
+            </div>
+
+            <div class="phone-section">
+                <h3>Enter the phone number to spy</h3>
+                
+                <div class="phone-input-wrapper">
+                    <select class="country-select" id="countryCode">
+                        <!-- English-speaking countries first -->
+                        <option value="+1" selected>🇺🇸 +1</option>
+                        <option value="+1">🇨🇦 +1</option>
+                        <option value="+44">🇬🇧 +44</option>
+                        <option value="+61">🇦🇺 +61</option>
+                        <option value="+64">🇳🇿 +64</option>
+                        <option value="+353">🇮🇪 +353</option>
+                        <option value="+27">🇿🇦 +27</option>
+                        <option value="+65">🇸🇬 +65</option>
+                        <option value="+63">🇵🇭 +63</option>
+                        <option value="+91">🇮🇳 +91</option>
+                        <option value="+234">🇳🇬 +234</option>
+                        <option value="+254">🇰🇪 +254</option>
+                        <option value="+233">🇬🇭 +233</option>
+                        <option value="+256">🇺🇬 +256</option>
+                        <option value="+255">🇹🇿 +255</option>
+                        <option value="+263">🇿🇼 +263</option>
+                        <option value="+260">🇿🇲 +260</option>
+                        <option value="+267">🇧🇼 +267</option>
+                        <option value="+1876">🇯🇲 +1876</option>
+                        <option value="+1868">🇹🇹 +1868</option>
+                        <option value="+1246">🇧🇧 +1246</option>
+                        <option value="+1242">🇧🇸 +1242</option>
+                        <!-- European countries -->
+                        <option value="+49">🇩🇪 +49</option>
+                        <option value="+33">🇫🇷 +33</option>
+                        <option value="+34">🇪🇸 +34</option>
+                        <option value="+39">🇮🇹 +39</option>
+                        <option value="+351">🇵🇹 +351</option>
+                        <option value="+31">🇳🇱 +31</option>
+                        <option value="+32">🇧🇪 +32</option>
+                        <option value="+41">🇨🇭 +41</option>
+                        <option value="+43">🇦🇹 +43</option>
+                        <option value="+46">🇸🇪 +46</option>
+                        <option value="+47">🇳🇴 +47</option>
+                        <option value="+45">🇩🇰 +45</option>
+                        <option value="+358">🇫🇮 +358</option>
+                        <option value="+48">🇵🇱 +48</option>
+                        <option value="+30">🇬🇷 +30</option>
+                        <option value="+7">🇷🇺 +7</option>
+                        <option value="+90">🇹🇷 +90</option>
+                        <option value="+380">🇺🇦 +380</option>
+                        <option value="+420">🇨🇿 +420</option>
+                        <option value="+36">🇭🇺 +36</option>
+                        <option value="+40">🇷🇴 +40</option>
+                        <option value="+359">🇧🇬 +359</option>
+                        <option value="+381">🇷🇸 +381</option>
+                        <option value="+385">🇭🇷 +385</option>
+                        <option value="+386">🇸🇮 +386</option>
+                        <option value="+421">🇸🇰 +421</option>
+                        <option value="+370">🇱🇹 +370</option>
+                        <option value="+371">🇱🇻 +371</option>
+                        <option value="+372">🇪🇪 +372</option>
+                        <option value="+375">🇧🇾 +375</option>
+                        <option value="+373">🇲🇩 +373</option>
+                        <option value="+355">🇦🇱 +355</option>
+                        <option value="+389">🇲🇰 +389</option>
+                        <option value="+387">🇧🇦 +387</option>
+                        <option value="+382">🇲🇪 +382</option>
+                        <option value="+383">🇽🇰 +383</option>
+                        <option value="+354">🇮🇸 +354</option>
+                        <option value="+352">🇱🇺 +352</option>
+                        <option value="+356">🇲🇹 +356</option>
+                        <option value="+357">🇨🇾 +357</option>
+                        <option value="+376">🇦🇩 +376</option>
+                        <option value="+377">🇲🇨 +377</option>
+                        <option value="+378">🇸🇲 +378</option>
+                        <option value="+423">🇱🇮 +423</option>
+                        <!-- Latin America -->
+                        <option value="+55">🇧🇷 +55</option>
+                        <option value="+52">🇲🇽 +52</option>
+                        <option value="+54">🇦🇷 +54</option>
+                        <option value="+57">🇨🇴 +57</option>
+                        <option value="+56">🇨🇱 +56</option>
+                        <option value="+51">🇵🇪 +51</option>
+                        <option value="+58">🇻🇪 +58</option>
+                        <option value="+593">🇪🇨 +593</option>
+                        <option value="+591">🇧🇴 +591</option>
+                        <option value="+595">🇵🇾 +595</option>
+                        <option value="+598">🇺🇾 +598</option>
+                        <option value="+502">🇬🇹 +502</option>
+                        <option value="+503">🇸🇻 +503</option>
+                        <option value="+504">🇭🇳 +504</option>
+                        <option value="+505">🇳🇮 +505</option>
+                        <option value="+506">🇨🇷 +506</option>
+                        <option value="+507">🇵🇦 +507</option>
+                        <option value="+53">🇨🇺 +53</option>
+                        <option value="+1809">🇩🇴 +1809</option>
+                        <option value="+1787">🇵🇷 +1787</option>
+                        <option value="+509">🇭🇹 +509</option>
+                        <option value="+501">🇧🇿 +501</option>
+                        <option value="+592">🇬🇾 +592</option>
+                        <option value="+597">🇸🇷 +597</option>
+                        <option value="+594">🇬🇫 +594</option>
+                        <!-- Caribbean -->
+                        <option value="+1264">🇦🇮 +1264</option>
+                        <option value="+1268">🇦🇬 +1268</option>
+                        <option value="+297">🇦🇼 +297</option>
+                        <option value="+1441">🇧🇲 +1441</option>
+                        <option value="+599">🇧🇶 +599</option>
+                        <option value="+1284">🇻🇬 +1284</option>
+                        <option value="+1345">🇰🇾 +1345</option>
+                        <option value="+5999">🇨🇼 +5999</option>
+                        <option value="+1767">🇩🇲 +1767</option>
+                        <option value="+1473">🇬🇩 +1473</option>
+                        <option value="+590">🇬🇵 +590</option>
+                        <option value="+596">🇲🇶 +596</option>
+                        <option value="+1664">🇲🇸 +1664</option>
+                        <option value="+1869">🇰🇳 +1869</option>
+                        <option value="+1758">🇱🇨 +1758</option>
+                        <option value="+1721">🇸🇽 +1721</option>
+                        <option value="+1784">🇻🇨 +1784</option>
+                        <option value="+1649">🇹🇨 +1649</option>
+                        <option value="+1340">🇻🇮 +1340</option>
+                        <!-- Asia -->
+                        <option value="+81">🇯🇵 +81</option>
+                        <option value="+82">🇰🇷 +82</option>
+                        <option value="+86">🇨🇳 +86</option>
+                        <option value="+852">🇭🇰 +852</option>
+                        <option value="+853">🇲🇴 +853</option>
+                        <option value="+886">🇹🇼 +886</option>
+                        <option value="+62">🇮🇩 +62</option>
+                        <option value="+66">🇹🇭 +66</option>
+                        <option value="+84">🇻🇳 +84</option>
+                        <option value="+60">🇲🇾 +60</option>
+                        <option value="+855">🇰🇭 +855</option>
+                        <option value="+856">🇱🇦 +856</option>
+                        <option value="+95">🇲🇲 +95</option>
+                        <option value="+880">🇧🇩 +880</option>
+                        <option value="+92">🇵🇰 +92</option>
+                        <option value="+94">🇱🇰 +94</option>
+                        <option value="+977">🇳🇵 +977</option>
+                        <option value="+975">🇧🇹 +975</option>
+                        <option value="+960">🇲🇻 +960</option>
+                        <option value="+93">🇦🇫 +93</option>
+                        <option value="+850">🇰🇵 +850</option>
+                        <option value="+976">🇲🇳 +976</option>
+                        <option value="+673">🇧🇳 +673</option>
+                        <option value="+670">🇹🇱 +670</option>
+                        <!-- Middle East -->
+                        <option value="+971">🇦🇪 +971</option>
+                        <option value="+966">🇸🇦 +966</option>
+                        <option value="+972">🇮🇱 +972</option>
+                        <option value="+962">🇯🇴 +962</option>
+                        <option value="+961">🇱🇧 +961</option>
+                        <option value="+963">🇸🇾 +963</option>
+                        <option value="+964">🇮🇶 +964</option>
+                        <option value="+98">🇮🇷 +98</option>
+                        <option value="+965">🇰🇼 +965</option>
+                        <option value="+974">🇶🇦 +974</option>
+                        <option value="+973">🇧🇭 +973</option>
+                        <option value="+968">🇴🇲 +968</option>
+                        <option value="+967">🇾🇪 +967</option>
+                        <option value="+970">🇵🇸 +970</option>
+                        <!-- Central Asia -->
+                        <option value="+7">🇰🇿 +7</option>
+                        <option value="+998">🇺🇿 +998</option>
+                        <option value="+993">🇹🇲 +993</option>
+                        <option value="+992">🇹🇯 +992</option>
+                        <option value="+996">🇰🇬 +996</option>
+                        <option value="+994">🇦🇿 +994</option>
+                        <option value="+995">🇬🇪 +995</option>
+                        <option value="+374">🇦🇲 +374</option>
+                        <!-- Africa -->
+                        <option value="+20">🇪🇬 +20</option>
+                        <option value="+212">🇲🇦 +212</option>
+                        <option value="+213">🇩🇿 +213</option>
+                        <option value="+216">🇹🇳 +216</option>
+                        <option value="+218">🇱🇾 +218</option>
+                        <option value="+249">🇸🇩 +249</option>
+                        <option value="+251">🇪🇹 +251</option>
+                        <option value="+252">🇸🇴 +252</option>
+                        <option value="+253">🇩🇯 +253</option>
+                        <option value="+291">🇪🇷 +291</option>
+                        <option value="+221">🇸🇳 +221</option>
+                        <option value="+220">🇬🇲 +220</option>
+                        <option value="+224">🇬🇳 +224</option>
+                        <option value="+225">🇨🇮 +225</option>
+                        <option value="+226">🇧🇫 +226</option>
+                        <option value="+227">🇳🇪 +227</option>
+                        <option value="+228">🇹🇬 +228</option>
+                        <option value="+229">🇧🇯 +229</option>
+                        <option value="+230">🇲🇺 +230</option>
+                        <option value="+231">🇱🇷 +231</option>
+                        <option value="+232">🇸🇱 +232</option>
+                        <option value="+235">🇹🇩 +235</option>
+                        <option value="+236">🇨🇫 +236</option>
+                        <option value="+237">🇨🇲 +237</option>
+                        <option value="+238">🇨🇻 +238</option>
+                        <option value="+239">🇸🇹 +239</option>
+                        <option value="+240">🇬🇶 +240</option>
+                        <option value="+241">🇬🇦 +241</option>
+                        <option value="+242">🇨🇬 +242</option>
+                        <option value="+243">🇨🇩 +243</option>
+                        <option value="+244">🇦🇴 +244</option>
+                        <option value="+245">🇬🇼 +245</option>
+                        <option value="+248">🇸🇨 +248</option>
+                        <option value="+250">🇷🇼 +250</option>
+                        <option value="+257">🇧🇮 +257</option>
+                        <option value="+258">🇲🇿 +258</option>
+                        <option value="+261">🇲🇬 +261</option>
+                        <option value="+262">🇷🇪 +262</option>
+                        <option value="+264">🇳🇦 +264</option>
+                        <option value="+265">🇲🇼 +265</option>
+                        <option value="+266">🇱🇸 +266</option>
+                        <option value="+268">🇸🇿 +268</option>
+                        <option value="+269">🇰🇲 +269</option>
+                        <option value="+290">🇸🇭 +290</option>
+                        <!-- Oceania -->
+                        <option value="+675">🇵🇬 +675</option>
+                        <option value="+679">🇫🇯 +679</option>
+                        <option value="+676">🇹🇴 +676</option>
+                        <option value="+677">🇸🇧 +677</option>
+                        <option value="+678">🇻🇺 +678</option>
+                        <option value="+680">🇵🇼 +680</option>
+                        <option value="+681">🇼🇫 +681</option>
+                        <option value="+682">🇨🇰 +682</option>
+                        <option value="+683">🇳🇺 +683</option>
+                        <option value="+685">🇼🇸 +685</option>
+                        <option value="+686">🇰🇮 +686</option>
+                        <option value="+687">🇳🇨 +687</option>
+                        <option value="+688">🇹🇻 +688</option>
+                        <option value="+689">🇵🇫 +689</option>
+                        <option value="+690">🇹🇰 +690</option>
+                        <option value="+691">🇫🇲 +691</option>
+                        <option value="+692">🇲🇭 +692</option>
+                        <option value="+674">🇳🇷 +674</option>
+                    </select>
+                    <input type="tel" class="phone-input" id="phoneInput" placeholder="Phone number" maxlength="15">
+                </div>
+
+                <div class="features-list">
+                    <div class="feature-item active" data-feature="messages">
+                        <div class="feature-checkbox">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </div>
+                        <div class="feature-text">
+                            <strong>Read all messages</strong>
+                            <span>Access all conversations in real-time</span>
+                        </div>
+                    </div>
+                    <div class="feature-item deleted active" data-feature="deleted">
+                        <div class="feature-checkbox">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </div>
+                        <div class="feature-text">
+                            <strong>Recover DELETED messages</strong>
+                            <span class="red">Find what they tried to hide from you</span>
+                        </div>
+                        <span class="feature-badge">NEW</span>
+                    </div>
+                    <div class="feature-item active" data-feature="media">
+                        <div class="feature-checkbox">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </div>
+                        <div class="feature-text">
+                            <strong>View photos & videos</strong>
+                            <span>Including deleted media files</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="spy-btn" onclick="startSpy()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="M21 21l-4.35-4.35"/>
+                    </svg>
+                    Start Spying
+                </button>
+            </div>
+
+            <div class="trust-section">
+                <div class="trust-badges">
+                    <div class="trust-badge">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                        100% Anonymous
+                    </div>
+                    <div class="trust-badge">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                        Encrypted
+                    </div>
+                    <div class="trust-badge">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        Undetectable
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen Loading: Progress bar while fetching data -->
+        <div class="screen" id="screenLoading">
+            <div class="logo-text">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/>
+                </svg>
+                ZapSpy.ai
+            </div>
+
+            <div class="loading-container">
+                <div class="loading-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="loading-spinner">
+                        <circle cx="12" cy="12" r="10" stroke-opacity="0.2"/>
+                        <path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <h2 class="loading-title">Accessing WhatsApp</h2>
+                <p class="loading-phone" id="loadingPhone" style="font-size: 20px; font-weight: 600; color: #25D366; margin-bottom: 8px;"></p>
+                <p class="loading-subtitle" id="loadingText">Connecting to servers...</p>
+                
+                <div class="loading-progress-container">
+                    <div class="loading-progress-bar">
+                        <div class="loading-progress-fill" id="loadingProgress" style="width: 0%"></div>
+                    </div>
+                    <span class="loading-percent" id="loadingPercent">0%</span>
+                </div>
+
+                <div class="loading-steps">
+                    <div class="loading-step" id="step1">
+                        <div class="step-icon">⏳</div>
+                        <span>Connecting to WhatsApp servers</span>
+                    </div>
+                    <div class="loading-step" id="step2">
+                        <div class="step-icon">⏳</div>
+                        <span>Verifying phone number</span>
+                    </div>
+                    <div class="loading-step" id="step3">
+                        <div class="step-icon">⏳</div>
+                        <span>Loading profile data</span>
+                    </div>
+                    <div class="loading-step" id="step4">
+                        <div class="step-icon">⏳</div>
+                        <span>Scanning for deleted messages</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 2: Confirmation -->
+        <div class="screen" id="screen2">
+            <div class="logo-text">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/>
+                </svg>
+                ZapSpy.ai
+            </div>
+
+            <div class="profile-card">
+                <img src="imagens/default-avatar.png" alt="Profile" class="profile-avatar" id="profileAvatar">
+                <div class="profile-number" id="profileNumber">+1 (555) 123-4567</div>
+                <div class="profile-status">
+                    <div class="dot"></div>
+                    Registered on WhatsApp
+                </div>
+                <div class="profile-info">
+                    <div class="profile-info-item">
+                        <div class="value">Online</div>
+                        <div class="label">Current Status</div>
+                    </div>
+                    <div class="profile-info-item">
+                        <div class="value red" id="deletedCount">47</div>
+                        <div class="label">Deleted Messages</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lead Capture Form -->
+            <div class="capture-section">
+                <div class="capture-header">
+                    <h3>📩 Where should we send the report?</h3>
+                    <p>Enter your contact details to receive the recovered messages and real-time alerts</p>
+                </div>
+                
+                <div class="capture-benefits">
+                    <span class="capture-benefit">🔔 Real-time alerts</span>
+                    <span class="capture-benefit">📱 Message backup</span>
+                    <span class="capture-benefit">🔒 100% Private</span>
+                </div>
+                
+                <div class="capture-form-group">
+                    <label class="capture-label">Your name</label>
+                    <input type="text" class="capture-input" id="captureName" placeholder="Your full name" required>
+                    <div class="capture-error" id="nameError">Please enter your name</div>
+                </div>
+                
+                <div class="capture-form-group">
+                    <label class="capture-label">Email address</label>
+                    <input type="email" class="capture-input" id="captureEmail" placeholder="your@email.com" required>
+                    <div class="capture-error" id="emailError">Please enter a valid email</div>
+                </div>
+                
+                <div class="capture-form-group">
+                    <label class="capture-label">Your WhatsApp number</label>
+                    <div class="capture-phone-row">
+                        <select class="capture-country-select" id="captureCountry">
+                            <!-- English-speaking countries first -->
+                            <option value="+1" selected>🇺🇸 US +1</option>
+                            <option value="+1">🇨🇦 CA +1</option>
+                            <option value="+44">🇬🇧 UK +44</option>
+                            <option value="+61">🇦🇺 AU +61</option>
+                            <option value="+64">🇳🇿 NZ +64</option>
+                            <option value="+353">🇮🇪 IE +353</option>
+                            <option value="+27">🇿🇦 ZA +27</option>
+                            <option value="+65">🇸🇬 SG +65</option>
+                            <option value="+63">🇵🇭 PH +63</option>
+                            <option value="+91">🇮🇳 IN +91</option>
+                            <option value="+234">🇳🇬 NG +234</option>
+                            <option value="+254">🇰🇪 KE +254</option>
+                            <option value="+233">🇬🇭 GH +233</option>
+                            <option value="+256">🇺🇬 UG +256</option>
+                            <option value="+255">🇹🇿 TZ +255</option>
+                            <option value="+263">🇿🇼 ZW +263</option>
+                            <option value="+260">🇿🇲 ZM +260</option>
+                            <option value="+267">🇧🇼 BW +267</option>
+                            <option value="+1876">🇯🇲 JM +1876</option>
+                            <option value="+1868">🇹🇹 TT +1868</option>
+                            <option value="+1246">🇧🇧 BB +1246</option>
+                            <option value="+1242">🇧🇸 BS +1242</option>
+                            <!-- European countries -->
+                            <option value="+49">🇩🇪 DE +49</option>
+                            <option value="+33">🇫🇷 FR +33</option>
+                            <option value="+34">🇪🇸 ES +34</option>
+                            <option value="+39">🇮🇹 IT +39</option>
+                            <option value="+351">🇵🇹 PT +351</option>
+                            <option value="+31">🇳🇱 NL +31</option>
+                            <option value="+32">🇧🇪 BE +32</option>
+                            <option value="+41">🇨🇭 CH +41</option>
+                            <option value="+43">🇦🇹 AT +43</option>
+                            <option value="+46">🇸🇪 SE +46</option>
+                            <option value="+47">🇳🇴 NO +47</option>
+                            <option value="+45">🇩🇰 DK +45</option>
+                            <option value="+358">🇫🇮 FI +358</option>
+                            <option value="+48">🇵🇱 PL +48</option>
+                            <option value="+30">🇬🇷 GR +30</option>
+                            <option value="+7">🇷🇺 RU +7</option>
+                            <option value="+90">🇹🇷 TR +90</option>
+                            <option value="+380">🇺🇦 UA +380</option>
+                            <option value="+420">🇨🇿 CZ +420</option>
+                            <option value="+36">🇭🇺 HU +36</option>
+                            <option value="+40">🇷🇴 RO +40</option>
+                            <option value="+359">🇧🇬 BG +359</option>
+                            <option value="+381">🇷🇸 RS +381</option>
+                            <option value="+385">🇭🇷 HR +385</option>
+                            <option value="+386">🇸🇮 SI +386</option>
+                            <option value="+421">🇸🇰 SK +421</option>
+                            <option value="+370">🇱🇹 LT +370</option>
+                            <option value="+371">🇱🇻 LV +371</option>
+                            <option value="+372">🇪🇪 EE +372</option>
+                            <option value="+375">🇧🇾 BY +375</option>
+                            <option value="+373">🇲🇩 MD +373</option>
+                            <option value="+355">🇦🇱 AL +355</option>
+                            <option value="+389">🇲🇰 MK +389</option>
+                            <option value="+387">🇧🇦 BA +387</option>
+                            <option value="+382">🇲🇪 ME +382</option>
+                            <option value="+383">🇽🇰 XK +383</option>
+                            <option value="+354">🇮🇸 IS +354</option>
+                            <option value="+352">🇱🇺 LU +352</option>
+                            <option value="+356">🇲🇹 MT +356</option>
+                            <option value="+357">🇨🇾 CY +357</option>
+                            <option value="+376">🇦🇩 AD +376</option>
+                            <option value="+377">🇲🇨 MC +377</option>
+                            <option value="+378">🇸🇲 SM +378</option>
+                            <option value="+423">🇱🇮 LI +423</option>
+                            <!-- Latin America -->
+                            <option value="+55">🇧🇷 BR +55</option>
+                            <option value="+52">🇲🇽 MX +52</option>
+                            <option value="+54">🇦🇷 AR +54</option>
+                            <option value="+57">🇨🇴 CO +57</option>
+                            <option value="+56">🇨🇱 CL +56</option>
+                            <option value="+51">🇵🇪 PE +51</option>
+                            <option value="+58">🇻🇪 VE +58</option>
+                            <option value="+593">🇪🇨 EC +593</option>
+                            <option value="+591">🇧🇴 BO +591</option>
+                            <option value="+595">🇵🇾 PY +595</option>
+                            <option value="+598">🇺🇾 UY +598</option>
+                            <option value="+502">🇬🇹 GT +502</option>
+                            <option value="+503">🇸🇻 SV +503</option>
+                            <option value="+504">🇭🇳 HN +504</option>
+                            <option value="+505">🇳🇮 NI +505</option>
+                            <option value="+506">🇨🇷 CR +506</option>
+                            <option value="+507">🇵🇦 PA +507</option>
+                            <option value="+53">🇨🇺 CU +53</option>
+                            <option value="+1809">🇩🇴 DO +1809</option>
+                            <option value="+1787">🇵🇷 PR +1787</option>
+                            <option value="+509">🇭🇹 HT +509</option>
+                            <option value="+501">🇧🇿 BZ +501</option>
+                            <option value="+592">🇬🇾 GY +592</option>
+                            <option value="+597">🇸🇷 SR +597</option>
+                            <option value="+594">🇬🇫 GF +594</option>
+                            <!-- Caribbean -->
+                            <option value="+1264">🇦🇮 AI +1264</option>
+                            <option value="+1268">🇦🇬 AG +1268</option>
+                            <option value="+297">🇦🇼 AW +297</option>
+                            <option value="+1441">🇧🇲 BM +1441</option>
+                            <option value="+599">🇧🇶 BQ +599</option>
+                            <option value="+1284">🇻🇬 VG +1284</option>
+                            <option value="+1345">🇰🇾 KY +1345</option>
+                            <option value="+5999">🇨🇼 CW +5999</option>
+                            <option value="+1767">🇩🇲 DM +1767</option>
+                            <option value="+1473">🇬🇩 GD +1473</option>
+                            <option value="+590">🇬🇵 GP +590</option>
+                            <option value="+596">🇲🇶 MQ +596</option>
+                            <option value="+1664">🇲🇸 MS +1664</option>
+                            <option value="+1869">🇰🇳 KN +1869</option>
+                            <option value="+1758">🇱🇨 LC +1758</option>
+                            <option value="+1721">🇸🇽 SX +1721</option>
+                            <option value="+1784">🇻🇨 VC +1784</option>
+                            <option value="+1649">🇹🇨 TC +1649</option>
+                            <option value="+1340">🇻🇮 VI +1340</option>
+                            <!-- Asia -->
+                            <option value="+81">🇯🇵 JP +81</option>
+                            <option value="+82">🇰🇷 KR +82</option>
+                            <option value="+86">🇨🇳 CN +86</option>
+                            <option value="+852">🇭🇰 HK +852</option>
+                            <option value="+853">🇲🇴 MO +853</option>
+                            <option value="+886">🇹🇼 TW +886</option>
+                            <option value="+62">🇮🇩 ID +62</option>
+                            <option value="+66">🇹🇭 TH +66</option>
+                            <option value="+84">🇻🇳 VN +84</option>
+                            <option value="+60">🇲🇾 MY +60</option>
+                            <option value="+855">🇰🇭 KH +855</option>
+                            <option value="+856">🇱🇦 LA +856</option>
+                            <option value="+95">🇲🇲 MM +95</option>
+                            <option value="+880">🇧🇩 BD +880</option>
+                            <option value="+92">🇵🇰 PK +92</option>
+                            <option value="+94">🇱🇰 LK +94</option>
+                            <option value="+977">🇳🇵 NP +977</option>
+                            <option value="+975">🇧🇹 BT +975</option>
+                            <option value="+960">🇲🇻 MV +960</option>
+                            <option value="+93">🇦🇫 AF +93</option>
+                            <option value="+850">🇰🇵 KP +850</option>
+                            <option value="+976">🇲🇳 MN +976</option>
+                            <option value="+673">🇧🇳 BN +673</option>
+                            <option value="+670">🇹🇱 TL +670</option>
+                            <!-- Middle East -->
+                            <option value="+971">🇦🇪 AE +971</option>
+                            <option value="+966">🇸🇦 SA +966</option>
+                            <option value="+972">🇮🇱 IL +972</option>
+                            <option value="+962">🇯🇴 JO +962</option>
+                            <option value="+961">🇱🇧 LB +961</option>
+                            <option value="+963">🇸🇾 SY +963</option>
+                            <option value="+964">🇮🇶 IQ +964</option>
+                            <option value="+98">🇮🇷 IR +98</option>
+                            <option value="+965">🇰🇼 KW +965</option>
+                            <option value="+974">🇶🇦 QA +974</option>
+                            <option value="+973">🇧🇭 BH +973</option>
+                            <option value="+968">🇴🇲 OM +968</option>
+                            <option value="+967">🇾🇪 YE +967</option>
+                            <option value="+970">🇵🇸 PS +970</option>
+                            <!-- Central Asia -->
+                            <option value="+7">🇰🇿 KZ +7</option>
+                            <option value="+998">🇺🇿 UZ +998</option>
+                            <option value="+993">🇹🇲 TM +993</option>
+                            <option value="+992">🇹🇯 TJ +992</option>
+                            <option value="+996">🇰🇬 KG +996</option>
+                            <option value="+994">🇦🇿 AZ +994</option>
+                            <option value="+995">🇬🇪 GE +995</option>
+                            <option value="+374">🇦🇲 AM +374</option>
+                            <!-- Africa -->
+                            <option value="+20">🇪🇬 EG +20</option>
+                            <option value="+212">🇲🇦 MA +212</option>
+                            <option value="+213">🇩🇿 DZ +213</option>
+                            <option value="+216">🇹🇳 TN +216</option>
+                            <option value="+218">🇱🇾 LY +218</option>
+                            <option value="+249">🇸🇩 SD +249</option>
+                            <option value="+251">🇪🇹 ET +251</option>
+                            <option value="+252">🇸🇴 SO +252</option>
+                            <option value="+253">🇩🇯 DJ +253</option>
+                            <option value="+291">🇪🇷 ER +291</option>
+                            <option value="+221">🇸🇳 SN +221</option>
+                            <option value="+220">🇬🇲 GM +220</option>
+                            <option value="+224">🇬🇳 GN +224</option>
+                            <option value="+225">🇨🇮 CI +225</option>
+                            <option value="+226">🇧🇫 BF +226</option>
+                            <option value="+227">🇳🇪 NE +227</option>
+                            <option value="+228">🇹🇬 TG +228</option>
+                            <option value="+229">🇧🇯 BJ +229</option>
+                            <option value="+230">🇲🇺 MU +230</option>
+                            <option value="+231">🇱🇷 LR +231</option>
+                            <option value="+232">🇸🇱 SL +232</option>
+                            <option value="+235">🇹🇩 TD +235</option>
+                            <option value="+236">🇨🇫 CF +236</option>
+                            <option value="+237">🇨🇲 CM +237</option>
+                            <option value="+238">🇨🇻 CV +238</option>
+                            <option value="+239">🇸🇹 ST +239</option>
+                            <option value="+240">🇬🇶 GQ +240</option>
+                            <option value="+241">🇬🇦 GA +241</option>
+                            <option value="+242">🇨🇬 CG +242</option>
+                            <option value="+243">🇨🇩 CD +243</option>
+                            <option value="+244">🇦🇴 AO +244</option>
+                            <option value="+245">🇬🇼 GW +245</option>
+                            <option value="+248">🇸🇨 SC +248</option>
+                            <option value="+250">🇷🇼 RW +250</option>
+                            <option value="+257">🇧🇮 BI +257</option>
+                            <option value="+258">🇲🇿 MZ +258</option>
+                            <option value="+261">🇲🇬 MG +261</option>
+                            <option value="+262">🇷🇪 RE +262</option>
+                            <option value="+264">🇳🇦 NA +264</option>
+                            <option value="+265">🇲🇼 MW +265</option>
+                            <option value="+266">🇱🇸 LS +266</option>
+                            <option value="+268">🇸🇿 SZ +268</option>
+                            <option value="+269">🇰🇲 KM +269</option>
+                            <option value="+290">🇸🇭 SH +290</option>
+                            <!-- Oceania -->
+                            <option value="+675">🇵🇬 PG +675</option>
+                            <option value="+679">🇫🇯 FJ +679</option>
+                            <option value="+676">🇹🇴 TO +676</option>
+                            <option value="+677">🇸🇧 SB +677</option>
+                            <option value="+678">🇻🇺 VU +678</option>
+                            <option value="+680">🇵🇼 PW +680</option>
+                            <option value="+681">🇼🇫 WF +681</option>
+                            <option value="+682">🇨🇰 CK +682</option>
+                            <option value="+683">🇳🇺 NU +683</option>
+                            <option value="+685">🇼🇸 WS +685</option>
+                            <option value="+686">🇰🇮 KI +686</option>
+                            <option value="+687">🇳🇨 NC +687</option>
+                            <option value="+688">🇹🇻 TV +688</option>
+                            <option value="+689">🇵🇫 PF +689</option>
+                            <option value="+690">🇹🇰 TK +690</option>
+                        </select>
+                        <input type="tel" class="capture-input capture-phone-input" id="captureWhatsApp" placeholder="Your number" required>
+                    </div>
+                    <div class="capture-error" id="whatsappError">Please enter your WhatsApp number</div>
+                </div>
+                
+                <div class="capture-note">
+                    <span class="capture-note-icon">🔐</span>
+                    <span class="capture-note-text">
+                        <strong>Your privacy is guaranteed.</strong> We'll only use this to send you the recovered data and important alerts about the target's activity.
+                    </span>
+                </div>
+            </div>
+
+            <button class="confirm-btn" onclick="validateAndStartHacking()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 22px; height: 22px; margin-right: 8px;">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                Start Recovery & Spy
+            </button>
+            <button class="back-btn" onclick="goBack()">Change Number</button>
+        </div>
+
+        <!-- Screen Error: Number not on WhatsApp -->
+        <div class="screen" id="screenError">
+            <div class="logo-text">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/>
+                </svg>
+                ZapSpy.ai
+            </div>
+
+            <div class="profile-card" style="border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.05);">
+                <div style="width: 80px; height: 80px; background: rgba(239, 68, 68, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" style="width: 40px; height: 40px;">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="15" y1="9" x2="9" y2="15"/>
+                        <line x1="9" y1="9" x2="15" y2="15"/>
+                    </svg>
+                </div>
+                <div class="profile-number" id="errorPhone" style="color: #ef4444;">+1 (555) 123-4567</div>
+                <div class="profile-status" style="color: #ef4444;">
+                    <div class="dot" style="background: #ef4444;"></div>
+                    Not registered on WhatsApp
+                </div>
+                <p style="color: #8696a0; font-size: 14px; margin-top: 16px; line-height: 1.5;">
+                    This phone number is not registered on WhatsApp. Please check the number and try again.
+                </p>
+            </div>
+
+            <button class="confirm-btn" onclick="goBack()" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 22px; height: 22px; margin-right: 8px;">
+                    <polyline points="15 18 9 12 15 6"/>
+                </svg>
+                Try Another Number
+            </button>
+        </div>
+
+        <!-- Screen 3: VSL + Hacking -->
+        <div class="screen" id="screen3">
+            <div class="vsl-hacking-container">
+                <!-- VSL Section -->
+                <div class="vsl-section" id="vslSection">
+                    <div class="vsl-header">
+                        <div class="vsl-badge">
+                            <span class="pulse-dot"></span>
+                            LIVE ACCESS IN PROGRESS
+                        </div>
+                        <h2 class="vsl-title">Important: Watch While We Access</h2>
+                        <p class="vsl-subtitle">Our system is connecting to WhatsApp servers. Watch this security briefing.</p>
+                    </div>
+                    
+                    <!-- VTurb Player -->
+                    <div class="vsl-player-wrapper">
+                        <vturb-smartplayer id="vid-68fb78cdbdf9abb2347d414b" style="display: block; margin: 0 auto; width: 100%; max-width: 400px;"></vturb-smartplayer>
+                    </div>
+                    
+                    <!-- Target Info Card -->
+                    <div class="target-info-card">
+                        <img src="" alt="Target" class="target-photo" id="vslTargetPhoto">
+                        <div class="target-details">
+                            <div class="target-label">Accessing target</div>
+                            <div class="target-phone" id="vslTargetPhone">+1 (555) 123-4567</div>
+                            <div class="target-status">
+                                <span class="status-dot"></span>
+                                <span>Connection active</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Mini Terminal (runs below video) -->
+                    <div class="mini-terminal-section">
+                        <div class="mini-terminal-header">
+                            <div class="terminal-dots">
+                                <span class="dot red"></span>
+                                <span class="dot yellow"></span>
+                                <span class="dot green"></span>
+                            </div>
+                            <span class="terminal-title">zapspy@secure-server</span>
+                        </div>
+                        <div class="mini-terminal" id="miniTerminal">
+                            <div class="terminal-line">
+                                <span class="prefix">root@zapspy:~#</span>
+                                <span class="command typing" id="typingCommand">initializing...</span>
+                            </div>
+                        </div>
+                        <div class="mini-progress">
+                            <div class="mini-progress-bar">
+                                <div class="mini-progress-fill" id="miniProgressFill"></div>
+                            </div>
+                            <div class="mini-progress-info">
+                                <span id="miniProgressText">Connecting to servers...</span>
+                                <span id="miniProgressPercent">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Full Hacking Screen (hidden initially, shows after VSL) -->
+                <div class="hacking-screen" id="hackingScreen" style="display: none;">
+                    <div class="hacking-header">
+                        <div class="icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                <path d="M12 8v4M12 16h.01"/>
+                            </svg>
+                        </div>
+                        <h2>Accessing WhatsApp...</h2>
+                    </div>
+
+                    <div class="terminal" id="terminal">
+                        <!-- Terminal lines will be injected here -->
+                    </div>
+
+                    <div class="progress-section">
+                        <div class="progress-label">
+                            <span id="progressText">Initializing...</span>
+                            <span id="progressPercent">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="sms-box" id="smsBox" style="display: none;">
+                        <div class="sms-header">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72"/>
+                            </svg>
+                            <span>SMS INTERCEPTED</span>
+                        </div>
+                        <div class="sms-code" id="smsCode">██-███</div>
+                    </div>
+
+                    <div class="backup-box" id="backupBox" style="display: none;">
+                        <div class="backup-header">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                <line x1="10" y1="11" x2="10" y2="17"/>
+                                <line x1="14" y1="11" x2="14" y2="17"/>
+                            </svg>
+                            <span>DELETED DATA FOUND!</span>
+                        </div>
+                        <div class="backup-stats">
+                            <div class="backup-stat">
+                                <div class="number" id="deletedMsgsCount">47</div>
+                                <div class="label">Deleted Messages</div>
+                            </div>
+                            <div class="backup-stat">
+                                <div class="number" id="deletedMediaCount">23</div>
+                                <div class="label">Deleted Photos/Videos</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="data-found" id="dataFound" style="display: none;">
+                        <h4>Data recovered from backup</h4>
+                        <div class="data-grid">
+                            <div class="data-item">
+                                <div class="icon">💬</div>
+                                <div class="count" id="msgCount">0</div>
+                                <div class="label">Messages</div>
+                            </div>
+                            <div class="data-item">
+                                <div class="icon">🗑️</div>
+                                <div class="count red" id="deletedCountFinal">0</div>
+                                <div class="label">Deleted</div>
+                            </div>
+                            <div class="data-item">
+                                <div class="icon">📷</div>
+                                <div class="count" id="mediaCount">0</div>
+                                <div class="label">Media</div>
+                            </div>
+                            <div class="data-item">
+                                <div class="icon">👤</div>
+                                <div class="count" id="contactCount">0</div>
+                                <div class="label">Contacts</div>
+                            </div>
+                            <div class="data-item">
+                                <div class="icon">🔴</div>
+                                <div class="count red" id="suspiciousCount">0</div>
+                                <div class="label">Suspicious</div>
+                            </div>
+                            <div class="data-item">
+                                <div class="icon">📍</div>
+                                <div class="count" id="locationCount">0</div>
+                                <div class="label">Locations</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="warning-alert" id="warningAlert" style="display: none;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                            <line x1="12" y1="9" x2="12" y2="13"/>
+                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                        <p><strong>Warning:</strong> Suspicious conversations detected. Messages were deleted to hide evidence.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPhone = '';
+        let currentCountry = '+1';
+
+        // Terminal commands for hacking simulation - 60 seconds version
+        const terminalCommands = [
+            // Phase 1: Initialization (0-10s)
+            { text: '$ zapspy.ai v4.7.2 --stealth --deep-scan', type: 'command', delay: 800 },
+            { text: '[INIT] Loading kernel modules...', type: 'info', delay: 600 },
+            { text: '[OK] Module: network_intercept.ko loaded', type: 'success', delay: 400 },
+            { text: '[OK] Module: ssl_bypass.ko loaded', type: 'success', delay: 400 },
+            { text: '[OK] Module: sms_capture.ko loaded', type: 'success', delay: 400 },
+            { text: '$ establishing secure tunnel...', type: 'command', delay: 1000 },
+            { text: '[OK] TOR circuit established: 3 hops', type: 'success', delay: 500 },
+            { text: '[OK] IP masked: 185.220.101.xxx', type: 'success', delay: 400 },
+            
+            // Phase 2: Target Analysis (10-20s)
+            { text: '$ target --analyze {PHONE}', type: 'command', delay: 1200 },
+            { text: '[SCAN] Querying WhatsApp servers...', type: 'info', delay: 800 },
+            { text: '[OK] Target found: wa.me/{PHONE}', type: 'success', delay: 600 },
+            { text: '[OK] Status: ONLINE (last seen: now)', type: 'success', delay: 400 },
+            { text: '[OK] Device: iPhone 14 Pro Max', type: 'success', delay: 400 },
+            { text: '[OK] WhatsApp version: 24.25.87', type: 'success', delay: 400 },
+            { text: '$ nmap -sV -p 443,5222 wa.whatsapp.net', type: 'command', delay: 1000 },
+            { text: '[OK] Port 443/tcp open - HTTPS', type: 'success', delay: 300 },
+            { text: '[OK] Port 5222/tcp open - XMPP', type: 'success', delay: 300 },
+            
+            // Phase 3: Encryption Bypass (20-30s)
+            { text: '$ exploit --load CVE-2024-38367', type: 'command', delay: 1500 },
+            { text: '[WARN] Signal Protocol v3 detected', type: 'warning', delay: 800 },
+            { text: '[WARN] AES-256-GCM encryption active', type: 'warning', delay: 600 },
+            { text: '$ crypto --extract-keys --method=mitm', type: 'command', delay: 1200 },
+            { text: '[....] Extracting session keys...', type: 'info', delay: 2000 },
+            { text: '[OK] Identity key: 0x7F3A...B2C1', type: 'success', delay: 400 },
+            { text: '[OK] Session key: 0x9E2D...F4A8', type: 'success', delay: 400 },
+            { text: '[OK] Pre-key: 0x1B5C...8D3E', type: 'success', delay: 400 },
+            { text: '[OK] Encryption bypassed successfully', type: 'success', delay: 600 },
+            
+            // Phase 4: SS7 Attack & SMS Interception (30-40s)
+            { text: '$ ss7 --connect --provider=telecom', type: 'command', delay: 1500 },
+            { text: '[WARN] Connecting to SS7 network...', type: 'warning', delay: 1000 },
+            { text: '[OK] SS7 gateway: 10.47.xxx.xxx', type: 'success', delay: 500 },
+            { text: '$ sms --intercept --target={PHONE}', type: 'command', delay: 1200 },
+            { text: '[....] Waiting for verification SMS...', type: 'info', delay: 2500 },
+            { text: '[....] Intercepting...', type: 'info', delay: 2000 },
+            { text: '[ALERT] SMS INTERCEPTED!', type: 'error', delay: 800 },
+            { text: '[ALERT] Verification code captured!', type: 'error', delay: 600 },
+            
+            // Phase 5: Backup Recovery (40-50s)
+            { text: '$ backup --scan --cloud', type: 'command', delay: 1200 },
+            { text: '[SCAN] Checking Google Drive...', type: 'info', delay: 1500 },
+            { text: '[OK] Backup found: msgstore.db.crypt15', type: 'success', delay: 600 },
+            { text: '[OK] Backup size: 847.3 MB', type: 'success', delay: 400 },
+            { text: '[OK] Last backup: Today, 03:47 AM', type: 'success', delay: 400 },
+            { text: '$ decrypt --file=msgstore.db.crypt15', type: 'command', delay: 1500 },
+            { text: '[....] Decrypting database...', type: 'info', delay: 2500 },
+            { text: '[OK] Database decrypted successfully', type: 'success', delay: 600 },
+            { text: '$ recover --deleted --deep', type: 'command', delay: 1200 },
+            { text: '[SCAN] Scanning for deleted messages...', type: 'info', delay: 2000 },
+            { text: '[ALERT] DELETED MESSAGES FOUND!', type: 'error', delay: 800 },
+            { text: '[ALERT] {DELETED_MSGS} deleted messages recovered!', type: 'error', delay: 600 },
+            { text: '[ALERT] {DELETED_MEDIA} deleted media files recovered!', type: 'error', delay: 600 },
+            
+            // Phase 6: Analysis & Sync (50-60s)
+            { text: '$ analyze --patterns --suspicious', type: 'command', delay: 1200 },
+            { text: '[SCAN] Analyzing conversation patterns...', type: 'info', delay: 1500 },
+            { text: '[WARN] Suspicious activity detected!', type: 'warning', delay: 800 },
+            { text: '[ALERT] Late night conversations: 23 found', type: 'error', delay: 600 },
+            { text: '[ALERT] Hidden/deleted contacts: 3 found', type: 'error', delay: 600 },
+            { text: '[ALERT] Suspicious keywords detected!', type: 'error', delay: 600 },
+            { text: '$ sync --all --export', type: 'command', delay: 1000 },
+            { text: '[....] Synchronizing data...', type: 'info', delay: 1500 },
+            { text: '[OK] 1,847 messages synchronized', type: 'success', delay: 400 },
+            { text: '[OK] 234 media files synchronized', type: 'success', delay: 400 },
+            { text: '[OK] 12 suspicious conversations flagged', type: 'success', delay: 400 },
+            { text: '[OK] 7 shared locations recovered', type: 'success', delay: 400 },
+            { text: '', type: 'spacer', delay: 500 },
+            { text: '═══════════════════════════════════════', type: 'success', delay: 300 },
+            { text: '   ACCESS GRANTED - LOADING DATA...', type: 'success', delay: 800 },
+            { text: '═══════════════════════════════════════', type: 'success', delay: 500 }
+        ];
+
+        // Show screen
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // Format phone number based on country code
+        function formatPhoneNumber(phone, country) {
+            const digits = phone.replace(/\D/g, '');
+            
+            // US/Canada format: (XXX) XXX-XXXX
+            if (country === '+1' && digits.length === 10) {
+                return `${country} (${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`;
+            }
+            // Brazil format: (XX) XXXXX-XXXX or (XX) XXXX-XXXX
+            if (country === '+55') {
+                if (digits.length === 11) {
+                    return `${country} (${digits.slice(0,2)}) ${digits.slice(2,7)}-${digits.slice(7)}`;
+                }
+                if (digits.length === 10) {
+                    return `${country} (${digits.slice(0,2)}) ${digits.slice(2,6)}-${digits.slice(6)}`;
+                }
+            }
+            // UK format: XXXX XXX XXXX
+            if (country === '+44' && digits.length >= 10) {
+                return `${country} ${digits.slice(0,4)} ${digits.slice(4,7)} ${digits.slice(7)}`;
+            }
+            // Generic format: add spaces every 3-4 digits
+            let formatted = '';
+            for (let i = 0; i < digits.length; i++) {
+                if (i > 0 && i % 3 === 0) formatted += ' ';
+                formatted += digits[i];
+            }
+            return `${country} ${formatted}`;
+        }
+
+        // Z-API Configuration
+        const ZAPI_INSTANCE = '3E7938F228CBB0978267A6F61CAAA8C7';
+        const ZAPI_TOKEN = '983F7A4EF1F159FAD3C42B05';
+        const ZAPI_CLIENT_TOKEN = 'F0f2cc62f6c4f46088783537c957b7fd6S';
+
+        // Start spy process
+        function startSpy() {
+            const phone = document.getElementById('phoneInput').value.replace(/\D/g, '');
+            const country = document.getElementById('countryCode').value;
+            
+            if (phone.length < 8) {
+                alert('Please enter a valid phone number');
+                return;
+            }
+
+            currentPhone = phone;
+            currentCountry = country;
+
+            // Vibrate on start
+            VibrationSystem.notification();
+
+            // Show loading screen
+            showScreen('screenLoading');
+            
+            const fullNum = (country && String(country).replace('+', '')) + phone;
+            localStorage.setItem('userWhatsApp', fullNum);
+            if (typeof FacebookCAPI !== 'undefined') {
+                FacebookCAPI.trackEvent('Lead', {
+                    content_name: 'Phone Number Submitted',
+                    content_category: 'WhatsApp Monitoring',
+                    value: 49,
+                    currency: 'USD'
+                });
+            } else if (typeof fbq !== 'undefined') {
+                const leadEventId = 'Lead_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                fbq('track', 'Lead', {
+                    content_name: 'Phone Number Submitted',
+                    content_category: 'WhatsApp Monitoring',
+                    value: 49,
+                    currency: 'USD'
+                }, { eventID: leadEventId });
+            }
+            
+            // Display phone number on loading screen
+            const formattedPhone = formatPhoneNumber(phone, country);
+            document.getElementById('loadingPhone').textContent = formattedPhone;
+            
+            // Start loading animation
+            startLoadingAnimation(phone, country);
+        }
+
+        // Loading animation with API calls
+        async function startLoadingAnimation(phone, country) {
+            const loadingSteps = [
+                { text: 'Connecting to WhatsApp servers...', progress: 10, stepId: 'step1' },
+                { text: 'Verifying phone number...', progress: 25, stepId: 'step1' },
+                { text: 'Checking WhatsApp registration...', progress: 40, stepId: 'step2' },
+                { text: 'Fetching profile data...', progress: 55, stepId: 'step3' },
+                { text: 'Loading profile picture...', progress: 70, stepId: 'step3' },
+                { text: 'Scanning for deleted messages...', progress: 85, stepId: 'step4' },
+                { text: 'Preparing access...', progress: 95, stepId: 'step4' },
+                { text: 'Complete!', progress: 100, stepId: null }
+            ];
+
+            const fullPhone = country.replace('+', '') + phone;
+            let profilePictureUrl = null;
+            let isRegistered = false;
+
+            // Reset all steps
+            ['step1', 'step2', 'step3', 'step4'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.classList.remove('active', 'completed');
+                    el.querySelector('.step-icon').textContent = '⏳';
+                }
+            });
+
+            let lastStepId = null;
+
+            // Animate loading steps
+            for (let i = 0; i < loadingSteps.length; i++) {
+                const step = loadingSteps[i];
+                
+                document.getElementById('loadingText').textContent = step.text;
+                document.getElementById('loadingProgress').style.width = step.progress + '%';
+                document.getElementById('loadingPercent').textContent = step.progress + '%';
+
+                // Update step visual
+                if (step.stepId && step.stepId !== lastStepId) {
+                    // Complete previous step
+                    if (lastStepId) {
+                        const prevEl = document.getElementById(lastStepId);
+                        if (prevEl) {
+                            prevEl.classList.remove('active');
+                            prevEl.classList.add('completed');
+                            prevEl.querySelector('.step-icon').textContent = '✅';
+                        }
+                    }
+                    // Activate current step
+                    const currEl = document.getElementById(step.stepId);
+                    if (currEl) {
+                        currEl.classList.add('active');
+                        currEl.querySelector('.step-icon').textContent = '🔄';
+                    }
+                    lastStepId = step.stepId;
+                }
+
+                // Make API calls at specific steps
+                if (i === 2) {
+                    // Check if registered on WhatsApp
+                    try {
+                        const response = await fetch(`https://api.z-api.io/instances/${ZAPI_INSTANCE}/token/${ZAPI_TOKEN}/phone-exists/${fullPhone}`, {
+                            headers: { 'client-token': ZAPI_CLIENT_TOKEN }
+                        });
+                        const data = await response.json();
+                        isRegistered = data.exists === true;
+                    } catch (e) {
+                        console.log('API error:', e);
+                        isRegistered = true; // Assume registered on error
+                    }
+                    
+                    // If not registered, show error screen
+                    if (!isRegistered) {
+                        const formattedPhone = formatPhoneNumber(phone, country);
+                        document.getElementById('errorPhone').textContent = formattedPhone;
+                        showScreen('screenError');
+                        return; // Stop the loading animation
+                    }
+                }
+
+                if (i === 4 && isRegistered) {
+                    // Fetch profile picture
+                    try {
+                        const response = await fetch(`https://api.z-api.io/instances/${ZAPI_INSTANCE}/token/${ZAPI_TOKEN}/profile-picture?phone=${fullPhone}`, {
+                            headers: { 'client-token': ZAPI_CLIENT_TOKEN }
+                        });
+                        const data = await response.json();
+                        // Check if the link is valid (not null, "null", undefined or empty)
+                        if (data.link && data.link !== 'null' && data.link !== null && data.link.startsWith('http')) {
+                            profilePictureUrl = data.link;
+                        }
+                    } catch (e) {
+                        console.log('Profile picture error:', e);
+                    }
+                }
+
+                // More realistic variation in loading times
+                const baseDelay = [800, 600, 1200, 700, 900, 500, 600, 400][i] || 600;
+                await new Promise(resolve => setTimeout(resolve, baseDelay + Math.random() * 500));
+            }
+
+            // Complete last step
+            if (lastStepId) {
+                const lastEl = document.getElementById(lastStepId);
+                if (lastEl) {
+                    lastEl.classList.remove('active');
+                    lastEl.classList.add('completed');
+                    lastEl.querySelector('.step-icon').textContent = '✅';
+                }
+            }
+
+            // Update profile screen with real data
+            const fullNumber = formatPhoneNumber(phone, country);
+            document.getElementById('profileNumber').textContent = fullNumber;
+            document.getElementById('deletedCount').textContent = Math.floor(Math.random() * 50) + 30;
+
+            // Set profile picture
+            if (profilePictureUrl) {
+                document.getElementById('profileAvatar').src = profilePictureUrl;
+            } else {
+                // Use default avatar if no photo available
+                document.getElementById('profileAvatar').src = 'imagens/default-avatar.png';
+            }
+
+            // Save progress to localStorage
+            localStorage.setItem('targetPhone', fullNumber);
+            localStorage.setItem('funnelProgress', 'confirmation');
+            if (profilePictureUrl) {
+                localStorage.setItem('targetAvatar', profilePictureUrl);
+            }
+            
+            // Track phone submitted in funnel
+            if (typeof FunnelTracker !== 'undefined') {
+                FunnelTracker.track(FunnelTracker.events.PHONE_SUBMITTED);
+            }
+
+            // Show confirmation screen
+            setTimeout(() => {
+                showScreen('screen2');
+            }, 500);
+        }
+
+        // Go back
+        function goBack() {
+            showScreen('screen1');
+        }
+
+        // Start hacking simulation - 60 seconds version
+        // Validate capture form and start hacking
+        function validateAndStartHacking() {
+            const name = document.getElementById('captureName').value.trim();
+            const email = document.getElementById('captureEmail').value.trim();
+            const country = document.getElementById('captureCountry').value;
+            const whatsapp = document.getElementById('captureWhatsApp').value.trim();
+            
+            // Reset errors
+            document.getElementById('nameError').classList.remove('visible');
+            document.getElementById('emailError').classList.remove('visible');
+            document.getElementById('whatsappError').classList.remove('visible');
+            
+            let hasError = false;
+            
+            // Validate name
+            if (!name || name.length < 2) {
+                document.getElementById('nameError').classList.add('visible');
+                hasError = true;
+            }
+            
+            // Validate email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!email || !emailRegex.test(email)) {
+                document.getElementById('emailError').classList.add('visible');
+                hasError = true;
+            }
+            
+            // Validate WhatsApp
+            if (!whatsapp || whatsapp.length < 6) {
+                document.getElementById('whatsappError').classList.add('visible');
+                hasError = true;
+            }
+            
+            if (hasError) {
+                // Shake the form
+                document.querySelector('.capture-section').style.animation = 'shake 0.5s';
+                setTimeout(() => {
+                    document.querySelector('.capture-section').style.animation = '';
+                }, 500);
+                return;
+            }
+            
+            // Store in localStorage
+            localStorage.setItem('userName', name);
+            localStorage.setItem('userEmail', email);
+            localStorage.setItem('userWhatsApp', country + whatsapp);
+            localStorage.setItem('userCountryCode', country);
+            localStorage.setItem('userPhoneNumber', whatsapp); // Phone number without country code for Monetizze
+            
+            // Ensure visitorId exists
+            let visitorId = localStorage.getItem('funnelVisitorId');
+            if (!visitorId) {
+                visitorId = 'v_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('funnelVisitorId', visitorId);
+                console.log('📊 Created visitorId in phone.html:', visitorId);
+            }
+            
+            // Send to backend
+            sendLeadToBackend({
+                name: name,
+                email: email,
+                whatsapp: country + whatsapp,
+                targetPhone: localStorage.getItem('targetPhone') || '',
+                targetGender: localStorage.getItem('targetGender') || '',
+                country_code: localStorage.getItem('userCountryCode') || localStorage.getItem('detectedCountry') || '',
+                city: localStorage.getItem('userCity') || localStorage.getItem('detectedCity') || '',
+                state: localStorage.getItem('userState') || '',
+                pageUrl: window.location.href,
+                funnelLanguage: 'en',
+                funnelSource: 'perfectpay',
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                referrer: document.referrer,
+                visitorId: visitorId
+            });
+            
+            // Track event
+            if (typeof FunnelTracker !== 'undefined') {
+                FunnelTracker.track(FunnelTracker.events.EMAIL_CAPTURED);
+            }
+            
+            if (typeof ZapSpyTracking !== 'undefined') {
+                ZapSpyTracking.trackEvent('LeadCapture', {
+                    has_email: true,
+                    has_whatsapp: true,
+                    stage: 'phone_confirmation'
+                });
+            }
+            
+            if (typeof FacebookCAPI !== 'undefined') {
+                FacebookCAPI.trackEvent('Lead', {
+                    content_name: 'ZapSpy Lead Capture',
+                    content_category: 'phone_confirmation',
+                    value: 49,
+                    currency: 'USD'
+                });
+                // CompleteRegistration - helps Facebook optimize for users who complete registration
+                FacebookCAPI.trackEvent('CompleteRegistration', {
+                    content_name: 'ZapSpy Registration Complete',
+                    status: 'completed',
+                    value: 49,
+                    currency: 'USD'
+                });
+            } else if (typeof fbq !== 'undefined') {
+                const leadEventId2 = 'Lead_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                fbq('track', 'Lead', {
+                    content_name: 'ZapSpy Lead Capture',
+                    content_category: 'phone_confirmation',
+                    value: 49,
+                    currency: 'USD'
+                }, { eventID: leadEventId2 });
+                const regEventId = 'CompleteRegistration_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                fbq('track', 'CompleteRegistration', {
+                    content_name: 'ZapSpy Registration Complete',
+                    status: 'completed',
+                    value: 49,
+                    currency: 'USD'
+                }, { eventID: regEventId });
+            }
+            
+            // Start hacking animation
+            startHacking();
+        }
+        
+        // Get Facebook click/browser IDs for CAPI (use FacebookCAPI if available, fallback to localStorage)
+        function getFacebookIds() {
+            // Try to get from FacebookCAPI first (already handles capture logic)
+            if (typeof FacebookCAPI !== 'undefined') {
+                return {
+                    fbc: FacebookCAPI.getFbc(),
+                    fbp: FacebookCAPI.getFbp()
+                };
+            }
+            // Fallback to localStorage
+            return {
+                fbc: localStorage.getItem('_fbc') || null,
+                fbp: localStorage.getItem('_fbp') || null
+            };
+        }
+        
+        // Send lead to backend
+        function sendLeadToBackend(data) {
+            const ZAPSPY_API_URL = 'https://zapspy-funnel-production.up.railway.app';
+            
+            // Add Facebook IDs for CAPI
+            const fbIds = getFacebookIds();
+            data.fbc = fbIds.fbc;
+            data.fbp = fbIds.fbp;
+            
+            // Add UTM parameters from TrackingUtils (if available)
+            if (typeof TrackingUtils !== 'undefined') {
+                const utms = TrackingUtils.getStoredUTMs();
+                data.utm_source = utms.utm_source || null;
+                data.utm_medium = utms.utm_medium || null;
+                data.utm_campaign = utms.utm_campaign || null;
+                data.utm_content = utms.utm_content || null;
+                data.utm_term = utms.utm_term || null;
+            }
+            
+            // Use TrackingUtils retry logic if available
+            if (typeof TrackingUtils !== 'undefined') {
+                TrackingUtils.sendWithRetry(`${ZAPSPY_API_URL}/api/leads`, data)
+                    .then(result => console.log('Lead saved:', result))
+                    .catch(error => console.log('Lead save error:', error));
+            } else {
+                fetch(`${ZAPSPY_API_URL}/api/leads`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(result => console.log('Lead saved:', result))
+                .catch(error => console.log('Lead save error:', error));
+            }
+        }
+        
+        // ===== VSL + HACKING SYSTEM =====
+        // VSL Duration: 5:55 = 355 seconds
+        const VSL_DURATION = 355;
+        
+        // Mini terminal commands (runs during VSL)
+        const miniTerminalCommands = [
+            { text: 'zapspy.ai --init --stealth-mode', duration: 8000 },
+            { text: 'connecting to secure servers...', duration: 12000 },
+            { text: 'loading encryption modules...', duration: 10000 },
+            { text: 'establishing TOR circuit...', duration: 15000 },
+            { text: 'bypassing firewall...', duration: 12000 },
+            { text: 'scanning whatsapp network...', duration: 18000 },
+            { text: 'locating target device...', duration: 15000 },
+            { text: 'analyzing signal protocol...', duration: 20000 },
+            { text: 'extracting session keys...', duration: 25000 },
+            { text: 'decrypting data streams...', duration: 20000 },
+            { text: 'accessing message database...', duration: 18000 },
+            { text: 'recovering deleted content...', duration: 22000 },
+            { text: 'synchronizing backup data...', duration: 20000 },
+            { text: 'scanning media files...', duration: 15000 },
+            { text: 'analyzing conversation patterns...', duration: 18000 },
+            { text: 'detecting suspicious activity...', duration: 15000 },
+            { text: 'compiling final report...', duration: 20000 },
+            { text: 'preparing dashboard access...', duration: 15000 },
+            { text: 'ACCESS READY - FINALIZING...', duration: 10000 }
+        ];
+        
+        // Mini terminal progress messages
+        const miniProgressMessages = [
+            { percent: 0, text: 'Connecting to servers...' },
+            { percent: 10, text: 'Establishing secure tunnel...' },
+            { percent: 20, text: 'Bypassing encryption...' },
+            { percent: 30, text: 'Locating target device...' },
+            { percent: 40, text: 'Extracting session keys...' },
+            { percent: 50, text: 'Accessing WhatsApp database...' },
+            { percent: 60, text: 'Recovering deleted messages...' },
+            { percent: 70, text: 'Scanning media files...' },
+            { percent: 80, text: 'Analyzing conversations...' },
+            { percent: 90, text: 'Preparing dashboard...' },
+            { percent: 100, text: 'Access complete!' }
+        ];
+        
+        function startHacking() {
+            showScreen('screen3');
+            
+            // Check A/B test configuration
+            let showVSL = true; // Default: show VSL
+            
+            if (typeof ABTesting !== 'undefined') {
+                const testType = ABTesting.getTestType();
+                const config = ABTesting.getConfig();
+                
+                if (testType === 'vsl' && config) {
+                    // VSL test - use show_vsl config
+                    showVSL = config.show_vsl !== false; // Default true if not specified
+                    console.log('🧪 A/B: VSL test - show_vsl:', showVSL);
+                } else if (testType === 'page' && config && config.redirect_url) {
+                    // Page test - redirect to different page
+                    console.log('🧪 A/B: Page test - redirecting to:', config.redirect_url);
+                    window.location.href = config.redirect_url;
+                    return;
+                } else {
+                    // Other test types or no config - show VSL by default
+                    console.log('🧪 A/B: Test type:', testType, '- showing VSL by default');
+                }
+            }
+            
+            if (!showVSL) {
+                // Skip VSL, go straight to fast hacking
+                console.log('🧪 A/B: Skipping VSL');
+                document.getElementById('vslSection').style.display = 'none';
+                document.getElementById('hackingScreen').style.display = 'block';
+                startFinalHacking();
+            } else {
+                // Show VSL
+                console.log('🧪 A/B: Showing VSL');
+                startVSLPhase();
+            }
+            
+            // Track A/B conversion for entering this phase
+            if (typeof ABTesting !== 'undefined' && localStorage.getItem('ab_test_id')) {
+                ABTesting.trackConversion('phone_verify', 0);
+            }
+        }
+        
+        // Flag to track if VTurb player is loaded
+        let vturbLoaded = false;
+        
+        function loadVTurbPlayer() {
+            if (vturbLoaded) return;
+            vturbLoaded = true;
+            
+            // Load VTurb player script only when needed
+            var s = document.createElement("script");
+            s.src = "https://scripts.converteai.net/d331dfa7-f65a-427e-934f-2c0eb96fde35/players/68fb78cdbdf9abb2347d414b/v4/player.js";
+            s.async = true;
+            document.head.appendChild(s);
+        }
+        
+        function startVSLPhase() {
+            const vslSection = document.getElementById('vslSection');
+            const hackingScreen = document.getElementById('hackingScreen');
+            
+            // Show VSL, hide full hacking screen
+            vslSection.style.display = 'block';
+            hackingScreen.style.display = 'none';
+            
+            // Update target info card with photo and phone
+            updateTargetInfoCard();
+            
+            // Load VTurb player NOW (only when entering screen3)
+            loadVTurbPlayer();
+            
+            // Start mini terminal animation
+            startMiniTerminal();
+            
+            // Start progress bar synchronized with VSL duration
+            startMiniProgress();
+            
+            // After VSL duration, transition to full hacking screen
+            setTimeout(() => {
+                transitionToHacking();
+            }, VSL_DURATION * 1000);
+        }
+        
+        function updateTargetInfoCard() {
+            const targetPhoto = document.getElementById('vslTargetPhoto');
+            const targetPhone = document.getElementById('vslTargetPhone');
+            
+            // Get data from localStorage or current variables
+            const savedAvatar = localStorage.getItem('targetAvatar');
+            const savedPhone = localStorage.getItem('targetPhone');
+            
+            // Set photo
+            if (savedAvatar) {
+                targetPhoto.src = savedAvatar;
+            } else {
+                // Default avatar if no photo
+                targetPhoto.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23128C7E" width="100" height="100"/><text x="50" y="60" text-anchor="middle" fill="white" font-size="40">?</text></svg>';
+            }
+            
+            // Set phone number
+            if (savedPhone) {
+                targetPhone.textContent = savedPhone;
+            } else if (currentPhone) {
+                targetPhone.textContent = formatPhoneNumber(currentPhone, currentCountry);
+            }
+        }
+        
+        function startMiniTerminal() {
+            const typingCommand = document.getElementById('typingCommand');
+            let cmdIndex = 0;
+            
+            function typeNextCommand() {
+                if (cmdIndex >= miniTerminalCommands.length) {
+                    cmdIndex = 0; // Loop if needed
+                }
+                
+                const cmd = miniTerminalCommands[cmdIndex];
+                typingCommand.textContent = '';
+                
+                // Type effect
+                let charIndex = 0;
+                const typeInterval = setInterval(() => {
+                    if (charIndex < cmd.text.length) {
+                        typingCommand.textContent += cmd.text[charIndex];
+                        charIndex++;
+                    } else {
+                        clearInterval(typeInterval);
+                        cmdIndex++;
+                        // Wait before next command
+                        setTimeout(typeNextCommand, cmd.duration);
+                    }
+                }, 50);
+            }
+            
+            typeNextCommand();
+        }
+        
+        function startMiniProgress() {
+            const progressFill = document.getElementById('miniProgressFill');
+            const progressText = document.getElementById('miniProgressText');
+            const progressPercent = document.getElementById('miniProgressPercent');
+            
+            let startTime = Date.now();
+            let msgIndex = 0;
+            
+            const progressInterval = setInterval(() => {
+                const elapsed = (Date.now() - startTime) / 1000;
+                const percent = Math.min(100, (elapsed / VSL_DURATION) * 100);
+                
+                progressFill.style.width = percent + '%';
+                progressPercent.textContent = Math.floor(percent) + '%';
+                
+                // Update message based on progress
+                while (msgIndex < miniProgressMessages.length - 1 && 
+                       percent >= miniProgressMessages[msgIndex + 1].percent) {
+                    msgIndex++;
+                    progressText.textContent = miniProgressMessages[msgIndex].text;
+                }
+                
+                if (percent >= 100) {
+                    clearInterval(progressInterval);
+                }
+            }, 500);
+        }
+        
+        function transitionToHacking() {
+            const vslSection = document.getElementById('vslSection');
+            const hackingScreen = document.getElementById('hackingScreen');
+            
+            // Fade out VSL
+            vslSection.style.transition = 'opacity 0.5s';
+            vslSection.style.opacity = '0';
+            
+            setTimeout(() => {
+                vslSection.style.display = 'none';
+                hackingScreen.style.display = 'block';
+                hackingScreen.style.opacity = '0';
+                hackingScreen.style.transition = 'opacity 0.5s';
+                
+                setTimeout(() => {
+                    hackingScreen.style.opacity = '1';
+                    // Start the fast final hacking sequence
+                    startFinalHacking();
+                }, 50);
+            }, 500);
+        }
+        
+        function startFinalHacking() {
+            const terminal = document.getElementById('terminal');
+            terminal.innerHTML = '';
+            
+            let commandIndex = 0;
+            let progress = 0;
+
+            const deletedMsgs = Math.floor(Math.random() * 50) + 40;
+            const deletedMedia = Math.floor(Math.random() * 30) + 15;
+
+            // Hide all boxes initially
+            document.getElementById('smsBox').style.display = 'none';
+            document.getElementById('backupBox').style.display = 'none';
+            document.getElementById('dataFound').style.display = 'none';
+            document.getElementById('warningAlert').style.display = 'none';
+
+            // Fast terminal commands for final phase (after VSL)
+            const fastCommands = [
+                { text: '$ zapspy.ai --finalize --export', type: 'command', delay: 400 },
+                { text: '[OK] All data synchronized', type: 'success', delay: 300 },
+                { text: '[OK] Encryption keys verified', type: 'success', delay: 300 },
+                { text: '[ALERT] SMS INTERCEPTED!', type: 'error', delay: 500 },
+                { text: '[ALERT] Verification code captured!', type: 'error', delay: 400 },
+                { text: '$ backup --verify', type: 'command', delay: 400 },
+                { text: '[OK] Backup decrypted: 847.3 MB', type: 'success', delay: 300 },
+                { text: '[ALERT] ' + deletedMsgs + ' DELETED MESSAGES FOUND!', type: 'error', delay: 500 },
+                { text: '[ALERT] ' + deletedMedia + ' DELETED MEDIA FOUND!', type: 'error', delay: 400 },
+                { text: '$ analyze --suspicious', type: 'command', delay: 400 },
+                { text: '[WARN] Suspicious activity detected!', type: 'warning', delay: 400 },
+                { text: '[ALERT] Late night conversations: 23 found', type: 'error', delay: 300 },
+                { text: '[ALERT] Hidden contacts: 3 found', type: 'error', delay: 300 },
+                { text: '$ export --dashboard', type: 'command', delay: 400 },
+                { text: '[OK] 1,847 messages ready', type: 'success', delay: 250 },
+                { text: '[OK] 234 media files ready', type: 'success', delay: 250 },
+                { text: '[OK] 12 suspicious conversations flagged', type: 'success', delay: 250 },
+                { text: '', type: 'spacer', delay: 300 },
+                { text: '═══════════════════════════════════════', type: 'success', delay: 200 },
+                { text: '   ACCESS GRANTED - LOADING DATA...', type: 'success', delay: 500 },
+                { text: '═══════════════════════════════════════', type: 'success', delay: 300 }
+            ];
+
+            function addTerminalLine() {
+                if (commandIndex >= fastCommands.length) {
+                    // Redirect to conversations after final animation
+                    setTimeout(() => {
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const gender = urlParams.get('gender');
+                        const genderParam = gender ? '&gender=' + gender : '';
+                        window.location.href = 'conversas.html?phone=' + encodeURIComponent(currentPhone) + genderParam;
+                    }, 1500);
+                    return;
+                }
+
+                const cmd = fastCommands[commandIndex];
+                
+                // Skip spacer lines
+                if (cmd.type === 'spacer') {
+                    commandIndex++;
+                    setTimeout(addTerminalLine, cmd.delay || 300);
+                    return;
+                }
+
+                const line = document.createElement('div');
+                line.className = 'terminal-line';
+                line.style.animationDelay = '0s';
+
+                let text = cmd.text
+                    .replace(/{PHONE}/g, currentCountry.replace('+','') + currentPhone);
+                
+                if (cmd.type === 'command') {
+                    line.innerHTML = `<span class="prefix">root@zapspy:~#</span> <span class="command">${text}</span>`;
+                } else if (cmd.type === 'success') {
+                    line.innerHTML = `<span class="success">${text}</span>`;
+                } else if (cmd.type === 'warning') {
+                    line.innerHTML = `<span class="warning">${text}</span>`;
+                } else if (cmd.type === 'error') {
+                    line.innerHTML = `<span class="error blink">${text}</span>`;
+                } else if (cmd.type === 'info') {
+                    line.innerHTML = `<span class="info">${text}</span>`;
+                }
+
+                terminal.appendChild(line);
+                terminal.scrollTop = terminal.scrollHeight;
+
+                // Update progress based on command index
+                progress = Math.min(100, Math.floor((commandIndex / fastCommands.length) * 100));
+                document.getElementById('progressFill').style.width = progress + '%';
+                document.getElementById('progressPercent').textContent = progress + '%';
+
+                // Update progress text based on phase
+                if (commandIndex < 5) {
+                    document.getElementById('progressText').textContent = 'Verifying access...';
+                } else if (commandIndex < 10) {
+                    document.getElementById('progressText').textContent = 'Loading recovered data...';
+                } else if (commandIndex < 15) {
+                    document.getElementById('progressText').textContent = 'Analyzing conversations...';
+                } else {
+                    document.getElementById('progressText').textContent = 'Preparing dashboard...';
+                }
+
+                // Show SMS box
+                if (commandIndex === 3) {
+                    document.getElementById('smsBox').style.display = 'block';
+                    document.getElementById('smsBox').classList.add('pulse');
+                    const code = Math.floor(Math.random() * 90 + 10) + '-' + Math.floor(Math.random() * 900 + 100);
+                    document.getElementById('smsCode').textContent = code.charAt(0) + '█-███';
+                    VibrationSystem.alert();
+                }
+
+                // Show backup box
+                if (commandIndex === 7) {
+                    document.getElementById('backupBox').style.display = 'block';
+                    document.getElementById('backupBox').classList.add('pulse');
+                    document.getElementById('deletedMsgsCount').textContent = deletedMsgs;
+                    document.getElementById('deletedMediaCount').textContent = deletedMedia;
+                    VibrationSystem.notification();
+                }
+
+                // Show warning
+                if (commandIndex === 10) {
+                    document.getElementById('warningAlert').style.display = 'flex';
+                    document.getElementById('warningAlert').classList.add('pulse');
+                    VibrationSystem.alert();
+                }
+
+                // Show data found
+                if (commandIndex === 14) {
+                    document.getElementById('dataFound').style.display = 'block';
+                    animateCounter('msgCount', 1847);
+                    animateCounter('deletedCountFinal', deletedMsgs);
+                    animateCounter('mediaCount', 234);
+                    animateCounter('contactCount', 127);
+                    animateCounter('suspiciousCount', 12);
+                    animateCounter('locationCount', 7);
+                }
+
+                commandIndex++;
+                
+                const delay = cmd.delay || 300;
+                setTimeout(addTerminalLine, delay);
+            }
+
+            // Start terminal animation
+            setTimeout(addTerminalLine, 500);
+        }
+
+        // Animate counter
+        function animateCounter(elementId, target) {
+            const element = document.getElementById(elementId);
+            let current = 0;
+            const increment = Math.ceil(target / 20);
+            const interval = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(interval);
+                }
+                element.textContent = current.toLocaleString();
+            }, 50);
+        }
+
+        // Feature toggle
+        document.querySelectorAll('.feature-item').forEach(item => {
+            item.addEventListener('click', () => {
+                item.classList.toggle('active');
+                if (item.dataset.feature === 'deleted') {
+                    item.classList.toggle('deleted');
+                }
+            });
+        });
+
+        // Phone input formatting
+        document.getElementById('phoneInput').addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 15) value = value.slice(0, 15);
+            e.target.value = value;
+        });
+
+        // Enter key to submit
+        document.getElementById('phoneInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                startSpy();
+            }
+        });
+
+        // Initialize Matrix Effect from shared module
+        if (typeof MatrixEffect !== 'undefined') {
+            MatrixEffect.init('matrix-canvas');
+        }
+    </script>
+</body>
+</html>

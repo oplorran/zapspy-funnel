@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- UTMify tracking -->
+    <script src="https://cdn.utmify.com.br/scripts/utms/latest.js" data-utmify-prevent-xcod-sck data-utmify-prevent-subids async defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refund Request - ZapDetect</title>
+    <meta name="description" content="Request a refund for your ZapDetect purchase. Fast and secure processing.">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    var userData = {};
+    try {
+        var em = localStorage.getItem('userEmail');
+        var ph = localStorage.getItem('userWhatsApp');
+        var fn = localStorage.getItem('userName');
+        var ct = localStorage.getItem('userCity');
+        var co = localStorage.getItem('userCountryCode');
+        var ge = localStorage.getItem('targetGender');
+        var st = localStorage.getItem('userState');
+        if (em) userData.em = em.toLowerCase().trim();
+        if (ph) userData.ph = ph.replace(/\D/g, '');
+        if (fn) {
+            var names = fn.trim().split(' ');
+            userData.fn = names[0].toLowerCase();
+            if (names.length > 1) userData.ln = names.slice(1).join(' ').toLowerCase();
+        }
+        if (ct) userData.ct = ct.toLowerCase().replace(/[^a-z]/g, '');
+        if (co) userData.country = co.toLowerCase();
+        if (ge) userData.ge = ge === 'female' ? 'f' : 'm';
+        if (st) userData.st = st.toLowerCase().replace(/[^a-z]/g, '');
+    } catch(e) {}
+    fbq('init', '726299943423075', userData);
+    var pvId = 'PageView_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    fbq('track', 'PageView', {}, { eventID: pvId });
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=726299943423075&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
+</head>
+<body>
+    <div class="page-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">🔍</span>
+                <span class="logo-text">ZapDetect</span>
+            </div>
+            <h1 class="page-title">Refund Request</h1>
+        </header>
+
+        <!-- Progress Steps -->
+        <div class="progress-container">
+            <div class="progress-step active" data-step="1">
+                <div class="step-number">1</div>
+                <span class="step-label">Personal Info</span>
+            </div>
+            <div class="progress-line"></div>
+            <div class="progress-step" data-step="2">
+                <div class="step-number">2</div>
+                <span class="step-label">Purchase Details</span>
+            </div>
+            <div class="progress-line"></div>
+            <div class="progress-step" data-step="3">
+                <div class="step-number">3</div>
+                <span class="step-label">Confirmation</span>
+            </div>
+        </div>
+
+        <!-- Form Container -->
+        <div class="form-container">
+            <!-- Important Notice -->
+            <div class="notice-box">
+                <div class="notice-icon">ℹ</div>
+                <div class="notice-content">
+                    <h3>Important</h3>
+                    <p>To process your refund, we need to validate your purchase information. Please fill in all fields carefully to ensure quick processing.</p>
+                </div>
+            </div>
+
+            <!-- Step 1: Personal Info -->
+            <form id="refundForm">
+                <div class="form-step active" data-step="1">
+                    <h2 class="section-title">Personal Information</h2>
+                    <p class="section-subtitle">All fields are required for purchase validation</p>
+
+                    <div class="form-group">
+                        <label for="fullName">Full Name <span class="required">*</span></label>
+                        <input type="text" id="fullName" name="fullName" placeholder="Enter your full name" required>
+                        <span class="error-message" id="fullNameError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Purchase Email <span class="required">*</span></label>
+                        <input type="email" id="email" name="email" placeholder="Enter the email used for purchase" required>
+                        <span class="helper-text">Use the same email registered for the purchase</span>
+                        <span class="error-message" id="emailError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Phone/WhatsApp <span class="required">*</span></label>
+                        <div class="phone-input-container">
+                            <div class="country-selector" id="countrySelector">
+                                <span class="selected-country" id="selectedCountry">
+                                    <span class="flag">🇺🇸</span>
+                                    <span class="code">+1</span>
+                                    <span class="arrow">▼</span>
+                                </span>
+                                <div class="country-dropdown" id="countryDropdown">
+                                    <input type="text" class="country-search" placeholder="🔍 Search country..." id="countrySearch">
+                                    <div class="country-list" id="countryList"></div>
+                                </div>
+                            </div>
+                            <input type="tel" id="phone" name="phone" placeholder="Phone number" required>
+                        </div>
+                        <span class="helper-text">For contact about the refund</span>
+                        <span class="error-message" id="phoneError"></span>
+                    </div>
+
+                    <button type="button" class="btn-primary" onclick="nextStep(2)">
+                        Continue <span class="btn-arrow">→</span>
+                    </button>
+                </div>
+
+                <!-- Step 2: Purchase Details -->
+                <div class="form-step" data-step="2">
+                    <h2 class="section-title">Purchase Details</h2>
+                    <p class="section-subtitle">Help us locate your purchase quickly</p>
+
+                    <div class="form-group">
+                        <label for="purchaseDate">Purchase Date <span class="required">*</span></label>
+                        <input type="date" id="purchaseDate" name="purchaseDate" required>
+                        <span class="error-message" id="purchaseDateError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reason">Refund Reason <span class="required">*</span></label>
+                        <select id="reason" name="reason" required>
+                            <option value="">Select the main reason</option>
+                            <option value="not_expected">Product did not deliver expected results</option>
+                            <option value="technical">Technical difficulty accessing the product</option>
+                            <option value="duplicate">Duplicate charge on card</option>
+                            <option value="unauthorized">I did not authorize this purchase</option>
+                            <option value="changed_mind">Changed my mind about the purchase</option>
+                            <option value="no_access">Did not receive access to product</option>
+                            <option value="other">Other reason</option>
+                        </select>
+                        <span class="helper-text">Select the reason that best describes your situation</span>
+                        <span class="error-message" id="reasonError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="details">Describe the Details <span class="required">*</span></label>
+                        <textarea id="details" name="details" placeholder="Please describe your issue in detail..." rows="4" required></textarea>
+                        <span class="helper-text">The more details, the faster we process.</span>
+                        <span class="error-message" id="detailsError"></span>
+                    </div>
+
+                    <div class="security-notice">
+                        <span class="lock-icon">🔒</span>
+                        Your information is protected and will only be used to process the refund
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn-secondary" onclick="prevStep(1)">
+                            <span class="btn-arrow">←</span> Back
+                        </button>
+                        <button type="submit" class="btn-primary" id="submitBtn">
+                            Request Refund <span class="btn-arrow">→</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Confirmation -->
+                <div class="form-step" data-step="3">
+                    <div class="success-container">
+                        <div class="success-icon">✓</div>
+                        <h2 class="success-title">Request Submitted Successfully!</h2>
+                        
+                        <div class="protocol-box">
+                            <span class="protocol-label">Protocol Number</span>
+                            <div class="protocol-number" id="protocolNumber">REF-000000</div>
+                            <div class="protocol-actions">
+                                <button type="button" class="btn-icon" onclick="copyProtocol()">
+                                    📋 Copy
+                                </button>
+                                <button type="button" class="btn-icon" onclick="downloadPDF()">
+                                    📄 Download PDF
+                                </button>
+                            </div>
+                        </div>
+
+                        <p class="success-message">Your refund request has been received and is being processed.</p>
+
+                        <div class="summary-box">
+                            <div class="summary-item">
+                                <span class="summary-label">Name:</span>
+                                <span class="summary-value" id="summaryName">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Email:</span>
+                                <span class="summary-value" id="summaryEmail">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Phone:</span>
+                                <span class="summary-value" id="summaryPhone">-</span>
+                            </div>
+                        </div>
+
+                        <div class="refund-info">
+                            <h3>💰 How will you receive the refund?</h3>
+                            <p>The amount will be <strong>automatically refunded</strong> to the same payment method used for the purchase.</p>
+                        </div>
+
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-icon">✉️</div>
+                                <div class="timeline-content">
+                                    <strong>Next 24 hours</strong>
+                                    <span>Confirmation email with processing details</span>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-icon">⚡</div>
+                                <div class="timeline-content">
+                                    <strong>Up to 7 business days</strong>
+                                    <span>Refund processing by financial team</span>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-icon">💳</div>
+                                <div class="timeline-content">
+                                    <strong>Next card statement</strong>
+                                    <span>Amount will appear as credit or deducted from total</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="note-box">
+                            <strong>ℹ️ Note:</strong> The timeframe may vary depending on your bank or card operator.
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2026 ZapDetect. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="../privacy.html">Privacy Policy</a>
+                <a href="../terms.html">Terms of Service</a>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="../js/facebook-capi.js"></script>
+    <script>
+        if (typeof FacebookCAPI !== 'undefined') {
+            FacebookCAPI.init('Refund Page');
+            FacebookCAPI.trackViewContent('Refund Page', 'Funnel - Refund', 49);
+        }
+    </script>
+</body>
+</html>

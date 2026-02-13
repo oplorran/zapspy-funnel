@@ -308,6 +308,7 @@ app.use(compression({ threshold: 512 }));
 const ALLOWED_ORIGINS = [
     'https://ingles.zappdetect.com',
     'https://espanhol.zappdetect.com',
+    'https://perfect.zappdetect.com',
     'https://afiliado.whatstalker.com',
     'https://www.afiliado.whatstalker.com',
     'http://localhost:3000',
@@ -456,16 +457,27 @@ async function getCountryFromIP(ip) {
 
 app.use('/ingles', express.static(path.join(__dirname, 'public', 'ingles')));
 app.use('/espanhol', express.static(path.join(__dirname, 'public', 'espanhol')));
+app.use('/perfectpay', express.static(path.join(__dirname, 'public', 'perfectpay')));
 app.use('/en', express.static(path.join(__dirname, 'public', 'ingles')));
 app.use('/es', express.static(path.join(__dirname, 'public', 'espanhol')));
 
 // Serve funnel files at root path based on domain
 // ingles.zappdetect.com/upsell/up1/ → public/ingles/upsell/up1/
 // espanhol.zappdetect.com/upsell/up1/ → public/espanhol/upsell/up1/
-// This is needed because Monetizze redirects to /upsell/up1/ (without /ingles/ prefix)
+// perfect.zappdetect.com/ingles/ → public/perfectpay/ (PerfectPay funnel)
+// This is needed because checkout platforms redirect to /upsell/up1/ (without prefix)
 app.use((req, res, next) => {
     const host = req.hostname || req.headers.host || '';
-    if (host.includes('ingles') || host.includes('ingles.zappdetect')) {
+    if (host.includes('perfect') || host.includes('perfect.zappdetect')) {
+        // perfect.zappdetect.com/ingles/... → serve from perfectpay folder
+        // Also serve root paths (upsell redirects) from perfectpay
+        if (req.path.startsWith('/ingles')) {
+            // Rewrite /ingles/... to serve from /perfectpay/...
+            const newPath = req.path.replace('/ingles', '');
+            req.url = newPath || '/';
+        }
+        express.static(path.join(__dirname, 'public', 'perfectpay'))(req, res, next);
+    } else if (host.includes('ingles') || host.includes('ingles.zappdetect')) {
         express.static(path.join(__dirname, 'public', 'ingles'))(req, res, next);
     } else if (host.includes('espanhol') || host.includes('espanhol.zappdetect')) {
         express.static(path.join(__dirname, 'public', 'espanhol'))(req, res, next);
@@ -1083,7 +1095,8 @@ app.get('/api/capi/status', async (req, res) => {
             postbacksReceived24h: parseInt(postbackLogs.rows[0]?.count || 0),
             recentTransactions: recentTx.rows,
             capiEndpoint: '/api/capi/event',
-            postbackEndpoint: '/api/postback/monetizze'
+            postbackEndpoint: '/api/postback/monetizze',
+            perfectpayWebhookEndpoint: '/api/postback/perfectpay'
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -2337,6 +2350,105 @@ app.get('/api/admin/leads', authenticateToken, async (req, res) => {
     }
 });
 
+// Get clients (leads who purchased) - protected
+app.get('/api/admin/clients', authenticateToken, async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 50;
+        const offset = (page - 1) * limit;
+        const search = req.query.search || '';
+        const language = req.query.language || '';
+        const source = req.query.source || '';
+        
+        // Clients = leads with status 'converted' OR leads that have transactions with status 'approved'
+        // We JOIN with transactions to get purchase data
+        let conditions = [`(l.status = 'converted' OR l.total_spent > 0 OR l.first_purchase_at IS NOT NULL)`];
+        let params = [];
+        
+        if (search) {
+            conditions.push(`(l.email ILIKE $${params.length + 1} OR l.whatsapp ILIKE $${params.length + 1} OR l.name ILIKE $${params.length + 1})`);
+            params.push(`%${search}%`);
+        }
+        
+        if (language) {
+            if (language === 'en') {
+                conditions.push(`(l.funnel_language = $${params.length + 1} OR l.funnel_language IS NULL)`);
+            } else {
+                conditions.push(`l.funnel_language = $${params.length + 1}`);
+            }
+            params.push(language);
+        }
+        
+        if (source) {
+            if (source === 'main') {
+                conditions.push(`(l.funnel_source = $${params.length + 1} OR l.funnel_source IS NULL)`);
+            } else {
+                conditions.push(`l.funnel_source = $${params.length + 1}`);
+            }
+            params.push(source);
+        }
+        
+        const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+        
+        // Main query: get clients with their purchase info
+        const query = `
+            SELECT l.id, l.name, l.email, l.whatsapp, l.country_code, l.country, l.city,
+                   l.funnel_language, l.funnel_source, l.status,
+                   l.products_purchased, l.total_spent, l.first_purchase_at, l.last_purchase_at,
+                   l.whatsapp_verified, l.whatsapp_profile_pic, l.created_at,
+                   (SELECT COUNT(*) FROM transactions t WHERE LOWER(t.email) = LOWER(l.email) AND t.status = 'approved') as tx_count,
+                   (SELECT SUM(CAST(t.value AS DECIMAL)) FROM transactions t WHERE LOWER(t.email) = LOWER(l.email) AND t.status = 'approved') as tx_total
+            FROM leads l
+            ${whereClause}
+            ORDER BY l.last_purchase_at DESC NULLS LAST, l.first_purchase_at DESC NULLS LAST
+            LIMIT $${params.length + 1} OFFSET $${params.length + 2}
+        `;
+        
+        const countQuery = `SELECT COUNT(*) FROM leads l ${whereClause}`;
+        
+        // Stats query
+        const statsQuery = `
+            SELECT 
+                COUNT(*) as total,
+                COUNT(*) FILTER (WHERE (l.first_purchase_at AT TIME ZONE 'America/Sao_Paulo')::date = CURRENT_DATE) as today,
+                COALESCE(SUM(l.total_spent), 0) as total_revenue,
+                CASE WHEN COUNT(*) > 0 THEN COALESCE(SUM(l.total_spent), 0) / COUNT(*) ELSE 0 END as avg_ticket
+            FROM leads l
+            ${whereClause}
+        `;
+        
+        const queryParams = [...params, limit, offset];
+        
+        const [clientsResult, countResult, statsResult] = await Promise.all([
+            pool.query(query, queryParams),
+            pool.query(countQuery, params),
+            pool.query(statsQuery, params)
+        ]);
+        
+        const stats = statsResult.rows[0] || {};
+        
+        res.json({
+            clients: clientsResult.rows,
+            stats: {
+                total: parseInt(stats.total || 0),
+                today: parseInt(stats.today || 0),
+                totalRevenue: parseFloat(stats.total_revenue || 0),
+                avgTicket: parseFloat(stats.avg_ticket || 0)
+            },
+            pagination: {
+                page,
+                limit,
+                total: parseInt(countResult.rows[0].count),
+                totalPages: Math.ceil(parseInt(countResult.rows[0].count) / limit)
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error fetching clients:', error);
+        res.status(500).json({ error: 'Failed to fetch clients' });
+    }
+});
+
 // Get lead statistics (protected)
 app.get('/api/admin/stats', authenticateToken, async (req, res) => {
     try {
@@ -3252,6 +3364,20 @@ app.get('/api/admin/leads/verify-all-status', authenticateToken, (req, res) => {
     res.json(verifyAllJob);
 });
 
+// Get single lead by ID (protected)
+app.get('/api/admin/leads/:id(\\d+)', authenticateToken, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM leads WHERE id = $1', [req.params.id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Lead not found' });
+        }
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Error fetching lead:', error);
+        res.status(500).json({ error: 'Failed to fetch lead' });
+    }
+});
+
 // Update lead status (protected)
 app.put('/api/admin/leads/:id', authenticateToken, async (req, res) => {
     try {
@@ -3943,6 +4069,8 @@ app.get('/api/admin/funnel', authenticateToken, async (req, res) => {
                 txSourceCondition = `AND (funnel_source = 'main' OR funnel_source IS NULL)`;
             } else if (source === 'affiliate') {
                 txSourceCondition = `AND funnel_source = 'affiliate'`;
+            } else if (source === 'perfectpay') {
+                txSourceCondition = `AND funnel_source = 'perfectpay'`;
             }
             
             // Count unique emails per status (not total transactions)
@@ -7813,6 +7941,557 @@ app.all('/api/postback/monetizze', async (req, res) => {
     }
 });
 
+// ==================== PERFECTPAY WEBHOOK API ====================
+// Docs: https://support.perfectpay.com.br/doc/perfect-pay/postback/integracao-via-webhook-com-a-perfect-pay
+
+// Store last 20 PerfectPay webhooks for debugging
+const recentPerfectPayWebhooks = [];
+
+app.all('/api/postback/perfectpay', async (req, res) => {
+    // Handle GET request for testing
+    if (req.method === 'GET') {
+        return res.json({ 
+            status: 'ok', 
+            message: 'PerfectPay webhook endpoint is working! Use POST to send transaction data.',
+            timestamp: new Date().toISOString()
+        });
+    }
+    
+    try {
+        const body = req.body || {};
+        
+        console.log('📥 PerfectPay Webhook received');
+        console.log('📥 Content-Type:', req.headers['content-type']);
+        console.log('📥 Body keys:', Object.keys(body));
+        console.log('📥 Raw body:', JSON.stringify(body).substring(0, 1000));
+        
+        // Store webhook for debugging (also persist to DB)
+        try {
+            const webhookEntry = {
+                timestamp: new Date().toISOString(),
+                method: req.method,
+                contentType: req.headers['content-type'],
+                body: body,
+                bodyKeys: Object.keys(body)
+            };
+            recentPerfectPayWebhooks.unshift(webhookEntry);
+            if (recentPerfectPayWebhooks.length > 50) recentPerfectPayWebhooks.pop();
+            
+            // Persist to database for debugging (non-blocking)
+            pool.query(`
+                INSERT INTO postback_logs (content_type, body, created_at) 
+                VALUES ($1, $2, NOW())
+            `, ['perfectpay_webhook', JSON.stringify(body)]).catch(err => {
+                console.log('PerfectPay webhook log DB error (non-blocking):', err.message);
+            });
+        } catch (debugErr) {
+            console.log('Debug storage error:', debugErr.message);
+        }
+        
+        // ==================== EXTRACT PERFECTPAY FIELDS ====================
+        // PerfectPay webhook JSON structure:
+        // token, code, sale_amount, sale_status_enum, sale_status_detail
+        // product: { code, name, external_reference, guarantee }
+        // plan: { code, name, quantity }
+        // customer: { full_name, email, phone_area_code, phone_number, country, state, city }
+        // metadata: { src, utm_source, utm_medium, utm_campaign, utm_term, utm_content }
+        // commission: [{ affiliation_code, affiliation_type_enum, name, email, commission_amount }]
+        
+        const webhookToken = body.token || null;
+        const transactionCode = body.code || `pp_auto_${Date.now()}`;
+        const saleAmount = body.sale_amount || 0;
+        const statusEnum = String(body.sale_status_enum || '0');
+        const statusDetail = body.sale_status_detail || '';
+        const installments = body.installments || 1;
+        const paymentType = body.payment_type_enum || 0;
+        const dateCreated = body.date_created || null;
+        const dateApproved = body.date_approved || null;
+        
+        // Product info
+        const product = body.product || {};
+        const productCode = product.code || null;
+        const productName = product.name || 'Unknown Product';
+        const productExternalRef = product.external_reference || null;
+        
+        // Plan info
+        const plan = body.plan || {};
+        const planCode = plan.code || null;
+        const planName = plan.name || null;
+        
+        // Customer info
+        const customer = body.customer || {};
+        const buyerName = customer.full_name || null;
+        const buyerEmail = customer.email || null;
+        const buyerPhoneArea = customer.phone_area_code || '';
+        const buyerPhoneNumber = customer.phone_number || '';
+        const buyerPhone = buyerPhoneArea && buyerPhoneNumber 
+            ? `+${buyerPhoneArea}${buyerPhoneNumber}` 
+            : (buyerPhoneNumber || null);
+        const buyerCountry = customer.country || null;
+        const buyerState = customer.state || null;
+        const buyerCity = customer.city || null;
+        
+        // Metadata (UTMs)
+        const metadata = body.metadata || {};
+        const utmSource = metadata.utm_source || null;
+        const utmMedium = metadata.utm_medium || null;
+        const utmCampaign = metadata.utm_campaign || null;
+        const utmContent = metadata.utm_content || null;
+        const utmTerm = metadata.utm_term || null;
+        const metadataSrc = metadata.src || null;
+        
+        console.log('📥 PerfectPay Extracted:', { 
+            transactionCode, 
+            statusEnum, 
+            statusDetail,
+            saleAmount, 
+            email: buyerEmail || 'none', 
+            name: buyerName || 'none',
+            productName,
+            productCode,
+            paymentType
+        });
+        
+        // ==================== VALIDATE TOKEN ====================
+        const perfectPayToken = process.env.PERFECTPAY_WEBHOOK_TOKEN;
+        if (perfectPayToken && webhookToken && webhookToken !== perfectPayToken) {
+            console.log('⚠️ PerfectPay token mismatch - processing anyway');
+        }
+        
+        // ==================== MAP STATUS ====================
+        // PerfectPay sale_status_enum:
+        // 0 = none
+        // 1 = pending (boleto pendente)
+        // 2 = approved (venda aprovada)
+        // 3 = in_process (revisão manual)
+        // 4 = in_mediation (moderação)
+        // 5 = rejected (rejeitado)
+        // 6 = cancelled (cancelado)
+        // 7 = refunded (devolvido)
+        // 8 = authorized (autorizada)
+        // 9 = charged_back (chargeback)
+        // 10 = completed (30 dias após aprovação)
+        // 11 = checkout_error
+        // 12 = precheckout (abandono)
+        // 13 = expired (boleto expirado)
+        // 16 = in_review (em análise)
+        
+        const ppStatusMap = {
+            '0': 'unknown',
+            '1': 'pending_payment',
+            '2': 'approved',
+            '3': 'pending_payment',    // in_process -> treat as pending
+            '4': 'pending_payment',    // in_mediation -> treat as pending
+            '5': 'cancelled',          // rejected
+            '6': 'cancelled',
+            '7': 'refunded',
+            '8': 'approved',           // authorized -> treat as approved
+            '9': 'chargeback',
+            '10': 'approved',          // completed -> treat as approved
+            '11': 'cancelled',         // checkout_error
+            '12': 'abandoned_checkout',// precheckout
+            '13': 'cancelled',         // expired
+            '16': 'pending_payment'    // in_review
+        };
+        
+        // Also check sale_status_detail for additional info
+        let mappedStatus = ppStatusMap[statusEnum] || 'unknown';
+        const detailLower = (statusDetail || '').toLowerCase();
+        
+        if (detailLower.includes('chargeback') || detailLower.includes('charged_back')) {
+            mappedStatus = 'chargeback';
+        } else if (detailLower.includes('refund') || detailLower.includes('devolvid')) {
+            mappedStatus = 'refunded';
+        }
+        
+        console.log(`📥 PerfectPay Status: enum=${statusEnum} detail="${statusDetail}" -> mapped="${mappedStatus}"`);
+        
+        // ==================== DETERMINE FUNNEL LANGUAGE & SOURCE ====================
+        // PerfectPay funnel is English by default (perfect.zappdetect.com/ingles)
+        let funnelLanguage = 'en';
+        let funnelSource = 'perfectpay';
+        
+        // Check UTM or product name for language hints
+        const productNameLower = (productName || '').toLowerCase();
+        if (productNameLower.includes('infidelidad') || productNameLower.includes('recuperación') || 
+            utmCampaign === 'es' || utmSource === 'es') {
+            funnelLanguage = 'es';
+        }
+        
+        // Identify product type (front/upsell1/upsell2/upsell3)
+        let productType = 'front';
+        if (productNameLower.includes('message vault') || productNameLower.includes('recover')) {
+            productType = 'upsell1';
+        } else if (productNameLower.includes('360') || productNameLower.includes('tracker') || productNameLower.includes('social')) {
+            productType = 'upsell2';
+        } else if (productNameLower.includes('instant') || productNameLower.includes('vip') || productNameLower.includes('priority')) {
+            productType = 'upsell3';
+        }
+        
+        console.log(`🌐 PerfectPay Funnel: lang=${funnelLanguage}, source=${funnelSource}, type=${productType}`);
+        
+        // ==================== RESOLVE EMAIL ====================
+        if (!buyerEmail) {
+            console.log('❌ PerfectPay: No buyer email found in webhook');
+            pool.query(`INSERT INTO postback_logs (content_type, body, created_at) VALUES ('PP_ERROR_NO_EMAIL', $1, NOW())`, 
+                [JSON.stringify(body)]).catch(() => {});
+            return res.status(200).json({ status: 'ok', message: 'No email found, skipped' });
+        }
+        
+        // ==================== RESOLVE PHONE FROM LEADS ====================
+        let finalPhone = buyerPhone;
+        try {
+            const leadResult = await pool.query(
+                `SELECT whatsapp, name FROM leads WHERE LOWER(email) = LOWER($1) ORDER BY created_at DESC LIMIT 1`,
+                [buyerEmail]
+            );
+            if (leadResult.rows.length > 0 && leadResult.rows[0].whatsapp) {
+                finalPhone = leadResult.rows[0].whatsapp;
+                console.log(`📱 PerfectPay: Using WhatsApp from lead: ${finalPhone}`);
+            }
+        } catch (leadErr) {
+            console.log(`⚠️ PerfectPay: Error looking up lead WhatsApp: ${leadErr.message}`);
+        }
+        
+        // ==================== EXTRACT TRACKING PARAMS ====================
+        const postbackVid = metadataSrc || null; // src field may contain visitor ID
+        let postbackFbc = null;
+        let postbackFbp = null;
+        
+        // Try to extract fbc/fbp from UTM fields (may be passed via checkout URL)
+        if (utmContent) {
+            // Sometimes fbc/fbp are encoded in utm_content
+            const fbcMatch = utmContent.match(/fb\.1\.\d+\.\w+/);
+            if (fbcMatch) postbackFbc = fbcMatch[0];
+        }
+        
+        // ==================== PARSE DATES ====================
+        // PerfectPay date format: "2019-04-10 18:50:56"
+        let saleDate = null;
+        try {
+            if (dateCreated) {
+                saleDate = new Date(dateCreated);
+                if (isNaN(saleDate.getTime())) saleDate = null;
+            }
+        } catch (e) { saleDate = null; }
+        
+        // ==================== SAVE TRANSACTION ====================
+        const transactionId = `PP_${transactionCode}`;
+        
+        console.log(`💾 PerfectPay: Saving transaction: ${transactionId} for ${buyerEmail}`);
+        
+        try {
+            await pool.query(`
+                INSERT INTO transactions (
+                    transaction_id, email, phone, name, product, value, 
+                    monetizze_status, status, raw_data, funnel_language, funnel_source, created_at,
+                    fbc, fbp, visitor_id
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, COALESCE($12, NOW()), $13, $14, $15)
+                ON CONFLICT (transaction_id) 
+                DO UPDATE SET 
+                    monetizze_status = $7,
+                    status = $8,
+                    raw_data = $9,
+                    funnel_language = $10,
+                    funnel_source = $11,
+                    phone = COALESCE($3, transactions.phone),
+                    fbc = COALESCE($13, transactions.fbc),
+                    fbp = COALESCE($14, transactions.fbp),
+                    visitor_id = COALESCE($15, transactions.visitor_id),
+                    updated_at = NOW()
+            `, [
+                transactionId,
+                buyerEmail,
+                finalPhone,
+                buyerName,
+                productName,
+                saleAmount,
+                `pp_${statusEnum}`,  // Store original PerfectPay status with prefix
+                mappedStatus,
+                JSON.stringify(body),
+                funnelLanguage,
+                funnelSource,
+                saleDate,
+                postbackFbc || null,
+                postbackFbp || null,
+                postbackVid || null
+            ]);
+            console.log(`✅ PerfectPay: Transaction saved: ${transactionId}`);
+        } catch (dbError) {
+            console.error(`❌ PerfectPay DB ERROR: ${dbError.message}`);
+            pool.query(`INSERT INTO postback_logs (content_type, body, created_at) VALUES ('PP_DB_ERROR', $1, NOW())`, 
+                [JSON.stringify({ error: dbError.message, transactionId, email: buyerEmail, body })]).catch(() => {});
+            throw dbError;
+        }
+        
+        // ==================== UPDATE LEAD ====================
+        if (buyerEmail) {
+            const purchaseValue = parseFloat(saleAmount) || 0;
+            const productIdentifier = `${productType}:${(productName || '').substring(0, 50)}`;
+            
+            try {
+                const leadUpdate = await pool.query(`
+                    UPDATE leads 
+                    SET status = CASE 
+                        WHEN $1 = 'approved' THEN 'converted'
+                        WHEN $1 IN ('cancelled', 'refunded', 'chargeback') AND status != 'converted' THEN 'lost'
+                        WHEN $1 = 'pending_payment' AND status NOT IN ('converted', 'lost') THEN 'contacted'
+                        ELSE status
+                    END,
+                    notes = COALESCE(notes, '') || E'\n[PerfectPay] ' || $2 || ' - ' || NOW()::text,
+                    products_purchased = CASE 
+                        WHEN $1 = 'approved' THEN 
+                            CASE 
+                                WHEN products_purchased IS NULL THEN ARRAY[$4]::TEXT[]
+                                WHEN NOT ($4 = ANY(products_purchased)) THEN array_append(products_purchased, $4)
+                                ELSE products_purchased
+                            END
+                        ELSE products_purchased
+                    END,
+                    total_spent = CASE 
+                        WHEN $1 = 'approved' THEN COALESCE(total_spent, 0) + $5
+                        WHEN $1 IN ('refunded', 'chargeback') THEN GREATEST(COALESCE(total_spent, 0) - $5, 0)
+                        ELSE total_spent
+                    END,
+                    first_purchase_at = CASE 
+                        WHEN $1 = 'approved' AND first_purchase_at IS NULL THEN NOW()
+                        ELSE first_purchase_at
+                    END,
+                    last_purchase_at = CASE 
+                        WHEN $1 = 'approved' THEN NOW()
+                        ELSE last_purchase_at
+                    END,
+                    updated_at = NOW()
+                    WHERE LOWER(email) = LOWER($3)
+                    RETURNING id, email, status, products_purchased, total_spent
+                `, [mappedStatus, mappedStatus, buyerEmail, productIdentifier, purchaseValue]);
+                
+                if (leadUpdate.rows.length > 0) {
+                    const lead = leadUpdate.rows[0];
+                    console.log(`✅ PerfectPay Lead updated: ${buyerEmail} -> ${mappedStatus} | Products: ${lead.products_purchased?.join(', ') || 'none'} | Total: $${lead.total_spent}`);
+                } else {
+                    console.log(`⚠️ PerfectPay: No matching lead found for: ${buyerEmail}`);
+                }
+            } catch (leadErr) {
+                console.error(`⚠️ PerfectPay: Error updating lead: ${leadErr.message}`);
+            }
+        }
+        
+        // ==================== FACEBOOK CAPI ====================
+        try {
+            // Try to get enriched data from the lead record
+            let leadData = null;
+            let matchMethod = 'none';
+            
+            if (buyerEmail) {
+                const leadResult = await pool.query(
+                    `SELECT ip_address, user_agent, fbc, fbp, country, country_code, city, state, name, target_gender, whatsapp, visitor_id, funnel_language, referrer 
+                     FROM leads WHERE LOWER(email) = LOWER($1) ORDER BY created_at DESC LIMIT 1`,
+                    [buyerEmail]
+                );
+                if (leadResult.rows.length > 0) {
+                    leadData = leadResult.rows[0];
+                    matchMethod = 'email';
+                }
+            }
+            
+            // Enrichment from funnel_events if needed
+            if (leadData && (!leadData.fbc || !leadData.fbp) && leadData.visitor_id) {
+                const enrichResult = await pool.query(
+                    `SELECT fbc, fbp FROM funnel_events 
+                     WHERE visitor_id = $1 AND (fbc IS NOT NULL OR fbp IS NOT NULL)
+                     ORDER BY created_at DESC LIMIT 1`,
+                    [leadData.visitor_id]
+                );
+                if (enrichResult.rows.length > 0) {
+                    if (!leadData.fbc && enrichResult.rows[0].fbc) leadData.fbc = enrichResult.rows[0].fbc;
+                    if (!leadData.fbp && enrichResult.rows[0].fbp) leadData.fbp = enrichResult.rows[0].fbp;
+                }
+            }
+            
+            if (leadData) {
+                console.log(`📊 PerfectPay CAPI: Lead matched via [${matchMethod}] - fbc=${leadData.fbc ? 'Yes' : 'No'}, fbp=${leadData.fbp ? 'Yes' : 'No'}`);
+            }
+            
+            const fbUserData = {
+                email: buyerEmail,
+                phone: leadData?.whatsapp || finalPhone || buyerPhone,
+                firstName: leadData?.name || buyerName,
+                ip: leadData?.ip_address || null,
+                userAgent: leadData?.user_agent || null,
+                fbc: leadData?.fbc || postbackFbc || null,
+                fbp: leadData?.fbp || postbackFbp || null,
+                country: leadData?.country_code || buyerCountry || null,
+                city: leadData?.city || buyerCity || null,
+                state: leadData?.state || buyerState || null,
+                gender: leadData?.target_gender || null,
+                externalId: leadData?.visitor_id || postbackVid || null
+            };
+            
+            // Convert to USD (PerfectPay may send in USD already for international products)
+            const valueRaw = parseFloat(saleAmount) || 0;
+            // Check if currency is BRL (currency_enum 1) or assume USD for international
+            const currencyEnum = body.currency_enum || 0;
+            const isBRL = currencyEnum === 1;
+            const brlToUsdRate = parseFloat(process.env.CONVERSION_BRL_TO_USD || '0.18');
+            const valueUSD = isBRL ? Math.round((valueRaw * brlToUsdRate) * 100) / 100 : valueRaw;
+            
+            const fbCustomData = {
+                content_name: productName,
+                content_ids: [productCode || transactionCode],
+                content_type: 'product',
+                content_category: productType || 'digital_product',
+                value: valueUSD,
+                currency: 'USD',
+                order_id: transactionId,
+                num_items: 1
+            };
+            
+            const eventSourceUrl = 'https://perfect.zappdetect.com/ingles/';
+            const eventId = `perfectpay_${transactionCode}_${statusEnum}`;
+            const capiOptions = { language: funnelLanguage, eventTime: saleDate || null };
+            
+            // Status 12 = precheckout (abandono) -> InitiateCheckout
+            if (statusEnum === '12') {
+                console.log(`📤 PerfectPay: Sending InitiateCheckout to Facebook CAPI...`);
+                await sendToFacebookCAPI('InitiateCheckout', fbUserData, fbCustomData, eventSourceUrl, `${eventId}_checkout`, capiOptions);
+            }
+            
+            // Status 1 = pending -> InitiateCheckout
+            if (statusEnum === '1') {
+                console.log(`📤 PerfectPay: Sending InitiateCheckout (pending) to Facebook CAPI...`);
+                await sendToFacebookCAPI('InitiateCheckout', fbUserData, fbCustomData, eventSourceUrl, `${eventId}_pending`, capiOptions);
+            }
+            
+            // Status 2, 8, 10 = approved/authorized/completed -> Purchase
+            if (statusEnum === '2' || statusEnum === '8' || statusEnum === '10') {
+                // Dedup check
+                let alreadySent = false;
+                try {
+                    const dupCheck = await pool.query(
+                        `SELECT id FROM capi_purchase_logs WHERE transaction_id = $1 AND capi_success = true LIMIT 1`,
+                        [transactionId]
+                    );
+                    alreadySent = dupCheck.rows.length > 0;
+                } catch (dupErr) {}
+                
+                if (alreadySent) {
+                    console.log(`⚠️ PerfectPay CAPI: Purchase already sent for ${transactionId} - SKIPPING`);
+                } else {
+                    // Schedule delayed CAPI (same pattern as Monetizze - wait for enrichPurchase)
+                    console.log(`⏳ PerfectPay CAPI: Scheduling delayed Purchase for ${transactionId} in 30s...`);
+                    setTimeout(() => {
+                        console.log(`⏰ PerfectPay CAPI: Delayed trigger for ${transactionId} - running catch-up...`);
+                        sendMissingCAPIPurchases().catch(err => console.error('PerfectPay delayed CAPI error:', err.message));
+                    }, 30000);
+                }
+            }
+            
+            // Status 7 = refunded
+            if (statusEnum === '7' || mappedStatus === 'refunded') {
+                console.log(`📤 PerfectPay: Sending Refund to Facebook CAPI...`);
+                await sendToFacebookCAPI('Refund', fbUserData, fbCustomData, eventSourceUrl, `${eventId}_refund`, capiOptions);
+            }
+            
+            // Status 9 = chargeback
+            if (statusEnum === '9' || mappedStatus === 'chargeback') {
+                console.log(`📤 PerfectPay: Sending Refund (chargeback) to Facebook CAPI...`);
+                await sendToFacebookCAPI('Refund', fbUserData, fbCustomData, eventSourceUrl, `${eventId}_chargeback`, capiOptions);
+            }
+            
+        } catch (capiError) {
+            console.error('PerfectPay CAPI error (non-blocking):', capiError.message);
+        }
+        
+        // ==================== REGISTER REFUND/CHARGEBACK ====================
+        if (mappedStatus === 'refunded' || mappedStatus === 'chargeback') {
+            try {
+                const refundProtocol = `PP-${transactionCode.substring(0, 12).toUpperCase()}`;
+                const refundType = mappedStatus === 'chargeback' ? 'chargeback' : 'refund';
+                
+                const existing = await pool.query(
+                    'SELECT id FROM refund_requests WHERE transaction_id = $1',
+                    [transactionId]
+                );
+                
+                if (existing.rows.length === 0) {
+                    await pool.query(`
+                        INSERT INTO refund_requests (
+                            protocol, full_name, email, phone, product, reason, 
+                            status, source, refund_type, transaction_id, value, funnel_language, created_at
+                        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())
+                    `, [
+                        refundProtocol,
+                        buyerName || 'N/A',
+                        buyerEmail,
+                        buyerPhone || null,
+                        productName,
+                        refundType === 'chargeback' ? 'Chargeback - Disputa de cartão' : 'Reembolso via PerfectPay',
+                        'approved',
+                        'perfectpay',
+                        refundType,
+                        transactionId,
+                        parseFloat(saleAmount) || 0,
+                        funnelLanguage
+                    ]);
+                    console.log(`📥 PerfectPay ${refundType.toUpperCase()} registered: ${refundProtocol}`);
+                }
+            } catch (refundError) {
+                console.error('PerfectPay refund registration error:', refundError.message);
+            }
+        }
+        
+        // Summary log
+        console.log(`📋 PERFECTPAY SUMMARY: tx=${transactionId} | email=${buyerEmail || 'none'} | status=${statusEnum} (${mappedStatus}) | detail=${statusDetail} | product=${productName} | value=$${saleAmount} | lang=${funnelLanguage} | type=${productType}`);
+        
+        // Return success (PerfectPay expects 200 OK)
+        res.status(200).json({ status: 'ok' });
+        
+    } catch (error) {
+        console.error('❌ PerfectPay Webhook CRITICAL error:', error.message);
+        console.error('❌ Stack:', error.stack);
+        
+        try {
+            await pool.query(`INSERT INTO postback_logs (content_type, body, created_at) VALUES ('PP_CRITICAL_ERROR', $1, NOW())`, 
+                [JSON.stringify({ 
+                    error: error.message, 
+                    stack: error.stack?.substring(0, 500),
+                    body: req.body || {}
+                })]);
+        } catch (logErr) {
+            console.error('Failed to log PerfectPay error to DB:', logErr.message);
+        }
+        
+        // Still return 200 to prevent PerfectPay from retrying
+        res.status(200).json({ status: 'ok' });
+    }
+});
+
+// Admin: Debug PerfectPay webhooks
+app.get('/api/admin/debug/perfectpay-webhooks', authenticateToken, requireAdmin, async (req, res) => {
+    try {
+        const dbLogs = await pool.query(`
+            SELECT id, content_type, body, created_at 
+            FROM postback_logs 
+            WHERE content_type LIKE 'perfectpay%' OR content_type LIKE 'PP_%'
+            ORDER BY created_at DESC 
+            LIMIT 30
+        `);
+        
+        res.json({
+            memoryCount: recentPerfectPayWebhooks.length,
+            dbLogCount: dbLogs.rows.length,
+            info: 'PerfectPay webhook debug. Configure webhook URL in PerfectPay dashboard.',
+            webhookUrl: 'https://zapspy-funnel-production.up.railway.app/api/postback/perfectpay',
+            alternateUrl: 'https://painel.xaimonitor.com/api/postback/perfectpay',
+            recentWebhooks: recentPerfectPayWebhooks,
+            dbLogs: dbLogs.rows
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Admin: Test Monetizze postback → Initiate Checkout / Purchase (sends to Meta Test Events only)
 // Docs: https://apidoc.monetizze.com.br/postback/index.html
 app.post('/api/admin/test-postback', authenticateToken, requireAdmin, async (req, res) => {
@@ -9035,7 +9714,7 @@ app.get('/api/admin/refunds/:id/notes', authenticateToken, async (req, res) => {
 // Get transactions (protected) - with pagination
 app.get('/api/admin/transactions', authenticateToken, async (req, res) => {
     try {
-        const { language, startDate, endDate, source, page = 1, limit = 10 } = req.query;
+        const { language, startDate, endDate, source, search, page = 1, limit = 10 } = req.query;
         
         const pageNum = parseInt(page) || 1;
         const limitNum = parseInt(limit) || 10;
@@ -9049,14 +9728,21 @@ app.get('/api/admin/transactions', authenticateToken, async (req, res) => {
         baseQuery += ` AND transaction_id NOT LIKE 'TEST%' AND transaction_id NOT LIKE '%TEST%'`;
         baseQuery += ` AND email NOT LIKE '%test%@%' AND email NOT LIKE '%@test.%'`;
         
+        // Search by email/name/transaction_id
+        if (search) {
+            baseQuery += ` AND (email ILIKE $${paramIndex} OR name ILIKE $${paramIndex} OR transaction_id ILIKE $${paramIndex})`;
+            params.push(`%${search}%`);
+            paramIndex++;
+        }
+        
         if (language === 'en' || language === 'es') {
             baseQuery += ` AND (funnel_language = $${paramIndex} OR (funnel_language IS NULL AND $${paramIndex} = 'en'))`;
             params.push(language);
             paramIndex++;
         }
         
-        // Filter by funnel source (main/affiliate)
-        if (source === 'main' || source === 'affiliate') {
+        // Filter by funnel source (main/affiliate/perfectpay)
+        if (source === 'main' || source === 'affiliate' || source === 'perfectpay') {
             baseQuery += ` AND (funnel_source = $${paramIndex} OR (funnel_source IS NULL AND $${paramIndex} = 'main'))`;
             params.push(source);
             paramIndex++;
@@ -9135,9 +9821,9 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
             langParams = [language];
         }
         
-        // Build source filter (main/affiliate)
+        // Build source filter (main/affiliate/perfectpay)
         let sourceCondition = '';
-        if (source === 'main' || source === 'affiliate') {
+        if (source === 'main' || source === 'affiliate' || source === 'perfectpay') {
             const sourceIdx = langParams.length + 1;
             sourceCondition = ` AND (funnel_source = $${sourceIdx} OR (funnel_source IS NULL AND $${sourceIdx} = 'main'))`;
             langParams.push(source);
@@ -9214,7 +9900,7 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
         
         // Build source condition for funnel_events
         let funnelSourceCondition = '';
-        if (source === 'main' || source === 'affiliate') {
+        if (source === 'main' || source === 'affiliate' || source === 'perfectpay') {
             funnelSourceCondition = ` AND (metadata->>'funnelSource' = '${source}' OR (metadata->>'funnelSource' IS NULL AND '${source}' = 'main'))`;
         }
         
@@ -9269,7 +9955,7 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
             leadsLangCondition = ` AND (funnel_language = $${leadsParams.length + 1} OR (funnel_language IS NULL AND $${leadsParams.length + 1} = 'en'))`;
             leadsParams.push(language);
         }
-        if (source === 'main' || source === 'affiliate') {
+        if (source === 'main' || source === 'affiliate' || source === 'perfectpay') {
             leadsSourceCondition = ` AND (funnel_source = $${leadsParams.length + 1} OR (funnel_source IS NULL AND $${leadsParams.length + 1} = 'main'))`;
             leadsParams.push(source);
         }
