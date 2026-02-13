@@ -2671,11 +2671,96 @@ app.get('/api/admin/stats/weekly-performance', authenticateToken, async (req, re
     }
 });
 
-// ==================== WHATSAPP VERIFICATION ====================
-// Z-API credentials (same as funnel)
-const ZAPI_INSTANCE = '3E7938F228CBB0978267A6F61CAAA8C7';
-const ZAPI_TOKEN = '983F7A4EF1F159FAD3C42B05';
-const ZAPI_CLIENT_TOKEN = 'F0f2cc62f6c4f46088783537c957b7fd6S';
+// ==================== WHATSAPP Z-API INTEGRATION ====================
+// Z-API credentials - use env vars or fallback to defaults
+const ZAPI_INSTANCE = process.env.ZAPI_INSTANCE_ID || '3EEA7003980B31BFC5924A7638EE86FD';
+const ZAPI_TOKEN = process.env.ZAPI_TOKEN || '448359F89C302BC93D09F8D0';
+const ZAPI_CLIENT_TOKEN = process.env.ZAPI_CLIENT_TOKEN || '';
+const ZAPI_BASE_URL = `https://api.z-api.io/instances/${ZAPI_INSTANCE}/token/${ZAPI_TOKEN}`;
+
+// ---- Send WhatsApp message via Z-API ----
+app.post('/api/admin/whatsapp/send', authenticateToken, async (req, res) => {
+    try {
+        const { phone, message } = req.body;
+        
+        if (!phone || !message) {
+            return res.status(400).json({ error: 'Phone and message are required' });
+        }
+        
+        // Clean phone number - remove all non-digits
+        const cleanPhone = phone.replace(/\D/g, '');
+        
+        if (cleanPhone.length < 10) {
+            return res.status(400).json({ error: 'Invalid phone number' });
+        }
+        
+        // Send via Z-API send-text
+        const headers = { 'Content-Type': 'application/json' };
+        if (ZAPI_CLIENT_TOKEN) headers['client-token'] = ZAPI_CLIENT_TOKEN;
+        
+        const response = await fetch(`${ZAPI_BASE_URL}/send-text`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+                phone: cleanPhone,
+                message: message,
+                delayMessage: 3
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.messageId) {
+            // Log the message in database
+            try {
+                await pool.query(`
+                    INSERT INTO whatsapp_messages (phone, message, message_id, zaap_id, status, sent_by, created_at)
+                    VALUES ($1, $2, $3, $4, 'sent', $5, NOW())
+                `, [cleanPhone, message, data.messageId, data.zaapId, req.user?.email || 'admin']);
+            } catch (dbError) {
+                // Table might not exist yet, ignore
+                console.log('WhatsApp message log skipped (table may not exist):', dbError.message);
+            }
+            
+            res.json({ 
+                success: true, 
+                messageId: data.messageId,
+                zaapId: data.zaapId
+            });
+        } else {
+            console.error('Z-API send error:', data);
+            res.status(response.status || 500).json({ 
+                error: 'Failed to send WhatsApp message', 
+                details: data.error || data.message || 'Unknown error'
+            });
+        }
+        
+    } catch (error) {
+        console.error('Error sending WhatsApp:', error);
+        res.status(500).json({ error: 'Failed to send WhatsApp message', details: error.message });
+    }
+});
+
+// ---- Check Z-API instance status ----
+app.get('/api/admin/whatsapp/status', authenticateToken, async (req, res) => {
+    try {
+        const headers = {};
+        if (ZAPI_CLIENT_TOKEN) headers['client-token'] = ZAPI_CLIENT_TOKEN;
+        
+        const response = await fetch(`${ZAPI_BASE_URL}/status`, { headers });
+        const data = await response.json();
+        
+        res.json({
+            connected: data.connected || false,
+            smartphoneConnected: data.smartphoneConnected || false,
+            session: data.session || false,
+            ...data
+        });
+    } catch (error) {
+        console.error('Error checking WhatsApp status:', error);
+        res.status(500).json({ error: 'Failed to check WhatsApp status' });
+    }
+});
 
 // Verify a single WhatsApp number
 app.post('/api/admin/leads/:id/verify-whatsapp', authenticateToken, async (req, res) => {
@@ -2700,8 +2785,11 @@ app.post('/api/admin/leads/:id/verify-whatsapp', authenticateToken, async (req, 
         
         // Check if number exists on WhatsApp via Z-API
         try {
-            const response = await fetch(`https://api.z-api.io/instances/${ZAPI_INSTANCE}/token/${ZAPI_TOKEN}/phone-exists/${phone}`, {
-                headers: { 'client-token': ZAPI_CLIENT_TOKEN }
+            const zapiHeaders = { 'Content-Type': 'application/json' };
+            if (ZAPI_CLIENT_TOKEN) zapiHeaders['client-token'] = ZAPI_CLIENT_TOKEN;
+            
+            const response = await fetch(`${ZAPI_BASE_URL}/phone-exists/${phone}`, {
+                headers: zapiHeaders
             });
             
             const data = await response.json();
@@ -2711,8 +2799,8 @@ app.post('/api/admin/leads/:id/verify-whatsapp', authenticateToken, async (req, 
             let profilePicture = null;
             if (isRegistered) {
                 try {
-                    const picResponse = await fetch(`https://api.z-api.io/instances/${ZAPI_INSTANCE}/token/${ZAPI_TOKEN}/profile-picture?phone=${phone}`, {
-                        headers: { 'client-token': ZAPI_CLIENT_TOKEN }
+                    const picResponse = await fetch(`${ZAPI_BASE_URL}/profile-picture?phone=${phone}`, {
+                        headers: zapiHeaders
                     });
                     const picData = await picResponse.json();
                     if (picData.link && picData.link !== 'null' && picData.link.startsWith('http')) {
@@ -2781,8 +2869,10 @@ app.post('/api/admin/leads/bulk-verify-whatsapp', authenticateToken, async (req,
             phone = phone.replace(/\D/g, '');
             
             try {
-                const response = await fetch(`https://api.z-api.io/instances/${ZAPI_INSTANCE}/token/${ZAPI_TOKEN}/phone-exists/${phone}`, {
-                    headers: { 'client-token': ZAPI_CLIENT_TOKEN }
+                const bvHeaders = {};
+                if (ZAPI_CLIENT_TOKEN) bvHeaders['client-token'] = ZAPI_CLIENT_TOKEN;
+                const response = await fetch(`${ZAPI_BASE_URL}/phone-exists/${phone}`, {
+                    headers: bvHeaders
                 });
                 
                 const data = await response.json();

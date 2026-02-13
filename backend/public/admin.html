@@ -4746,12 +4746,49 @@ Estou aqui para esclarecer tudo! 😊`
         
         function closeWhatsAppModal() { document.getElementById('whatsappModal').classList.remove('active'); }
         
-        function sendWhatsApp() {
+        async function sendWhatsApp() {
             const phone = document.getElementById('whatsappPhone').value.replace(/\D/g, '');
-            const message = encodeURIComponent(document.getElementById('whatsappMessage').value);
-            window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
-            closeWhatsAppModal();
-            showToast('WhatsApp aberto!', 'A conversa foi iniciada', 'success');
+            const message = document.getElementById('whatsappMessage').value;
+            
+            if (!phone || !message.trim()) {
+                showToast('Erro', 'Telefone e mensagem são obrigatórios', 'error');
+                return;
+            }
+            
+            // Disable button while sending
+            const sendBtn = document.querySelector('#whatsappModal .btn-success');
+            if (sendBtn) {
+                sendBtn.disabled = true;
+                sendBtn.innerHTML = '⏳ Enviando...';
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/api/admin/whatsapp/send`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ phone, message })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    closeWhatsAppModal();
+                    showToast('Mensagem Enviada!', `WhatsApp enviado com sucesso para ${phone}`, 'success');
+                } else {
+                    showToast('Erro ao enviar', data.error || 'Falha no envio da mensagem', 'error');
+                }
+            } catch (error) {
+                console.error('Error sending WhatsApp:', error);
+                showToast('Erro', 'Falha na conexão com o servidor', 'error');
+            } finally {
+                if (sendBtn) {
+                    sendBtn.disabled = false;
+                    sendBtn.innerHTML = '📨 Enviar WhatsApp';
+                }
+            }
         }
         
         // WhatsApp Verification
@@ -5389,39 +5426,71 @@ Estou aqui para esclarecer tudo! 😊`
                 return;
             }
             
-            // Register contact attempt
+            const phone = selectedRecoveryLead.phone.replace(/\D/g, '');
+            
+            // Disable button while sending
+            const sendBtn = document.querySelector('#recoveryTemplateModal .btn-success');
+            if (sendBtn) {
+                sendBtn.disabled = true;
+                sendBtn.innerHTML = '⏳ Enviando...';
+            }
+            
             try {
-                await fetch(`${API_URL}/api/admin/recovery/contact`, {
+                // Send via Z-API
+                const sendResponse = await fetch(`${API_URL}/api/admin/whatsapp/send`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${authToken}`
                     },
-                    body: JSON.stringify({
-                        email: selectedRecoveryLead.email,
-                        segment: currentRecoverySegment,
-                        template: selectedTemplateId,
-                        channel: 'whatsapp',
-                        message: message
-                    })
+                    body: JSON.stringify({ phone, message })
                 });
+                
+                const sendData = await sendResponse.json();
+                
+                if (!sendData.success) {
+                    showToast('Erro ao enviar', sendData.error || 'Falha no envio via WhatsApp', 'error');
+                    return;
+                }
+                
+                // Register contact attempt
+                try {
+                    await fetch(`${API_URL}/api/admin/recovery/contact`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${authToken}`
+                        },
+                        body: JSON.stringify({
+                            email: selectedRecoveryLead.email,
+                            segment: currentRecoverySegment,
+                            template: selectedTemplateId,
+                            channel: 'whatsapp',
+                            message: message
+                        })
+                    });
+                } catch (error) {
+                    console.error('Error registering contact:', error);
+                }
+                
+                closeRecoveryTemplateModal();
+                showToast('Mensagem Enviada!', `WhatsApp enviado para ${phone} via Z-API`, 'success');
+                
+                // Reload data
+                setTimeout(() => {
+                    loadRecoverySegments();
+                    loadRecoverySegmentLeads();
+                }, 1000);
+                
             } catch (error) {
-                console.error('Error registering contact:', error);
+                console.error('Error sending recovery WhatsApp:', error);
+                showToast('Erro', 'Falha na conexão com o servidor', 'error');
+            } finally {
+                if (sendBtn) {
+                    sendBtn.disabled = false;
+                    sendBtn.innerHTML = '📨 Enviar via WhatsApp';
+                }
             }
-            
-            // Open WhatsApp
-            const phone = selectedRecoveryLead.phone.replace(/\D/g, '');
-            const encodedMessage = encodeURIComponent(message);
-            window.open(`https://wa.me/${phone}?text=${encodedMessage}`, '_blank');
-            
-            closeRecoveryTemplateModal();
-            showToast('Sucesso', 'Mensagem enviada! Contato registrado.', 'success');
-            
-            // Reload data
-            setTimeout(() => {
-                loadRecoverySegments();
-                loadRecoverySegmentLeads();
-            }, 1000);
         }
         
         // Mark lead as recovered
@@ -9481,8 +9550,8 @@ Posso ajudar em algo mais? 😊`
             showToast('Email', 'Gmail aberto com mensagem pronta', 'success');
         }
 
-        // Open WhatsApp with pre-filled message
-        function sendWhatsAppTo(refund, templateKey) {
+        // Send WhatsApp via Z-API with template
+        async function sendWhatsAppTo(refund, templateKey) {
             const template = communicationTemplates.whatsapp[templateKey];
             if (!template) return;
             
@@ -9501,10 +9570,29 @@ Posso ajudar em algo mais? 😊`
                 phone = '55' + phone;
             }
             
-            const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-            
-            window.open(whatsappUrl, '_blank');
-            showToast('WhatsApp', 'WhatsApp aberto com mensagem pronta', 'success');
+            try {
+                showToast('Enviando...', 'Enviando mensagem via WhatsApp', 'info');
+                
+                const response = await fetch(`${API_URL}/api/admin/whatsapp/send`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ phone, message })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('Mensagem Enviada!', `WhatsApp enviado para ${phone}`, 'success');
+                } else {
+                    showToast('Erro ao enviar', data.error || 'Falha no envio', 'error');
+                }
+            } catch (error) {
+                console.error('Error sending WhatsApp:', error);
+                showToast('Erro', 'Falha na conexão com o servidor', 'error');
+            }
         }
 
         // View refund details with quick actions
