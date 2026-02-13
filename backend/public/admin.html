@@ -11042,6 +11042,7 @@ Posso ajudar em algo mais? 😊`
         // ==================== CLIENTS TAB ====================
         let clientsCurrentPage = 1;
         let clientsPrimaryCurrency = 'USD'; // 'USD' or 'BRL'
+        let financialPrimaryCurrency = 'USD'; // 'USD' or 'BRL' - for financial tab
         
         // Exchange rate USD -> BRL (updated periodically)
         let exchangeRate = 5.80; // fallback
@@ -11343,7 +11344,6 @@ Posso ajudar em algo mais? 😊`
         // ==================== END CLIENTS TAB ====================
         
         // ==================== FINANCIAL TAB ====================
-        let financialPrimaryCurrency = 'USD';
         
         function toggleFinancialCurrency() {
             financialPrimaryCurrency = financialPrimaryCurrency === 'USD' ? 'BRL' : 'USD';
