@@ -4997,6 +4997,7 @@ Estou aqui para esclarecer tudo! 😊`
         // ==================== NEW RECOVERY CENTER ====================
         let currentRecoverySegment = 'checkout_abandoned';
         let recoverySegmentPage = 1;
+        let recoverySegmentPerPage = 10;
         let recoverySegmentLeads = [];
         let recoveryTemplates = {};
         let selectedRecoveryLead = null;
@@ -5102,7 +5103,7 @@ Estou aqui para esclarecer tudo! 😊`
                 const minScore = document.getElementById('recoveryFilterScore')?.value || '';
                 const contactStatus = document.getElementById('recoveryFilterContact')?.value || '';
                 const sortBy = document.getElementById('recoveryFilterSort')?.value || 'time';
-                const perPage = document.getElementById('recoveryPerPageNew')?.value || 10;
+                const perPage = recoverySegmentPerPage || 10;
                 
                 let params = [`page=${recoverySegmentPage}`, `limit=${perPage}`, `sortBy=${sortBy}`];
                 if (language) params.push(`language=${language}`);
@@ -6186,9 +6187,8 @@ Estou aqui para esclarecer tudo! 😊`
         
         function changeJourneysPerPage(value) {
             journeysPerPage = parseInt(value);
-                journeysCurrentPage = 1; // Reset to first page
-                renderJourneysPage(true);
-            }
+            journeysCurrentPage = 1; // Reset to first page
+            renderJourneysPage(true);
         }
         
         // Debounce journey search
