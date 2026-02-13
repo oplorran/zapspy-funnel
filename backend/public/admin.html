@@ -4809,6 +4809,15 @@ Estou aqui para esclarecer tudo! 😊`
                 
                 const data = await response.json();
                 
+                // Check if the API returned an error (not a verification result)
+                if (!response.ok || data.error) {
+                    console.error('Z-API verify error:', data);
+                    buttonEl.innerHTML = '🔍';
+                    buttonEl.disabled = false;
+                    showToast('Erro na Z-API', data.details || data.error || `Erro HTTP ${response.status}`, 'error');
+                    return;
+                }
+                
                 if (data.verified) {
                     // Show verified badge
                     const parentSpan = buttonEl.parentElement;
@@ -4832,9 +4841,9 @@ Estou aqui para esclarecer tudo! 😊`
                 
             } catch (error) {
                 console.error('Verify WhatsApp error:', error);
-                buttonEl.innerHTML = '❌';
+                buttonEl.innerHTML = '🔍';
                 buttonEl.disabled = false;
-                showToast('Erro', 'Não foi possível verificar o número', 'error');
+                showToast('Erro de Conexão', 'Não foi possível conectar à Z-API. Verifique o status da instância.', 'error');
             }
         }
         

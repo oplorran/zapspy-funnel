@@ -2836,11 +2836,25 @@ app.post('/api/admin/leads/:id/verify-whatsapp', authenticateToken, async (req, 
             const zapiHeaders = { 'Content-Type': 'application/json' };
             if (ZAPI_CLIENT_TOKEN) zapiHeaders['client-token'] = ZAPI_CLIENT_TOKEN;
             
+            console.log(`📱 Verifying WhatsApp: ${phone} → ${ZAPI_BASE_URL}/phone-exists/${phone}`);
+            
             const response = await fetch(`${ZAPI_BASE_URL}/phone-exists/${phone}`, {
                 headers: zapiHeaders
             });
             
             const data = await response.json();
+            console.log(`📱 Z-API response for ${phone}: HTTP ${response.status}`, JSON.stringify(data));
+            
+            // Check for API errors first
+            if (!response.ok) {
+                console.error(`📱 Z-API HTTP error ${response.status} for ${phone}:`, data);
+                return res.status(500).json({ 
+                    error: `Z-API retornou erro ${response.status}`, 
+                    details: data.message || data.error || JSON.stringify(data),
+                    verified: false 
+                });
+            }
+            
             const isRegistered = data.exists === true;
             
             // Try to get profile picture if registered
