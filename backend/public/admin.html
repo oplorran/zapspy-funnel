@@ -4893,6 +4893,12 @@ Estou aqui para esclarecer tudo! 😊`
                             <div style="margin-top:4px;color:#888;word-break:break-all;">${data.tests?.phoneExistsTest?.response || data.tests?.phoneExistsTest?.error || 'N/A'}</div>
                         </div>
                         
+                        <h3 style="color:#f59e0b;margin:20px 0 8px;">🔗 Teste com URL do Painel Z-API</h3>
+                        <p style="font-size:12px;color:#888;margin:0 0 8px;">Cole a URL completa da "API da instância" do painel Z-API:</p>
+                        <input id="zapiCustomUrl" type="text" placeholder="https://api.z-api.io/instances/.../token/.../send-text" style="width:100%;padding:8px 12px;background:#0d1117;border:1px solid #333;border-radius:6px;color:#e0e0e0;font-family:monospace;font-size:12px;box-sizing:border-box;margin-bottom:8px;" />
+                        <button onclick="testCustomZapiUrl()" style="padding:6px 16px;background:#10b981;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:bold;font-size:12px;">▶ Testar URL</button>
+                        <div id="zapiCustomResult" style="margin-top:8px;"></div>
+                        
                         <button onclick="this.parentElement.parentElement.remove()" style="margin-top:16px;padding:8px 24px;background:#f59e0b;color:#000;border:none;border-radius:6px;cursor:pointer;font-weight:bold;">Fechar</button>
                     </div>
                 </div>`;
@@ -4901,6 +4907,60 @@ Estou aqui para esclarecer tudo! 😊`
                 showToast('Diagnóstico concluído', 'success');
             } catch (error) {
                 showToast('Erro ao executar diagnóstico: ' + error.message, 'error');
+            }
+        }
+
+        // Test custom Z-API URL
+        async function testCustomZapiUrl() {
+            const url = document.getElementById('zapiCustomUrl')?.value?.trim();
+            const resultDiv = document.getElementById('zapiCustomResult');
+            if (!url) {
+                resultDiv.innerHTML = '<div style="color:#ef4444;">Cole a URL primeiro</div>';
+                return;
+            }
+            resultDiv.innerHTML = '<div style="color:#f59e0b;">⏳ Testando...</div>';
+            try {
+                const response = await fetch('/api/admin/whatsapp/test-url', {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url, clientToken: 'F221fdbff74cc4d998046c12b9e0a65ddS' })
+                });
+                const data = await response.json();
+                
+                let html = `<div style="background:#0d1117;border-radius:8px;padding:12px;font-family:monospace;font-size:11px;margin-top:8px;">`;
+                
+                if (data.comparison) {
+                    html += `<div style="margin-bottom:8px;">
+                        <div>Sua URL: <span style="color:#60a5fa;word-break:break-all;">${data.comparison.yourUrl}</span></div>
+                        <div>Nossa URL: <span style="color:#60a5fa;word-break:break-all;">${data.comparison.ourUrl}</span></div>
+                        <div>Match: <span style="color:${data.comparison.match ? '#10b981' : '#ef4444'};font-weight:bold;">${data.comparison.match ? '✅ IGUAIS' : '❌ DIFERENTES'}</span></div>
+                    </div>`;
+                }
+                
+                if (data.statusTest) {
+                    html += `<div style="margin-bottom:8px;">
+                        <div style="color:#f59e0b;">Status Test:</div>
+                        <div>URL: <span style="color:#888;word-break:break-all;">${data.statusTest.url}</span></div>
+                        <div>HTTP: <span style="color:${data.statusTest.httpStatus === 200 ? '#10b981' : '#ef4444'};">${data.statusTest.httpStatus || 'ERROR'}</span></div>
+                        <div style="color:#888;word-break:break-all;">${data.statusTest.response || data.statusTest.error || 'N/A'}</div>
+                    </div>`;
+                }
+                
+                if (data.phoneTest) {
+                    html += `<div>
+                        <div style="color:#f59e0b;">Phone Test:</div>
+                        <div>HTTP: <span style="color:${data.phoneTest.httpStatus === 200 ? '#10b981' : '#ef4444'};">${data.phoneTest.httpStatus || 'ERROR'}</span></div>
+                        <div style="color:#888;word-break:break-all;">${data.phoneTest.response || data.phoneTest.error || 'N/A'}</div>
+                    </div>`;
+                }
+                
+                html += '</div>';
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                resultDiv.innerHTML = `<div style="color:#ef4444;">Erro: ${error.message}</div>`;
             }
         }
 

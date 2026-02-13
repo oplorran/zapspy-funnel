@@ -2792,6 +2792,56 @@ app.get('/api/admin/whatsapp/diagnostics', authenticateToken, async (req, res) =
     res.json(results);
 });
 
+// ---- Z-API Custom URL Test ----
+app.post('/api/admin/whatsapp/test-url', authenticateToken, async (req, res) => {
+    try {
+        const { url, clientToken } = req.body;
+        if (!url) return res.status(400).json({ error: 'URL is required' });
+        
+        // Extract base URL (remove /send-text or other endpoints)
+        let baseUrl = url.replace(/\/(send-text|send-message-text|status|phone-exists\/\d+)\/?$/, '');
+        
+        const results = {};
+        
+        // Test status endpoint
+        const statusUrl = `${baseUrl}/status`;
+        const headers = {};
+        if (clientToken) headers['Client-Token'] = clientToken;
+        
+        console.log(`📱 Custom URL test: ${statusUrl}`);
+        console.log(`📱 Client-Token: ${clientToken ? 'SET' : 'NOT SET'}`);
+        
+        try {
+            const resp = await fetch(statusUrl, { method: 'GET', headers });
+            const text = await resp.text();
+            results.statusTest = { url: statusUrl, httpStatus: resp.status, response: text.substring(0, 500) };
+        } catch (e) {
+            results.statusTest = { url: statusUrl, error: e.message };
+        }
+        
+        // Test phone-exists
+        const phoneUrl = `${baseUrl}/phone-exists/5511999999999`;
+        try {
+            const resp2 = await fetch(phoneUrl, { method: 'GET', headers });
+            const text2 = await resp2.text();
+            results.phoneTest = { url: phoneUrl, httpStatus: resp2.status, response: text2.substring(0, 500) };
+        } catch (e) {
+            results.phoneTest = { url: phoneUrl, error: e.message };
+        }
+        
+        // Compare with our configured URL
+        results.comparison = {
+            yourUrl: baseUrl,
+            ourUrl: ZAPI_BASE_URL,
+            match: baseUrl === ZAPI_BASE_URL
+        };
+        
+        res.json(results);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // ---- Send WhatsApp message via Z-API ----
 app.post('/api/admin/whatsapp/send', authenticateToken, async (req, res) => {
     try {
