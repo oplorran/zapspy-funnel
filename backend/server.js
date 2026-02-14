@@ -6594,8 +6594,9 @@ async function sendMissingCAPIPurchases() {
                         : 'https://ingles.zappdetect.com/';
                 }
                 
-                // Event ID (status-agnostic for dedup)
-                const purchaseEventId = `monetizze_${transactionId}_purchase`;
+                // Event ID (status-agnostic for dedup) - use correct prefix per source
+                const eventPrefix = funnelSource === 'perfectpay' ? 'perfectpay' : 'monetizze';
+                const purchaseEventId = `${eventPrefix}_${transactionId}_purchase`;
                 
                 // CRITICAL: Double-check that this transaction hasn't been logged while we were processing
                 // This prevents race conditions when multiple catch-ups overlap

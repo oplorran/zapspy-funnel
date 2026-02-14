@@ -1,4 +1,4 @@
-﻿(function(){
+(function(){
 
     // ============================================
     // VIP PROCESSING OVERLAY - 35 SECOND DELAY
@@ -402,7 +402,7 @@
     for (var i = 0; i < scrollLinks.length; i++) {
         scrollLinks[i].addEventListener('click', function (e) {
             var href = this.getAttribute('href');
-            if (href === '#monetizzeCompra') return;
+            if (href === '#monetizzeCompra' || href === '#perfectpayCompra') return;
             
             e.preventDefault();
             var target = document.querySelector(href);

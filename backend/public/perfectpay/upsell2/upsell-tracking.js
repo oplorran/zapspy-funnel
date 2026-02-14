@@ -4,7 +4,7 @@
  * Uses the same visitorId from main funnel for complete journey tracking
  * 
  * ENHANCED v2.1 - Added URL parameter support for cross-domain tracking
- * When Monetizze loads upsell pages, localStorage is not available from original domain
+ * When PerfectPay loads upsell pages, localStorage is not available from original domain
  * So we pass visitorId via URL parameter to maintain tracking continuity
  */
 
@@ -15,7 +15,7 @@ const UpsellTracker = {
     
     // Get visitor ID from URL parameter first, then localStorage, then create new
     getVisitorId: function() {
-        // Priority 1: Check URL parameter (for cross-domain tracking via Monetizze)
+        // Priority 1: Check URL parameter (for cross-domain tracking via PerfectPay)
         const urlParams = new URLSearchParams(window.location.search);
         let visitorId = urlParams.get('vid') || urlParams.get('visitorId');
         
@@ -249,8 +249,8 @@ const UpsellTracker = {
     setupListeners: function() {
         const self = this;
         
-        // Track buy button clicks (Monetizze 1-click)
-        document.querySelectorAll('a[href="#monetizzeCompra"], a[data-upsell]').forEach(btn => {
+        // Track buy button clicks (PerfectPay upsell)
+        document.querySelectorAll('.btn-primary.btn-mega, a[data-upsell], a[data-perfectpay-upsell]').forEach(btn => {
             btn.addEventListener('click', () => {
                 this.trackAccept();
             });
@@ -259,7 +259,7 @@ const UpsellTracker = {
         // Track decline link clicks
         document.querySelectorAll('.decline-link, a[href*="up2"], a[href*="up3"], a[href*="thankyou"]').forEach(link => {
             // Only track if it's a decline action (not a buy button)
-            if (!link.hasAttribute('data-upsell') && !link.href.includes('#monetizzeCompra')) {
+            if (!link.hasAttribute('data-upsell') && !link.classList.contains('btn-mega') && !link.hasAttribute('data-perfectpay-upsell')) {
                 link.addEventListener('click', () => {
                     this.trackDecline();
                 });
@@ -335,7 +335,7 @@ const UpsellTracker = {
             
             // CTA visibility tracking
             if (!trackedCTA) {
-                const ctaButton = document.querySelector('.btn-primary[data-upsell], a[href="#monetizzeCompra"]');
+                const ctaButton = document.querySelector('.btn-primary.btn-mega, .btn-primary[data-upsell], a[data-perfectpay-upsell]');
                 if (ctaButton) {
                     const rect = ctaButton.getBoundingClientRect();
                     if (rect.top < window.innerHeight && rect.bottom > 0) {
@@ -348,7 +348,7 @@ const UpsellTracker = {
             }
         }, { passive: true });
         
-        // beforeunload removed - was interfering with Monetizze redirects
+        // beforeunload removed - was interfering with PerfectPay redirects
     },
     
     // Enrich purchase with fbc/fbp from browser (called on upsell page load)
@@ -435,64 +435,38 @@ const UpsellTracker = {
 UpsellTracker.init();
 
 // ============================================
-// MONETIZZE 1-CLICK DEBUG
+// PERFECTPAY UPSELL DEBUG
 // ============================================
-// This helps diagnose issues with the 1-click upsell process
+// This helps diagnose issues with the PerfectPay upsell process
 (function() {
-    console.log('🔍 Monetizze 1-Click Debug Starting...');
+    console.log('🔍 PerfectPay Upsell Debug Starting...');
     
-    // Check if Monetizze script loaded
     window.addEventListener('load', function() {
-        const hasMonetizzeScript = document.querySelector('script[src*="1buyclick.php"]');
-        console.log('📦 Monetizze 1buyclick.php script present:', !!hasMonetizzeScript);
-        
-        // Check for Monetizze global variables/functions
-        const monetizzeGlobals = [];
-        for (let key in window) {
-            if (key.toLowerCase().includes('monetizze') || key.toLowerCase().includes('mtz')) {
-                monetizzeGlobals.push(key);
-            }
-        }
-        if (monetizzeGlobals.length > 0) {
-            console.log('📊 Monetizze globals found:', monetizzeGlobals);
-        }
-        
-        // Check cookies related to Monetizze
-        const cookies = document.cookie.split(';');
-        const monetizzeCookies = cookies.filter(c => 
-            c.toLowerCase().includes('monetizze') || 
-            c.toLowerCase().includes('mtz') ||
-            c.toLowerCase().includes('session')
-        );
-        console.log('🍪 Session-related cookies:', monetizzeCookies.length > 0 ? monetizzeCookies : 'None found');
-        
         // Monitor CTA button clicks
-        document.querySelectorAll('a[data-upsell], a[href="#monetizzeCompra"]').forEach(function(btn, i) {
+        document.querySelectorAll('.btn-primary.btn-mega, a[data-upsell], a[data-perfectpay-upsell]').forEach(function(btn, i) {
             console.log('🔘 Found upsell button #' + (i+1) + ':', {
                 href: btn.getAttribute('href'),
-                dataUpsell: btn.getAttribute('data-upsell'),
                 text: btn.textContent.substring(0, 50)
             });
             
             btn.addEventListener('click', function(e) {
-                console.log('🖱️ Upsell button clicked!', {
+                console.log('🖱️ PerfectPay upsell button clicked!', {
                     timestamp: new Date().toISOString(),
                     button: e.target.textContent.substring(0, 30),
                     href: e.target.getAttribute('href'),
                     defaultPrevented: e.defaultPrevented
                 });
                 
-                // Track if click was processed
                 setTimeout(function() {
-                    console.log('⏱️ 1 second after click - page should be redirecting or showing Monetizze popup');
+                    console.log('⏱️ 1 second after click - page should be redirecting to PerfectPay checkout');
                 }, 1000);
                 
                 setTimeout(function() {
                     console.log('⏱️ 3 seconds after click - if you see this, redirect may have failed');
                 }, 3000);
-            }, true); // Use capture phase to log before other handlers
+            }, true);
         });
         
-        console.log('✅ Monetizze debug listeners attached');
+        console.log('✅ PerfectPay upsell debug listeners attached');
     });
 })();

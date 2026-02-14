@@ -60,7 +60,7 @@ const FunnelTracker = {
             targetPhone,
             targetGender,
             funnelLanguage: 'en',
-            funnelSource: 'main',
+            funnelSource: 'perfectpay',
             fbc: fbIds.fbc,
             fbp: fbIds.fbp,
             metadata: {
