@@ -6313,7 +6313,28 @@ async function reprocessPostbackLogs() {
 
 // ==================== CAPI CATCH-UP: Send Purchase events for approved sales missing from capi_purchase_logs ====================
 // This handles the case where background sync updates a transaction to 'approved' but doesn't trigger CAPI
+// Lock to prevent concurrent execution of CAPI catch-up
+let capiCatchupRunning = false;
+let capiCatchupLastRun = 0;
+const CAPI_CATCHUP_MIN_INTERVAL = 30000; // minimum 30 seconds between runs
+
 async function sendMissingCAPIPurchases() {
+    // Prevent concurrent execution (race condition protection)
+    if (capiCatchupRunning) {
+        console.log('⏳ CAPI CATCH-UP: Already running, skipping this call');
+        return;
+    }
+    
+    // Prevent too-frequent runs
+    const now = Date.now();
+    if (now - capiCatchupLastRun < CAPI_CATCHUP_MIN_INTERVAL) {
+        console.log('⏳ CAPI CATCH-UP: Last run was less than 30s ago, skipping');
+        return;
+    }
+    
+    capiCatchupRunning = true;
+    capiCatchupLastRun = now;
+    
     try {
         console.log('🔍 CAPI CATCH-UP: Checking for approved transactions missing Purchase CAPI events...');
         
@@ -6542,6 +6563,17 @@ async function sendMissingCAPIPurchases() {
                 // Event ID (status-agnostic for dedup)
                 const purchaseEventId = `monetizze_${transactionId}_purchase`;
                 
+                // CRITICAL: Double-check that this transaction hasn't been logged while we were processing
+                // This prevents race conditions when multiple catch-ups overlap
+                const doubleCheck = await pool.query(
+                    'SELECT 1 FROM capi_purchase_logs WHERE transaction_id = $1 LIMIT 1',
+                    [transactionId]
+                );
+                if (doubleCheck.rows.length > 0) {
+                    console.log(`⏭️ CAPI CATCH-UP: Skipping ${transactionId} - already logged (race condition prevented)`);
+                    continue;
+                }
+                
                 // Use the actual sale date from the transaction
                 const capiOptions = { language: funnelLanguage, eventTime: tx.created_at || null };
                 
@@ -6571,7 +6603,7 @@ async function sendMissingCAPIPurchases() {
                 
                 console.log(`📤 CAPI CATCH-UP: Result for ${email}: ${capiSuccess ? '✅ SUCCESS' : '❌ FAILED'} (events_received: ${fbEventsReceived})`);
                 
-                // Save to capi_purchase_logs
+                // Save to capi_purchase_logs (ON CONFLICT prevents duplicate entries)
                 try {
                     await pool.query(`
                         INSERT INTO capi_purchase_logs (
@@ -6582,6 +6614,7 @@ async function sendMissingCAPIPurchases() {
                             has_external_id, has_country, has_phone, lead_found,
                             capi_success, capi_response, fb_events_received, match_method
                         ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24)
+                        ON CONFLICT (transaction_id) DO NOTHING
                     `, [
                         transactionId, email, productName,
                         fbCustomData.value, fbCustomData.currency,
@@ -6613,6 +6646,8 @@ async function sendMissingCAPIPurchases() {
         
     } catch (error) {
         console.error('❌ CAPI CATCH-UP error:', error.message);
+    } finally {
+        capiCatchupRunning = false;
     }
 }
 
@@ -6670,15 +6705,15 @@ async function backfillTransactionFbcFbp() {
 }
 
 function startAutoSync() {
-    // Run backfill + CAPI catch-up IMMEDIATELY (10 seconds after start) - don't wait for heavy sync
+    // Run backfill + CAPI catch-up after startup (10 seconds after start)
     setTimeout(async () => {
         // First, backfill fbc/fbp from raw_data into transactions columns
         await backfillTransactionFbcFbp();
         
-        console.log('🚀 Running CAPI catch-up immediately (before heavy sync)...');
+        console.log('🚀 Running CAPI catch-up on startup...');
         await sendMissingCAPIPurchases();
-        // Schedule recurring CAPI catch-up every 10 minutes
-        setInterval(sendMissingCAPIPurchases, 10 * 60 * 1000);
+        // Schedule recurring CAPI catch-up every 30 minutes (reduced from 10min to prevent excessive sends)
+        setInterval(sendMissingCAPIPurchases, 30 * 60 * 1000);
     }, 10000);
     
     // Run heavy startup tasks 30 seconds after server start
@@ -6693,13 +6728,14 @@ function startAutoSync() {
         await runRefundBackfill();
         // Step 5: Run diagnostic to see what's in the DB
         await runDiagnosticLog();
-        // Step 6: Run CAPI catch-up again after sync (catches newly synced approved sales)
+        // Step 6: Run CAPI catch-up after sync (catches newly synced approved sales)
+        // Note: lock prevents duplication if previous catch-up is still running
         await sendMissingCAPIPurchases();
         // Regular sync every 5 minutes (just yesterday + today) - near real-time
         autoSyncInterval = setInterval(runAutoSync, 5 * 60 * 1000);
         // Re-check approved transactions every 6 hours for status changes
         setInterval(recheckApprovedTransactions, 6 * 60 * 60 * 1000);
-        console.log('🔄 Auto-sync scheduled: every 5 minutes | Re-check: every 6 hours | CAPI catch-up: every 10 min');
+        console.log('🔄 Auto-sync scheduled: every 5 minutes | Re-check: every 6 hours | CAPI catch-up: every 30 min');
     }, 30000);
 }
 
@@ -6782,8 +6818,9 @@ app.post('/api/enrich-purchase', async (req, res) => {
                 triggerCatchup = true;
             }
             
-            // Case 2: CAPI was already sent but WITHOUT fbc (edge case: enrichPurchase arrived after the 30s delay)
-            // Delete those incomplete logs so catch-up can re-send with fbc/fbp
+            // Case 2: CAPI was already sent but WITHOUT fbc
+            // Previously we deleted logs and re-sent, but this causes DUPLICATE events in Facebook Ads Manager
+            // Now we just log it - the event was already sent and Facebook has it
             if (fbc) {
                 try {
                     const staleCapiLogs = await pool.query(`
@@ -6794,10 +6831,12 @@ app.post('/api/enrich-purchase', async (req, res) => {
                     `, [email]);
                     
                     if (staleCapiLogs.rows.length > 0) {
-                        const staleIds = staleCapiLogs.rows.map(r => r.id);
-                        await pool.query(`DELETE FROM capi_purchase_logs WHERE id = ANY($1)`, [staleIds]);
-                        console.log(`🔥 ENRICH-PURCHASE: Deleted ${staleIds.length} CAPI logs WITHOUT fbc for ${email} - will re-send with fbc/fbp!`);
-                        triggerCatchup = true;
+                        // Just update the logs with the new fbc/fbp data, DO NOT delete and re-send
+                        for (const staleLog of staleCapiLogs.rows) {
+                            await pool.query(`UPDATE capi_purchase_logs SET has_fbc = true, has_fbp = true WHERE id = $1`, [staleLog.id]);
+                        }
+                        console.log(`📝 ENRICH-PURCHASE: Updated ${staleCapiLogs.rows.length} CAPI logs with fbc/fbp for ${email} (no re-send to avoid duplication)`);
+                        // DO NOT trigger catch-up - event already sent
                     }
                 } catch (staleErr) {
                     console.error('ENRICH-PURCHASE stale logs error:', staleErr.message);
@@ -11163,6 +11202,8 @@ async function initDatabase() {
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
             );
         `);
+        // Add unique constraint on transaction_id if not exists (prevents duplicate CAPI sends)
+        await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_capi_purchase_logs_tx_unique ON capi_purchase_logs(transaction_id) WHERE transaction_id IS NOT NULL;`);
         
         // Create transactions table for Monetizze postbacks
         await pool.query(`
