@@ -3681,6 +3681,11 @@ Estou aqui para esclarecer tudo! 😊`
             
             loadAllData();
             initCharts();
+            
+            // Start real-time active users tracking
+            if (typeof startActiveUsersRefresh === 'function') {
+                startActiveUsersRefresh();
+            }
         }
         
         // Get date range from global filter
@@ -12917,7 +12922,12 @@ Posso ajudar em algo mais? 😊`
                     headers: { 'Authorization': `Bearer ${authToken}`, 'Cache-Control': 'no-cache' }
                 });
                 
-                if (!res.ok) return;
+                if (!res.ok) {
+                    // Show 0 instead of leaving dashes on error
+                    const countEl = document.getElementById('activeUsersCount');
+                    if (countEl && countEl.textContent === '-') countEl.textContent = '0';
+                    return;
+                }
                 const data = await res.json();
                 
                 const countEl = document.getElementById('activeUsersCount');
