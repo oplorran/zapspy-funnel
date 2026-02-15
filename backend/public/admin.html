@@ -3802,6 +3802,16 @@ Estou aqui para esclarecer tudo! 😊`
             loadTrendsData();
             loadClients(1);
             // loadFinancialData is only called when user opens the Financial tab (via switchTab)
+            
+            // Start real-time active users refresh
+            try {
+                if (typeof startActiveUsersRefresh === 'function') {
+                    startActiveUsersRefresh();
+                } else {
+                    // Fallback: call loadActiveUsers directly if available
+                    if (typeof loadActiveUsers === 'function') loadActiveUsers();
+                }
+            } catch(e) { console.log('Active users init error:', e); }
         }
         
         // Global filter change handler (language + date + source)
@@ -12918,17 +12928,26 @@ Posso ajudar em algo mais? 😊`
         
         async function loadActiveUsers() {
             try {
+                console.log('📡 Loading active users...');
                 const res = await fetch(`${API_URL}/api/admin/active-users?minutes=5`, {
                     headers: { 'Authorization': `Bearer ${authToken}`, 'Cache-Control': 'no-cache' }
                 });
                 
                 if (!res.ok) {
+                    console.log('📡 Active users API error:', res.status);
                     // Show 0 instead of leaving dashes on error
                     const countEl = document.getElementById('activeUsersCount');
-                    if (countEl && countEl.textContent === '-') countEl.textContent = '0';
+                    const enEl = document.getElementById('activeUsersEN');
+                    const esEl = document.getElementById('activeUsersES');
+                    const eventsEl = document.getElementById('activeUsersEvents');
+                    if (countEl) countEl.textContent = '0';
+                    if (enEl) enEl.textContent = '0';
+                    if (esEl) esEl.textContent = '0';
+                    if (eventsEl) eventsEl.textContent = '0';
                     return;
                 }
                 const data = await res.json();
+                console.log('📡 Active users data:', data);
                 
                 const countEl = document.getElementById('activeUsersCount');
                 const enEl = document.getElementById('activeUsersEN');
@@ -13000,7 +13019,16 @@ Posso ajudar em algo mais? 😊`
                 }
                 
             } catch (error) {
-                console.log('Active users fetch error:', error);
+                console.log('📡 Active users fetch error:', error);
+                // Show 0 instead of dashes on network error
+                const countEl = document.getElementById('activeUsersCount');
+                const enEl = document.getElementById('activeUsersEN');
+                const esEl = document.getElementById('activeUsersES');
+                const eventsEl = document.getElementById('activeUsersEvents');
+                if (countEl) countEl.textContent = '0';
+                if (enEl) enEl.textContent = '0';
+                if (esEl) esEl.textContent = '0';
+                if (eventsEl) eventsEl.textContent = '0';
             }
         }
         
