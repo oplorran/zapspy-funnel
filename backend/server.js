@@ -6036,7 +6036,7 @@ async function runDeepSync() {
                                     refundProtocol, buyerName || 'N/A', email, buyerPhone || null,
                                     productName,
                                     mappedStatus === 'chargeback' ? 'Chargeback - Disputa' : 'Reembolso via Monetizze',
-                                    'approved', 'monetizze_deep_sync',
+                                    'approved', 'monetizze',
                                     mappedStatus === 'chargeback' ? 'chargeback' : 'refund',
                                     transactionId, parseFloat(value) || 0
                                 ]);
@@ -6359,7 +6359,7 @@ async function reprocessPostbackLogs() {
                             refundProtocol, buyerName, email, buyerPhone,
                             productName,
                             newStatus === 'chargeback' ? 'Chargeback - Disputa de cartão' : 'Reembolso via Monetizze',
-                            'approved', 'monetizze_postback_reprocess', newStatus === 'chargeback' ? 'chargeback' : 'refund',
+                            'approved', 'monetizze', newStatus === 'chargeback' ? 'chargeback' : 'refund',
                             transactionId, parseFloat(valor) || 0, 'en', log.created_at || new Date()
                         ]);
                     }
@@ -9293,6 +9293,27 @@ app.post('/api/refund', async (req, res) => {
             console.error('⚠️ Cross-reference error (non-blocking):', crossRefError.message);
         }
 
+        // Check for existing refund request from same email (prevent duplicates)
+        const existingRefund = await pool.query(`
+            SELECT id, protocol, status, created_at FROM refund_requests 
+            WHERE LOWER(email) = LOWER($1) 
+              AND (source IS NULL OR source = 'form')
+            ORDER BY created_at DESC LIMIT 1
+        `, [email]);
+        
+        if (existingRefund.rows.length > 0) {
+            const existing = existingRefund.rows[0];
+            console.log(`⚠️ Duplicate refund request blocked: ${email} already has ${existing.protocol} (status: ${existing.status})`);
+            
+            // Return the existing protocol instead of creating a duplicate
+            return res.status(200).json({
+                success: true,
+                message: 'Refund request already exists',
+                protocol: existing.protocol,
+                existing: true
+            });
+        }
+
         // Store refund request with enriched data
         await pool.query(`
             INSERT INTO refund_requests (
@@ -10028,11 +10049,13 @@ app.get('/api/admin/refunds', authenticateToken, async (req, res) => {
         
         const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
         
+        // Use DISTINCT ON (email, source) to deduplicate - keep most recent entry per customer per source
+        // This prevents showing the same customer multiple times in recovery/monetizze/chargeback tabs
         const result = await pool.query(`
-            SELECT * FROM refund_requests 
+            SELECT DISTINCT ON (LOWER(email), COALESCE(source, 'form')) *
+            FROM refund_requests 
             ${whereClause}
-            ORDER BY created_at DESC 
-            LIMIT 100
+            ORDER BY LOWER(email), COALESCE(source, 'form'), created_at DESC
         `, params);
         
         // Get stats by source (with date filter if provided)
@@ -11572,6 +11595,49 @@ async function initDatabase() {
         }
         
         console.log('✅ Database ready');
+        
+        // ==================== CLEANUP: Remove duplicate refund_requests ====================
+        try {
+            // Fix source values: normalize 'monetizze_deep_sync' and 'monetizze_postback_reprocess' to 'monetizze'
+            const sourceFixResult = await pool.query(`
+                UPDATE refund_requests 
+                SET source = 'monetizze' 
+                WHERE source IN ('monetizze_deep_sync', 'monetizze_postback_reprocess')
+            `);
+            if (sourceFixResult.rowCount > 0) {
+                console.log(`🔧 Fixed ${sourceFixResult.rowCount} refund_requests with non-standard monetizze source`);
+            }
+            
+            // Remove duplicate refund_requests: keep only the most recent per email + source combo
+            const dupsResult = await pool.query(`
+                DELETE FROM refund_requests 
+                WHERE id NOT IN (
+                    SELECT DISTINCT ON (LOWER(email), COALESCE(source, 'form')) id
+                    FROM refund_requests
+                    ORDER BY LOWER(email), COALESCE(source, 'form'), created_at DESC
+                )
+            `);
+            if (dupsResult.rowCount > 0) {
+                console.log(`🧹 Removed ${dupsResult.rowCount} duplicate refund_requests entries`);
+            }
+            
+            // Also remove duplicates by transaction_id (keep most recent)
+            const txDupsResult = await pool.query(`
+                DELETE FROM refund_requests 
+                WHERE transaction_id IS NOT NULL 
+                  AND id NOT IN (
+                    SELECT DISTINCT ON (transaction_id) id
+                    FROM refund_requests
+                    WHERE transaction_id IS NOT NULL
+                    ORDER BY transaction_id, created_at DESC
+                )
+            `);
+            if (txDupsResult.rowCount > 0) {
+                console.log(`🧹 Removed ${txDupsResult.rowCount} duplicate refund_requests by transaction_id`);
+            }
+        } catch (cleanupError) {
+            console.error('⚠️ Refund cleanup error (non-blocking):', cleanupError.message);
+        }
         
         // ==================== BACKFILL: Cross-reference refunds with leads/transactions ====================
         try {
