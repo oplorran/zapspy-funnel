@@ -1,17 +1,17 @@
 (function(){
 
     // ============================================
-    // VIP PROCESSING OVERLAY - REMOVED FOR BETTER CONVERSION
+    // VIP PROCESSING OVERLAY - REMOVED
+    // Direct content display for better conversion
     // ============================================
-    // Overlay removed - content displays immediately
-    // Page view is tracked via upsell-tracking.js
-
+    
     // ============================================
     // COUNTDOWN TIMER WITH AUTO-RESTART
     // ============================================
-    const STORAGE_KEY = 'upsell2_timer_end_es';
-    const TIMER_DURATION = 12 * 60 + 47; // 12:47
+    const STORAGE_KEY = 'upsell_timer_end_es';
+    const TIMER_DURATION = 15 * 60; // 15 minutes
     let totalSeconds;
+    let timer;
     
     function initTimer() {
         const savedEndTime = localStorage.getItem(STORAGE_KEY);
@@ -32,24 +32,25 @@
         localStorage.setItem(STORAGE_KEY, endTime);
     }
     
-    var countdownEl = document.getElementById('countdown');
-    var countdownCtaEl = document.getElementById('countdown-cta');
+    const countdownEl = document.getElementById('countdown');
+    const countdownCtaEl = document.getElementById('countdown-cta');
     
     function format(seconds){
         if (seconds < 0) seconds = 0;
-        var m = Math.floor(seconds / 60);
-        var s = seconds % 60;
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
         return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
     }
     
     function updateAllTimers() {
-        var formatted = format(totalSeconds);
+        const formatted = format(totalSeconds);
         if (countdownEl) countdownEl.textContent = formatted;
         if (countdownCtaEl) countdownCtaEl.textContent = formatted;
     }
     
     function tick(){
         if (totalSeconds <= 0) {
+            // Auto-restart timer when it expires
             restartTimer();
             updateAllTimers();
             
@@ -69,21 +70,23 @@
     
     initTimer();
     updateAllTimers();
-    var timer = setInterval(tick, 1000);
+    timer = setInterval(tick, 1000);
 
     // ============================================
     // DYNAMIC SCARCITY NUMBERS
     // ============================================
     function updateScarcityNumber() {
-        var scarcityEl = document.querySelector('.scarcity-text strong');
+        const scarcityEl = document.querySelector('.scarcity-text strong');
         if (scarcityEl) {
-            var baseNumber = Math.floor(Math.random() * (52 - 24 + 1)) + 24;
+            // Random number between 31 and 89
+            const baseNumber = Math.floor(Math.random() * (89 - 31 + 1)) + 31;
             scarcityEl.textContent = baseNumber + ' personas';
         }
     }
     
+    // Update scarcity every 30-60 seconds randomly
     function scheduleScarcityUpdate() {
-        var delay = (Math.floor(Math.random() * 30) + 30) * 1000;
+        const delay = (Math.floor(Math.random() * 30) + 30) * 1000;
         setTimeout(function() {
             updateScarcityNumber();
             scheduleScarcityUpdate();
@@ -94,40 +97,34 @@
     scheduleScarcityUpdate();
 
     // ============================================
-    // FOOTER YEAR
-    // ============================================
-    var yearEl = document.getElementById('year');
-    if (yearEl) yearEl.textContent = new Date().getFullYear();
-
-    // ============================================
     // STATIC ACTIVITY FEED - FIXED LIST OF BUYERS
     // ============================================
-    var staticBuyers = [
-        { name: 'María G.', location: 'Ciudad de México', action: 'desbloqueó todas las redes sociales', time: 'hace 2 minutos' },
-        { name: 'Juan D.', location: 'Buenos Aires', action: 'agregó rastreo GPS', time: 'hace 4 minutos' },
-        { name: 'Ana L.', location: 'Madrid', action: 'actualizó al paquete completo', time: 'hace 5 minutos' },
-        { name: 'Carlos R.', location: 'Bogotá', action: 'activó monitoreo total', time: 'hace 7 minutos' },
-        { name: 'Laura K.', location: 'Lima', action: 'desbloqueó todas las redes sociales', time: 'hace 9 minutos' },
-        { name: 'Miguel T.', location: 'Santiago', action: 'agregó rastreo GPS', time: 'hace 11 minutos' },
-        { name: 'Elena C.', location: 'Barcelona', action: 'actualizó al paquete completo', time: 'hace 14 minutos' },
-        { name: 'Diego B.', location: 'Guadalajara', action: 'activó monitoreo total', time: 'hace 16 minutos' },
-        { name: 'Sofía L.', location: 'Monterrey', action: 'desbloqueó todas las redes sociales', time: 'hace 18 minutos' },
-        { name: 'Andrés H.', location: 'Medellín', action: 'agregó rastreo GPS', time: 'hace 21 minutos' },
-        { name: 'Isabella P.', location: 'Quito', action: 'actualizó al paquete completo', time: 'hace 24 minutos' },
-        { name: 'Lucas G.', location: 'Caracas', action: 'activó monitoreo total', time: 'hace 27 minutos' },
-        { name: 'Camila S.', location: 'Montevideo', action: 'desbloqueó todas las redes sociales', time: 'hace 31 minutos' },
-        { name: 'Daniel N.', location: 'Sevilla', action: 'agregó rastreo GPS', time: 'hace 35 minutos' },
-        { name: 'Valentina F.', location: 'Valencia', action: 'actualizó al paquete completo', time: 'hace 38 minutos' }
+    const staticBuyers = [
+        { name: 'María G.', location: 'Ciudad de México', action: 'desbloqueó acceso', time: 'hace 2 minutos' },
+        { name: 'Juan D.', location: 'Buenos Aires', action: 'recuperó mensajes', time: 'hace 4 minutos' },
+        { name: 'Ana L.', location: 'Madrid', action: 'acaba de activar', time: 'hace 5 minutos' },
+        { name: 'Carlos R.', location: 'Bogotá', action: 'desbloqueó acceso', time: 'hace 7 minutos' },
+        { name: 'Laura K.', location: 'Lima', action: 'recuperó mensajes', time: 'hace 9 minutos' },
+        { name: 'Miguel T.', location: 'Santiago', action: 'acaba de activar', time: 'hace 11 minutos' },
+        { name: 'Elena C.', location: 'Barcelona', action: 'desbloqueó acceso', time: 'hace 14 minutos' },
+        { name: 'Diego B.', location: 'Guadalajara', action: 'recuperó mensajes', time: 'hace 16 minutos' },
+        { name: 'Sofía L.', location: 'Monterrey', action: 'acaba de activar', time: 'hace 18 minutos' },
+        { name: 'Andrés H.', location: 'Medellín', action: 'desbloqueó acceso', time: 'hace 21 minutos' },
+        { name: 'Isabella P.', location: 'Quito', action: 'recuperó mensajes', time: 'hace 24 minutos' },
+        { name: 'Lucas G.', location: 'Caracas', action: 'acaba de activar', time: 'hace 27 minutos' },
+        { name: 'Camila S.', location: 'Montevideo', action: 'desbloqueó acceso', time: 'hace 31 minutos' },
+        { name: 'Daniel N.', location: 'Sevilla', action: 'recuperó mensajes', time: 'hace 35 minutos' },
+        { name: 'Valentina F.', location: 'Valencia', action: 'acaba de activar', time: 'hace 38 minutos' }
     ];
     
-    var activityFeed = document.getElementById('activityFeed');
+    const activityFeed = document.getElementById('activityFeed');
     
     function initActivityFeed() {
         if (!activityFeed) return;
         
         // Create all static items with organized layout
         staticBuyers.forEach(function(buyer) {
-            var item = document.createElement('div');
+            const item = document.createElement('div');
             item.className = 'activity-item';
             item.innerHTML = 
                 '<span class="activity-icon">✅</span>' +
@@ -142,5 +139,31 @@
     
     // Initialize feed
     initActivityFeed();
+
+    // ============================================
+    // FOOTER YEAR
+    // ============================================
+    const yearEl = document.getElementById('year');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+    // ============================================
+    // SMOOTH SCROLL TO PURCHASE
+    // ============================================
+    var scrollLinks = document.querySelectorAll('a[href^="#"]');
+    for (var i = 0; i < scrollLinks.length; i++) {
+        scrollLinks[i].addEventListener('click', function (e) {
+            var href = this.getAttribute('href');
+            if (href === '#monetizzeCompra') return;
+            
+            e.preventDefault();
+            var target = document.querySelector(href);
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    }
 
 })();

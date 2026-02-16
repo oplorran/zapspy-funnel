@@ -5,7 +5,7 @@
     <script src="https://cdn.utmify.com.br/scripts/utms/latest.js" data-utmify-prevent-xcod-sck data-utmify-prevent-subids async defer></script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Exclusive Upgrade - ZappDetect V2</title>
+    <title>Recover Deleted Conversations, Photos and Videos</title>
     
     <!-- Meta Pixel Code -->
     <script>
@@ -55,165 +55,176 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             if (typeof FacebookCAPI !== 'undefined') {
-                FacebookCAPI.init('Upsell 2 - 360 Tracker');
+                FacebookCAPI.init('Upsell 2 - Message Vault');
                 // Track ViewContent for CAPI
-                FacebookCAPI.trackViewContent('Upsell Page', 'Funnel - Upsell', 45);
+                FacebookCAPI.trackViewContent('Upsell Page', 'Funnel - Upsell', 47);
             }
         });
     </script>
     
-    <meta name="description" content="Limited-time exclusive upgrade offer for loyal ZappDetect customers.">
+    <meta name="description" content="Special offer: recover deleted conversations, photos and videos from the last 90 days.">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔓</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../vip-overlay-styles.css?v=8.0">
-    <link rel="stylesheet" href="upsell2-styles.css?v=8.0">
+    <link rel="stylesheet" href="upsell2-styles.css?v=9.0">
     <!-- Monetizze Upsell Incorporado -->
     <script type="text/javascript" src="https://app.monetizze.com.br/upsell_incorporado.php"></script>
     <style>
-        .so-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#0a0a1a 0%,#1a0a2e 50%,#2d1b4e 100%);z-index:99999;display:flex;align-items:center;justify-content:center}
-        .so-container{text-align:center;max-width:500px;padding:40px 30px;width:100%}
-        .so-radar{font-size:60px;margin-bottom:20px;animation:so-spin 3s linear infinite}
-        @keyframes so-spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-        .so-title{color:#fff;font-size:22px;font-weight:700;margin-bottom:8px;font-family:'DM Sans',sans-serif}
-        .so-subtitle{color:rgba(255,255,255,.7);font-size:14px;margin-bottom:30px;font-family:'DM Sans',sans-serif}
-        .so-progress-wrap{background:rgba(255,255,255,.1);border-radius:12px;height:8px;margin-bottom:8px;overflow:hidden}
-        .so-progress-bar{height:100%;width:0%;background:linear-gradient(90deg,#8B5CF6,#A855F7);border-radius:12px;transition:width .3s linear}
-        .so-percent{color:rgba(255,255,255,.5);font-size:12px;margin-bottom:30px;font-family:'DM Sans',sans-serif}
-        .so-platforms{text-align:left;margin-bottom:25px}
-        .so-platform{display:flex;align-items:center;gap:12px;padding:12px 15px;margin-bottom:8px;background:rgba(255,255,255,.03);border-radius:10px;border:1px solid rgba(255,255,255,.05);opacity:.3;transition:all .5s}
-        .so-platform.active{opacity:1;background:rgba(139,92,246,.1);border-color:rgba(139,92,246,.3)}
-        .so-platform.done{opacity:.7}
-        .so-platform.warning{border-color:rgba(245,158,11,.5);background:rgba(245,158,11,.1)}
-        .so-platform-icon{font-size:24px;width:35px;text-align:center}
-        .so-platform-name{color:#fff;font-size:14px;font-weight:600;min-width:80px;font-family:'DM Sans',sans-serif}
-        .so-platform-status{color:rgba(255,255,255,.5);font-size:12px;margin-left:auto;font-family:'DM Sans',sans-serif}
-        .so-platform-count{color:#F59E0B;font-size:11px;font-weight:600;font-family:'DM Sans',sans-serif;display:none}
-        .so-platform.done .so-platform-count{display:block}
-        .so-alert{background:linear-gradient(135deg,rgba(239,68,68,.15),rgba(239,68,68,.05));border:1px solid rgba(239,68,68,.3);border-radius:12px;padding:20px;margin-top:20px;opacity:0;transform:translateY(10px);transition:all .5s}
-        .so-alert.show{opacity:1;transform:translateY(0)}
-        .so-alert-icon{font-size:24px;margin-bottom:8px}
-        .so-alert-title{color:#EF4444;font-size:15px;font-weight:700;margin-bottom:6px;font-family:'DM Sans',sans-serif}
-        .so-alert-text{color:rgba(255,255,255,.8);font-size:13px;line-height:1.5;font-family:'DM Sans',sans-serif}
+        .lo-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#0a0a1a 0%,#0d1b2a 50%,#1b2838 100%);z-index:99999;display:flex;align-items:center;justify-content:center}
+        .lo-container{text-align:center;max-width:500px;padding:40px 30px;width:100%}
+        .lo-icon{font-size:60px;margin-bottom:20px;animation:lo-pulse 2s infinite}
+        @keyframes lo-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+        .lo-title{color:#fff;font-size:24px;font-weight:700;margin-bottom:8px;font-family:'DM Sans',sans-serif}
+        .lo-subtitle{color:rgba(255,255,255,.7);font-size:14px;margin-bottom:30px;font-family:'DM Sans',sans-serif}
+        .lo-progress-wrap{background:rgba(255,255,255,.1);border-radius:12px;height:8px;margin-bottom:8px;overflow:hidden}
+        .lo-progress-bar{height:100%;width:0%;background:linear-gradient(90deg,#25D366,#128C7E);border-radius:12px;transition:width .3s linear}
+        .lo-percent{color:rgba(255,255,255,.5);font-size:12px;margin-bottom:30px;font-family:'DM Sans',sans-serif}
+        .lo-steps{text-align:left;margin-bottom:25px}
+        .lo-step{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);opacity:.3;transition:opacity .5s}
+        .lo-step.active{opacity:1}
+        .lo-step.done{opacity:.6}
+        .lo-step-icon{font-size:20px;width:30px;text-align:center}
+        .lo-step-text{color:#fff;font-size:14px;font-family:'DM Sans',sans-serif}
+        .lo-step-dots{color:rgba(255,255,255,.5);font-size:12px;margin-left:auto;font-family:'DM Sans',sans-serif}
+        .lo-alert{background:linear-gradient(135deg,rgba(37,211,102,.15),rgba(37,211,102,.05));border:1px solid rgba(37,211,102,.3);border-radius:12px;padding:20px;margin-top:20px;opacity:0;transform:translateY(10px);transition:all .5s}
+        .lo-alert.show{opacity:1;transform:translateY(0)}
+        .lo-alert-icon{font-size:24px;margin-bottom:8px}
+        .lo-alert-title{color:#25D366;font-size:16px;font-weight:700;margin-bottom:6px;font-family:'DM Sans',sans-serif}
+        .lo-alert-text{color:rgba(255,255,255,.8);font-size:13px;line-height:1.5;font-family:'DM Sans',sans-serif}
         .hidden-content{display:none!important}
     </style>
 </head>
 <body>
-    <!-- Scan Overlay -->
-    <div id="scanOverlay" class="so-overlay">
-        <div class="so-container">
-            <div class="so-radar">📡</div>
-            <div class="so-title">Cross-Platform Scan in Progress</div>
-            <div class="so-subtitle">Analyzing target's digital footprint...</div>
-            <div class="so-progress-wrap"><div class="so-progress-bar" id="soProgressBar"></div></div>
-            <div class="so-percent" id="soPercent">0%</div>
-            <div class="so-platforms">
-                <div class="so-platform" id="soPlatform0"><div class="so-platform-icon">💬</div><div class="so-platform-name">WhatsApp</div><div class="so-platform-status" id="soStatus0">Waiting...</div><div class="so-platform-count" id="soCount0"></div></div>
-                <div class="so-platform" id="soPlatform1"><div class="so-platform-icon">📷</div><div class="so-platform-name">Instagram</div><div class="so-platform-status" id="soStatus1">Waiting...</div><div class="so-platform-count" id="soCount1"></div></div>
-                <div class="so-platform" id="soPlatform2"><div class="so-platform-icon">🎵</div><div class="so-platform-name">TikTok</div><div class="so-platform-status" id="soStatus2">Waiting...</div><div class="so-platform-count" id="soCount2"></div></div>
-                <div class="so-platform" id="soPlatform3"><div class="so-platform-icon">👻</div><div class="so-platform-name">Snapchat</div><div class="so-platform-status" id="soStatus3">Waiting...</div><div class="so-platform-count" id="soCount3"></div></div>
-                <div class="so-platform" id="soPlatform4"><div class="so-platform-icon">📍</div><div class="so-platform-name">GPS Location</div><div class="so-platform-status" id="soStatus4">Waiting...</div><div class="so-platform-count" id="soCount4"></div></div>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="lo-overlay">
+        <div class="lo-container">
+            <div class="lo-icon">⚙️</div>
+            <div class="lo-title">Setting Up Your Account</div>
+            <div class="lo-subtitle">Please wait while we configure your access...</div>
+            <div class="lo-progress-wrap"><div class="lo-progress-bar" id="loProgressBar"></div></div>
+            <div class="lo-percent" id="loPercent">0%</div>
+            <div class="lo-steps">
+                <div class="lo-step" id="loStep0"><div class="lo-step-icon">💳</div><div class="lo-step-text">Confirming your payment</div><div class="lo-step-dots">...</div></div>
+                <div class="lo-step" id="loStep1"><div class="lo-step-icon">🔑</div><div class="lo-step-text">Activating ZapSpy license</div><div class="lo-step-dots">...</div></div>
+                <div class="lo-step" id="loStep2"><div class="lo-step-icon">🔒</div><div class="lo-step-text">Connecting to secure servers</div><div class="lo-step-dots">...</div></div>
+                <div class="lo-step" id="loStep3"><div class="lo-step-icon">📊</div><div class="lo-step-text">Loading monitoring dashboard</div><div class="lo-step-dots">...</div></div>
+                <div class="lo-step" id="loStep4"><div class="lo-step-icon">🔍</div><div class="lo-step-text">Scanning available upgrades</div><div class="lo-step-dots">...</div></div>
             </div>
-            <div class="so-alert" id="soAlert">
-                <div class="so-alert-icon">🚨</div>
-                <div class="so-alert-title">ACTIVITY DETECTED ON MULTIPLE PLATFORMS</div>
-                <div class="so-alert-text">Hidden conversations found on 3+ platforms. Upgrade now to see everything.</div>
+            <div class="lo-alert" id="loAlert">
+                <div class="lo-alert-icon">⚡</div>
+                <div class="lo-alert-title">EXCLUSIVE UPGRADE UNLOCKED</div>
+                <div class="lo-alert-text">As a new member, you've been selected for a one-time exclusive offer — available only for the next 15 minutes.</div>
             </div>
         </div>
     </div>
 
     <div class="page hidden-content" id="mainPage">
-        <header class="urgency-section">
+        <!-- HEADER -->
+        <header class="top-warning">
             <!-- Timer de Urgência -->
             <div class="timer-bar" role="status" aria-live="polite">
                 <span class="timer-icon" aria-hidden="true">⏰</span>
-                <span class="timer-text">This upgrade expires in: <strong id="countdown">12:47</strong></span>
+                <span class="timer-text">Special offer expires in: <strong id="countdown">15:00</strong></span>
             </div>
-            <div class="scarcity-bar-up2" role="status" aria-live="polite">
+            <div class="scarcity-bar" role="status" aria-live="polite">
                 <span class="fire-icon" aria-hidden="true">🔥</span>
-                <span class="scarcity-text"><strong>32 people</strong> are viewing this upgrade right now</span>
+                <span class="scarcity-text"><strong>47 people</strong> are viewing this page right now</span>
             </div>
         </header>
 
         <main class="content">
-            <div class="hero-section">
-                <div class="success-header">
-                    <span class="confetti-icon">⚠️</span>
-                    <h1 class="main-title">WAIT! You're Only Seeing 30% of the Truth...</h1>
-                    <p class="congratulations">Think you know the truth? They might be having entire secret conversations on Instagram, Snapchat, or TikTok RIGHT NOW — and you'd never know.</p>
-                </div>
+            <div class="hero-icon" aria-hidden="true">
+                <div class="whatsapp-icon">📱</div>
             </div>
+            
+            <!-- HEADLINE -->
+            <h1 class="headline">🔓 EXPOSED: See Every Message They Deleted (Even From 90 Days Ago)</h1>
+            <p class="subhead">In just 5 minutes, uncover the deleted texts, photos, and videos they thought were gone forever. Works on any phone — no technical skills needed.</p>
 
-            <section class="product-intro">
-                <div class="intro-card">
-                    <h2 class="product-name">🔓 COMPLETE UPGRADE: Monitor ALL Social Networks + GPS</h2>
-                    <p class="product-description">You already have WhatsApp monitoring and message recovery. Now unlock the COMPLETE SOLUTION: Monitor Instagram, Facebook, TikTok, Snapchat, Twitter + Real-time GPS location. See EVERYTHING they're hiding across ALL platforms.</p>
+            <section class="features">
+                <div class="feature">
+                    <div class="feature-icon">💬</div>
+                    <div class="feature-title">RECOVERED<br>CONVERSATIONS</div>
+                    <div class="feature-stat">12,847+</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📸</div>
+                    <div class="feature-title">RESTORED<br>PHOTOS</div>
+                    <div class="feature-stat">45,932+</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🎥</div>
+                    <div class="feature-title">RECOVERED<br>VIDEOS</div>
+                    <div class="feature-stat">8,234+</div>
                 </div>
             </section>
 
-            <section class="features-section">
-                <div class="features-card">
-                    <h3 class="features-title">🎯 What You Get With Complete Upgrade:</h3>
-                    <div class="features-grid">
-                        <div class="feature-item">
-                            <span class="check-icon">📱</span>
-                            <span class="feature-text"><strong>Instagram</strong> - DMs, Stories, Posts</span>
-                        </div>
-                        <div class="feature-item">
-                            <span class="check-icon">📘</span>
-                            <span class="feature-text"><strong>Facebook</strong> - Messages & Activity</span>
-                        </div>
-                        <div class="feature-item">
-                            <span class="check-icon">🎵</span>
-                            <span class="feature-text"><strong>TikTok</strong> - DMs & Interactions</span>
-                        </div>
-                        <div class="feature-item">
-                            <span class="check-icon">👻</span>
-                            <span class="feature-text"><strong>Snapchat</strong> - Messages & Snaps</span>
-                        </div>
-                        <div class="feature-item">
-                            <span class="check-icon">🐦</span>
-                            <span class="feature-text"><strong>Twitter/X</strong> - DMs & Tweets</span>
-                        </div>
-                        <div class="feature-item">
-                            <span class="check-icon">📍</span>
-                            <span class="feature-text"><strong>GPS Tracking</strong> - Real-time Location</span>
-                        </div>
+            <!-- OFFER SECTION -->
+            <section class="offer" id="purchase">
+                <div class="offer-card">
+                    
+                    <h2>💎 What You'll Get:</h2>
+                    <ul class="bullets">
+                        <li>✓ <strong>Complete Recovery:</strong> All conversations, photos and videos from the last 90 days</li>
+                        <li>✓ <strong>Simple Installation:</strong> Detailed step-by-step, works in 5 minutes</li>
+                        <li>✓ <strong>100% Secure:</strong> End-to-end encryption, your data stays private</li>
+                        <li>✓ <strong>Full Compatibility:</strong> Works on iPhone and Android</li>
+                        <li>✓ <strong>Premium Support:</strong> Priority customer service via WhatsApp</li>
+                        <li>✓ <strong>Lifetime Updates:</strong> All future updates included</li>
+                        <li>✓ <strong>Extra Bonuses:</strong> Privacy guide + Video tutorial</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section class="testimonials-section">
+                <h2 class="testimonials-title">💬 What Our Users Say</h2>
+                <div class="testimonials-grid">
+                    <div class="testimonial-card">
+                        <div class="rating" aria-label="5 out of 5 stars">⭐⭐⭐⭐⭐</div>
+                        <div class="avatar">👩</div>
+                        <blockquote>
+                            "I accidentally cleared my WhatsApp and lost 6 months of precious family photos. This tool recovered ALL of them in under 10 minutes. Absolute lifesaver!"
+                        </blockquote>
+                        <div class="author">— Anna M., New York</div>
+                    </div>
+                    
+                    <div class="testimonial-card">
+                        <div class="rating" aria-label="5 out of 5 stars">⭐⭐⭐⭐⭐</div>
+                        <div class="avatar">👨</div>
+                        <blockquote>
+                            "My phone crashed and I lost all my WhatsApp data. Recovered photos and videos of my kids' first steps that I thought were gone forever. Worth every penny!"
+                        </blockquote>
+                        <div class="author">— Charles R., Los Angeles</div>
+                    </div>
+                    
+                    <div class="testimonial-card">
+                        <div class="rating" aria-label="5 out of 5 stars">⭐⭐⭐⭐⭐</div>
+                        <div class="avatar">👩‍💼</div>
+                        <blockquote>
+                            "I needed to recover important work conversations with a client. In just 5 minutes, I had everything back. The step-by-step guide made it super easy!"
+                        </blockquote>
+                        <div class="author">— Mary S., Chicago</div>
+                    </div>
+                    
+                    <div class="testimonial-card">
+                        <div class="rating" aria-label="5 out of 5 stars">⭐⭐⭐⭐⭐</div>
+                        <div class="avatar">👨‍💻</div>
+                        <blockquote>
+                            "Skeptical at first, but WOW. Recovered messages from 3 months ago that I desperately needed. Simple process, fast results. Highly recommend!"
+                        </blockquote>
+                        <div class="author">— David L., Miami</div>
                     </div>
                 </div>
-            </section>
-
-            <section class="comparison-section">
-                <div class="comparison-card">
-                    <h3 class="comparison-title">⚡ What You're Missing Right Now:</h3>
-                    <div class="comparison-grid">
-                        <div class="comparison-item missing">
-                            <span class="comparison-icon">❌</span>
-                            <div class="comparison-text">
-                                <strong>What You Have:</strong>
-                                <p>WhatsApp only (they can hide on other apps)</p>
-                            </div>
-                        </div>
-                        <div class="comparison-item complete">
-                            <span class="comparison-icon">✅</span>
-                            <div class="comparison-text">
-                                <strong>With Complete Upgrade:</strong>
-                                <p>ALL social networks + GPS location</p>
-                            </div>
-                        </div>
-                    </div>
+                <div class="social-proof-bar">
+                    <span class="check">✅</span> <span><strong>1,256</strong> people activated this bonus in the last 24h</span>
+                    <span class="separator">•</span>
+                    <span>⭐ <strong>4.9/5</strong> rating</span>
+                    <span class="separator">•</span>
+                    <span>🔒 <strong>100%</strong> secure</span>
                 </div>
-            </section>
 
-            <section class="capabilities">
-                <div class="capabilities-text">
-                    <p><strong>The Truth:</strong> Most people who hide conversations use Instagram DMs, Snapchat, or Facebook Messenger. If you're only monitoring WhatsApp, you're missing 70% of the picture. This upgrade shows you EVERYTHING.</p>
-                </div>
-            </section>
-
-            <!-- Live Activations Feed -->
-            <section class="live-activity-section">
                 <div class="live-activity">
                     <div class="activity-header">
                         <span class="pulse-dot"></span>
@@ -226,69 +237,30 @@
                 </div>
             </section>
 
-            <!-- Testemunhos -->
-            <section class="testimonial-section">
-                <div class="testimonial-card">
-                    <div class="testimonial-header">
-                        <span class="rating">⭐⭐⭐⭐⭐</span>
-                        <span class="verified">Verified User</span>
-                    </div>
-                    <blockquote class="testimonial-quote">
-                        "I was only monitoring WhatsApp and thought everything was fine. Then I upgraded and discovered they were having entire conversations on Instagram DMs. Without the social network add-on, I would have NEVER known. This upgrade saved my sanity."
-                    </blockquote>
-                    <div class="testimonial-author">— Jennifer M., Texas, USA</div>
-                </div>
-                
-                <div class="testimonial-card">
-                    <div class="testimonial-header">
-                        <span class="rating">⭐⭐⭐⭐⭐</span>
-                        <span class="verified">Verified User</span>
-                    </div>
-                    <blockquote class="testimonial-quote">
-                        "The GPS tracking feature alone is worth the upgrade. I can see exactly where they are in real-time. Combined with all social networks, I finally have the complete picture. Best decision I made."
-                    </blockquote>
-                    <div class="testimonial-author">— Robert K., Florida, USA</div>
-                </div>
-            </section>
-
-            <section class="exclusive-offer">
-                <div class="exclusive-card">
-                    <span class="exclusive-icon">⏰</span>
-                    <p class="exclusive-text">ONE-TIME OFFER: This complete upgrade is only available RIGHT NOW at this exclusive price. If you leave this page, you'll lose this opportunity forever.</p>
-                </div>
-            </section>
-
-            <section class="final-cta">
-                <div class="cta-card">
-                    <h3 class="cta-title">See The Complete Picture, Not Just WhatsApp</h3>
-                    <p class="cta-text">They can hide on Instagram, TikTok, Snapchat, or Facebook. Without this upgrade, you'll never know. Don't leave gaps in your monitoring.</p>
-                    
-                    <div class="social-icons" role="img" aria-label="Supported platforms: Instagram, Facebook, TikTok, Snapchat, Twitter and GPS">
-                        <div class="social-icon instagram" aria-hidden="true">📷</div>
-                        <div class="social-icon facebook" aria-hidden="true">📘</div>
-                        <div class="social-icon tiktok" aria-hidden="true">🎵</div>
-                        <div class="social-icon snapchat" aria-hidden="true">👻</div>
-                        <div class="social-icon twitter" aria-hidden="true">🐦</div>
-                        <div class="social-icon gps" aria-hidden="true">📍</div>
-                    </div>
+            <!-- CTA AFTER TESTIMONIALS -->
+            <section class="final-cta-section">
+                <div class="final-cta-card">
+                    <h3 class="final-cta-title">Ready to See What They Deleted?</h3>
+                    <p class="final-cta-text">Join 1,256+ people who uncovered the truth in the last 24 hours</p>
                     
                     <!-- Timer no CTA -->
-                    <p class="cta-timer">⏰ Offer expires in: <strong id="countdown-cta">12:47</strong></p>
+                    <p class="cta-timer">⏰ Offer expires in: <strong id="countdown-cta">15:00</strong></p>
                     
                     <!-- Monetizze Upsell Iframe -->
                     <div class="upsell-iframe-container">
-                        <iframe class="iframeUpsell" data-chave="1166414cc3341e4264ec8d0aa9871c51"></iframe>
+                        <iframe class="iframeUpsell" data-chave="41ada813b8e2cf4730f97a922010e411"></iframe>
                     </div>
                     
                     <!-- Link de Recusa -->
-                    <a href="../up3/" class="decline-link">No thanks, I'll risk missing hidden conversations</a>
+                    <a href="../up3/" class="decline-link">No thanks, I don't want to see deleted messages</a>
                 </div>
             </section>
+
 
         </main>
 
         <footer class="footer">
-            <div class="smallprint">© <span id="year"></span> ZappDetect. All rights reserved.</div>
+            <div class="smallprint">© <span id="year"></span> Secure Recovery Suite. All rights reserved.</div>
         </footer>
     </div>
 
@@ -298,38 +270,31 @@
     <script src="../upsell-tracking.js?v=1.0"></script>
     <script>
     (function(){
-        var overlay=document.getElementById('scanOverlay');
-        var bar=document.getElementById('soProgressBar');
-        var pct=document.getElementById('soPercent');
-        var alertEl=document.getElementById('soAlert');
+        var overlay=document.getElementById('loadingOverlay');
+        var bar=document.getElementById('loProgressBar');
+        var pct=document.getElementById('loPercent');
+        var alertEl=document.getElementById('loAlert');
         var page=document.getElementById('mainPage');
-        var platforms=[
-            {el:document.getElementById('soPlatform0'),status:document.getElementById('soStatus0'),count:document.getElementById('soCount0'),scanning:'Scanning...',done:'Connected',result:'Active',warn:false,start:0,end:2500},
-            {el:document.getElementById('soPlatform1'),status:document.getElementById('soStatus1'),count:document.getElementById('soCount1'),scanning:'Detecting...',done:'\u26A0 Found',result:'47 DMs hidden',warn:true,start:2500,end:5500},
-            {el:document.getElementById('soPlatform2'),status:document.getElementById('soStatus2'),count:document.getElementById('soCount2'),scanning:'Analyzing...',done:'\u26A0 Found',result:'12 secret chats',warn:true,start:5500,end:8500},
-            {el:document.getElementById('soPlatform3'),status:document.getElementById('soStatus3'),count:document.getElementById('soCount3'),scanning:'Searching...',done:'\u26A0 Found',result:'8 disappearing msgs',warn:true,start:8500,end:11000},
-            {el:document.getElementById('soPlatform4'),status:document.getElementById('soStatus4'),count:document.getElementById('soCount4'),scanning:'Tracking...',done:'Located',result:'Real-time',warn:false,start:11000,end:13000}
-        ];
+        var steps=[document.getElementById('loStep0'),document.getElementById('loStep1'),document.getElementById('loStep2'),document.getElementById('loStep3'),document.getElementById('loStep4')];
         var duration=15000;var startTime=Date.now();
-        var alertTime=13000;var alertShown=false;
+        var stepTimes=[0,2500,5000,7500,10000];var alertTime=12500;
+        var currentStep=-1;var alertShown=false;
         function update(){
             var elapsed=Date.now()-startTime;
             var progress=Math.min(elapsed/duration,1);
             bar.style.width=(progress*100)+'%';
             pct.textContent=Math.floor(progress*100)+'%';
-            for(var i=0;i<platforms.length;i++){
-                var p=platforms[i];
-                if(elapsed>=p.start&&elapsed<p.end&&!p.el.classList.contains('active')&&!p.el.classList.contains('done')){
-                    p.el.classList.add('active');p.status.textContent=p.scanning;p.status.style.color='#A855F7';
-                }
-                if(elapsed>=p.end&&!p.el.classList.contains('done')){
-                    p.el.classList.remove('active');p.el.classList.add('done');
-                    if(p.warn)p.el.classList.add('warning');
-                    p.status.textContent=p.done;p.status.style.color=p.warn?'#F59E0B':'#25D366';
-                    p.count.textContent=p.result;p.count.style.display='block';
+            for(var i=0;i<steps.length;i++){
+                if(elapsed>=stepTimes[i]&&i>currentStep){
+                    if(currentStep>=0){steps[currentStep].classList.remove('active');steps[currentStep].classList.add('done');steps[currentStep].querySelector('.lo-step-dots').textContent='✓';}
+                    currentStep=i;steps[i].classList.add('active');
                 }
             }
-            if(elapsed>=alertTime&&!alertShown){alertShown=true;alertEl.classList.add('show');}
+            if(elapsed>=alertTime&&!alertShown){
+                alertShown=true;
+                if(currentStep>=0){steps[currentStep].classList.remove('active');steps[currentStep].classList.add('done');steps[currentStep].querySelector('.lo-step-dots').textContent='✓';}
+                alertEl.classList.add('show');
+            }
             if(progress<1){requestAnimationFrame(update);}
             else{setTimeout(function(){overlay.style.transition='opacity 0.5s';overlay.style.opacity='0';setTimeout(function(){overlay.style.display='none';page.classList.remove('hidden-content');},500);},500);}
         }
@@ -337,4 +302,7 @@
     })();
     </script>
 </body>
+    
 </html>
+
+

@@ -1,60 +1,51 @@
 (function(){
 
     // ============================================
-    // VIP PROCESSING OVERLAY - REMOVED
-    // Direct content display for better conversion
+    // COUNTDOWN TIMER
     // ============================================
-    
-    // ============================================
-    // COUNTDOWN TIMER WITH AUTO-RESTART
-    // ============================================
-    const STORAGE_KEY = 'upsell_timer_end_es';
-    const TIMER_DURATION = 15 * 60; // 15 minutes
-    let totalSeconds;
-    let timer;
+    var STORAGE_KEY = 'upsell4_timer_end';
+    var TIMER_DURATION = 10 * 60;
+    var totalSeconds;
     
     function initTimer() {
-        const savedEndTime = localStorage.getItem(STORAGE_KEY);
+        var savedEndTime = localStorage.getItem(STORAGE_KEY);
         if (savedEndTime) {
-            const now = Math.floor(Date.now() / 1000);
-            const remaining = parseInt(savedEndTime) - now;
+            var now = Math.floor(Date.now() / 1000);
+            var remaining = parseInt(savedEndTime) - now;
             totalSeconds = remaining > 0 ? remaining : 0;
         } else {
             totalSeconds = TIMER_DURATION;
-            const endTime = Math.floor(Date.now() / 1000) + totalSeconds;
+            var endTime = Math.floor(Date.now() / 1000) + totalSeconds;
             localStorage.setItem(STORAGE_KEY, endTime);
         }
     }
     
     function restartTimer() {
         totalSeconds = TIMER_DURATION;
-        const endTime = Math.floor(Date.now() / 1000) + totalSeconds;
+        var endTime = Math.floor(Date.now() / 1000) + totalSeconds;
         localStorage.setItem(STORAGE_KEY, endTime);
     }
     
-    const countdownEl = document.getElementById('countdown');
-    const countdownCtaEl = document.getElementById('countdown-cta');
+    var countdownEl = document.getElementById('countdown');
+    var countdownCtaEl = document.getElementById('countdown-cta');
     
     function format(seconds){
         if (seconds < 0) seconds = 0;
-        const m = Math.floor(seconds / 60);
-        const s = seconds % 60;
+        var m = Math.floor(seconds / 60);
+        var s = seconds % 60;
         return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
     }
     
-    function updateAllTimers() {
-        const formatted = format(totalSeconds);
+    function updateTimer() {
+        var formatted = format(totalSeconds);
         if (countdownEl) countdownEl.textContent = formatted;
         if (countdownCtaEl) countdownCtaEl.textContent = formatted;
     }
     
     function tick(){
         if (totalSeconds <= 0) {
-            // Auto-restart timer when it expires
             restartTimer();
-            updateAllTimers();
-            
-            // Visual feedback when timer restarts
+            updateTimer();
             var timerBar = document.querySelector('.timer-bar');
             if (timerBar) {
                 timerBar.classList.add('timer-restarted');
@@ -65,105 +56,116 @@
             return;
         }
         totalSeconds -= 1;
-        updateAllTimers();
+        updateTimer();
     }
     
     initTimer();
-    updateAllTimers();
-    timer = setInterval(tick, 1000);
+    updateTimer();
+    setInterval(tick, 1000);
 
     // ============================================
-    // DYNAMIC SCARCITY NUMBERS
+    // LIVE ACTIVITY FEED
     // ============================================
-    function updateScarcityNumber() {
-        const scarcityEl = document.querySelector('.scarcity-text strong');
-        if (scarcityEl) {
-            // Random number between 31 and 89
-            const baseNumber = Math.floor(Math.random() * (89 - 31 + 1)) + 31;
-            scarcityEl.textContent = baseNumber + ' personas';
-        }
-    }
-    
-    // Update scarcity every 30-60 seconds randomly
-    function scheduleScarcityUpdate() {
-        const delay = (Math.floor(Math.random() * 30) + 30) * 1000;
-        setTimeout(function() {
-            updateScarcityNumber();
-            scheduleScarcityUpdate();
-        }, delay);
-    }
-    
-    updateScarcityNumber();
-    scheduleScarcityUpdate();
-
-    // ============================================
-    // STATIC ACTIVITY FEED - FIXED LIST OF BUYERS
-    // ============================================
-    const staticBuyers = [
-        { name: 'María G.', location: 'Ciudad de México', action: 'desbloqueó acceso', time: 'hace 2 minutos' },
-        { name: 'Juan D.', location: 'Buenos Aires', action: 'recuperó mensajes', time: 'hace 4 minutos' },
-        { name: 'Ana L.', location: 'Madrid', action: 'acaba de activar', time: 'hace 5 minutos' },
-        { name: 'Carlos R.', location: 'Bogotá', action: 'desbloqueó acceso', time: 'hace 7 minutos' },
-        { name: 'Laura K.', location: 'Lima', action: 'recuperó mensajes', time: 'hace 9 minutos' },
-        { name: 'Miguel T.', location: 'Santiago', action: 'acaba de activar', time: 'hace 11 minutos' },
-        { name: 'Elena C.', location: 'Barcelona', action: 'desbloqueó acceso', time: 'hace 14 minutos' },
-        { name: 'Diego B.', location: 'Guadalajara', action: 'recuperó mensajes', time: 'hace 16 minutos' },
-        { name: 'Sofía L.', location: 'Monterrey', action: 'acaba de activar', time: 'hace 18 minutos' },
-        { name: 'Andrés H.', location: 'Medellín', action: 'desbloqueó acceso', time: 'hace 21 minutos' },
-        { name: 'Isabella P.', location: 'Quito', action: 'recuperó mensajes', time: 'hace 24 minutos' },
-        { name: 'Lucas G.', location: 'Caracas', action: 'acaba de activar', time: 'hace 27 minutos' },
-        { name: 'Camila S.', location: 'Montevideo', action: 'desbloqueó acceso', time: 'hace 31 minutos' },
-        { name: 'Daniel N.', location: 'Sevilla', action: 'recuperó mensajes', time: 'hace 35 minutos' },
-        { name: 'Valentina F.', location: 'Valencia', action: 'acaba de activar', time: 'hace 38 minutos' }
+    var firstNames = [
+        'Sara', 'Carlos', 'María', 'David', 'Ana', 'Miguel', 'Elena', 'Jaime',
+        'Sofía', 'Guillermo', 'Isabella', 'Lucas', 'Olivia', 'Daniel', 'Valentina',
+        'Gabriel', 'Emilia', 'Mateo', 'Ava', 'Andrés', 'Jessica', 'Raúl',
+        'Jennifer', 'Pedro', 'Amanda', 'Luis', 'Raquel', 'Diego', 'Natalia',
+        'Alejandra', 'Brandon', 'Cristina', 'Fernando', 'Lorena', 'Francisco', 'Gracia'
     ];
     
-    const activityFeed = document.getElementById('activityFeed');
+    var locations = [
+        'Madrid', 'Barcelona', 'Ciudad de México', 'Buenos Aires', 'Bogotá', 'Lima',
+        'Santiago', 'Guadalajara', 'Medellín', 'Monterrey', 'Quito', 'Caracas',
+        'Sevilla', 'Valencia', 'La Paz', 'Panamá', 'San José', 'Montevideo',
+        'Asunción', 'Tegucigalpa', 'Managua', 'San Salvador', 'Santo Domingo', 'Guayaquil'
+    ];
+    
+    var actions = [
+        'activó el Análisis de Comportamiento IA',
+        'desbloqueó la detección de patrones',
+        'habilitó el seguimiento de comportamiento IA',
+        'se actualizó al Analista IA'
+    ];
+    
+    var activityFeed = document.getElementById('activityFeed');
+    
+    function getRandomTime() {
+        var rand = Math.random();
+        if (rand < 0.3) return 'hace ' + Math.floor(Math.random() * 60) + ' segundos';
+        if (rand < 0.7) return 'hace ' + (Math.floor(Math.random() * 5) + 1) + ' minutos';
+        return 'hace ' + (Math.floor(Math.random() * 10) + 5) + ' minutos';
+    }
+    
+    function getRandomName() {
+        var name = firstNames[Math.floor(Math.random() * firstNames.length)];
+        var lastInitial = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+        return name + ' ' + lastInitial + '.';
+    }
+    
+    function createActivityItem(isNew) {
+        var name = getRandomName();
+        var location = locations[Math.floor(Math.random() * locations.length)];
+        var time = getRandomTime();
+        var action = actions[Math.floor(Math.random() * actions.length)];
+        
+        var item = document.createElement('div');
+        item.className = 'activity-item' + (isNew ? ' new-item' : '');
+        item.innerHTML = '<span class="activity-icon">🧠</span> <strong>' + name + '</strong> de ' + location + ' ' + action + ' <span class="activity-time">' + time + '</span>';
+        return item;
+    }
     
     function initActivityFeed() {
         if (!activityFeed) return;
-        
-        // Create all static items with organized layout
-        staticBuyers.forEach(function(buyer) {
-            const item = document.createElement('div');
-            item.className = 'activity-item';
-            item.innerHTML = 
-                '<span class="activity-icon">✅</span>' +
-                '<div class="activity-content">' +
-                    '<span class="activity-name">' + buyer.name + ' de ' + buyer.location + '</span>' +
-                    '<span class="activity-action">' + buyer.action + '</span>' +
-                '</div>' +
-                '<span class="activity-time">' + buyer.time + '</span>';
-            activityFeed.appendChild(item);
-        });
+        for (var i = 0; i < 3; i++) {
+            activityFeed.appendChild(createActivityItem(false));
+        }
     }
     
-    // Initialize feed
+    function addNewActivity() {
+        if (!activityFeed) return;
+        var newItem = createActivityItem(true);
+        activityFeed.insertBefore(newItem, activityFeed.firstChild);
+        setTimeout(function() { newItem.classList.remove('new-item'); }, 600);
+        
+        var items = activityFeed.querySelectorAll('.activity-item');
+        if (items.length > 3) {
+            var lastItem = items[items.length - 1];
+            lastItem.style.opacity = '0';
+            lastItem.style.transform = 'translateX(20px)';
+            setTimeout(function() { if (lastItem.parentNode) lastItem.parentNode.removeChild(lastItem); }, 300);
+        }
+    }
+    
+    function scheduleActivityUpdate() {
+        var delay = (Math.floor(Math.random() * 12) + 8) * 1000;
+        setTimeout(function() { addNewActivity(); scheduleActivityUpdate(); }, delay);
+    }
+    
     initActivityFeed();
+    scheduleActivityUpdate();
 
     // ============================================
     // FOOTER YEAR
     // ============================================
-    const yearEl = document.getElementById('year');
+    var yearEl = document.getElementById('year');
     if (yearEl) yearEl.textContent = new Date().getFullYear();
 
     // ============================================
-    // SMOOTH SCROLL TO PURCHASE
+    // ANIMATIONS
     // ============================================
-    var scrollLinks = document.querySelectorAll('a[href^="#"]');
-    for (var i = 0; i < scrollLinks.length; i++) {
-        scrollLinks[i].addEventListener('click', function (e) {
-            var href = this.getAttribute('href');
-            if (href === '#monetizzeCompra') return;
-            
-            e.preventDefault();
-            var target = document.querySelector(href);
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
-        });
-    }
+    var style = document.createElement('style');
+    style.textContent = '@keyframes gentle-glow{0%{box-shadow:0 4px 12px rgba(220,53,69,.1)}100%{box-shadow:0 8px 24px rgba(220,53,69,.25)}}@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}.fade-in{animation:fadeInUp .6s ease forwards}';
+    document.head.appendChild(style);
 
+    var sections = document.querySelectorAll('.testimonial, .benefits, .urgency, .final-cta');
+    sections.forEach(function(section, index) {
+        section.style.animationDelay = (index * 0.15) + 's';
+        section.classList.add('fade-in');
+    });
+
+    window.addEventListener('load', function() {
+        var urgencyCard = document.querySelector('.urgency-card');
+        if (urgencyCard) urgencyCard.style.animation = 'gentle-glow 2s ease-in-out infinite alternate';
+    });
 })();

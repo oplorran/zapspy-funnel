@@ -5,7 +5,7 @@
     <script src="https://cdn.utmify.com.br/scripts/utms/latest.js" data-utmify-prevent-xcod-sck data-utmify-prevent-subids async defer></script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Actualización Exclusiva - ZappDetect V2</title>
+    <title>Recupera Conversaciones, Fotos y Videos Eliminados</title>
     
     <!-- Meta Pixel Code -->
     <script>
@@ -55,202 +55,199 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             if (typeof FacebookCAPI !== 'undefined') {
-                FacebookCAPI.init('Upsell 2 - 360 Tracker');
+                FacebookCAPI.init('Upsell 2 - Message Vault');
                 // Track ViewContent for CAPI
-                FacebookCAPI.trackViewContent('Upsell Page', 'Funnel - Upsell', 35);
+                FacebookCAPI.trackViewContent('Upsell Page', 'Funnel - Upsell', 37);
             }
         });
     </script>
     
-    <meta name="description" content="Oferta de actualización exclusiva por tiempo limitado para clientes leales de ZappDetect.">
+    <meta name="description" content="Oferta especial: recupera conversaciones, fotos y videos eliminados de los últimos 90 días.">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔓</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../vip-overlay-styles.css?v=8.0">
-    <link rel="stylesheet" href="upsell2-styles.css?v=8.0">
+    <link rel="stylesheet" href="upsell2-styles.css?v=9.0">
     <!-- Monetizze Upsell Incorporado -->
     <script type="text/javascript" src="https://app.monetizze.com.br/upsell_incorporado.php"></script>
     <style>
         .hidden-content{display:none!important}
-        .so-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#0a0a1a 0%,#1a0a2e 30%,#0a0a1a 100%);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;overflow-y:auto}
-        .so-container{text-align:center;padding:40px 30px;max-width:500px;width:90%}
-        .so-radar{font-size:60px;margin-bottom:20px;animation:soSpin 3s linear infinite}
-        @keyframes soSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-        .so-title{font-size:22px;font-weight:700;color:#a855f7;margin-bottom:8px}
-        .so-subtitle{font-size:14px;color:rgba(255,255,255,0.6);margin-bottom:30px}
-        .so-progress-wrap{background:rgba(255,255,255,0.1);border-radius:12px;height:24px;overflow:hidden;margin-bottom:8px;position:relative}
-        .so-progress-bar{height:100%;width:0%;border-radius:12px;background:linear-gradient(90deg,#a855f7,#7c3aed);transition:width 0.3s ease;box-shadow:0 0 15px rgba(168,85,247,0.4)}
-        .so-percent{font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:30px;display:block}
-        .so-platforms{text-align:left;margin-bottom:30px}
-        .so-platform{display:flex;align-items:center;gap:12px;padding:12px 15px;margin-bottom:8px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid rgba(255,255,255,0.05);opacity:0.3;transition:all 0.5s ease}
-        .so-platform.active{opacity:1;border-color:rgba(168,85,247,0.3);background:rgba(168,85,247,0.05)}
-        .so-platform.completed{opacity:0.7}
-        .so-platform-icon{font-size:24px;width:30px;text-align:center}
-        .so-platform-name{font-size:14px;color:#fff;font-weight:600;flex:1}
-        .so-platform-status{font-size:11px;color:rgba(255,255,255,0.5);text-align:right}
-        .so-platform.active .so-platform-status{color:#a855f7}
-        .so-platform.completed .so-platform-status{color:#f59e0b}
-        .so-platform-count{font-size:11px;color:#f59e0b;display:none;margin-top:2px;text-align:right}
-        .so-platform.completed .so-platform-count{display:block}
-        .so-alert{background:linear-gradient(135deg,rgba(168,85,247,0.15),rgba(124,58,237,0.15));border:1px solid rgba(168,85,247,0.3);border-radius:12px;padding:20px;display:none;animation:soAlertIn 0.5s ease}
-        @keyframes soAlertIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-        .so-alert strong{color:#a855f7}
-        .so-alert p:first-child{font-size:16px;font-weight:700;color:#f59e0b;margin-bottom:8px}
-        .so-alert p:last-child{font-size:13px;color:rgba(255,255,255,0.8);line-height:1.5}
+        .lo-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#0a1a0f 0%,#0d2818 30%,#0a1a0f 100%);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;overflow-y:auto}
+        .lo-container{text-align:center;padding:40px 30px;max-width:500px;width:90%}
+        .lo-icon{font-size:60px;margin-bottom:20px;animation:loPulse 2s ease-in-out infinite}
+        @keyframes loPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+        .lo-title{font-size:24px;font-weight:700;color:#25D366;margin-bottom:8px}
+        .lo-subtitle{font-size:14px;color:rgba(255,255,255,0.6);margin-bottom:30px}
+        .lo-progress-wrap{background:rgba(255,255,255,0.1);border-radius:12px;height:24px;overflow:hidden;margin-bottom:8px;position:relative}
+        .lo-progress-bar{height:100%;width:0%;border-radius:12px;background:linear-gradient(90deg,#25D366,#128C7E);transition:width 0.3s ease;box-shadow:0 0 15px rgba(37,211,102,0.4)}
+        .lo-percent{font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:30px;display:block}
+        .lo-steps{text-align:left;margin-bottom:30px}
+        .lo-step{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);opacity:0.3;transition:opacity 0.5s ease}
+        .lo-step.active{opacity:1}
+        .lo-step.completed{opacity:0.6}
+        .lo-step-icon{font-size:20px;width:30px;text-align:center}
+        .lo-step-text{font-size:14px;color:#fff}
+        .lo-step-dots{margin-left:auto;font-size:12px;color:rgba(255,255,255,0.4)}
+        .lo-step.active .lo-step-dots{color:#25D366}
+        .lo-step.completed .lo-step-dots{color:#25D366}
+        .lo-alert{background:linear-gradient(135deg,rgba(37,211,102,0.15),rgba(18,140,126,0.15));border:1px solid rgba(37,211,102,0.3);border-radius:12px;padding:20px;display:none;animation:loAlertIn 0.5s ease}
+        @keyframes loAlertIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+        .lo-alert strong{color:#25D366}
+        .lo-alert p:first-child{font-size:16px;font-weight:700;color:#25D366;margin-bottom:8px}
+        .lo-alert p:last-child{font-size:13px;color:rgba(255,255,255,0.8);line-height:1.5}
     </style>
 </head>
 <body>
-    <!-- Scan Overlay -->
-    <div id="scanOverlay" class="so-overlay">
-        <div class="so-container">
-            <div class="so-radar">📡</div>
-            <div class="so-title">Escaneo Multi-Plataforma en Progreso</div>
-            <div class="so-subtitle">Analizando huella digital del objetivo...</div>
-            <div class="so-progress-wrap">
-                <div class="so-progress-bar" id="soProgressBar"></div>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="lo-overlay">
+        <div class="lo-container">
+            <div class="lo-icon">⚙️</div>
+            <div class="lo-title">Configurando Tu Cuenta</div>
+            <div class="lo-subtitle">Por favor espera mientras configuramos tu acceso...</div>
+            <div class="lo-progress-wrap">
+                <div class="lo-progress-bar" id="loProgressBar"></div>
             </div>
-            <span class="so-percent" id="soPercent">0%</span>
-            <div class="so-platforms">
-                <div class="so-platform" data-platform="0">
-                    <span class="so-platform-icon">💬</span>
-                    <span class="so-platform-name">WhatsApp</span>
-                    <div style="text-align:right">
-                        <span class="so-platform-status">Escaneando</span>
-                        <div class="so-platform-count">Activo</div>
-                    </div>
+            <span class="lo-percent" id="loPercent">0%</span>
+            <div class="lo-steps">
+                <div class="lo-step" data-step="0">
+                    <span class="lo-step-icon">💳</span>
+                    <span class="lo-step-text">Confirmando tu pago</span>
+                    <span class="lo-step-dots">...</span>
                 </div>
-                <div class="so-platform" data-platform="1">
-                    <span class="so-platform-icon">📷</span>
-                    <span class="so-platform-name">Instagram</span>
-                    <div style="text-align:right">
-                        <span class="so-platform-status">Detectando</span>
-                        <div class="so-platform-count">47 DMs ocultos</div>
-                    </div>
+                <div class="lo-step" data-step="1">
+                    <span class="lo-step-icon">🔑</span>
+                    <span class="lo-step-text">Activando licencia ZapSpy</span>
+                    <span class="lo-step-dots">...</span>
                 </div>
-                <div class="so-platform" data-platform="2">
-                    <span class="so-platform-icon">🎵</span>
-                    <span class="so-platform-name">TikTok</span>
-                    <div style="text-align:right">
-                        <span class="so-platform-status">Analizando</span>
-                        <div class="so-platform-count">12 chats secretos</div>
-                    </div>
+                <div class="lo-step" data-step="2">
+                    <span class="lo-step-icon">🔒</span>
+                    <span class="lo-step-text">Conectando a servidores seguros</span>
+                    <span class="lo-step-dots">...</span>
                 </div>
-                <div class="so-platform" data-platform="3">
-                    <span class="so-platform-icon">👻</span>
-                    <span class="so-platform-name">Snapchat</span>
-                    <div style="text-align:right">
-                        <span class="so-platform-status">Buscando</span>
-                        <div class="so-platform-count">8 msgs efímeros</div>
-                    </div>
+                <div class="lo-step" data-step="3">
+                    <span class="lo-step-icon">📊</span>
+                    <span class="lo-step-text">Cargando panel de monitoreo</span>
+                    <span class="lo-step-dots">...</span>
                 </div>
-                <div class="so-platform" data-platform="4">
-                    <span class="so-platform-icon">📍</span>
-                    <span class="so-platform-name">Ubicación GPS</span>
-                    <div style="text-align:right">
-                        <span class="so-platform-status">Rastreando</span>
-                        <div class="so-platform-count">Tiempo real</div>
-                    </div>
+                <div class="lo-step" data-step="4">
+                    <span class="lo-step-icon">🔄</span>
+                    <span class="lo-step-text">Buscando actualizaciones disponibles</span>
+                    <span class="lo-step-dots">...</span>
                 </div>
             </div>
-            <div class="so-alert" id="soAlert">
-                <p>🚨 ACTIVIDAD DETECTADA EN MÚLTIPLES PLATAFORMAS</p>
-                <p>Conversaciones ocultas encontradas en <strong>3+ plataformas</strong>. Actualiza ahora para ver todo.</p>
+            <div class="lo-alert" id="loAlert">
+                <p>⚡ ACTUALIZACIÓN EXCLUSIVA DESBLOQUEADA</p>
+                <p>Como nuevo miembro, has sido seleccionado para una <strong>oferta exclusiva única</strong> — disponible solo por los próximos 15 minutos.</p>
             </div>
         </div>
     </div>
 
     <div class="page hidden-content" id="mainPage">
-        <header class="urgency-section">
+        <!-- HEADER -->
+        <header class="top-warning">
             <!-- Timer de Urgencia -->
             <div class="timer-bar" role="status" aria-live="polite">
                 <span class="timer-icon" aria-hidden="true">⏰</span>
-                <span class="timer-text">Esta actualización expira en: <strong id="countdown">12:47</strong></span>
+                <span class="timer-text">La oferta especial expira en: <strong id="countdown">15:00</strong></span>
             </div>
-            <div class="scarcity-bar-up2" role="status" aria-live="polite">
+            <div class="scarcity-bar" role="status" aria-live="polite">
                 <span class="fire-icon" aria-hidden="true">🔥</span>
-                <span class="scarcity-text"><strong>32 personas</strong> están viendo esta actualización ahora mismo</span>
+                <span class="scarcity-text"><strong>47 personas</strong> están viendo esta página ahora mismo</span>
             </div>
         </header>
 
         <main class="content">
-            <div class="hero-section">
-                <div class="success-header">
-                    <span class="confetti-icon">⚠️</span>
-                    <h1 class="main-title">¡ESPERA! Solo Estás Viendo el 30% de la Verdad...</h1>
-                    <p class="congratulations">¿Crees que conoces la verdad? Podrían estar teniendo conversaciones secretas enteras en Instagram, Snapchat o TikTok AHORA MISMO — y nunca lo sabrías.</p>
-                </div>
+            <div class="hero-icon" aria-hidden="true">
+                <div class="whatsapp-icon">📱</div>
             </div>
+            
+            <!-- HEADLINE -->
+            <h1 class="headline">🔓 REVELADO: Ve Cada Mensaje Que Eliminaron (Incluso de Hace 90 Días)</h1>
+            <p class="subhead">En solo 5 minutos, descubre los textos, fotos y videos eliminados que pensaban que habían desaparecido para siempre. Funciona en cualquier teléfono — no se necesitan habilidades técnicas.</p>
 
-            <section class="product-intro">
-                <div class="intro-card">
-                    <h2 class="product-name">🔓 ACTUALIZACIÓN COMPLETA: Monitorea TODAS las Redes Sociales + GPS</h2>
-                    <p class="product-description">Ya tienes monitoreo de WhatsApp y recuperación de mensajes. Ahora desbloquea la SOLUCIÓN COMPLETA: Monitorea Instagram, Facebook, TikTok, Snapchat, Twitter + Ubicación GPS en tiempo real. Ve TODO lo que están ocultando en TODAS las plataformas.</p>
+            <section class="features">
+                <div class="feature">
+                    <div class="feature-icon">💬</div>
+                    <div class="feature-title">CONVERSACIONES<br>RECUPERADAS</div>
+                    <div class="feature-stat">12,847+</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📸</div>
+                    <div class="feature-title">FOTOS<br>RESTAURADAS</div>
+                    <div class="feature-stat">45,932+</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🎥</div>
+                    <div class="feature-title">VIDEOS<br>RECUPERADOS</div>
+                    <div class="feature-stat">8,234+</div>
                 </div>
             </section>
 
-            <section class="features-section">
-                <div class="features-card">
-                    <h3 class="features-title">🎯 Lo Que Obtienes Con la Actualización Completa:</h3>
-                    <div class="features-grid">
-                        <div class="feature-item">
-                            <span class="check-icon">📱</span>
-                            <span class="feature-text"><strong>Instagram</strong> - DMs, Stories, Posts</span>
-                        </div>
-                        <div class="feature-item">
-                            <span class="check-icon">📘</span>
-                            <span class="feature-text"><strong>Facebook</strong> - Mensajes y Actividad</span>
-                        </div>
-                        <div class="feature-item">
-                            <span class="check-icon">🎵</span>
-                            <span class="feature-text"><strong>TikTok</strong> - DMs e Interacciones</span>
-                        </div>
-                        <div class="feature-item">
-                            <span class="check-icon">👻</span>
-                            <span class="feature-text"><strong>Snapchat</strong> - Mensajes y Snaps</span>
-                        </div>
-                        <div class="feature-item">
-                            <span class="check-icon">🐦</span>
-                            <span class="feature-text"><strong>Twitter/X</strong> - DMs y Tweets</span>
-                        </div>
-                        <div class="feature-item">
-                            <span class="check-icon">📍</span>
-                            <span class="feature-text"><strong>Rastreo GPS</strong> - Ubicación en Tiempo Real</span>
-                        </div>
+            <!-- OFFER SECTION -->
+            <section class="offer" id="purchase">
+                <div class="offer-card">
+                    
+                    <h2>💎 Lo Que Obtendrás:</h2>
+                    <ul class="bullets">
+                        <li>✓ <strong>Recuperación Completa:</strong> Todas las conversaciones, fotos y videos de los últimos 90 días</li>
+                        <li>✓ <strong>Instalación Simple:</strong> Paso a paso detallado, funciona en 5 minutos</li>
+                        <li>✓ <strong>100% Seguro:</strong> Encriptación de extremo a extremo, tus datos permanecen privados</li>
+                        <li>✓ <strong>Compatibilidad Total:</strong> Funciona en iPhone y Android</li>
+                        <li>✓ <strong>Soporte Premium:</strong> Servicio al cliente prioritario vía WhatsApp</li>
+                        <li>✓ <strong>Actualizaciones de por Vida:</strong> Todas las actualizaciones futuras incluidas</li>
+                        <li>✓ <strong>Bonos Extra:</strong> Guía de privacidad + Tutorial en video</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section class="testimonials-section">
+                <h2 class="testimonials-title">💬 Lo Que Dicen Nuestros Usuarios</h2>
+                <div class="testimonials-grid">
+                    <div class="testimonial-card">
+                        <div class="rating" aria-label="5 de 5 estrellas">⭐⭐⭐⭐⭐</div>
+                        <div class="avatar">👩</div>
+                        <blockquote>
+                            "Accidentalmente borré mi WhatsApp y perdí 6 meses de fotos familiares preciosas. ¡Esta herramienta las recuperó TODAS en menos de 10 minutos. Un salvavidas absoluto!"
+                        </blockquote>
+                        <div class="author">— Ana M., Ciudad de México</div>
+                    </div>
+                    
+                    <div class="testimonial-card">
+                        <div class="rating" aria-label="5 de 5 estrellas">⭐⭐⭐⭐⭐</div>
+                        <div class="avatar">👨</div>
+                        <blockquote>
+                            "Mi teléfono falló y perdí todos mis datos de WhatsApp. Recuperé fotos y videos de los primeros pasos de mis hijos que pensé que habían desaparecido para siempre. ¡Vale cada centavo!"
+                        </blockquote>
+                        <div class="author">— Carlos R., Buenos Aires</div>
+                    </div>
+                    
+                    <div class="testimonial-card">
+                        <div class="rating" aria-label="5 de 5 estrellas">⭐⭐⭐⭐⭐</div>
+                        <div class="avatar">👩‍💼</div>
+                        <blockquote>
+                            "Necesitaba recuperar conversaciones importantes de trabajo con un cliente. En solo 5 minutos, tenía todo de vuelta. ¡La guía paso a paso lo hizo súper fácil!"
+                        </blockquote>
+                        <div class="author">— María S., Madrid</div>
+                    </div>
+                    
+                    <div class="testimonial-card">
+                        <div class="rating" aria-label="5 de 5 estrellas">⭐⭐⭐⭐⭐</div>
+                        <div class="avatar">👨‍💻</div>
+                        <blockquote>
+                            "Escéptico al principio, pero ¡WOW! Recuperé mensajes de hace 3 meses que necesitaba desesperadamente. Proceso simple, resultados rápidos. ¡Altamente recomendado!"
+                        </blockquote>
+                        <div class="author">— David L., Bogotá</div>
                     </div>
                 </div>
-            </section>
-
-            <section class="comparison-section">
-                <div class="comparison-card">
-                    <h3 class="comparison-title">⚡ Lo Que Te Estás Perdiendo Ahora Mismo:</h3>
-                    <div class="comparison-grid">
-                        <div class="comparison-item missing">
-                            <span class="comparison-icon">❌</span>
-                            <div class="comparison-text">
-                                <strong>Lo Que Tienes:</strong>
-                                <p>Solo WhatsApp (pueden ocultar en otras apps)</p>
-                            </div>
-                        </div>
-                        <div class="comparison-item complete">
-                            <span class="comparison-icon">✅</span>
-                            <div class="comparison-text">
-                                <strong>Con la Actualización Completa:</strong>
-                                <p>TODAS las redes sociales + ubicación GPS</p>
-                            </div>
-                        </div>
-                    </div>
+                <div class="social-proof-bar">
+                    <span class="check">✅</span> <span><strong>1,256</strong> personas activaron este bono en las últimas 24h</span>
+                    <span class="separator">•</span>
+                    <span>⭐ <strong>4.9/5</strong> calificación</span>
+                    <span class="separator">•</span>
+                    <span>🔒 <strong>100%</strong> seguro</span>
                 </div>
-            </section>
 
-            <section class="capabilities">
-                <div class="capabilities-text">
-                    <p><strong>La Verdad:</strong> La mayoría de las personas que ocultan conversaciones usan DMs de Instagram, Snapchat o Facebook Messenger. Si solo monitoreas WhatsApp, te estás perdiendo el 70% del panorama. Esta actualización te muestra TODO.</p>
-                </div>
-            </section>
-
-            <!-- Live Activations Feed -->
-            <section class="live-activity-section">
                 <div class="live-activity">
                     <div class="activity-header">
                         <span class="pulse-dot"></span>
@@ -263,110 +260,70 @@
                 </div>
             </section>
 
-            <!-- Testimonios -->
-            <section class="testimonial-section">
-                <div class="testimonial-card">
-                    <div class="testimonial-header">
-                        <span class="rating">⭐⭐⭐⭐⭐</span>
-                        <span class="verified">Usuario Verificado</span>
-                    </div>
-                    <blockquote class="testimonial-quote">
-                        "Solo estaba monitoreando WhatsApp y pensé que todo estaba bien. Luego actualicé y descubrí que tenían conversaciones enteras en DMs de Instagram. Sin el complemento de redes sociales, NUNCA lo habría sabido. Esta actualización salvó mi cordura."
-                    </blockquote>
-                    <div class="testimonial-author">— Jennifer M., Ciudad de México</div>
-                </div>
-                
-                <div class="testimonial-card">
-                    <div class="testimonial-header">
-                        <span class="rating">⭐⭐⭐⭐⭐</span>
-                        <span class="verified">Usuario Verificado</span>
-                    </div>
-                    <blockquote class="testimonial-quote">
-                        "Solo la función de rastreo GPS vale la actualización. Puedo ver exactamente dónde están en tiempo real. Combinado con todas las redes sociales, finalmente tengo el panorama completo. La mejor decisión que tomé."
-                    </blockquote>
-                    <div class="testimonial-author">— Roberto K., Buenos Aires</div>
-                </div>
-            </section>
-
-            <section class="exclusive-offer">
-                <div class="exclusive-card">
-                    <span class="exclusive-icon">⏰</span>
-                    <p class="exclusive-text">OFERTA ÚNICA: Esta actualización completa solo está disponible AHORA MISMO a este precio exclusivo. Si abandonas esta página, perderás esta oportunidad para siempre.</p>
-                </div>
-            </section>
-
-            <section class="final-cta">
-                <div class="cta-card">
-                    <h3 class="cta-title">Ve el Panorama Completo, No Solo WhatsApp</h3>
-                    <p class="cta-text">Pueden ocultar en Instagram, TikTok, Snapchat o Facebook. Sin esta actualización, nunca lo sabrás. No dejes vacíos en tu monitoreo.</p>
-                    
-                    <div class="social-icons" role="img" aria-label="Plataformas soportadas: Instagram, Facebook, TikTok, Snapchat, Twitter y GPS">
-                        <div class="social-icon instagram" aria-hidden="true">📷</div>
-                        <div class="social-icon facebook" aria-hidden="true">📘</div>
-                        <div class="social-icon tiktok" aria-hidden="true">🎵</div>
-                        <div class="social-icon snapchat" aria-hidden="true">👻</div>
-                        <div class="social-icon twitter" aria-hidden="true">🐦</div>
-                        <div class="social-icon gps" aria-hidden="true">📍</div>
-                    </div>
+            <!-- CTA AFTER TESTIMONIALS -->
+            <section class="final-cta-section">
+                <div class="final-cta-card">
+                    <h3 class="final-cta-title">¿Listo Para Ver Lo Que Eliminaron?</h3>
+                    <p class="final-cta-text">Únete a más de 1,256 personas que descubrieron la verdad en las últimas 24 horas</p>
                     
                     <!-- Timer en CTA -->
-                    <p class="cta-timer">⏰ La oferta expira en: <strong id="countdown-cta">12:47</strong></p>
+                    <p class="cta-timer">⏰ La oferta expira en: <strong id="countdown-cta">15:00</strong></p>
                     
                     <!-- Monetizze Upsell Iframe -->
                     <div class="upsell-iframe-container">
-                        <iframe class="iframeUpsell" data-chave="24cd465261dbad25546be659daf7f89a"></iframe>
+                        <iframe class="iframeUpsell" data-chave="12799e67a1b66ca3b3440e10ab115698"></iframe>
                     </div>
                     
                     <!-- Link de Rechazo -->
-                    <a href="../up3/" class="decline-link">No gracias, arriesgaré perderme conversaciones ocultas</a>
+                    <a href="../up3/" class="decline-link">No gracias, no quiero ver mensajes eliminados</a>
                 </div>
             </section>
+
 
         </main>
 
         <footer class="footer">
-            <div class="smallprint">© <span id="year"></span> ZappDetect. Todos los derechos reservados.</div>
+            <div class="smallprint">© <span id="year"></span> Secure Recovery Suite. Todos los derechos reservados.</div>
         </footer>
     </div>
 
     <script src="../polyfills.js?v=8.0"></script>
-    <script src="upsell2-script.js?v=8.0"></script>
+    <script src="upsell2-script.js?v=9.0"></script>
     <!-- geo-restriction.js removed - prices always visible -->
     <script src="../upsell-tracking.js?v=1.0"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        var overlay = document.getElementById('scanOverlay');
+        var overlay = document.getElementById('loadingOverlay');
         var mainPage = document.getElementById('mainPage');
-        var progressBar = document.getElementById('soProgressBar');
-        var percentText = document.getElementById('soPercent');
-        var alertBox = document.getElementById('soAlert');
-        var platforms = document.querySelectorAll('.so-platform');
+        var progressBar = document.getElementById('loProgressBar');
+        var percentText = document.getElementById('loPercent');
+        var alertBox = document.getElementById('loAlert');
+        var steps = document.querySelectorAll('.lo-step');
         var duration = 15000;
         var startTime = Date.now();
+        var stepTimes = [0, 0.2, 0.4, 0.6, 0.8];
         var alertShown = false;
-        var timeline = [[0,2.5],[2.5,5.5],[5.5,8.5],[8.5,11],[11,13]];
-        var completedStatuses = ['Conectado','\u26a0 Encontrado','\u26a0 Encontrado','\u26a0 Encontrado','Localizado'];
 
         function update() {
             var elapsed = Date.now() - startTime;
-            var elapsedSec = elapsed / 1000;
             var progress = Math.min(elapsed / duration, 1);
             var pct = Math.round(progress * 100);
             progressBar.style.width = pct + '%';
             percentText.textContent = pct + '%';
 
-            for (var i = 0; i < platforms.length; i++) {
-                var t = timeline[i];
-                if (elapsedSec >= t[1]) {
-                    platforms[i].classList.remove('active');
-                    platforms[i].classList.add('completed');
-                    platforms[i].querySelector('.so-platform-status').textContent = completedStatuses[i];
-                } else if (elapsedSec >= t[0]) {
-                    platforms[i].classList.add('active');
+            for (var i = 0; i < steps.length; i++) {
+                var stepThreshold = stepTimes[i];
+                var nextThreshold = i < steps.length - 1 ? stepTimes[i + 1] : 1;
+                if (progress >= nextThreshold) {
+                    steps[i].classList.remove('active');
+                    steps[i].classList.add('completed');
+                    steps[i].querySelector('.lo-step-dots').textContent = '✓';
+                } else if (progress >= stepThreshold) {
+                    steps[i].classList.add('active');
                 }
             }
 
-            if (!alertShown && elapsed >= 13000) {
+            if (!alertShown && elapsed >= 12500) {
                 alertBox.style.display = 'block';
                 alertShown = true;
             }
@@ -386,4 +343,5 @@
     });
     </script>
 </body>
+    
 </html>

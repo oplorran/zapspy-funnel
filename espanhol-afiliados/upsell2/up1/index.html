@@ -5,7 +5,7 @@
     <script src="https://cdn.utmify.com.br/scripts/utms/latest.js" data-utmify-prevent-xcod-sck data-utmify-prevent-subids async defer></script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Recupera Conversaciones, Fotos y Videos Eliminados</title>
+    <title>Analista de Comportamiento IA - Detección Inteligente de Patrones</title>
     
     <!-- Meta Pixel Code -->
     <script>
@@ -18,7 +18,6 @@
     s.parentNode.insertBefore(t,s)}(window, document,'script',
     'https://connect.facebook.net/en_US/fbevents.js');
     
-    // Advanced Matching - get user data from localStorage
     var userData = {};
     try {
         var em = localStorage.getItem('userEmail');
@@ -55,293 +54,347 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             if (typeof FacebookCAPI !== 'undefined') {
-                FacebookCAPI.init('Upsell 1 - Message Vault');
-                // Track ViewContent for CAPI
-                FacebookCAPI.trackViewContent('Upsell Page', 'Funnel - Upsell', 37);
+                FacebookCAPI.init('Upsell 1 - AI Behavior Analyst');
+                FacebookCAPI.trackViewContent('Upsell Page', 'Funnel - Upsell', 19);
             }
         });
     </script>
     
-    <meta name="description" content="Oferta especial: recupera conversaciones, fotos y videos eliminados de los últimos 90 días.">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔓</text></svg>">
+    <meta name="description" content="Análisis de comportamiento impulsado por IA que detecta patrones sospechosos, predice acciones y te alerta antes de que se eliminen evidencias.">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../vip-overlay-styles.css?v=8.0">
-    <link rel="stylesheet" href="upsell1-styles.css?v=8.0">
-    <!-- Monetizze Upsell Incorporado -->
-    <script type="text/javascript" src="https://app.monetizze.com.br/upsell_incorporado.php"></script>
+    <link rel="stylesheet" href="upsell1-styles.css?v=9.0">
+    <!-- MONETIZZE: Reemplazar hash con el hash de producto UP4 -->
+    <script type="text/javascript" src="https://app.monetizze.com.br/1buyclick.php?u=REPLACE_WITH_MONETIZZE_UP1_ES_HASH"></script>
     <style>
-        .hidden-content{display:none!important}
-        .lo-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#0a1a0f 0%,#0d2818 30%,#0a1a0f 100%);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;overflow-y:auto}
-        .lo-container{text-align:center;padding:40px 30px;max-width:500px;width:90%}
-        .lo-icon{font-size:60px;margin-bottom:20px;animation:loPulse 2s ease-in-out infinite}
-        @keyframes loPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
-        .lo-title{font-size:24px;font-weight:700;color:#25D366;margin-bottom:8px}
-        .lo-subtitle{font-size:14px;color:rgba(255,255,255,0.6);margin-bottom:30px}
-        .lo-progress-wrap{background:rgba(255,255,255,0.1);border-radius:12px;height:24px;overflow:hidden;margin-bottom:8px;position:relative}
-        .lo-progress-bar{height:100%;width:0%;border-radius:12px;background:linear-gradient(90deg,#25D366,#128C7E);transition:width 0.3s ease;box-shadow:0 0 15px rgba(37,211,102,0.4)}
-        .lo-percent{font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:30px;display:block}
-        .lo-steps{text-align:left;margin-bottom:30px}
-        .lo-step{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);opacity:0.3;transition:opacity 0.5s ease}
-        .lo-step.active{opacity:1}
-        .lo-step.completed{opacity:0.6}
-        .lo-step-icon{font-size:20px;width:30px;text-align:center}
-        .lo-step-text{font-size:14px;color:#fff}
-        .lo-step-dots{margin-left:auto;font-size:12px;color:rgba(255,255,255,0.4)}
-        .lo-step.active .lo-step-dots{color:#25D366}
-        .lo-step.completed .lo-step-dots{color:#25D366}
-        .lo-alert{background:linear-gradient(135deg,rgba(37,211,102,0.15),rgba(18,140,126,0.15));border:1px solid rgba(37,211,102,0.3);border-radius:12px;padding:20px;display:none;animation:loAlertIn 0.5s ease}
-        @keyframes loAlertIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-        .lo-alert strong{color:#25D366}
-        .lo-alert p:first-child{font-size:16px;font-weight:700;color:#25D366;margin-bottom:8px}
-        .lo-alert p:last-child{font-size:13px;color:rgba(255,255,255,0.8);line-height:1.5}
+    .scan-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;background:linear-gradient(135deg,#0a0a0a 0%,#1a1025 40%,#0f1a2e 100%);display:flex;align-items:center;justify-content:center;transition:opacity .8s ease,transform .8s ease;overflow:hidden}
+    .scan-overlay.fade-out{opacity:0;transform:scale(1.05);pointer-events:none}
+    .scan-container{position:relative;z-index:2;width:90%;max-width:420px;text-align:center}
+    .scan-icon{font-size:44px;margin-bottom:10px;animation:brainPulse 1.5s ease-in-out infinite}
+    @keyframes brainPulse{0%,100%{transform:scale(1);filter:drop-shadow(0 0 8px rgba(139,92,246,.4))}50%{transform:scale(1.1);filter:drop-shadow(0 0 20px rgba(139,92,246,.8))}}
+    .scan-title{font-family:'DM Sans',sans-serif;font-size:19px;font-weight:700;color:#fff;margin-bottom:5px}
+    .scan-subtitle{font-family:'DM Sans',sans-serif;font-size:12.5px;color:rgba(255,255,255,.4);margin-bottom:22px}
+    .scan-box{background:rgba(255,255,255,.04);border:1px solid rgba(139,92,246,.15);border-radius:14px;padding:18px;margin-bottom:16px}
+    .scan-label{font-family:'DM Sans',sans-serif;font-size:11px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+    .scan-bars{display:flex;flex-direction:column;gap:8px}
+    .scan-bar-item{display:flex;align-items:center;gap:10px;font-family:'DM Sans',sans-serif;font-size:12px;color:rgba(255,255,255,.5)}
+    .scan-bar-label{width:100px;text-align:right;flex-shrink:0}
+    .scan-bar-track{flex:1;height:6px;background:rgba(255,255,255,.06);border-radius:20px;overflow:hidden}
+    .scan-bar-fill{height:100%;width:0%;border-radius:20px;transition:width 1.5s ease}
+    .bar-purple{background:linear-gradient(90deg,#8b5cf6,#a78bfa)}
+    .bar-red{background:linear-gradient(90deg,#ef4444,#f87171)}
+    .bar-yellow{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
+    .bar-green{background:linear-gradient(90deg,#22c55e,#4ade80)}
+    .scan-bar-value{width:40px;font-weight:600;color:rgba(255,255,255,.7);font-size:11px}
+    .scan-findings{margin-top:14px;text-align:left;font-family:'DM Sans',sans-serif}
+    .scan-finding{padding:5px 0;font-size:12px;color:rgba(255,255,255,.4);opacity:0;transform:translateX(-10px);transition:all .4s ease}
+    .scan-finding.visible{opacity:1;transform:translateX(0)}
+    .scan-finding.alert{color:#f87171}
+    .scan-finding.warn{color:#fbbf24}
+    .scan-finding.ok{color:#4ade80}
+    .scan-result{display:none;margin-top:16px;padding:16px 18px;border-radius:12px;background:linear-gradient(135deg,rgba(139,92,246,.06),rgba(139,92,246,.12));border:1px solid rgba(139,92,246,.3)}
+    .scan-result.visible{display:block;animation:resultAppear .7s cubic-bezier(.22,1,.36,1)}
+    @keyframes resultAppear{0%{opacity:0;transform:translateY(20px) scale(.95)}100%{opacity:1;transform:translateY(0) scale(1)}}
+    .scan-result-icon{font-size:26px;display:block;margin-bottom:6px;animation:brainBounce .6s ease-in-out infinite alternate}
+    @keyframes brainBounce{0%{transform:translateY(0)}100%{transform:translateY(-5px)}}
+    .scan-result-title{font-family:'DM Sans',sans-serif;font-weight:700;font-size:14px;color:#a78bfa;margin-bottom:4px;letter-spacing:.5px}
+    .scan-result-text{font-family:'DM Sans',sans-serif;font-size:11.5px;color:rgba(255,255,255,.5);line-height:1.5}
+    .scan-result-text strong{color:#fff}
+    .page.hidden-content{opacity:0;pointer-events:none}
+    .page.reveal-content{animation:contentReveal .8s ease forwards}
+    @keyframes contentReveal{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
     </style>
 </head>
 <body>
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="lo-overlay">
-        <div class="lo-container">
-            <div class="lo-icon">⚙️</div>
-            <div class="lo-title">Configurando Tu Cuenta</div>
-            <div class="lo-subtitle">Por favor espera mientras configuramos tu acceso...</div>
-            <div class="lo-progress-wrap">
-                <div class="lo-progress-bar" id="loProgressBar"></div>
-            </div>
-            <span class="lo-percent" id="loPercent">0%</span>
-            <div class="lo-steps">
-                <div class="lo-step" data-step="0">
-                    <span class="lo-step-icon">💳</span>
-                    <span class="lo-step-text">Confirmando tu pago</span>
-                    <span class="lo-step-dots">...</span>
-                </div>
-                <div class="lo-step" data-step="1">
-                    <span class="lo-step-icon">🔑</span>
-                    <span class="lo-step-text">Activando licencia ZapSpy</span>
-                    <span class="lo-step-dots">...</span>
-                </div>
-                <div class="lo-step" data-step="2">
-                    <span class="lo-step-icon">🔒</span>
-                    <span class="lo-step-text">Conectando a servidores seguros</span>
-                    <span class="lo-step-dots">...</span>
-                </div>
-                <div class="lo-step" data-step="3">
-                    <span class="lo-step-icon">📊</span>
-                    <span class="lo-step-text">Cargando panel de monitoreo</span>
-                    <span class="lo-step-dots">...</span>
-                </div>
-                <div class="lo-step" data-step="4">
-                    <span class="lo-step-icon">🔄</span>
-                    <span class="lo-step-text">Buscando actualizaciones disponibles</span>
-                    <span class="lo-step-dots">...</span>
+    <div class="scan-overlay" id="scanOverlay">
+        <div class="scan-container">
+            <div class="scan-icon">🧠</div>
+            <h2 class="scan-title">IA Escaneando Tus Datos Recopilados...</h2>
+            <p class="scan-subtitle">Ejecutando análisis de patrones de comportamiento en la cuenta monitoreada</p>
+
+            <div class="scan-box">
+                <div class="scan-label">Progreso del Análisis</div>
+                <div class="scan-bars">
+                    <div class="scan-bar-item">
+                        <span class="scan-bar-label">Mensajes</span>
+                        <div class="scan-bar-track"><div class="scan-bar-fill bar-purple" id="barMessages"></div></div>
+                        <span class="scan-bar-value" id="valMessages">0%</span>
+                    </div>
+                    <div class="scan-bar-item">
+                        <span class="scan-bar-label">Ubicaciones</span>
+                        <div class="scan-bar-track"><div class="scan-bar-fill bar-green" id="barLocations"></div></div>
+                        <span class="scan-bar-value" id="valLocations">0%</span>
+                    </div>
+                    <div class="scan-bar-item">
+                        <span class="scan-bar-label">Archivos</span>
+                        <div class="scan-bar-track"><div class="scan-bar-fill bar-yellow" id="barMedia"></div></div>
+                        <span class="scan-bar-value" id="valMedia">0%</span>
+                    </div>
+                    <div class="scan-bar-item">
+                        <span class="scan-bar-label">Comportamiento</span>
+                        <div class="scan-bar-track"><div class="scan-bar-fill bar-red" id="barBehavior"></div></div>
+                        <span class="scan-bar-value" id="valBehavior">0%</span>
+                    </div>
                 </div>
             </div>
-            <div class="lo-alert" id="loAlert">
-                <p>⚡ ACTUALIZACIÓN EXCLUSIVA DESBLOQUEADA</p>
-                <p>Como nuevo miembro, has sido seleccionado para una <strong>oferta exclusiva única</strong> — disponible solo por los próximos 15 minutos.</p>
+
+            <div class="scan-findings" id="scanFindings"></div>
+
+            <div class="scan-result" id="scanResult">
+                <span class="scan-result-icon">🧠</span>
+                <div class="scan-result-title">ANALISTA DE COMPORTAMIENTO IA DISPONIBLE</div>
+                <div class="scan-result-text"><strong>3 patrones sospechosos detectados.</strong> La IA puede monitorear continuamente y predecir cambios de comportamiento en tiempo real.</div>
             </div>
         </div>
     </div>
 
     <div class="page hidden-content" id="mainPage">
-        <!-- HEADER -->
-        <header class="top-warning">
-            <!-- Timer de Urgencia -->
+        <header class="access-banner" role="banner">
             <div class="timer-bar" role="status" aria-live="polite">
                 <span class="timer-icon" aria-hidden="true">⏰</span>
-                <span class="timer-text">La oferta especial expira en: <strong id="countdown">15:00</strong></span>
+                <span class="timer-text">La actualización IA expira en: <strong id="countdown">10:00</strong></span>
             </div>
-            <div class="scarcity-bar" role="status" aria-live="polite">
-                <span class="fire-icon" aria-hidden="true">🔥</span>
-                <span class="scarcity-text"><strong>47 personas</strong> están viendo esta página ahora mismo</span>
+            <div class="banner-content" role="alert" aria-live="polite">
+                <span class="banner-icon" aria-hidden="true">🧠</span>
+                <p class="banner-text">ACTUALIZACIÓN EXCLUSIVA: Deja que la IA analice patrones de comportamiento, prediga acciones y te alerte antes de que desaparezcan las evidencias.</p>
             </div>
         </header>
 
         <main class="content">
-            <div class="hero-icon" aria-hidden="true">
-                <div class="whatsapp-icon">📱</div>
-            </div>
-            
-            <!-- HEADLINE -->
-            <h1 class="headline">🔓 REVELADO: Ve Cada Mensaje Que Eliminaron (Incluso de Hace 90 Días)</h1>
-            <p class="subhead">En solo 5 minutos, descubre los textos, fotos y videos eliminados que pensaban que habían desaparecido para siempre. Funciona en cualquier teléfono — no se necesitan habilidades técnicas.</p>
-
-            <section class="features">
-                <div class="feature">
-                    <div class="feature-icon">💬</div>
-                    <div class="feature-title">CONVERSACIONES<br>RECUPERADAS</div>
-                    <div class="feature-stat">12,847+</div>
-                </div>
-                <div class="feature">
-                    <div class="feature-icon">📸</div>
-                    <div class="feature-title">FOTOS<br>RESTAURADAS</div>
-                    <div class="feature-stat">45,932+</div>
-                </div>
-                <div class="feature">
-                    <div class="feature-icon">🎥</div>
-                    <div class="feature-title">VIDEOS<br>RECUPERADOS</div>
-                    <div class="feature-stat">8,234+</div>
+            <section class="hero">
+                <h1 class="main-title">🧠 Deja de Adivinar. Deja que la IA Prediga Su Próximo Movimiento</h1>
+                
+                <div class="intro-section">
+                    <p class="problem-text">😰 <strong>Ahora mismo, estás reaccionando:</strong> Revisas mensajes, ubicaciones y fotos DESPUÉS del hecho. Para cuando ves algo sospechoso, ya han cubierto sus huellas. Siempre estás <strong>un paso atrás</strong>.</p>
+                    
+                    <p class="solution-text">🧠 <strong>Con el Analista de Comportamiento IA:</strong> Nuestra IA aprende sus patrones y <strong>predice comportamiento sospechoso ANTES de que suceda</strong>. Recibe alertas cuando el comportamiento se desvía de lo normal — como eliminaciones repentinas de mensajes, nuevos contactos nocturnos o patrones de ubicación inusuales.</p>
                 </div>
             </section>
 
-            <!-- OFFER SECTION -->
-            <section class="offer" id="purchase">
-                <div class="offer-card">
-                    
-                    <h2>💎 Lo Que Obtendrás:</h2>
-                    <ul class="bullets">
-                        <li>✓ <strong>Recuperación Completa:</strong> Todas las conversaciones, fotos y videos de los últimos 90 días</li>
-                        <li>✓ <strong>Instalación Simple:</strong> Paso a paso detallado, funciona en 5 minutos</li>
-                        <li>✓ <strong>100% Seguro:</strong> Encriptación de extremo a extremo, tus datos permanecen privados</li>
-                        <li>✓ <strong>Compatibilidad Total:</strong> Funciona en iPhone y Android</li>
-                        <li>✓ <strong>Soporte Premium:</strong> Servicio al cliente prioritario vía WhatsApp</li>
-                        <li>✓ <strong>Actualizaciones de por Vida:</strong> Todas las actualizaciones futuras incluidas</li>
-                        <li>✓ <strong>Bonos Extra:</strong> Guía de privacidad + Tutorial en video</li>
-                    </ul>
+            <section class="ai-features-section">
+                <div class="ai-features-card">
+                    <h2 class="ai-features-title">🧠 Funciones de Detección Impulsadas por IA</h2>
+                    <div class="ai-features-grid">
+                        <div class="ai-feature-item">
+                            <span class="ai-feature-icon">📊</span>
+                            <span class="ai-feature-name">Reconocimiento de Patrones</span>
+                            <span class="ai-feature-desc">La IA aprende su rutina diaria y marca cualquier desviación — actividad nocturna, nuevos contactos, cambios de horario.</span>
+                        </div>
+                        <div class="ai-feature-item">
+                            <span class="ai-feature-icon">⚡</span>
+                            <span class="ai-feature-name">Alertas Predictivas</span>
+                            <span class="ai-feature-desc">Recibe notificaciones ANTES de que eliminen mensajes o fotos. La IA detecta patrones de comportamiento pre-eliminación.</span>
+                        </div>
+                        <div class="ai-feature-item">
+                            <span class="ai-feature-icon">🔍</span>
+                            <span class="ai-feature-name">Análisis de Contactos Sospechosos</span>
+                            <span class="ai-feature-desc">La IA identifica y clasifica automáticamente contactos por nivel de riesgo según frecuencia y horario de interacción.</span>
+                        </div>
+                        <div class="ai-feature-item">
+                            <span class="ai-feature-icon">📈</span>
+                            <span class="ai-feature-name">Reportes de Tendencia</span>
+                            <span class="ai-feature-desc">Reportes semanales generados por IA mostrando cambios de comportamiento, evaluaciones de riesgo y puntuaciones de confianza.</span>
+                        </div>
+                    </div>
                 </div>
             </section>
 
-            <section class="testimonials-section">
-                <h2 class="testimonials-title">💬 Lo Que Dicen Nuestros Usuarios</h2>
-                <div class="testimonials-grid">
-                    <div class="testimonial-card">
-                        <div class="rating" aria-label="5 de 5 estrellas">⭐⭐⭐⭐⭐</div>
-                        <div class="avatar">👩</div>
-                        <blockquote>
-                            "Accidentalmente borré mi WhatsApp y perdí 6 meses de fotos familiares preciosas. ¡Esta herramienta las recuperó TODAS en menos de 10 minutos. Un salvavidas absoluto!"
-                        </blockquote>
-                        <div class="author">— Ana M., Ciudad de México</div>
-                    </div>
-                    
-                    <div class="testimonial-card">
-                        <div class="rating" aria-label="5 de 5 estrellas">⭐⭐⭐⭐⭐</div>
-                        <div class="avatar">👨</div>
-                        <blockquote>
-                            "Mi teléfono falló y perdí todos mis datos de WhatsApp. Recuperé fotos y videos de los primeros pasos de mis hijos que pensé que habían desaparecido para siempre. ¡Vale cada centavo!"
-                        </blockquote>
-                        <div class="author">— Carlos R., Buenos Aires</div>
-                    </div>
-                    
-                    <div class="testimonial-card">
-                        <div class="rating" aria-label="5 de 5 estrellas">⭐⭐⭐⭐⭐</div>
-                        <div class="avatar">👩‍💼</div>
-                        <blockquote>
-                            "Necesitaba recuperar conversaciones importantes de trabajo con un cliente. En solo 5 minutos, tenía todo de vuelta. ¡La guía paso a paso lo hizo súper fácil!"
-                        </blockquote>
-                        <div class="author">— María S., Madrid</div>
-                    </div>
-                    
-                    <div class="testimonial-card">
-                        <div class="rating" aria-label="5 de 5 estrellas">⭐⭐⭐⭐⭐</div>
-                        <div class="avatar">👨‍💻</div>
-                        <blockquote>
-                            "Escéptico al principio, pero ¡WOW! Recuperé mensajes de hace 3 meses que necesitaba desesperadamente. Proceso simple, resultados rápidos. ¡Altamente recomendado!"
-                        </blockquote>
-                        <div class="author">— David L., Bogotá</div>
+            <section class="comparison-section">
+                <div class="comparison-card">
+                    <h2 class="comparison-title">👁️ Monitoreo Manual vs Analista IA</h2>
+                    <div class="comparison-grid">
+                        <div class="comparison-item manual">
+                            <span class="comparison-icon">😰</span>
+                            <div class="comparison-text">
+                                <strong>Monitoreo Manual:</strong>
+                                <p>• Revisas datos manualmente, horas después<br>• Pierdes el 80% de patrones sospechosos<br>• Siempre reaccionando, nunca adelantándote<br>• Evidencia eliminada antes de que la veas</p>
+                            </div>
+                        </div>
+                        <div class="comparison-item ai">
+                            <span class="comparison-icon">🧠</span>
+                            <div class="comparison-text">
+                                <strong>Analista de Comportamiento IA:</strong>
+                                <p>• La IA monitorea 24/7 automáticamente<br>• Detecta el 97% de cambios de comportamiento<br>• Predice acciones antes de que sucedan<br>• Te alerta en tiempo real</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="social-proof-bar">
-                    <span class="check">✅</span> <span><strong>1,256</strong> personas activaron este bono en las últimas 24h</span>
-                    <span class="separator">•</span>
-                    <span>⭐ <strong>4.9/5</strong> calificación</span>
-                    <span class="separator">•</span>
-                    <span>🔒 <strong>100%</strong> seguro</span>
-                </div>
+            </section>
 
+            <!-- Live Activations Feed -->
+            <section class="live-activity-section">
                 <div class="live-activity">
                     <div class="activity-header">
                         <span class="pulse-dot"></span>
                         <span class="activity-title">Activaciones Recientes</span>
                         <span class="live-badge">EN VIVO</span>
                     </div>
-                    <div class="activity-items" id="activityFeed">
-                        <!-- Items son generados dinámicamente por JavaScript -->
-                    </div>
+                    <div class="activity-items" id="activityFeed"></div>
                 </div>
             </section>
 
-            <!-- CTA AFTER TESTIMONIALS -->
-            <section class="final-cta-section">
-                <div class="final-cta-card">
-                    <h3 class="final-cta-title">¿Listo Para Ver Lo Que Eliminaron?</h3>
-                    <p class="final-cta-text">Únete a más de 1,256 personas que descubrieron la verdad en las últimas 24 horas</p>
+            <section class="testimonial">
+                <div class="testimonial-card">
+                    <h2 class="testimonial-title">⭐ Experiencias de Usuarios Reales</h2>
+                    <p class="testimonial-story">Laura M. de Madrid revisaba los datos de su pareja cada pocas horas, pero siempre encontraba mensajes ya eliminados. Después de activar el Analista de Comportamiento IA, recibió una alerta predictiva que señaló actividad nocturna inusual 30 minutos ANTES de que se eliminaran los mensajes.</p>
                     
-                    <!-- Timer en CTA -->
-                    <p class="cta-timer">⏰ La oferta expira en: <strong id="countdown-cta">15:00</strong></p>
+                    <blockquote class="user-quote">
+                        "La IA literalmente me dijo 'Patrón de eliminación inusual detectado — guardando contenido ahora' antes de que él terminara de eliminar. Finalmente dejé de estar 3 pasos atrás. Esta IA es como tener un detective trabajando 24/7 para ti."
+                    </blockquote>
+                    <p class="testimonial-author-right">— Laura M., Madrid</p>
                     
-                    <!-- Monetizze Upsell Iframe -->
-                    <div class="upsell-iframe-container">
-                        <iframe class="iframeUpsell" data-chave="12799e67a1b66ca3b3440e10ab115698"></iframe>
-                    </div>
+                    <hr class="testimonial-divider">
                     
-                    <!-- Link de Rechazo -->
-                    <a href="../up2/" class="decline-link">No gracias, no quiero ver mensajes eliminados</a>
+                    <p class="testimonial-story">Kevin D. de Bogotá había estado monitoreando durante semanas pero no podía darle sentido a todos los datos. El Analista IA conectó los puntos que él estaba perdiendo — identificando un contacto sospechoso que había pasado por alto y rastreando un patrón de cambios de ubicación cada jueves por la noche.</p>
+                    
+                    <blockquote class="user-quote">
+                        "Me estaba ahogando en datos pero no podía ver el bosque por los árboles. La IA organizó todo y me mostró EXACTAMENTE en qué enfocarme. Solo el reporte semanal de comportamiento vale la actualización. Encontró cosas que yo nunca habría notado."
+                    </blockquote>
+                    <p class="testimonial-author-right">— Kevin D., Bogotá</p>
                 </div>
             </section>
 
+            <section class="benefits">
+                <div class="benefits-card">
+                    <h2 class="benefits-title">🧠 Lo Que Incluye el Analista de Comportamiento IA:</h2>
+                    <div class="benefits-grid">
+                        <div class="benefit-item">
+                            <span class="benefit-icon">🧠</span>
+                            <span class="benefit-text"><strong>Motor de Patrones IA:</strong> Aprende comportamiento y detecta anomalías</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">⚡</span>
+                            <span class="benefit-text"><strong>Alertas Predictivas:</strong> Sabe qué pasa antes de que pase</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">🔍</span>
+                            <span class="benefit-text"><strong>Puntuación de Riesgo:</strong> La IA clasifica contactos por nivel de sospecha</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">📈</span>
+                            <span class="benefit-text"><strong>Reportes Semanales IA:</strong> Resúmenes automatizados de análisis de comportamiento</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">🔔</span>
+                            <span class="benefit-text"><strong>Monitoreo en Tiempo Real:</strong> Vigilancia IA 24/7, nunca duerme</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">🛡️</span>
+                            <span class="benefit-text"><strong>Protección de Evidencia:</strong> Guarda datos automáticamente antes de eliminación</span>
+                        </div>
+                    </div>
+                    
+                    <p class="benefits-summary">🧠 Deja de adivinar. Deja que la IA haga el trabajo de detective por ti — 24/7, automáticamente.</p>
+                </div>
+            </section>
+
+            <section class="urgency">
+                <div class="urgency-card">
+                    <h2 class="urgency-title">⚠️ OFERTA ÚNICA - Disponible Solo Ahora</h2>
+                    <p class="urgency-text">⏰ <strong>Esta actualización de IA solo está disponible AHORA MISMO</strong> a este precio exclusivo. Una vez que abandones esta página, el Analista de Comportamiento IA ya no estará disponible con este descuento.</p>
+                    <p class="urgency-warning">❌ <strong>Sin IA:</strong> Seguirás revisando datos manualmente, siempre reaccionando a lo que ya pasó. La IA podría estar detectando los patrones que estás perdiendo AHORA MISMO. Cada hora sin IA es otra hora de evidencia perdida.</p>
+                </div>
+            </section>
+
+            <section class="final-cta">
+                <div class="cta-section">
+                    <h2 class="cta-title">Deja de Estar 3 Pasos Atrás. Deja que la IA Prediga Sus Movimientos</h2>
+                    <p class="cta-text">Ya tienes las herramientas de monitoreo. Ahora agrega la capa de inteligencia. El Analista IA convierte datos crudos en predicciones accionables.</p>
+                    
+                    <p class="cta-timer">⏰ La oferta expira en: <strong id="countdown-cta">10:00</strong></p>
+                    
+                    <div class="cta-buttons">
+                        <!-- MONETIZZE: Reemplazar hash con el hash de producto UP4 -->
+                        <a href='#monetizzeCompra' data-upsell='REPLACE_WITH_MONETIZZE_UP1_ES_HASH' class="btn btn-primary btn-large btn-pulse btn-mega" aria-label="Activar Analista de Comportamiento IA ahora" role="button">¡SÍ! Activar Analista de Comportamiento IA</a>
+                        
+                        <a href="../up2/" class="decline-link">No gracias, seguiré revisando manualmente</a>
+                        
+                        <p class="price-tag">Precio regular: <s>$197</s> → Solo hoy: $19 (90% off)</p>
+                    </div>
+                </div>
+            </section>
 
         </main>
 
         <footer class="footer">
-            <div class="smallprint">© <span id="year"></span> Secure Recovery Suite. Todos los derechos reservados.</div>
+            <div class="smallprint">© <span id="year"></span> AI Behavior Analysis. Todos los derechos reservados.</div>
         </footer>
     </div>
 
     <script src="../polyfills.js?v=8.0"></script>
-    <script src="upsell1-script.js?v=8.0"></script>
-    <!-- geo-restriction.js removed - prices always visible -->
-    <script src="../upsell-tracking.js?v=1.0"></script>
+    <script src="upsell1-script.js?v=9.0"></script>
+    <script src="../upsell-tracking.js?v=2.0"></script>
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var overlay = document.getElementById('loadingOverlay');
-        var mainPage = document.getElementById('mainPage');
-        var progressBar = document.getElementById('loProgressBar');
-        var percentText = document.getElementById('loPercent');
-        var alertBox = document.getElementById('loAlert');
-        var steps = document.querySelectorAll('.lo-step');
-        var duration = 15000;
-        var startTime = Date.now();
-        var stepTimes = [0, 0.2, 0.4, 0.6, 0.8];
-        var alertShown = false;
+    (function(){
+        var o=document.getElementById('scanOverlay'),m=document.getElementById('mainPage'),
+            findings=document.getElementById('scanFindings'),result=document.getElementById('scanResult');
+        if(!o||!m)return;
 
-        function update() {
-            var elapsed = Date.now() - startTime;
-            var progress = Math.min(elapsed / duration, 1);
-            var pct = Math.round(progress * 100);
-            progressBar.style.width = pct + '%';
-            percentText.textContent = pct + '%';
+        var bars=[
+            {el:document.getElementById('barMessages'),val:document.getElementById('valMessages'),target:100,speed:1.2},
+            {el:document.getElementById('barLocations'),val:document.getElementById('valLocations'),target:100,speed:1.0},
+            {el:document.getElementById('barMedia'),val:document.getElementById('valMedia'),target:100,speed:0.8},
+            {el:document.getElementById('barBehavior'),val:document.getElementById('valBehavior'),target:100,speed:0.6}
+        ];
 
-            for (var i = 0; i < steps.length; i++) {
-                var stepThreshold = stepTimes[i];
-                var nextThreshold = i < steps.length - 1 ? stepTimes[i + 1] : 1;
-                if (progress >= nextThreshold) {
-                    steps[i].classList.remove('active');
-                    steps[i].classList.add('completed');
-                    steps[i].querySelector('.lo-step-dots').textContent = '✓';
-                } else if (progress >= stepThreshold) {
-                    steps[i].classList.add('active');
+        var findingsData=[
+            {time:3000,text:'📡 Escaneando patrones de mensajes...',cls:''},
+            {time:5000,text:'⚠️ Patrón de eliminación inusual detectado a las 2:47 AM',cls:'warn'},
+            {time:7000,text:'🔍 Analizando frecuencia de contactos...',cls:''},
+            {time:9000,text:'🚨 3 nuevos contactos con interacciones nocturnas',cls:'alert'},
+            {time:10500,text:'📍 Anomalía de ubicación: Visitas repetidas a dirección desconocida',cls:'alert'},
+            {time:12000,text:'✅ Modelo IA listo — patrones de comportamiento mapeados',cls:'ok'}
+        ];
+
+        var TOTAL=15000,start=Date.now(),resultShown=false;
+
+        function tick(){
+            var e=Date.now()-start;
+            var progress=Math.min(e/TOTAL,1);
+
+            bars.forEach(function(b){
+                var adjusted=Math.min(progress/(b.speed*0.8)*100,100);
+                b.el.style.width=adjusted+'%';
+                b.val.textContent=Math.floor(adjusted)+'%';
+            });
+
+            findingsData.forEach(function(f){
+                if(e>=f.time&&!f.shown){
+                    f.shown=true;
+                    var div=document.createElement('div');
+                    div.className='scan-finding '+(f.cls||'');
+                    div.textContent=f.text;
+                    findings.appendChild(div);
+                    setTimeout(function(){div.classList.add('visible');},50);
+                    if(findings.children.length>4){
+                        findings.children[0].style.opacity='0';
+                        setTimeout(function(){if(findings.children[0])findings.removeChild(findings.children[0]);},300);
+                    }
                 }
+            });
+
+            if(e>=12500&&!resultShown){
+                resultShown=true;
+                result.classList.add('visible');
+                if(navigator.vibrate)navigator.vibrate([150,80,150]);
             }
 
-            if (!alertShown && elapsed >= 12500) {
-                alertBox.style.display = 'block';
-                alertShown = true;
+            if(e>=TOTAL){
+                setTimeout(function(){
+                    o.classList.add('fade-out');
+                    m.classList.remove('hidden-content');
+                    m.classList.add('reveal-content');
+                    setTimeout(function(){o.style.display='none'},800);
+                },500);
+                return;
             }
-
-            if (progress < 1) {
-                requestAnimationFrame(update);
-            } else {
-                overlay.style.transition = 'opacity 0.5s ease';
-                overlay.style.opacity = '0';
-                setTimeout(function() {
-                    overlay.style.display = 'none';
-                    mainPage.classList.remove('hidden-content');
-                }, 500);
-            }
+            requestAnimationFrame(tick);
         }
-        requestAnimationFrame(update);
-    });
+        requestAnimationFrame(tick);
+    })();
     </script>
 </body>
-    
 </html>

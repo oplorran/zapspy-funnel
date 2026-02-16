@@ -1,28 +1,34 @@
-(function(){
+﻿(function(){
+
+    // ============================================
+    // VIP PROCESSING OVERLAY - REMOVED FOR BETTER CONVERSION
+    // ============================================
+    // Overlay removed - content displays immediately
+    // Page view is tracked via upsell-tracking.js
 
     // ============================================
     // COUNTDOWN TIMER
     // ============================================
-    var STORAGE_KEY = 'upsell4_timer_end';
-    var TIMER_DURATION = 10 * 60;
-    var totalSeconds;
+    const STORAGE_KEY = 'upsell3_timer_end_es';
+    const TIMER_DURATION = 10 * 60; // 10 minutes
+    let totalSeconds;
     
     function initTimer() {
-        var savedEndTime = localStorage.getItem(STORAGE_KEY);
+        const savedEndTime = localStorage.getItem(STORAGE_KEY);
         if (savedEndTime) {
-            var now = Math.floor(Date.now() / 1000);
-            var remaining = parseInt(savedEndTime) - now;
+            const now = Math.floor(Date.now() / 1000);
+            const remaining = parseInt(savedEndTime) - now;
             totalSeconds = remaining > 0 ? remaining : 0;
         } else {
             totalSeconds = TIMER_DURATION;
-            var endTime = Math.floor(Date.now() / 1000) + totalSeconds;
+            const endTime = Math.floor(Date.now() / 1000) + totalSeconds;
             localStorage.setItem(STORAGE_KEY, endTime);
         }
     }
     
     function restartTimer() {
         totalSeconds = TIMER_DURATION;
-        var endTime = Math.floor(Date.now() / 1000) + totalSeconds;
+        const endTime = Math.floor(Date.now() / 1000) + totalSeconds;
         localStorage.setItem(STORAGE_KEY, endTime);
     }
     
@@ -46,6 +52,8 @@
         if (totalSeconds <= 0) {
             restartTimer();
             updateTimer();
+            
+            // Visual feedback when timer restarts
             var timerBar = document.querySelector('.timer-bar');
             if (timerBar) {
                 timerBar.classList.add('timer-restarted');
@@ -64,37 +72,41 @@
     setInterval(tick, 1000);
 
     // ============================================
-    // LIVE ACTIVITY FEED
+    // LIVE ACTIVITY FEED - REALISTIC & ANIMATED
     // ============================================
     var firstNames = [
-        'Sara', 'Carlos', 'María', 'David', 'Ana', 'Miguel', 'Elena', 'Jaime',
-        'Sofía', 'Guillermo', 'Isabella', 'Lucas', 'Olivia', 'Daniel', 'Valentina',
-        'Gabriel', 'Emilia', 'Mateo', 'Ava', 'Andrés', 'Jessica', 'Raúl',
-        'Jennifer', 'Pedro', 'Amanda', 'Luis', 'Raquel', 'Diego', 'Natalia',
-        'Alejandra', 'Brandon', 'Cristina', 'Fernando', 'Lorena', 'Francisco', 'Gracia'
+        'María', 'Juan', 'Ana', 'Carlos', 'Laura', 'Miguel', 'Elena', 'Diego',
+        'Sofía', 'Andrés', 'Isabella', 'Lucas', 'Camila', 'Daniel', 'Valentina',
+        'Gabriel', 'Emilia', 'Mateo', 'Ava', 'Pablo', 'Jessica', 'Rodrigo',
+        'Jennifer', 'Fernando', 'Amanda', 'Pedro', 'Raquel', 'Luis', 'Nicole',
+        'Carolina', 'Roberto', 'Patricia', 'Eduardo', 'Elena', 'Francisco', 'Graciela'
     ];
     
     var locations = [
-        'Madrid', 'Barcelona', 'Ciudad de México', 'Buenos Aires', 'Bogotá', 'Lima',
-        'Santiago', 'Guadalajara', 'Medellín', 'Monterrey', 'Quito', 'Caracas',
-        'Sevilla', 'Valencia', 'La Paz', 'Panamá', 'San José', 'Montevideo',
-        'Asunción', 'Tegucigalpa', 'Managua', 'San Salvador', 'Santo Domingo', 'Guayaquil'
+        'Ciudad de México', 'Buenos Aires', 'Madrid', 'Bogotá', 'Lima', 'Santiago',
+        'Barcelona', 'Caracas', 'Medellín', 'Guadalajara', 'Monterrey', 'Quito',
+        'La Paz', 'Asunción', 'Montevideo', 'San José', 'Panamá', 'Santo Domingo',
+        'Córdoba', 'Rosario', 'Sevilla', 'Valencia', 'Cali', 'Arequipa'
     ];
     
     var actions = [
-        'activó el Análisis de Comportamiento IA',
-        'desbloqueó la detección de patrones',
-        'habilitó el seguimiento de comportamiento IA',
-        'se actualizó al Analista IA'
+        'saltó la espera de 3 días',
+        'obtuvo procesamiento prioritario VIP',
+        'desbloqueó resultados instantáneos',
+        'actualizó a acceso VIP'
     ];
     
     var activityFeed = document.getElementById('activityFeed');
     
     function getRandomTime() {
         var rand = Math.random();
-        if (rand < 0.3) return 'hace ' + Math.floor(Math.random() * 60) + ' segundos';
-        if (rand < 0.7) return 'hace ' + (Math.floor(Math.random() * 5) + 1) + ' minutos';
-        return 'hace ' + (Math.floor(Math.random() * 10) + 5) + ' minutos';
+        if (rand < 0.3) {
+            return 'hace ' + Math.floor(Math.random() * 60) + ' segundos';
+        } else if (rand < 0.7) {
+            return 'hace ' + (Math.floor(Math.random() * 5) + 1) + ' minutos';
+        } else {
+            return 'hace ' + (Math.floor(Math.random() * 10) + 5) + ' minutos';
+        }
     }
     
     function getRandomName() {
@@ -103,45 +115,73 @@
         return name + ' ' + lastInitial + '.';
     }
     
+    function getRandomLocation() {
+        return locations[Math.floor(Math.random() * locations.length)];
+    }
+    
+    function getRandomAction() {
+        return actions[Math.floor(Math.random() * actions.length)];
+    }
+    
     function createActivityItem(isNew) {
         var name = getRandomName();
-        var location = locations[Math.floor(Math.random() * locations.length)];
+        var location = getRandomLocation();
         var time = getRandomTime();
-        var action = actions[Math.floor(Math.random() * actions.length)];
+        var action = getRandomAction();
         
         var item = document.createElement('div');
         item.className = 'activity-item' + (isNew ? ' new-item' : '');
-        item.innerHTML = '<span class="activity-icon">🧠</span> <strong>' + name + '</strong> de ' + location + ' ' + action + ' <span class="activity-time">' + time + '</span>';
+        item.innerHTML = '<span class="activity-icon">✅</span> <strong>' + name + '</strong> de ' + location + ' ' + action + ' <span class="activity-time">' + time + '</span>';
+        
         return item;
     }
     
     function initActivityFeed() {
         if (!activityFeed) return;
+        
+        // Create initial 3 items
         for (var i = 0; i < 3; i++) {
-            activityFeed.appendChild(createActivityItem(false));
+            var item = createActivityItem(false);
+            activityFeed.appendChild(item);
         }
     }
     
     function addNewActivity() {
         if (!activityFeed) return;
+        
+        // Create new item with animation
         var newItem = createActivityItem(true);
         activityFeed.insertBefore(newItem, activityFeed.firstChild);
-        setTimeout(function() { newItem.classList.remove('new-item'); }, 600);
         
+        // Remove animation class after animation completes
+        setTimeout(function() {
+            newItem.classList.remove('new-item');
+        }, 600);
+        
+        // Keep only 3 items visible
         var items = activityFeed.querySelectorAll('.activity-item');
         if (items.length > 3) {
             var lastItem = items[items.length - 1];
             lastItem.style.opacity = '0';
             lastItem.style.transform = 'translateX(20px)';
-            setTimeout(function() { if (lastItem.parentNode) lastItem.parentNode.removeChild(lastItem); }, 300);
+            setTimeout(function() {
+                if (lastItem.parentNode) {
+                    lastItem.parentNode.removeChild(lastItem);
+                }
+            }, 300);
         }
     }
     
     function scheduleActivityUpdate() {
+        // Random delay between 8-20 seconds
         var delay = (Math.floor(Math.random() * 12) + 8) * 1000;
-        setTimeout(function() { addNewActivity(); scheduleActivityUpdate(); }, delay);
+        setTimeout(function() {
+            addNewActivity();
+            scheduleActivityUpdate();
+        }, delay);
     }
     
+    // Initialize feed and start updates
     initActivityFeed();
     scheduleActivityUpdate();
 
@@ -152,20 +192,37 @@
     if (yearEl) yearEl.textContent = new Date().getFullYear();
 
     // ============================================
-    // ANIMATIONS
+    // URGENCY EFFECTS
+    // ============================================
+    function addUrgencyEffects() {
+        var urgencyCard = document.querySelector('.urgency-card');
+        if (urgencyCard) {
+            urgencyCard.style.animation = 'gentle-glow 2s ease-in-out infinite alternate';
+        }
+    }
+
+    window.addEventListener('load', addUrgencyEffects);
+
+    // ============================================
+    // FADE-IN ANIMATIONS
     // ============================================
     var style = document.createElement('style');
-    style.textContent = '@keyframes gentle-glow{0%{box-shadow:0 4px 12px rgba(220,53,69,.1)}100%{box-shadow:0 8px 24px rgba(220,53,69,.25)}}@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}.fade-in{animation:fadeInUp .6s ease forwards}';
+    style.textContent = `
+        @keyframes gentle-glow {
+            0% { box-shadow: 0 4px 12px rgba(220, 53, 69, 0.1); }
+            100% { box-shadow: 0 8px 24px rgba(220, 53, 69, 0.25); }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in { animation: fadeInUp 0.6s ease forwards; }
+    `;
     document.head.appendChild(style);
 
     var sections = document.querySelectorAll('.testimonial, .benefits, .urgency, .final-cta');
     sections.forEach(function(section, index) {
         section.style.animationDelay = (index * 0.15) + 's';
         section.classList.add('fade-in');
-    });
-
-    window.addEventListener('load', function() {
-        var urgencyCard = document.querySelector('.urgency-card');
-        if (urgencyCard) urgencyCard.style.animation = 'gentle-glow 2s ease-in-out infinite alternate';
     });
 })();

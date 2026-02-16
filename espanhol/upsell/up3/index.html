@@ -5,7 +5,7 @@
     <script src="https://cdn.utmify.com.br/scripts/utms/latest.js" data-utmify-prevent-xcod-sck data-utmify-prevent-subids async defer></script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Acceso a Cola Prioritaria - Pase VIP</title>
+    <title>Actualización Exclusiva - ZappDetect V2</title>
     
     <!-- Meta Pixel Code -->
     <script>
@@ -55,285 +55,202 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             if (typeof FacebookCAPI !== 'undefined') {
-                FacebookCAPI.init('Upsell 3 - Instant Access');
+                FacebookCAPI.init('Upsell 3 - 360 Tracker');
                 // Track ViewContent for CAPI
-                FacebookCAPI.trackViewContent('Upsell Page', 'Funnel - Upsell', 33);
+                FacebookCAPI.trackViewContent('Upsell Page', 'Funnel - Upsell', 35);
             }
         });
     </script>
     
-    <meta name="description" content="Salta la fila y obtén acceso instantáneo a mensajes eliminados, fotos y ubicaciones en tiempo real.">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+    <meta name="description" content="Oferta de actualización exclusiva por tiempo limitado para clientes leales de ZappDetect.">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔓</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../vip-overlay-styles.css?v=8.0">
-    <link rel="stylesheet" href="upsell3-styles.css?v=8.0">
-    <script type="text/javascript" src="https://app.monetizze.com.br/1buyclick.php?u=a8b74ff7ed3a5e549d7eed642d385aa4"></script>
+    <link rel="stylesheet" href="upsell3-styles.css?v=9.0">
+    <script type="text/javascript" src="https://app.monetizze.com.br/1buyclick.php?u=26c4eacebc0c89761c056441f43eb492"></script>
     <style>
-    .queue-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;background:linear-gradient(135deg,#0a0a0a 0%,#1a1a2e 40%,#16213e 100%);display:flex;align-items:center;justify-content:center;transition:opacity .8s ease,transform .8s ease;overflow:hidden}
-    .queue-overlay.fade-out{opacity:0;transform:scale(1.05);pointer-events:none}
-    .queue-container{position:relative;z-index:2;width:90%;max-width:420px;text-align:center}
-    .queue-icon{font-size:44px;margin-bottom:10px;animation:hourglassTurn 2s ease-in-out infinite}
-    @keyframes hourglassTurn{0%{transform:rotate(0)}50%{transform:rotate(180deg)}100%{transform:rotate(360deg)}}
-    .queue-title{font-family:'DM Sans',sans-serif;font-size:19px;font-weight:700;color:#fff;margin-bottom:5px}
-    .queue-subtitle{font-family:'DM Sans',sans-serif;font-size:12.5px;color:rgba(255,255,255,.4);margin-bottom:22px}
-    .queue-box{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:18px;margin-bottom:16px}
-    .queue-position-label{font-family:'DM Sans',sans-serif;font-size:11px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
-    .queue-position{font-family:'DM Sans',sans-serif;font-size:42px;font-weight:800;color:#ff6b6b;letter-spacing:-1px;line-height:1.1;transition:all .3s ease}
-    .queue-total{font-family:'DM Sans',sans-serif;font-size:12px;color:rgba(255,255,255,.35);margin-top:4px}
-    .queue-eta-box{text-align:left;margin-bottom:18px}
-    .eta-row{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;font-family:'DM Sans',sans-serif;font-size:12.5px;color:rgba(255,255,255,.5)}
-    .eta-value{font-weight:600;color:rgba(255,255,255,.7)}
-    .eta-high{color:#ff9f43}
-    .eta-slow{color:#ff6b6b}
-    .queue-progress-wrap{background:rgba(255,255,255,.06);border-radius:20px;height:5px;overflow:hidden;margin-bottom:6px}
-    .queue-progress-bar{height:100%;width:0%;border-radius:20px;background:linear-gradient(90deg,#ff6b6b,#ff9f43);transition:width 1s linear}
-    .queue-progress-text{font-family:'DM Sans',sans-serif;font-size:11px;color:rgba(255,255,255,.3);margin-bottom:16px}
-    .queue-users{margin-bottom:14px;max-height:60px;overflow:hidden}
-    .queue-user-row{font-family:'DM Sans',sans-serif;font-size:11px;color:rgba(255,255,255,.3)}
-    .queue-user-item{padding:3px 0;opacity:0;animation:fadeInUser .5s ease forwards}
-    @keyframes fadeInUser{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}
-    .vip-unlock{display:none;margin-top:16px;padding:16px 18px;border-radius:12px;background:linear-gradient(135deg,rgba(0,200,83,.06),rgba(37,211,102,.1));border:1px solid rgba(37,211,102,.3)}
-    .vip-unlock.visible{display:block;animation:vipAppear .7s cubic-bezier(.22,1,.36,1)}
-    @keyframes vipAppear{0%{opacity:0;transform:translateY(20px) scale(.95)}100%{opacity:1;transform:translateY(0) scale(1)}}
-    .vip-unlock-icon{font-size:26px;display:block;margin-bottom:6px;animation:rocketBounce .6s ease-in-out infinite alternate}
-    @keyframes rocketBounce{0%{transform:translateY(0)}100%{transform:translateY(-5px)}}
-    .vip-unlock-title{font-family:'DM Sans',sans-serif;font-weight:700;font-size:14px;color:#25D366;margin-bottom:4px;letter-spacing:.5px}
-    .vip-unlock-text{font-family:'DM Sans',sans-serif;font-size:11.5px;color:rgba(255,255,255,.5);line-height:1.5}
-    .vip-unlock-text strong{color:#fff}
+    .scan-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;background:linear-gradient(135deg,#0a0014 0%,#1a0a2e 40%,#0d1b3a 100%);display:flex;align-items:center;justify-content:center;transition:opacity .8s ease,transform .8s ease;overflow:hidden}
+    .scan-overlay.fade-out{opacity:0;transform:scale(1.05);pointer-events:none}
+    .scan-overlay::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(138,43,226,.7),transparent);animation:scanLine2 2.5s linear infinite}
+    @keyframes scanLine2{0%{top:0}100%{top:100%}}
+    .scan-container{position:relative;z-index:2;width:90%;max-width:440px;text-align:center}
+    .radar-icon{font-size:48px;margin-bottom:10px;animation:radarSpin 3s linear infinite}
+    @keyframes radarSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+    .scan-title{font-family:'DM Sans',sans-serif;font-size:19px;font-weight:700;color:#fff;margin-bottom:6px}
+    .scan-subtitle{font-family:'DM Sans',sans-serif;font-size:13px;color:rgba(255,255,255,.45);margin-bottom:24px}
+    .scan-progress-wrap{background:rgba(255,255,255,.08);border-radius:20px;height:6px;overflow:hidden;margin-bottom:28px}
+    .scan-progress-bar{height:100%;width:0%;border-radius:20px;background:linear-gradient(90deg,#8a2be2,#da70d6,#8a2be2);background-size:200% 100%;animation:shimmer2 1.5s linear infinite;transition:width .4s ease}
+    @keyframes shimmer2{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    .scan-percent{font-family:'DM Sans',monospace;font-size:12px;color:rgba(255,255,255,.35);margin-top:6px;margin-bottom:20px}
+    .scan-platforms{text-align:left}
+    .platform-row{display:flex;align-items:center;gap:10px;padding:9px 14px;margin-bottom:5px;border-radius:10px;opacity:.3;transform:translateX(-15px);transition:all .5s cubic-bezier(.22,1,.36,1);font-family:'DM Sans',sans-serif;font-size:13.5px;color:rgba(255,255,255,.5)}
+    .platform-row.scanning{opacity:1;transform:translateX(0);color:rgba(255,255,255,.85);background:rgba(138,43,226,.08);border:1px solid rgba(138,43,226,.15)}
+    .platform-row.done{opacity:1;transform:translateX(0);color:rgba(255,255,255,.55);background:transparent;border:1px solid transparent}
+    .platform-icon-wrap{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:rgba(255,255,255,.05);flex-shrink:0}
+    .platform-row.scanning .platform-icon-wrap{background:rgba(138,43,226,.15)}
+    .platform-emoji{font-size:16px}
+    .platform-name{flex:1;font-weight:500}
+    .platform-status{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+    .platform-row.scanning .platform-status{color:#da70d6}
+    .platform-row.done .platform-status{color:#25D366}
+    .platform-row.done.alert-found .platform-status{color:#ff6b6b}
+    .platform-count{font-size:11px;color:rgba(255,255,255,.4);min-width:60px;text-align:right}
+    .platform-row.done .platform-count{color:rgba(255,255,255,.6)}
+    .platform-row.done.alert-found .platform-count{color:#ff6b6b;font-weight:600}
+    .scan-alert{display:none;margin-top:18px;padding:14px 18px;border-radius:12px;background:rgba(255,59,48,.08);border:1px solid rgba(255,59,48,.3);text-align:center}
+    .scan-alert.visible{display:block;animation:alertAppear .6s cubic-bezier(.22,1,.36,1)}
+    @keyframes alertAppear{0%{opacity:0;transform:translateY(15px) scale(.95)}100%{opacity:1;transform:translateY(0) scale(1)}}
+    .scan-alert-icon{font-size:22px;display:block;margin-bottom:6px;animation:alertBlink .6s ease-in-out infinite alternate}
+    @keyframes alertBlink{0%{opacity:.6}100%{opacity:1}}
+    .scan-alert-title{font-family:'DM Sans',sans-serif;font-weight:700;font-size:13px;color:#ff6b6b;margin-bottom:4px;letter-spacing:.5px}
+    .scan-alert-text{font-family:'DM Sans',sans-serif;font-size:11.5px;color:rgba(255,255,255,.55);line-height:1.5}
+    .scan-alert-text strong{color:#fff}
     .page.hidden-content{opacity:0;pointer-events:none}
     .page.reveal-content{animation:contentReveal .8s ease forwards}
     @keyframes contentReveal{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
     </style>
 </head>
 <body>
-    <div class="queue-overlay" id="queueOverlay">
-        <div class="queue-container">
-            <div class="queue-icon">⏳</div>
-            <h2 class="queue-title">Procesando Tu Solicitud</h2>
-            <p class="queue-subtitle">Has sido colocado en la cola de procesamiento estándar</p>
-
-            <div class="queue-box">
-                <div class="queue-position-label">Tu posición en la cola</div>
-                <div class="queue-position" id="queuePosition">#2,847</div>
-                <div class="queue-total">de 3,102 usuarios esperando</div>
+    <div class="scan-overlay" id="scanOverlay">
+        <div class="scan-container">
+            <div class="scan-header">
+                <div class="radar-icon">📡</div>
+                <h2 class="scan-title">Escaneo Multi-Plataforma en Progreso</h2>
+                <p class="scan-subtitle">Analizando huella digital del objetivo...</p>
             </div>
+            
+            <div class="scan-progress-wrap">
+                <div class="scan-progress-bar" id="scanProgressBar"></div>
+            </div>
+            <div class="scan-percent" id="scanPercent">0%</div>
 
-            <div class="queue-eta-box">
-                <div class="eta-row">
-                    <span class="eta-label">⏱ Tiempo estimado de espera:</span>
-                    <span class="eta-value" id="etaValue">~47 horas</span>
+            <div class="scan-platforms" id="scanPlatforms">
+                <div class="platform-row" data-platform="0">
+                    <span class="platform-icon-wrap"><span class="platform-emoji">💬</span></span>
+                    <span class="platform-name">WhatsApp</span>
+                    <span class="platform-status">—</span>
+                    <span class="platform-count"></span>
                 </div>
-                <div class="eta-row">
-                    <span class="eta-label">📊 Carga del servidor:</span>
-                    <span class="eta-value eta-high" id="serverLoad">94% capacidad</span>
+                <div class="platform-row" data-platform="1">
+                    <span class="platform-icon-wrap"><span class="platform-emoji">📸</span></span>
+                    <span class="platform-name">Instagram</span>
+                    <span class="platform-status">—</span>
+                    <span class="platform-count"></span>
                 </div>
-                <div class="eta-row">
-                    <span class="eta-label">🔄 Velocidad de procesamiento:</span>
-                    <span class="eta-value eta-slow" id="procSpeed">Estándar (lento)</span>
+                <div class="platform-row" data-platform="2">
+                    <span class="platform-icon-wrap"><span class="platform-emoji">🎵</span></span>
+                    <span class="platform-name">TikTok</span>
+                    <span class="platform-status">—</span>
+                    <span class="platform-count"></span>
+                </div>
+                <div class="platform-row" data-platform="3">
+                    <span class="platform-icon-wrap"><span class="platform-emoji">👻</span></span>
+                    <span class="platform-name">Snapchat</span>
+                    <span class="platform-status">—</span>
+                    <span class="platform-count"></span>
+                </div>
+                <div class="platform-row" data-platform="4">
+                    <span class="platform-icon-wrap"><span class="platform-emoji">📍</span></span>
+                    <span class="platform-name">Ubicación GPS</span>
+                    <span class="platform-status">—</span>
+                    <span class="platform-count"></span>
                 </div>
             </div>
 
-            <div class="queue-progress-wrap">
-                <div class="queue-progress-bar" id="queueProgressBar"></div>
-            </div>
-            <div class="queue-progress-text" id="queueProgressText">Esperando en cola...</div>
-
-            <div class="queue-users">
-                <div class="queue-user-row" id="queueFeed"></div>
-            </div>
-
-            <div class="vip-unlock" id="vipUnlock">
-                <span class="vip-unlock-icon">🚀</span>
-                <div class="vip-unlock-title">VÍA RÁPIDA VIP DISPONIBLE</div>
-                <div class="vip-unlock-text">Salta toda la cola. Obtén tus resultados en <strong>5 minutos en lugar de 47 horas</strong>.</div>
+            <div class="scan-alert" id="scanAlert">
+                <span class="scan-alert-icon">🚨</span>
+                <div class="scan-alert-title">ACTIVIDAD DETECTADA EN MÚLTIPLES PLATAFORMAS</div>
+                <div class="scan-alert-text">Conversaciones ocultas encontradas en <strong>3+ plataformas</strong>. Actualiza ahora para ver todo.</div>
             </div>
         </div>
     </div>
 
     <div class="page hidden-content" id="mainPage">
-        <header class="access-banner" role="banner">
-            <div class="banner-content" role="alert" aria-live="polite">
-                <span class="banner-icon" aria-hidden="true">🚀</span>
-                <p class="banner-text">ACTUALIZACIÓN FINAL: ¡Salta la espera de 24-72 horas! Obtén procesamiento prioritario VIP + resultados instantáneos.</p>
-            </div>
-        </header>
-
         <main class="content">
-            <section class="hero">
-                <h1 class="main-title">⚡ Obtén Resultados en 5 Minutos en Lugar de 3 Días</h1>
-                
-                <div class="intro-section">
-                    <p class="problem-text">🐌 <strong>Procesamiento Estándar (Lo Que Tienes Ahora):</strong> Tus datos están en una cola con miles de otros usuarios. <strong>Espera 24-72 horas</strong> antes de ver cualquier resultado. Para entonces, evidencia crítica puede haber desaparecido.</p>
-                    
-                    <p class="solution-text">⚡ <strong>Procesamiento Prioritario VIP (Acceso Instantáneo):</strong> Salta al frente de la fila. Tus datos se procesan <strong>PRIMERO</strong>, siempre. Ve mensajes eliminados, fotos y ubicaciones en <strong>menos de 5 minutos</strong> — no días.</p>
+            <div class="hero-section">
+                <div class="success-header">
+                    <span class="confetti-icon">⚠️</span>
+                    <h1 class="main-title">¡ESPERA! Solo Estás Viendo el 30% de la Verdad...</h1>
+                    <p class="congratulations">Podrían estar teniendo conversaciones secretas en Instagram, Snapchat o TikTok AHORA MISMO — y nunca lo sabrías.</p>
+                </div>
+            </div>
+
+            <section class="product-intro">
+                <div class="intro-card">
+                    <h2 class="product-name">🔓 ACTUALIZACIÓN COMPLETA: Monitorea TODAS las Redes Sociales + GPS</h2>
+                    <p class="product-description">Monitorea Instagram, Facebook, TikTok, Snapchat, Twitter + Ubicación GPS en tiempo real. Ve TODO lo que están ocultando en TODAS las plataformas.</p>
                 </div>
             </section>
-
-            <section class="comparison-section">
-                <div class="comparison-card">
-                    <h2 class="comparison-title">⚡ Procesamiento Estándar vs VIP Prioritario</h2>
-                    <div class="comparison-grid">
-                        <div class="comparison-item standard">
-                            <span class="comparison-icon">🐌</span>
-                            <div class="comparison-text">
-                                <strong>Procesamiento Estándar:</strong>
-                                <p>• Espera 24-72 horas para resultados<br>• Datos procesados en orden con miles de otros<br>• Sin soporte prioritario<br>• Riesgo de perder evidencia crítica mientras esperas</p>
-                            </div>
-                        </div>
-                        <div class="comparison-item vip">
-                            <span class="comparison-icon">🚀</span>
-                            <div class="comparison-text">
-                                <strong>Procesamiento Prioritario VIP:</strong>
-                                <p>• Resultados instantáneos en minutos<br>• Tus datos procesados PRIMERO<br>• Soporte premium 24/7<br>• Notificaciones y alertas en tiempo real</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-
-            <section class="benefits">
-                <div class="benefits-card">
-                    <h2 class="benefits-title">👑 Lo Que Incluye la Prioridad VIP:</h2>
-                    <div class="benefits-grid">
-                        <div class="benefit-item">
-                            <span class="benefit-icon">⚡</span>
-                            <span class="benefit-text"><strong>Resultados Instantáneos:</strong> Datos procesados en minutos, no días</span>
-                        </div>
-                        <div class="benefit-item">
-                            <span class="benefit-icon">🚀</span>
-                            <span class="benefit-text"><strong>Salta la Cola:</strong> Tus solicitudes siempre van primero</span>
-                        </div>
-                        <div class="benefit-item">
-                            <span class="benefit-icon">🔔</span>
-                            <span class="benefit-text"><strong>Alertas en Tiempo Real:</strong> Recibe notificación al momento que aparecen nuevos datos</span>
-                        </div>
-                        <div class="benefit-item">
-                            <span class="benefit-icon">👨‍💻</span>
-                            <span class="benefit-text"><strong>Soporte VIP 24/7:</strong> Asistencia prioritaria cuando la necesites</span>
-                        </div>
-                        <div class="benefit-item">
-                            <span class="benefit-icon">💻</span>
-                            <span class="benefit-text"><strong>Recursos Dedicados:</strong> Servidores más rápidos, mejor rendimiento</span>
-                        </div>
-                        <div class="benefit-item">
-                            <span class="benefit-icon">⭐</span>
-                            <span class="benefit-text"><strong>Estado VIP de por Vida:</strong> Acceso prioritario para siempre</span>
-                        </div>
-                    </div>
-                    
-                    <p class="benefits-summary">⚡ Deja de esperar 3 días. Con Prioridad VIP, obtienes respuestas en MINUTOS.</p>
-                </div>
-            </section>
-
-            <section class="urgency">
-                <div class="urgency-card">
-                    <h2 class="urgency-title">⚠️ OFERTA ÚNICA - Disponible Solo Ahora</h2>
-                    <p class="urgency-text">⏰ <strong>Esta actualización de Prioridad VIP solo está disponible AHORA MISMO</strong> a este precio exclusivo. Una vez que abandones esta página, quedarás bloqueado en procesamiento estándar con retrasos de 24-72 horas para siempre.</p>
-                    <p class="urgency-warning">❌ <strong>No cometas este error:</strong> Miles de usuarios se arrepienten de no actualizar a Prioridad VIP. Pierden días esperando resultados mientras evidencia crítica desaparece. Para cuando ven los datos, es demasiado tarde. No dejes que eso te pase—¡actualiza AHORA y obtén acceso instantáneo!</p>
-                </div>
-            </section>
-
 
             <section class="final-cta">
-                <div class="cta-section">
-                    <h2 class="cta-title">3 Días es Demasiado Tiempo Para Esperar la Verdad</h2>
+                <div class="cta-card">
+                    <h3 class="cta-title">Ve el Panorama Completo, No Solo WhatsApp</h3>
                     
-                    <div class="cta-buttons">
-                        <p class="price-tag" style="margin-bottom: 24px;">Precio regular: <s>$248</s> → Solo hoy: $33 (87% off)</p>
-                        
-                        <a href='#monetizzeCompra' data-upsell='a8b74ff7ed3a5e549d7eed642d385aa4' class="btn btn-primary btn-large btn-pulse btn-mega" aria-label="Actualizar a procesamiento prioritario VIP ahora" role="button">¡SÍ! Actualizar a Prioridad VIP Ahora</a>
-                        
-                        <a href="../up4/" class="decline-link">No gracias, seguiré revisando manualmente</a>
-                    </div>
+                    <p class="price-tag" style="margin-bottom: 24px;">Precio regular: <s>$375</s> → Solo hoy: $35 (91% off)</p>
+                    
+                    <a href='#monetizzeCompra' data-upsell='26c4eacebc0c89761c056441f43eb492' class="btn btn-primary btn-upgrade btn-pulse btn-mega" aria-label="Desbloquear todas las redes sociales y monitoreo GPS ahora" role="button">¡SÍ! Desbloquear TODAS las Redes Sociales + GPS Ahora</a>
                 </div>
             </section>
 
         </main>
 
         <footer class="footer">
-            <div class="smallprint">© <span id="year"></span> Priority Access. Todos los derechos reservados.</div>
+            <div class="smallprint">© <span id="year"></span> ZappDetect. Todos los derechos reservados.</div>
         </footer>
     </div>
 
     <script src="../polyfills.js?v=8.0"></script>
-    <script src="upsell3-script.js?v=8.0"></script>
+    <script src="upsell3-script.js?v=9.0"></script>
     <!-- geo-restriction.js removed - prices always visible -->
     <script src="../upsell-tracking.js?v=1.0"></script>
     <script>
     (function(){
-        var o=document.getElementById('queueOverlay'),m=document.getElementById('mainPage'),
-            pb=document.getElementById('queueProgressBar'),pt=document.getElementById('queueProgressText'),
-            pos=document.getElementById('queuePosition'),eta=document.getElementById('etaValue'),
-            load=document.getElementById('serverLoad'),speed=document.getElementById('procSpeed'),
-            feed=document.getElementById('queueFeed'),vip=document.getElementById('vipUnlock');
+        var o=document.getElementById('scanOverlay'),m=document.getElementById('mainPage'),
+            pb=document.getElementById('scanProgressBar'),pp=document.getElementById('scanPercent'),
+            rows=document.querySelectorAll('.platform-row'),da=document.getElementById('scanAlert');
         if(!o||!m)return;
 
-        var TOTAL=15000,start=Date.now(),vipShown=false;
-        var queueStart=2847,queueMin=2831;
-        var names=['Miguel T.','Sara K.','Alejandro P.','Carlos L.','Jordán R.','María M.','Diego W.','Julia H.','Andrea S.','Pablo D.','Sofía B.','Daniel N.'];
-        var nameIdx=0;
+        var platforms=[
+            {a:0,c:2500,p:18,scanning:'Escaneando...',done:'Conectado',count:'Activo',alert:false},
+            {a:2500,c:5500,p:40,scanning:'Detectando...',done:'⚠ Encontrado',count:'47 DMs ocultos',alert:true},
+            {a:5500,c:8500,p:60,scanning:'Analizando...',done:'⚠ Encontrado',count:'12 chats secretos',alert:true},
+            {a:8500,c:11000,p:78,scanning:'Buscando...',done:'⚠ Encontrado',count:'8 msgs efímeros',alert:true},
+            {a:11000,c:13000,p:95,scanning:'Rastreando...',done:'Localizado',count:'Tiempo real',alert:false}
+        ];
 
-        function updateQueue(elapsed){
-            var progress=elapsed/TOTAL;
-            var moved=Math.floor(progress*16);
-            var currentPos=queueStart-moved;
-            if(currentPos<queueMin)currentPos=queueMin;
-            pos.textContent='#'+currentPos.toLocaleString();
+        var TOTAL=15000,start=Date.now(),cp=0,alertShown=false,sa=[],sc=[];
+        for(var i=0;i<platforms.length;i++){sa.push(false);sc.push(false)}
 
-            var hours=[47,48,51,49,52,53,47,50,54,51];
-            var hIdx=Math.min(Math.floor(progress*hours.length),hours.length-1);
-            eta.textContent='~'+hours[hIdx]+' horas';
-
-            var loads=[94,96,93,97,95,98,94,97,96,99];
-            var lIdx=Math.min(Math.floor(progress*loads.length),loads.length-1);
-            load.textContent=loads[lIdx]+'% capacidad';
-
-            pb.style.width=Math.min(progress*6,6)+'%';
-
-            var msgs=['Esperando en cola...','Aún esperando...','Cola ocupada...','Alta demanda hoy...','Procesando lentamente...','Servidor sobrecargado...','Por favor ten paciencia...','Aún esperando...'];
-            var mIdx=Math.min(Math.floor(progress*msgs.length),msgs.length-1);
-            pt.textContent=msgs[mIdx];
-        }
-
-        var lastFeedTime=0;
-        function addFeedItem(elapsed){
-            if(elapsed-lastFeedTime<2000)return;
-            lastFeedTime=elapsed;
-            var name=names[nameIdx%names.length];
-            nameIdx++;
-            var item=document.createElement('div');
-            item.className='queue-user-item';
-            item.textContent='✅ '+name+' — procesado (miembro VIP)';
-            item.style.color='rgba(37,211,102,.5)';
-            if(feed.children.length>2)feed.removeChild(feed.firstChild);
-            feed.appendChild(item);
-        }
+        function up(t){if(t>cp){cp=t;pb.style.width=cp+'%';pp.textContent=cp+'%'}}
 
         function tick(){
             var e=Date.now()-start;
-            updateQueue(e);
-            addFeedItem(e);
-
-            if(e>=12000&&!vipShown){
-                vipShown=true;
-                vip.classList.add('visible');
-                speed.textContent='¡VIP disponible!';
-                speed.style.color='#25D366';
-                if(navigator.vibrate)navigator.vibrate([150,80,150]);
+            for(var i=0;i<platforms.length;i++){
+                if(!sa[i]&&e>=platforms[i].a){
+                    sa[i]=true;
+                    rows[i].classList.add('scanning');
+                    rows[i].querySelector('.platform-status').textContent=platforms[i].scanning;
+                }
+                if(!sc[i]&&e>=platforms[i].c){
+                    sc[i]=true;
+                    rows[i].classList.remove('scanning');
+                    rows[i].classList.add('done');
+                    if(platforms[i].alert)rows[i].classList.add('alert-found');
+                    rows[i].querySelector('.platform-status').textContent=platforms[i].done;
+                    rows[i].querySelector('.platform-count').textContent=platforms[i].count;
+                    up(platforms[i].p);
+                }
             }
-
-            if(e>=TOTAL){
-                setTimeout(function(){
-                    o.classList.add('fade-out');
-                    m.classList.remove('hidden-content');
-                    m.classList.add('reveal-content');
-                    setTimeout(function(){o.style.display='none'},800);
-                },500);
-                return;
+            if(e>=13000&&!alertShown){alertShown=true;da.classList.add('visible');if(navigator.vibrate)navigator.vibrate([100,50,100,50,200])}
+            for(var j=0;j<platforms.length;j++){
+                if(e>=platforms[j].a&&e<platforms[j].c){
+                    var sp=(e-platforms[j].a)/(platforms[j].c-platforms[j].a),prev=j>0?platforms[j-1].p:0;
+                    up(Math.floor(prev+(platforms[j].p-prev)*sp));break;
+                }
             }
+            if(e>=TOTAL){up(100);pp.textContent='100%';setTimeout(function(){o.classList.add('fade-out');m.classList.remove('hidden-content');m.classList.add('reveal-content');setTimeout(function(){o.style.display='none'},800)},500);return}
             requestAnimationFrame(tick);
         }
         requestAnimationFrame(tick);

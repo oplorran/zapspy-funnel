@@ -1,28 +1,34 @@
-(function(){
+﻿(function(){
 
     // ============================================
-    // COUNTDOWN TIMER
+    // VIP PROCESSING OVERLAY - REMOVED FOR BETTER CONVERSION
     // ============================================
-    var STORAGE_KEY = 'upsell4_timer_end';
-    var TIMER_DURATION = 10 * 60;
-    var totalSeconds;
+    // Overlay removed - content displays immediately
+    // Page view is tracked via upsell-tracking.js
+
+    // ============================================
+    // COUNTDOWN TIMER WITH AUTO-RESTART
+    // ============================================
+    const STORAGE_KEY = 'upsell2_timer_end_es';
+    const TIMER_DURATION = 12 * 60 + 47; // 12:47
+    let totalSeconds;
     
     function initTimer() {
-        var savedEndTime = localStorage.getItem(STORAGE_KEY);
+        const savedEndTime = localStorage.getItem(STORAGE_KEY);
         if (savedEndTime) {
-            var now = Math.floor(Date.now() / 1000);
-            var remaining = parseInt(savedEndTime) - now;
+            const now = Math.floor(Date.now() / 1000);
+            const remaining = parseInt(savedEndTime) - now;
             totalSeconds = remaining > 0 ? remaining : 0;
         } else {
             totalSeconds = TIMER_DURATION;
-            var endTime = Math.floor(Date.now() / 1000) + totalSeconds;
+            const endTime = Math.floor(Date.now() / 1000) + totalSeconds;
             localStorage.setItem(STORAGE_KEY, endTime);
         }
     }
     
     function restartTimer() {
         totalSeconds = TIMER_DURATION;
-        var endTime = Math.floor(Date.now() / 1000) + totalSeconds;
+        const endTime = Math.floor(Date.now() / 1000) + totalSeconds;
         localStorage.setItem(STORAGE_KEY, endTime);
     }
     
@@ -36,7 +42,7 @@
         return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
     }
     
-    function updateTimer() {
+    function updateAllTimers() {
         var formatted = format(totalSeconds);
         if (countdownEl) countdownEl.textContent = formatted;
         if (countdownCtaEl) countdownCtaEl.textContent = formatted;
@@ -45,7 +51,9 @@
     function tick(){
         if (totalSeconds <= 0) {
             restartTimer();
-            updateTimer();
+            updateAllTimers();
+            
+            // Visual feedback when timer restarts
             var timerBar = document.querySelector('.timer-bar');
             if (timerBar) {
                 timerBar.classList.add('timer-restarted');
@@ -56,94 +64,34 @@
             return;
         }
         totalSeconds -= 1;
-        updateTimer();
+        updateAllTimers();
     }
     
     initTimer();
-    updateTimer();
-    setInterval(tick, 1000);
+    updateAllTimers();
+    var timer = setInterval(tick, 1000);
 
     // ============================================
-    // LIVE ACTIVITY FEED
+    // DYNAMIC SCARCITY NUMBERS
     // ============================================
-    var firstNames = [
-        'Sara', 'Carlos', 'María', 'David', 'Ana', 'Miguel', 'Elena', 'Jaime',
-        'Sofía', 'Guillermo', 'Isabella', 'Lucas', 'Olivia', 'Daniel', 'Valentina',
-        'Gabriel', 'Emilia', 'Mateo', 'Ava', 'Andrés', 'Jessica', 'Raúl',
-        'Jennifer', 'Pedro', 'Amanda', 'Luis', 'Raquel', 'Diego', 'Natalia',
-        'Alejandra', 'Brandon', 'Cristina', 'Fernando', 'Lorena', 'Francisco', 'Gracia'
-    ];
-    
-    var locations = [
-        'Madrid', 'Barcelona', 'Ciudad de México', 'Buenos Aires', 'Bogotá', 'Lima',
-        'Santiago', 'Guadalajara', 'Medellín', 'Monterrey', 'Quito', 'Caracas',
-        'Sevilla', 'Valencia', 'La Paz', 'Panamá', 'San José', 'Montevideo',
-        'Asunción', 'Tegucigalpa', 'Managua', 'San Salvador', 'Santo Domingo', 'Guayaquil'
-    ];
-    
-    var actions = [
-        'activó el Análisis de Comportamiento IA',
-        'desbloqueó la detección de patrones',
-        'habilitó el seguimiento de comportamiento IA',
-        'se actualizó al Analista IA'
-    ];
-    
-    var activityFeed = document.getElementById('activityFeed');
-    
-    function getRandomTime() {
-        var rand = Math.random();
-        if (rand < 0.3) return 'hace ' + Math.floor(Math.random() * 60) + ' segundos';
-        if (rand < 0.7) return 'hace ' + (Math.floor(Math.random() * 5) + 1) + ' minutos';
-        return 'hace ' + (Math.floor(Math.random() * 10) + 5) + ' minutos';
-    }
-    
-    function getRandomName() {
-        var name = firstNames[Math.floor(Math.random() * firstNames.length)];
-        var lastInitial = String.fromCharCode(65 + Math.floor(Math.random() * 26));
-        return name + ' ' + lastInitial + '.';
-    }
-    
-    function createActivityItem(isNew) {
-        var name = getRandomName();
-        var location = locations[Math.floor(Math.random() * locations.length)];
-        var time = getRandomTime();
-        var action = actions[Math.floor(Math.random() * actions.length)];
-        
-        var item = document.createElement('div');
-        item.className = 'activity-item' + (isNew ? ' new-item' : '');
-        item.innerHTML = '<span class="activity-icon">🧠</span> <strong>' + name + '</strong> de ' + location + ' ' + action + ' <span class="activity-time">' + time + '</span>';
-        return item;
-    }
-    
-    function initActivityFeed() {
-        if (!activityFeed) return;
-        for (var i = 0; i < 3; i++) {
-            activityFeed.appendChild(createActivityItem(false));
+    function updateScarcityNumber() {
+        var scarcityEl = document.querySelector('.scarcity-text strong');
+        if (scarcityEl) {
+            var baseNumber = Math.floor(Math.random() * (52 - 24 + 1)) + 24;
+            scarcityEl.textContent = baseNumber + ' personas';
         }
     }
     
-    function addNewActivity() {
-        if (!activityFeed) return;
-        var newItem = createActivityItem(true);
-        activityFeed.insertBefore(newItem, activityFeed.firstChild);
-        setTimeout(function() { newItem.classList.remove('new-item'); }, 600);
-        
-        var items = activityFeed.querySelectorAll('.activity-item');
-        if (items.length > 3) {
-            var lastItem = items[items.length - 1];
-            lastItem.style.opacity = '0';
-            lastItem.style.transform = 'translateX(20px)';
-            setTimeout(function() { if (lastItem.parentNode) lastItem.parentNode.removeChild(lastItem); }, 300);
-        }
+    function scheduleScarcityUpdate() {
+        var delay = (Math.floor(Math.random() * 30) + 30) * 1000;
+        setTimeout(function() {
+            updateScarcityNumber();
+            scheduleScarcityUpdate();
+        }, delay);
     }
     
-    function scheduleActivityUpdate() {
-        var delay = (Math.floor(Math.random() * 12) + 8) * 1000;
-        setTimeout(function() { addNewActivity(); scheduleActivityUpdate(); }, delay);
-    }
-    
-    initActivityFeed();
-    scheduleActivityUpdate();
+    updateScarcityNumber();
+    scheduleScarcityUpdate();
 
     // ============================================
     // FOOTER YEAR
@@ -152,20 +100,116 @@
     if (yearEl) yearEl.textContent = new Date().getFullYear();
 
     // ============================================
-    // ANIMATIONS
+    // LIVE ACTIVITY FEED - REALISTIC & ANIMATED
     // ============================================
-    var style = document.createElement('style');
-    style.textContent = '@keyframes gentle-glow{0%{box-shadow:0 4px 12px rgba(220,53,69,.1)}100%{box-shadow:0 8px 24px rgba(220,53,69,.25)}}@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}.fade-in{animation:fadeInUp .6s ease forwards}';
-    document.head.appendChild(style);
-
-    var sections = document.querySelectorAll('.testimonial, .benefits, .urgency, .final-cta');
-    sections.forEach(function(section, index) {
-        section.style.animationDelay = (index * 0.15) + 's';
-        section.classList.add('fade-in');
-    });
-
-    window.addEventListener('load', function() {
-        var urgencyCard = document.querySelector('.urgency-card');
-        if (urgencyCard) urgencyCard.style.animation = 'gentle-glow 2s ease-in-out infinite alternate';
-    });
+    var firstNames = [
+        'María', 'Juan', 'Ana', 'Carlos', 'Laura', 'Miguel', 'Elena', 'Diego',
+        'Sofía', 'Andrés', 'Isabella', 'Lucas', 'Camila', 'Daniel', 'Valentina',
+        'Gabriel', 'Emilia', 'Mateo', 'Ava', 'Pablo', 'Jessica', 'Rodrigo',
+        'Jennifer', 'Fernando', 'Amanda', 'Pedro', 'Raquel', 'Luis', 'Nicole',
+        'Carolina', 'Roberto', 'Patricia', 'Eduardo', 'Elena', 'Francisco', 'Graciela'
+    ];
+    
+    var locations = [
+        'Ciudad de México', 'Buenos Aires', 'Madrid', 'Bogotá', 'Lima', 'Santiago',
+        'Barcelona', 'Caracas', 'Medellín', 'Guadalajara', 'Monterrey', 'Quito',
+        'La Paz', 'Asunción', 'Montevideo', 'San José', 'Panamá', 'Santo Domingo',
+        'Córdoba', 'Rosario', 'Sevilla', 'Valencia', 'Cali', 'Arequipa'
+    ];
+    
+    var actions = [
+        'desbloqueó todas las redes sociales',
+        'agregó rastreo GPS',
+        'actualizó al paquete completo',
+        'activó monitoreo total'
+    ];
+    
+    var activityFeed = document.getElementById('activityFeed');
+    
+    function getRandomTime() {
+        var rand = Math.random();
+        if (rand < 0.3) {
+            return 'hace ' + Math.floor(Math.random() * 60) + ' segundos';
+        } else if (rand < 0.7) {
+            return 'hace ' + (Math.floor(Math.random() * 5) + 1) + ' minutos';
+        } else {
+            return 'hace ' + (Math.floor(Math.random() * 10) + 5) + ' minutos';
+        }
+    }
+    
+    function getRandomName() {
+        var name = firstNames[Math.floor(Math.random() * firstNames.length)];
+        var lastInitial = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+        return name + ' ' + lastInitial + '.';
+    }
+    
+    function getRandomLocation() {
+        return locations[Math.floor(Math.random() * locations.length)];
+    }
+    
+    function getRandomAction() {
+        return actions[Math.floor(Math.random() * actions.length)];
+    }
+    
+    function createActivityItem(isNew) {
+        var name = getRandomName();
+        var location = getRandomLocation();
+        var time = getRandomTime();
+        var action = getRandomAction();
+        
+        var item = document.createElement('div');
+        item.className = 'activity-item' + (isNew ? ' new-item' : '');
+        item.innerHTML = '<span class="activity-icon">✅</span> <strong>' + name + '</strong> de ' + location + ' ' + action + ' <span class="activity-time">' + time + '</span>';
+        
+        return item;
+    }
+    
+    function initActivityFeed() {
+        if (!activityFeed) return;
+        
+        // Create initial 3 items
+        for (var i = 0; i < 3; i++) {
+            var item = createActivityItem(false);
+            activityFeed.appendChild(item);
+        }
+    }
+    
+    function addNewActivity() {
+        if (!activityFeed) return;
+        
+        // Create new item with animation
+        var newItem = createActivityItem(true);
+        activityFeed.insertBefore(newItem, activityFeed.firstChild);
+        
+        // Remove animation class after animation completes
+        setTimeout(function() {
+            newItem.classList.remove('new-item');
+        }, 600);
+        
+        // Keep only 3 items visible
+        var items = activityFeed.querySelectorAll('.activity-item');
+        if (items.length > 3) {
+            var lastItem = items[items.length - 1];
+            lastItem.style.opacity = '0';
+            lastItem.style.transform = 'translateX(20px)';
+            setTimeout(function() {
+                if (lastItem.parentNode) {
+                    lastItem.parentNode.removeChild(lastItem);
+                }
+            }, 300);
+        }
+    }
+    
+    function scheduleActivityUpdate() {
+        // Random delay between 8-20 seconds
+        var delay = (Math.floor(Math.random() * 12) + 8) * 1000;
+        setTimeout(function() {
+            addNewActivity();
+            scheduleActivityUpdate();
+        }, delay);
+    }
+    
+    // Initialize feed and start updates
+    initActivityFeed();
+    scheduleActivityUpdate();
 })();

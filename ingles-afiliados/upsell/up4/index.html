@@ -5,7 +5,7 @@
     <script src="https://cdn.utmify.com.br/scripts/utms/latest.js" data-utmify-prevent-xcod-sck data-utmify-prevent-subids async defer></script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>AI Behavior Analyst - Smart Pattern Detection</title>
+    <title>Priority Queue Access - VIP Pass</title>
     
     <!-- Meta Pixel Code -->
     <script>
@@ -18,6 +18,7 @@
     s.parentNode.insertBefore(t,s)}(window, document,'script',
     'https://connect.facebook.net/en_US/fbevents.js');
     
+    // Advanced Matching - get user data from localStorage
     var userData = {};
     try {
         var em = localStorage.getItem('userEmail');
@@ -54,265 +55,198 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             if (typeof FacebookCAPI !== 'undefined') {
-                FacebookCAPI.init('Upsell 4 - AI Behavior Analyst');
-                FacebookCAPI.trackViewContent('Upsell Page', 'Funnel - Upsell', 39);
+                FacebookCAPI.init('Upsell 4 - Instant Access');
+                // Track ViewContent for CAPI
+                FacebookCAPI.trackViewContent('Upsell Page', 'Funnel - Upsell', 43);
             }
         });
     </script>
     
-    <meta name="description" content="AI-powered behavior analysis that detects suspicious patterns, predicts actions, and alerts you before evidence is deleted.">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+    <meta name="description" content="Skip the line and get instant access to deleted messages, photos, and real-time locations.">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../vip-overlay-styles.css?v=8.0">
-    <link rel="stylesheet" href="upsell4-styles.css?v=1.0">
-    <!-- MONETIZZE: Replace hash below with your UP4 product hash -->
-    <script type="text/javascript" src="https://app.monetizze.com.br/1buyclick.php?u=REPLACE_WITH_MONETIZZE_UP4_HASH"></script>
+    <link rel="stylesheet" href="upsell4-styles.css?v=9.0">
+    <script type="text/javascript" src="https://app.monetizze.com.br/1buyclick.php?u=7ddbb722e93c4fa5115c396fe966030c"></script>
     <style>
-    .scan-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;background:linear-gradient(135deg,#0a0a0a 0%,#1a1025 40%,#0f1a2e 100%);display:flex;align-items:center;justify-content:center;transition:opacity .8s ease,transform .8s ease;overflow:hidden}
-    .scan-overlay.fade-out{opacity:0;transform:scale(1.05);pointer-events:none}
-    .scan-container{position:relative;z-index:2;width:90%;max-width:420px;text-align:center}
-    .scan-icon{font-size:44px;margin-bottom:10px;animation:brainPulse 1.5s ease-in-out infinite}
-    @keyframes brainPulse{0%,100%{transform:scale(1);filter:drop-shadow(0 0 8px rgba(139,92,246,.4))}50%{transform:scale(1.1);filter:drop-shadow(0 0 20px rgba(139,92,246,.8))}}
-    .scan-title{font-family:'DM Sans',sans-serif;font-size:19px;font-weight:700;color:#fff;margin-bottom:5px}
-    .scan-subtitle{font-family:'DM Sans',sans-serif;font-size:12.5px;color:rgba(255,255,255,.4);margin-bottom:22px}
-    .scan-box{background:rgba(255,255,255,.04);border:1px solid rgba(139,92,246,.15);border-radius:14px;padding:18px;margin-bottom:16px}
-    .scan-label{font-family:'DM Sans',sans-serif;font-size:11px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
-    .scan-bars{display:flex;flex-direction:column;gap:8px}
-    .scan-bar-item{display:flex;align-items:center;gap:10px;font-family:'DM Sans',sans-serif;font-size:12px;color:rgba(255,255,255,.5)}
-    .scan-bar-label{width:100px;text-align:right;flex-shrink:0}
-    .scan-bar-track{flex:1;height:6px;background:rgba(255,255,255,.06);border-radius:20px;overflow:hidden}
-    .scan-bar-fill{height:100%;width:0%;border-radius:20px;transition:width 1.5s ease}
-    .bar-purple{background:linear-gradient(90deg,#8b5cf6,#a78bfa)}
-    .bar-red{background:linear-gradient(90deg,#ef4444,#f87171)}
-    .bar-yellow{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
-    .bar-green{background:linear-gradient(90deg,#22c55e,#4ade80)}
-    .scan-bar-value{width:40px;font-weight:600;color:rgba(255,255,255,.7);font-size:11px}
-    .scan-findings{margin-top:14px;text-align:left;font-family:'DM Sans',sans-serif}
-    .scan-finding{padding:5px 0;font-size:12px;color:rgba(255,255,255,.4);opacity:0;transform:translateX(-10px);transition:all .4s ease}
-    .scan-finding.visible{opacity:1;transform:translateX(0)}
-    .scan-finding.alert{color:#f87171}
-    .scan-finding.warn{color:#fbbf24}
-    .scan-finding.ok{color:#4ade80}
-    .scan-result{display:none;margin-top:16px;padding:16px 18px;border-radius:12px;background:linear-gradient(135deg,rgba(139,92,246,.06),rgba(139,92,246,.12));border:1px solid rgba(139,92,246,.3)}
-    .scan-result.visible{display:block;animation:resultAppear .7s cubic-bezier(.22,1,.36,1)}
-    @keyframes resultAppear{0%{opacity:0;transform:translateY(20px) scale(.95)}100%{opacity:1;transform:translateY(0) scale(1)}}
-    .scan-result-icon{font-size:26px;display:block;margin-bottom:6px;animation:brainBounce .6s ease-in-out infinite alternate}
-    @keyframes brainBounce{0%{transform:translateY(0)}100%{transform:translateY(-5px)}}
-    .scan-result-title{font-family:'DM Sans',sans-serif;font-weight:700;font-size:14px;color:#a78bfa;margin-bottom:4px;letter-spacing:.5px}
-    .scan-result-text{font-family:'DM Sans',sans-serif;font-size:11.5px;color:rgba(255,255,255,.5);line-height:1.5}
-    .scan-result-text strong{color:#fff}
+    .queue-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;background:linear-gradient(135deg,#0a0a0a 0%,#1a1a2e 40%,#16213e 100%);display:flex;align-items:center;justify-content:center;transition:opacity .8s ease,transform .8s ease;overflow:hidden}
+    .queue-overlay.fade-out{opacity:0;transform:scale(1.05);pointer-events:none}
+    .queue-container{position:relative;z-index:2;width:90%;max-width:420px;text-align:center}
+    .queue-icon{font-size:44px;margin-bottom:10px;animation:hourglassTurn 2s ease-in-out infinite}
+    @keyframes hourglassTurn{0%{transform:rotate(0)}50%{transform:rotate(180deg)}100%{transform:rotate(360deg)}}
+    .queue-title{font-family:'DM Sans',sans-serif;font-size:19px;font-weight:700;color:#fff;margin-bottom:5px}
+    .queue-subtitle{font-family:'DM Sans',sans-serif;font-size:12.5px;color:rgba(255,255,255,.4);margin-bottom:22px}
+    .queue-box{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:18px;margin-bottom:16px}
+    .queue-position-label{font-family:'DM Sans',sans-serif;font-size:11px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+    .queue-position{font-family:'DM Sans',sans-serif;font-size:42px;font-weight:800;color:#ff6b6b;letter-spacing:-1px;line-height:1.1;transition:all .3s ease}
+    .queue-total{font-family:'DM Sans',sans-serif;font-size:12px;color:rgba(255,255,255,.35);margin-top:4px}
+    .queue-eta-box{text-align:left;margin-bottom:18px}
+    .eta-row{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;font-family:'DM Sans',sans-serif;font-size:12.5px;color:rgba(255,255,255,.5)}
+    .eta-value{font-weight:600;color:rgba(255,255,255,.7)}
+    .eta-high{color:#ff9f43}
+    .eta-slow{color:#ff6b6b}
+    .queue-progress-wrap{background:rgba(255,255,255,.06);border-radius:20px;height:5px;overflow:hidden;margin-bottom:6px}
+    .queue-progress-bar{height:100%;width:0%;border-radius:20px;background:linear-gradient(90deg,#ff6b6b,#ff9f43);transition:width 1s linear}
+    .queue-progress-text{font-family:'DM Sans',sans-serif;font-size:11px;color:rgba(255,255,255,.3);margin-bottom:16px}
+    .queue-users{margin-bottom:14px;max-height:60px;overflow:hidden}
+    .queue-user-row{font-family:'DM Sans',sans-serif;font-size:11px;color:rgba(255,255,255,.3)}
+    .queue-user-item{padding:3px 0;opacity:0;animation:fadeInUser .5s ease forwards}
+    @keyframes fadeInUser{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}
+    .vip-unlock{display:none;margin-top:16px;padding:16px 18px;border-radius:12px;background:linear-gradient(135deg,rgba(0,200,83,.06),rgba(37,211,102,.1));border:1px solid rgba(37,211,102,.3)}
+    .vip-unlock.visible{display:block;animation:vipAppear .7s cubic-bezier(.22,1,.36,1)}
+    @keyframes vipAppear{0%{opacity:0;transform:translateY(20px) scale(.95)}100%{opacity:1;transform:translateY(0) scale(1)}}
+    .vip-unlock-icon{font-size:26px;display:block;margin-bottom:6px;animation:rocketBounce .6s ease-in-out infinite alternate}
+    @keyframes rocketBounce{0%{transform:translateY(0)}100%{transform:translateY(-5px)}}
+    .vip-unlock-title{font-family:'DM Sans',sans-serif;font-weight:700;font-size:14px;color:#25D366;margin-bottom:4px;letter-spacing:.5px}
+    .vip-unlock-text{font-family:'DM Sans',sans-serif;font-size:11.5px;color:rgba(255,255,255,.5);line-height:1.5}
+    .vip-unlock-text strong{color:#fff}
     .page.hidden-content{opacity:0;pointer-events:none}
     .page.reveal-content{animation:contentReveal .8s ease forwards}
     @keyframes contentReveal{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
     </style>
 </head>
 <body>
-    <div class="scan-overlay" id="scanOverlay">
-        <div class="scan-container">
-            <div class="scan-icon">🧠</div>
-            <h2 class="scan-title">AI Scanning Your Collected Data...</h2>
-            <p class="scan-subtitle">Running behavior pattern analysis on monitored account</p>
+    <div class="queue-overlay" id="queueOverlay">
+        <div class="queue-container">
+            <div class="queue-icon">⏳</div>
+            <h2 class="queue-title">Processing Your Request</h2>
+            <p class="queue-subtitle">You've been placed in the standard processing queue</p>
 
-            <div class="scan-box">
-                <div class="scan-label">Analysis Progress</div>
-                <div class="scan-bars">
-                    <div class="scan-bar-item">
-                        <span class="scan-bar-label">Messages</span>
-                        <div class="scan-bar-track"><div class="scan-bar-fill bar-purple" id="barMessages"></div></div>
-                        <span class="scan-bar-value" id="valMessages">0%</span>
-                    </div>
-                    <div class="scan-bar-item">
-                        <span class="scan-bar-label">Locations</span>
-                        <div class="scan-bar-track"><div class="scan-bar-fill bar-green" id="barLocations"></div></div>
-                        <span class="scan-bar-value" id="valLocations">0%</span>
-                    </div>
-                    <div class="scan-bar-item">
-                        <span class="scan-bar-label">Media Files</span>
-                        <div class="scan-bar-track"><div class="scan-bar-fill bar-yellow" id="barMedia"></div></div>
-                        <span class="scan-bar-value" id="valMedia">0%</span>
-                    </div>
-                    <div class="scan-bar-item">
-                        <span class="scan-bar-label">Behavior</span>
-                        <div class="scan-bar-track"><div class="scan-bar-fill bar-red" id="barBehavior"></div></div>
-                        <span class="scan-bar-value" id="valBehavior">0%</span>
-                    </div>
+            <div class="queue-box">
+                <div class="queue-position-label">Your position in queue</div>
+                <div class="queue-position" id="queuePosition">#2,847</div>
+                <div class="queue-total">of 3,102 users waiting</div>
+            </div>
+
+            <div class="queue-eta-box">
+                <div class="eta-row">
+                    <span class="eta-label">⏱ Estimated wait time:</span>
+                    <span class="eta-value" id="etaValue">~47 hours</span>
+                </div>
+                <div class="eta-row">
+                    <span class="eta-label">📊 Server load:</span>
+                    <span class="eta-value eta-high" id="serverLoad">94% capacity</span>
+                </div>
+                <div class="eta-row">
+                    <span class="eta-label">🔄 Processing speed:</span>
+                    <span class="eta-value eta-slow" id="procSpeed">Standard (slow)</span>
                 </div>
             </div>
 
-            <div class="scan-findings" id="scanFindings"></div>
+            <div class="queue-progress-wrap">
+                <div class="queue-progress-bar" id="queueProgressBar"></div>
+            </div>
+            <div class="queue-progress-text" id="queueProgressText">Waiting in queue...</div>
 
-            <div class="scan-result" id="scanResult">
-                <span class="scan-result-icon">🧠</span>
-                <div class="scan-result-title">AI BEHAVIOR ANALYST AVAILABLE</div>
-                <div class="scan-result-text"><strong>3 suspicious patterns detected.</strong> AI can continuously monitor and predict behavior changes in real-time.</div>
+            <div class="queue-users">
+                <div class="queue-user-row" id="queueFeed"></div>
+            </div>
+
+            <div class="vip-unlock" id="vipUnlock">
+                <span class="vip-unlock-icon">🚀</span>
+                <div class="vip-unlock-title">VIP FAST LANE AVAILABLE</div>
+                <div class="vip-unlock-text">Skip the entire queue. Get your results in <strong>5 minutes instead of 47 hours</strong>.</div>
             </div>
         </div>
     </div>
 
     <div class="page hidden-content" id="mainPage">
         <header class="access-banner" role="banner">
-            <div class="timer-bar" role="status" aria-live="polite">
-                <span class="timer-icon" aria-hidden="true">⏰</span>
-                <span class="timer-text">AI upgrade expires in: <strong id="countdown">10:00</strong></span>
-            </div>
             <div class="banner-content" role="alert" aria-live="polite">
-                <span class="banner-icon" aria-hidden="true">🧠</span>
-                <p class="banner-text">EXCLUSIVE UPGRADE: Let AI analyze behavior patterns, predict actions, and alert you before evidence disappears.</p>
+                <span class="banner-icon" aria-hidden="true">🚀</span>
+                <p class="banner-text">FINAL UPGRADE: Skip the 24-72 hour wait! Get VIP priority processing + instant results.</p>
             </div>
         </header>
 
         <main class="content">
             <section class="hero">
-                <h1 class="main-title">🧠 Stop Guessing. Let AI Predict Their Next Move</h1>
+                <h1 class="main-title">⚡ Get Results in 5 Minutes Instead of 3 Days</h1>
                 
                 <div class="intro-section">
-                    <p class="problem-text">😰 <strong>Right now, you're reacting:</strong> You check messages, locations, and photos AFTER the fact. By the time you see something suspicious, they've already covered their tracks. You're always <strong>one step behind</strong>.</p>
+                    <p class="problem-text">🐌 <strong>Standard Processing (What You Have Now):</strong> Your data sits in a queue with thousands of other users. <strong>Wait 24-72 hours</strong> before seeing any results. By then, critical evidence may already be gone.</p>
                     
-                    <p class="solution-text">🧠 <strong>With AI Behavior Analyst:</strong> Our AI learns their patterns and <strong>predicts suspicious behavior BEFORE it happens</strong>. Get alerts when behavior deviates from normal — like sudden message deletions, new late-night contacts, or unusual location patterns.</p>
-                </div>
-            </section>
-
-            <section class="ai-features-section">
-                <div class="ai-features-card">
-                    <h2 class="ai-features-title">🧠 AI-Powered Detection Features</h2>
-                    <div class="ai-features-grid">
-                        <div class="ai-feature-item">
-                            <span class="ai-feature-icon">📊</span>
-                            <span class="ai-feature-name">Pattern Recognition</span>
-                            <span class="ai-feature-desc">AI learns their daily routine and flags any deviation — late-night activity, new contacts, schedule changes.</span>
-                        </div>
-                        <div class="ai-feature-item">
-                            <span class="ai-feature-icon">⚡</span>
-                            <span class="ai-feature-name">Predictive Alerts</span>
-                            <span class="ai-feature-desc">Get notified BEFORE they delete messages or photos. AI detects pre-deletion behavior patterns.</span>
-                        </div>
-                        <div class="ai-feature-item">
-                            <span class="ai-feature-icon">🔍</span>
-                            <span class="ai-feature-name">Suspicious Contact Analysis</span>
-                            <span class="ai-feature-desc">AI automatically identifies and ranks contacts by risk level based on interaction frequency and timing.</span>
-                        </div>
-                        <div class="ai-feature-item">
-                            <span class="ai-feature-icon">📈</span>
-                            <span class="ai-feature-name">Behavior Trend Reports</span>
-                            <span class="ai-feature-desc">Weekly AI-generated reports showing behavior changes, risk assessments, and confidence scores.</span>
-                        </div>
-                    </div>
+                    <p class="solution-text">⚡ <strong>VIP Priority Processing (Instant Access):</strong> Jump to the front of the line. Your data is processed <strong>FIRST</strong>, every time. See deleted messages, photos, and locations in <strong>under 5 minutes</strong> — not days.</p>
                 </div>
             </section>
 
             <section class="comparison-section">
                 <div class="comparison-card">
-                    <h2 class="comparison-title">👁️ Manual Monitoring vs AI Analyst</h2>
+                    <h2 class="comparison-title">⚡ Standard vs VIP Priority Processing</h2>
                     <div class="comparison-grid">
-                        <div class="comparison-item manual">
-                            <span class="comparison-icon">😰</span>
+                        <div class="comparison-item standard">
+                            <span class="comparison-icon">🐌</span>
                             <div class="comparison-text">
-                                <strong>Manual Monitoring:</strong>
-                                <p>• You check data manually, hours later<br>• Miss 80% of suspicious patterns<br>• Always reacting, never ahead<br>• Evidence deleted before you see it</p>
+                                <strong>Standard Processing:</strong>
+                                <p>• Wait 24-72 hours for results<br>• Data processed in order with thousands of others<br>• No priority support<br>• Risk losing critical evidence while waiting</p>
                             </div>
                         </div>
-                        <div class="comparison-item ai">
-                            <span class="comparison-icon">🧠</span>
+                        <div class="comparison-item vip">
+                            <span class="comparison-icon">🚀</span>
                             <div class="comparison-text">
-                                <strong>AI Behavior Analyst:</strong>
-                                <p>• AI monitors 24/7 automatically<br>• Detects 97% of behavior changes<br>• Predicts actions before they happen<br>• Alerts you in real-time</p>
+                                <strong>VIP Priority Processing:</strong>
+                                <p>• Instant results in minutes<br>• Your data processed FIRST<br>• 24/7 premium support<br>• Real-time notifications & alerts</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- Live Activations Feed -->
-            <section class="live-activity-section">
-                <div class="live-activity">
-                    <div class="activity-header">
-                        <span class="pulse-dot"></span>
-                        <span class="activity-title">Recent Activations</span>
-                        <span class="live-badge">LIVE</span>
-                    </div>
-                    <div class="activity-items" id="activityFeed"></div>
-                </div>
-            </section>
-
-            <section class="testimonial">
-                <div class="testimonial-card">
-                    <h2 class="testimonial-title">⭐ Real User Experiences</h2>
-                    <p class="testimonial-story">Lisa M. from Florida was checking her partner's phone data every few hours, but always found messages already deleted. After activating the AI Behavior Analyst, she received a predictive alert that flagged unusual late-night activity 30 minutes BEFORE messages were deleted.</p>
-                    
-                    <blockquote class="user-quote">
-                        "The AI literally told me 'Unusual deletion pattern detected — saving content now' before he even finished deleting. I finally stopped being 3 steps behind. This AI is like having a detective working 24/7 for you."
-                    </blockquote>
-                    <p class="testimonial-author-right">— Lisa M., Florida</p>
-                    
-                    <hr class="testimonial-divider">
-                    
-                    <p class="testimonial-story">Kevin D. from Ohio had been monitoring for weeks but couldn't make sense of all the data. The AI Behavior Analyst connected the dots he was missing — identifying a suspicious contact he'd overlooked and tracking a pattern of location changes every Thursday evening.</p>
-                    
-                    <blockquote class="user-quote">
-                        "I was drowning in data but couldn't see the forest for the trees. The AI organized everything and showed me EXACTLY what to focus on. The weekly behavior report alone is worth the upgrade. It found things I never would have noticed."
-                    </blockquote>
-                    <p class="testimonial-author-right">— Kevin D., Ohio</p>
-                </div>
-            </section>
 
             <section class="benefits">
                 <div class="benefits-card">
-                    <h2 class="benefits-title">🧠 What's Included in AI Behavior Analyst:</h2>
+                    <h2 class="benefits-title">👑 What's Included in VIP Priority:</h2>
                     <div class="benefits-grid">
                         <div class="benefit-item">
-                            <span class="benefit-icon">🧠</span>
-                            <span class="benefit-text"><strong>AI Pattern Engine:</strong> Learns behavior and detects anomalies</span>
-                        </div>
-                        <div class="benefit-item">
                             <span class="benefit-icon">⚡</span>
-                            <span class="benefit-text"><strong>Predictive Alerts:</strong> Know what happens before it happens</span>
+                            <span class="benefit-text"><strong>Instant Results:</strong> Data processed in minutes, not days</span>
                         </div>
                         <div class="benefit-item">
-                            <span class="benefit-icon">🔍</span>
-                            <span class="benefit-text"><strong>Contact Risk Scoring:</strong> AI ranks contacts by suspicion level</span>
-                        </div>
-                        <div class="benefit-item">
-                            <span class="benefit-icon">📈</span>
-                            <span class="benefit-text"><strong>Weekly AI Reports:</strong> Automated behavior analysis summaries</span>
+                            <span class="benefit-icon">🚀</span>
+                            <span class="benefit-text"><strong>Skip The Queue:</strong> Your requests always go first</span>
                         </div>
                         <div class="benefit-item">
                             <span class="benefit-icon">🔔</span>
-                            <span class="benefit-text"><strong>Real-Time Monitoring:</strong> 24/7 AI surveillance, never sleeps</span>
+                            <span class="benefit-text"><strong>Real-Time Alerts:</strong> Get notified the moment new data appears</span>
                         </div>
                         <div class="benefit-item">
-                            <span class="benefit-icon">🛡️</span>
-                            <span class="benefit-text"><strong>Evidence Protection:</strong> Auto-saves data before deletion</span>
+                            <span class="benefit-icon">👨‍💻</span>
+                            <span class="benefit-text"><strong>24/7 VIP Support:</strong> Priority assistance whenever you need</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">💻</span>
+                            <span class="benefit-text"><strong>Dedicated Resources:</strong> Faster servers, better performance</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">⭐</span>
+                            <span class="benefit-text"><strong>Lifetime VIP Status:</strong> Priority access forever</span>
                         </div>
                     </div>
                     
-                    <p class="benefits-summary">🧠 Stop guessing. Let AI do the detective work for you — 24/7, automatically.</p>
+                    <p class="benefits-summary">⚡ Stop waiting 3 days. With VIP Priority, you get answers in MINUTES.</p>
                 </div>
             </section>
 
             <section class="urgency">
                 <div class="urgency-card">
                     <h2 class="urgency-title">⚠️ ONE-TIME OFFER - Available Only Now</h2>
-                    <p class="urgency-text">⏰ <strong>This AI upgrade is only available RIGHT NOW</strong> at this exclusive price. Once you leave this page, the AI Behavior Analyst will no longer be available at this discount.</p>
-                    <p class="urgency-warning">❌ <strong>Without AI:</strong> You'll continue checking data manually, always reacting to what already happened. The AI could have caught the patterns you're missing RIGHT NOW. Every hour without AI is another hour of missed evidence.</p>
+                    <p class="urgency-text">⏰ <strong>This VIP Priority upgrade is only available RIGHT NOW</strong> at this exclusive price. Once you leave this page, you'll be locked into standard processing with 24-72 hour delays forever.</p>
+                    <p class="urgency-warning">❌ <strong>Don't make this mistake:</strong> Thousands of users regret not upgrading to VIP Priority. They waste days waiting for results while critical evidence disappears. By the time they see the data, it's too late. Don't let that be you—upgrade NOW and get instant access!</p>
                 </div>
             </section>
 
+
             <section class="final-cta">
                 <div class="cta-section">
-                    <h2 class="cta-title">Stop Being 3 Steps Behind. Let AI Predict Their Moves</h2>
-                    <p class="cta-text">You have the monitoring tools. Now add the intelligence layer. AI Behavior Analyst turns raw data into actionable predictions.</p>
-                    
-                    <p class="cta-timer">⏰ Offer expires in: <strong id="countdown-cta">10:00</strong></p>
+                    <h2 class="cta-title">3 Days is Too Long to Wait for The Truth</h2>
                     
                     <div class="cta-buttons">
-                        <!-- MONETIZZE: Replace hash below with your UP4 product hash -->
-                        <a href='#monetizzeCompra' data-upsell='REPLACE_WITH_MONETIZZE_UP4_HASH' class="btn btn-primary btn-large btn-pulse btn-mega" aria-label="Activate AI Behavior Analyst now" role="button">YES! Activate AI Behavior Analyst</a>
+                        <p class="price-tag" style="margin-bottom: 24px;">Regular price: <s>$248</s> → Today only: $43 (83% off)</p>
+                        
+                        <a href='#monetizzeCompra' data-upsell='7ddbb722e93c4fa5115c396fe966030c' class="btn btn-primary btn-large btn-pulse btn-mega" aria-label="Upgrade to VIP priority processing now" role="button">YES! Upgrade to VIP Priority Now</a>
                         
                         <a href="../thankyou/" class="decline-link">No thanks, I'll keep checking manually</a>
-                        
-                        <p class="price-tag">Regular price: <s>$297</s> → Today only: $39 (87% off)</p>
                     </div>
                 </div>
             </section>
@@ -320,67 +254,74 @@
         </main>
 
         <footer class="footer">
-            <div class="smallprint">© <span id="year"></span> AI Behavior Analysis. All rights reserved.</div>
+            <div class="smallprint">© <span id="year"></span> Priority Access. All rights reserved.</div>
         </footer>
     </div>
 
     <script src="../polyfills.js?v=8.0"></script>
-    <script src="upsell4-script.js?v=1.0"></script>
-    <script src="../upsell-tracking.js?v=2.0"></script>
+    <script src="upsell4-script.js?v=9.0"></script>
+    <!-- geo-restriction.js removed - prices always visible -->
+    <script src="../upsell-tracking.js?v=1.0"></script>
     <script>
     (function(){
-        var o=document.getElementById('scanOverlay'),m=document.getElementById('mainPage'),
-            findings=document.getElementById('scanFindings'),result=document.getElementById('scanResult');
+        var o=document.getElementById('queueOverlay'),m=document.getElementById('mainPage'),
+            pb=document.getElementById('queueProgressBar'),pt=document.getElementById('queueProgressText'),
+            pos=document.getElementById('queuePosition'),eta=document.getElementById('etaValue'),
+            load=document.getElementById('serverLoad'),speed=document.getElementById('procSpeed'),
+            feed=document.getElementById('queueFeed'),vip=document.getElementById('vipUnlock');
         if(!o||!m)return;
 
-        var bars=[
-            {el:document.getElementById('barMessages'),val:document.getElementById('valMessages'),target:100,speed:1.2},
-            {el:document.getElementById('barLocations'),val:document.getElementById('valLocations'),target:100,speed:1.0},
-            {el:document.getElementById('barMedia'),val:document.getElementById('valMedia'),target:100,speed:0.8},
-            {el:document.getElementById('barBehavior'),val:document.getElementById('valBehavior'),target:100,speed:0.6}
-        ];
+        var TOTAL=15000,start=Date.now(),vipShown=false;
+        var queueStart=2847,queueMin=2831;
+        var names=['Mike T.','Sarah K.','Alex P.','Chris L.','Jordan R.','Taylor M.','Casey W.','Jamie H.','Morgan S.','Riley D.','Drew B.','Quinn N.'];
+        var nameIdx=0;
 
-        var findingsData=[
-            {time:3000,text:'📡 Scanning message patterns...',cls:''},
-            {time:5000,text:'⚠️ Unusual deletion pattern detected at 2:47 AM',cls:'warn'},
-            {time:7000,text:'🔍 Analyzing contact frequency...',cls:''},
-            {time:9000,text:'🚨 3 new contacts with late-night interactions',cls:'alert'},
-            {time:10500,text:'📍 Location anomaly: Repeated visits to unknown address',cls:'alert'},
-            {time:12000,text:'✅ AI model ready — behavior patterns mapped',cls:'ok'}
-        ];
+        function updateQueue(elapsed){
+            var progress=elapsed/TOTAL;
+            var moved=Math.floor(progress*16);
+            var currentPos=queueStart-moved;
+            if(currentPos<queueMin)currentPos=queueMin;
+            pos.textContent='#'+currentPos.toLocaleString();
 
-        var TOTAL=15000,start=Date.now(),resultShown=false;
+            var hours=[47,48,51,49,52,53,47,50,54,51];
+            var hIdx=Math.min(Math.floor(progress*hours.length),hours.length-1);
+            eta.textContent='~'+hours[hIdx]+' hours';
+
+            var loads=[94,96,93,97,95,98,94,97,96,99];
+            var lIdx=Math.min(Math.floor(progress*loads.length),loads.length-1);
+            load.textContent=loads[lIdx]+'% capacity';
+
+            pb.style.width=Math.min(progress*6,6)+'%';
+
+            var msgs=['Waiting in queue...','Still waiting...','Queue is busy...','High demand today...','Processing slowly...','Server overloaded...','Please be patient...','Still waiting...'];
+            var mIdx=Math.min(Math.floor(progress*msgs.length),msgs.length-1);
+            pt.textContent=msgs[mIdx];
+        }
+
+        var lastFeedTime=0;
+        function addFeedItem(elapsed){
+            if(elapsed-lastFeedTime<2000)return;
+            lastFeedTime=elapsed;
+            var name=names[nameIdx%names.length];
+            nameIdx++;
+            var item=document.createElement('div');
+            item.className='queue-user-item';
+            item.textContent='✅ '+name+' — processed (VIP member)';
+            item.style.color='rgba(37,211,102,.5)';
+            if(feed.children.length>2)feed.removeChild(feed.firstChild);
+            feed.appendChild(item);
+        }
 
         function tick(){
             var e=Date.now()-start;
-            var progress=Math.min(e/TOTAL,1);
+            updateQueue(e);
+            addFeedItem(e);
 
-            bars.forEach(function(b){
-                var p=Math.min(progress*b.speed*100/b.speed,b.target);
-                if(p>100)p=100;
-                var adjusted=Math.min(progress/(b.speed*0.8)*100,100);
-                b.el.style.width=adjusted+'%';
-                b.val.textContent=Math.floor(adjusted)+'%';
-            });
-
-            findingsData.forEach(function(f){
-                if(e>=f.time&&!f.shown){
-                    f.shown=true;
-                    var div=document.createElement('div');
-                    div.className='scan-finding '+(f.cls||'');
-                    div.textContent=f.text;
-                    findings.appendChild(div);
-                    setTimeout(function(){div.classList.add('visible');},50);
-                    if(findings.children.length>4){
-                        findings.children[0].style.opacity='0';
-                        setTimeout(function(){if(findings.children[0])findings.removeChild(findings.children[0]);},300);
-                    }
-                }
-            });
-
-            if(e>=12500&&!resultShown){
-                resultShown=true;
-                result.classList.add('visible');
+            if(e>=12000&&!vipShown){
+                vipShown=true;
+                vip.classList.add('visible');
+                speed.textContent='VIP available!';
+                speed.style.color='#25D366';
                 if(navigator.vibrate)navigator.vibrate([150,80,150]);
             }
 

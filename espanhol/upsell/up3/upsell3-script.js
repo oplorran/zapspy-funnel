@@ -103,21 +103,21 @@
     // STATIC ACTIVITY FEED - FIXED LIST OF BUYERS
     // ============================================
     var staticBuyers = [
-        { name: 'María G.', location: 'Ciudad de México', action: 'obtuvo procesamiento VIP', time: 'hace 2 minutos' },
-        { name: 'Juan D.', location: 'Buenos Aires', action: 'saltó la espera de 3 días', time: 'hace 4 minutos' },
-        { name: 'Ana L.', location: 'Madrid', action: 'desbloqueó resultados instantáneos', time: 'hace 5 minutos' },
-        { name: 'Carlos R.', location: 'Bogotá', action: 'actualizó a acceso VIP', time: 'hace 7 minutos' },
-        { name: 'Laura K.', location: 'Lima', action: 'obtuvo procesamiento VIP', time: 'hace 9 minutos' },
-        { name: 'Miguel T.', location: 'Santiago', action: 'saltó la espera de 3 días', time: 'hace 11 minutos' },
-        { name: 'Elena C.', location: 'Barcelona', action: 'desbloqueó resultados instantáneos', time: 'hace 14 minutos' },
-        { name: 'Diego B.', location: 'Guadalajara', action: 'actualizó a acceso VIP', time: 'hace 16 minutos' },
-        { name: 'Sofía L.', location: 'Monterrey', action: 'obtuvo procesamiento VIP', time: 'hace 18 minutos' },
-        { name: 'Andrés H.', location: 'Medellín', action: 'saltó la espera de 3 días', time: 'hace 21 minutos' },
-        { name: 'Isabella P.', location: 'Quito', action: 'desbloqueó resultados instantáneos', time: 'hace 24 minutos' },
-        { name: 'Lucas G.', location: 'Caracas', action: 'actualizó a acceso VIP', time: 'hace 27 minutos' },
-        { name: 'Camila S.', location: 'Montevideo', action: 'obtuvo procesamiento VIP', time: 'hace 31 minutos' },
-        { name: 'Daniel N.', location: 'Sevilla', action: 'saltó la espera de 3 días', time: 'hace 35 minutos' },
-        { name: 'Valentina F.', location: 'Valencia', action: 'desbloqueó resultados instantáneos', time: 'hace 38 minutos' }
+        { name: 'María G.', location: 'Ciudad de México', action: 'desbloqueó todas las redes sociales', time: 'hace 2 minutos' },
+        { name: 'Juan D.', location: 'Buenos Aires', action: 'agregó rastreo GPS', time: 'hace 4 minutos' },
+        { name: 'Ana L.', location: 'Madrid', action: 'actualizó al paquete completo', time: 'hace 5 minutos' },
+        { name: 'Carlos R.', location: 'Bogotá', action: 'activó monitoreo total', time: 'hace 7 minutos' },
+        { name: 'Laura K.', location: 'Lima', action: 'desbloqueó todas las redes sociales', time: 'hace 9 minutos' },
+        { name: 'Miguel T.', location: 'Santiago', action: 'agregó rastreo GPS', time: 'hace 11 minutos' },
+        { name: 'Elena C.', location: 'Barcelona', action: 'actualizó al paquete completo', time: 'hace 14 minutos' },
+        { name: 'Diego B.', location: 'Guadalajara', action: 'activó monitoreo total', time: 'hace 16 minutos' },
+        { name: 'Sofía L.', location: 'Monterrey', action: 'desbloqueó todas las redes sociales', time: 'hace 18 minutos' },
+        { name: 'Andrés H.', location: 'Medellín', action: 'agregó rastreo GPS', time: 'hace 21 minutos' },
+        { name: 'Isabella P.', location: 'Quito', action: 'actualizó al paquete completo', time: 'hace 24 minutos' },
+        { name: 'Lucas G.', location: 'Caracas', action: 'activó monitoreo total', time: 'hace 27 minutos' },
+        { name: 'Camila S.', location: 'Montevideo', action: 'desbloqueó todas las redes sociales', time: 'hace 31 minutos' },
+        { name: 'Daniel N.', location: 'Sevilla', action: 'agregó rastreo GPS', time: 'hace 35 minutos' },
+        { name: 'Valentina F.', location: 'Valencia', action: 'actualizó al paquete completo', time: 'hace 38 minutos' }
     ];
     
     var activityFeed = document.getElementById('activityFeed');
