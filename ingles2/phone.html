@@ -127,7 +127,7 @@
         document.addEventListener('DOMContentLoaded', async function() {
             if (typeof FacebookCAPI !== 'undefined') {
                 FacebookCAPI.init('Phone Capture');
-                FacebookCAPI.trackViewContent('Phone Capture', 'Funnel - Lead Step', 49);
+                FacebookCAPI.trackViewContent('Phone Capture', 'Funnel - Lead Step', 24);
             }
             
             // Initialize A/B Testing
@@ -2214,7 +2214,7 @@
                     </div>
                     
                     <!-- VTurb Player -->
-                    <div class="vsl-player-wrapper">
+                    <div class="vsl-player-wrapper" style="display:none !important">
                         <vturb-smartplayer id="vid-68fb78cdbdf9abb2347d414b" style="display: block; margin: 0 auto; width: 100%; max-width: 400px;"></vturb-smartplayer>
                     </div>
                     
@@ -2859,7 +2859,7 @@
         
         // ===== VSL + HACKING SYSTEM =====
         // VSL Duration: 5:55 = 355 seconds
-        const VSL_DURATION = 355;
+        const VSL_DURATION = 20;
         
         // Mini terminal commands (runs during VSL)
         const miniTerminalCommands = [

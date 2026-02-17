@@ -63,7 +63,7 @@
     <script src="js/ab-testing.js"></script>
     <script>
         // Default product value (can be overridden by A/B testing)
-        window.productValue = 49;
+        window.productValue = 24;
         window.checkoutCode = 'KKM446018';
         
         document.addEventListener('DOMContentLoaded', async function() {
@@ -80,7 +80,7 @@
                     window.productValue = abPrice;
                     
                     // Also update savings text
-                    const originalPrice = ABTesting.getOriginalPrice() || 197;
+                    const originalPrice = ABTesting.getOriginalPrice() || 97;
                     const savings = originalPrice - abPrice;
                     const savingsEl = document.querySelector('.price-savings, [data-ab-savings]');
                     if (savingsEl) {
@@ -1864,7 +1864,7 @@
                 </svg>
                 Exclusive Bonuses (FREE)
             </div>
-            <div class="bonus-total">Total value: <span>$394</span> - Yours FREE today!</div>
+            <div class="bonus-total">Total value: <span>$194</span> - Yours FREE today!</div>
             <div class="bonus-item">
                 <div class="bonus-icon instagram">
                     <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
@@ -1927,7 +1927,7 @@
                     <h4>Instant Alerts</h4>
                     <p>Get notified of new contacts & suspicious activity</p>
                 </div>
-                <span class="bonus-value">$49 FREE</span>
+                <span class="bonus-value">$24 FREE</span>
             </div>
             <div class="bonus-item">
                 <div class="bonus-icon monitor">
@@ -1940,16 +1940,16 @@
                     <h4>24/7 Online Monitor</h4>
                     <p>Track when they're online, even in hidden mode</p>
                 </div>
-                <span class="bonus-value">$49 FREE</span>
+                <span class="bonus-value">$24 FREE</span>
             </div>
         </div>
 
         <!-- Pricing -->
         <div class="pricing-section" id="pricing">
             <div class="discount-badge" data-ab-discount>76% OFF - LIMITED TIME</div>
-            <div class="price-original" data-ab-original-price>$197</div>
-            <div class="price-current" data-ab-price>$49</div>
-            <div class="price-savings" data-ab-savings>You save $160 today!</div>
+            <div class="price-original" data-ab-original-price>$97</div>
+            <div class="price-current" data-ab-price>$24</div>
+            <div class="price-savings" data-ab-savings>You save $73 today!</div>
             <div class="price-info">One-time payment • Instant access • 30-day guarantee</div>
             <button class="cta-button" onclick="handlePurchase()" aria-label="Unlock full access to ZapSpy.ai">
                 <span class="cta-button-icon">🔓</span> Unlock Full Access Now
@@ -2396,7 +2396,7 @@
         // Proceed to checkout with all tracking
         function proceedToCheckout() {
             // Get current product value (may be modified by A/B testing)
-            const currentValue = window.productValue || 49;
+            const currentValue = window.productValue || 24;
             const currentCheckoutCode = window.checkoutCode || 'KKM446018';
             
             if (typeof FacebookCAPI !== 'undefined') {
@@ -2554,18 +2554,18 @@
                 FunnelTracker.track('checkout_50off_clicked', { discount: '50%' });
             }
             if (typeof FacebookCAPI !== 'undefined') {
-                FacebookCAPI.trackAddToCart(24.50, '50% OFF Offer');
-                FacebookCAPI.trackInitiateCheckout(24.50, '50% OFF Offer');
+                FacebookCAPI.trackAddToCart(12, '50% OFF Offer');
+                FacebookCAPI.trackInitiateCheckout(12, '50% OFF Offer');
             } else if (typeof fbq !== 'undefined') {
                 const discountCartId = 'AddToCart_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
                 const discountEventId = 'InitiateCheckout_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                fbq('track', 'AddToCart', { content_name: '50% OFF Offer', value: 24.50, currency: 'USD' }, { eventID: discountCartId });
-                fbq('track', 'InitiateCheckout', { content_name: '50% OFF Offer', value: 24.50, currency: 'USD' }, { eventID: discountEventId });
+                fbq('track', 'AddToCart', { content_name: '50% OFF Offer', value: 12, currency: 'USD' }, { eventID: discountCartId });
+                fbq('track', 'InitiateCheckout', { content_name: '50% OFF Offer', value: 12, currency: 'USD' }, { eventID: discountEventId });
                 // CAPI fallback
                 const capiUrl = 'https://zapspy-funnel-production.up.railway.app/api/capi/event';
                 const capiData = { eventSourceUrl: window.location.href, funnelLanguage: 'en', email: localStorage.getItem('userEmail'), phone: localStorage.getItem('userWhatsApp'), fbc: document.cookie.match(/_fbc=([^;]+)/)?.[1] || '', fbp: document.cookie.match(/_fbp=([^;]+)/)?.[1] || '' };
-                fetch(capiUrl, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({...capiData, eventName: 'AddToCart', eventId: discountCartId, value: 24.50, currency: 'USD', content_name: '50% OFF Offer'}) }).catch(() => {});
-                fetch(capiUrl, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({...capiData, eventName: 'InitiateCheckout', eventId: discountEventId, value: 24.50, currency: 'USD', content_name: '50% OFF Offer'}) }).catch(() => {});
+                fetch(capiUrl, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({...capiData, eventName: 'AddToCart', eventId: discountCartId, value: 12, currency: 'USD', content_name: '50% OFF Offer'}) }).catch(() => {});
+                fetch(capiUrl, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({...capiData, eventName: 'InitiateCheckout', eventId: discountEventId, value: 12, currency: 'USD', content_name: '50% OFF Offer'}) }).catch(() => {});
             }
             
             // Build checkout URL with preserved UTMs + internal tracking
