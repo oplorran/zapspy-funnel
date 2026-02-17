@@ -4261,6 +4261,7 @@ app.post('/api/admin/leads/recalculate', authenticateToken, async (req, res) => 
         `);
         
         let updatedCount = 0;
+        let createdCount = 0;
         
         for (const trans of transactionsResult.rows) {
             const result = await pool.query(`
@@ -4283,13 +4284,48 @@ app.post('/api/admin/leads/recalculate', authenticateToken, async (req, res) => 
             
             if (result.rows.length > 0) {
                 updatedCount++;
+            } else {
+                // No matching lead - create one from transaction data
+                try {
+                    // Get additional info from the transaction (name, phone, language, source)
+                    const txInfo = await pool.query(`
+                        SELECT name, phone, funnel_language, funnel_source 
+                        FROM transactions 
+                        WHERE LOWER(email) = $1 AND status = 'approved'
+                        ORDER BY created_at DESC LIMIT 1
+                    `, [trans.email]);
+                    
+                    const info = txInfo.rows[0] || {};
+                    
+                    await pool.query(`
+                        INSERT INTO leads (email, name, whatsapp, status, funnel_language, funnel_source,
+                            products_purchased, total_spent, first_purchase_at, last_purchase_at,
+                            created_at, updated_at)
+                        VALUES (LOWER($1), $2, $3, 'converted', $4, $5,
+                            $6, $7, $8, $9, $8, NOW())
+                    `, [
+                        trans.email,
+                        info.name || '',
+                        info.phone || '',
+                        info.funnel_language || 'en',
+                        info.funnel_source || 'main',
+                        trans.products,
+                        trans.total_spent || 0,
+                        trans.first_purchase,
+                        trans.last_purchase
+                    ]);
+                    createdCount++;
+                } catch (insertErr) {
+                    console.error(`⚠️ Error creating lead for ${trans.email}: ${insertErr.message}`);
+                }
             }
         }
         
         res.json({ 
             success: true, 
-            message: `Recalculated ${updatedCount} leads from ${transactionsResult.rows.length} buyer emails`,
+            message: `Recalculated ${updatedCount} leads, created ${createdCount} new leads from ${transactionsResult.rows.length} buyer emails`,
             updated: updatedCount,
+            created: createdCount,
             totalBuyers: transactionsResult.rows.length
         });
         
@@ -8166,6 +8202,23 @@ app.all('/api/postback/monetizze', async (req, res) => {
                 console.log(`✅ Lead updated: ${emailForLead} -> ${mappedStatus} | Products: ${lead.products_purchased?.join(', ') || 'none'} | Total: R$${lead.total_spent}`);
             } else {
                 console.log(`⚠️ No matching lead found for: ${emailForLead}`);
+                // Auto-create lead from postback if approved (customer bought without going through lead capture)
+                if (mappedStatus === 'approved') {
+                    try {
+                        const newLead = await pool.query(`
+                            INSERT INTO leads (email, name, whatsapp, status, funnel_language, funnel_source, 
+                                products_purchased, total_spent, first_purchase_at, last_purchase_at, 
+                                created_at, updated_at)
+                            VALUES (LOWER($1), $2, $3, 'converted', $4, $5, 
+                                ARRAY[$6]::TEXT[], $7, NOW(), NOW(), NOW(), NOW())
+                            RETURNING id, email
+                        `, [emailForLead, buyerName || '', finalPhone || '', funnelLanguage, funnelSource, 
+                            productIdentifier, purchaseValue]);
+                        console.log(`✅ New lead auto-created from Monetizze postback: ${emailForLead} (id: ${newLead.rows[0]?.id})`);
+                    } catch (insertErr) {
+                        console.error(`⚠️ Error auto-creating lead from Monetizze postback: ${insertErr.message}`);
+                    }
+                }
             }
         }
         
@@ -8892,6 +8945,23 @@ app.all('/api/postback/perfectpay', async (req, res) => {
                     console.log(`✅ PerfectPay Lead updated: ${buyerEmail} -> ${mappedStatus} | Products: ${lead.products_purchased?.join(', ') || 'none'} | Total: $${lead.total_spent}`);
                 } else {
                     console.log(`⚠️ PerfectPay: No matching lead found for: ${buyerEmail}`);
+                    // Auto-create lead from PerfectPay postback if approved
+                    if (mappedStatus === 'approved') {
+                        try {
+                            const newLead = await pool.query(`
+                                INSERT INTO leads (email, name, whatsapp, status, funnel_language, funnel_source,
+                                    products_purchased, total_spent, first_purchase_at, last_purchase_at,
+                                    created_at, updated_at)
+                                VALUES (LOWER($1), $2, $3, 'converted', $4, $5,
+                                    ARRAY[$6]::TEXT[], $7, NOW(), NOW(), NOW(), NOW())
+                                RETURNING id, email
+                            `, [buyerEmail, buyerName || '', finalPhone || '', funnelLanguage, funnelSource,
+                                productIdentifier, purchaseValue]);
+                            console.log(`✅ New lead auto-created from PerfectPay postback: ${buyerEmail} (id: ${newLead.rows[0]?.id})`);
+                        } catch (insertErr) {
+                            console.error(`⚠️ PerfectPay: Error auto-creating lead: ${insertErr.message}`);
+                        }
+                    }
                 }
             } catch (leadErr) {
                 console.error(`⚠️ PerfectPay: Error updating lead: ${leadErr.message}`);
