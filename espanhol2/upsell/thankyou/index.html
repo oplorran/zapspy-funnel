@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!-- UTMify tracking -->
+    <script src="https://cdn.utmify.com.br/scripts/utms/latest.js" data-utmify-prevent-xcod-sck data-utmify-prevent-subids async defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="¡Bienvenido a ZappDetect! Tu compra fue exitosa. Revisa tu correo electrónico para las credenciales de acceso.">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Bienvenido a ZappDetect - ¡Tu Acceso Está Listo!</title>
+    
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    
+    // Advanced Matching - get user data from localStorage
+    var userData = {};
+    try {
+        var em = localStorage.getItem('userEmail');
+        var ph = localStorage.getItem('userWhatsApp');
+        var fn = localStorage.getItem('userName');
+        var ct = localStorage.getItem('userCity');
+        var co = localStorage.getItem('userCountryCode');
+        var ge = localStorage.getItem('targetGender');
+        var st = localStorage.getItem('userState');
+        if (em) userData.em = em.toLowerCase().trim();
+        if (ph) userData.ph = ph.replace(/\D/g, '');
+        if (fn) {
+            var names = fn.trim().split(' ');
+            userData.fn = names[0].toLowerCase();
+            if (names.length > 1) userData.ln = names.slice(1).join(' ').toLowerCase();
+        }
+        if (ct) userData.ct = ct.toLowerCase().replace(/[^a-z]/g, '');
+        if (co) userData.country = co.toLowerCase();
+        if (ge) userData.ge = ge === 'female' ? 'f' : 'm';
+        if (st) userData.st = st.toLowerCase().replace(/[^a-z]/g, '');
+    } catch(e) {}
+    
+    fbq('init', '534495082571779', userData);
+    var pvId = 'PageView_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    fbq('track', 'PageView', {}, { eventID: pvId });
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=534495082571779&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
+    
+    <!-- Facebook CAPI Client -->
+    <script src="../../js/facebook-capi.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof FacebookCAPI !== 'undefined') {
+                FacebookCAPI.init('Thank You Page');
+                // Track ViewContent for CAPI
+                FacebookCAPI.trackViewContent('Thank You Page', 'Funnel - Thank You', 39);
+            }
+        });
+    </script>
+    
+    <link rel="stylesheet" href="thankyou-styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="success-header">
+            <div class="checkmark"></div>
+            <h1>¡Bienvenido a ZappDetect!</h1>
+            <p class="subtitle">Tu compra fue exitosa y tu acceso está listo</p>
+        </div>
+
+        <div class="email-info">
+            ⚡ <strong>Importante:</strong> Revisa tu bandeja de entrada para tus credenciales de acceso. Si no lo ves, revisa tu carpeta de spam.
+        </div>
+
+        <div class="members-area-alert">
+            <div class="members-icon">🎓</div>
+            <div>
+                <h3>¡Área de Miembros Exclusiva con Video Lecciones!</h3>
+                <p>Además del acceso a ZappDetect, recibirás <strong>acceso exclusivo a nuestra área de miembros</strong> con:</p>
+                <ul>
+                    <li>✓ Tutoriales en video paso a paso sobre cómo usar todas las funciones</li>
+                    <li>✓ Estrategias y técnicas avanzadas de monitoreo</li>
+                    <li>✓ Consejos para identificar comportamientos sospechosos</li>
+                    <li>✓ Actualizaciones regulares con nuevas funciones</li>
+                </ul>
+                <p class="email-notice">📧 <strong>¡Tu acceso al área de miembros será enviado a tu correo en los próximos 10 minutos!</strong></p>
+            </div>
+        </div>
+
+        <div class="access-card">
+            <h2 class="access-title">
+                📱 Cómo Acceder a ZappDetect
+            </h2>
+
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>Revisa Tu Correo Electrónico</h3>
+                    <p>Hemos enviado tu enlace de acceso exclusivo y credenciales de inicio de sesión al correo que proporcionaste durante la compra. El correo debería llegar en 5 minutos.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>Accede a Tu Panel de Control</h3>
+                    <p>Usa el enlace en tu correo para acceder a tu panel personal donde puedes comenzar a monitorear inmediatamente.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>Ingresa el Número Objetivo</h3>
+                    <p>Una vez que inicies sesión, simplemente ingresa el número de teléfono que deseas monitorear y deja que nuestra tecnología avanzada de IA haga el resto.</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="warning-box">
+            <span class="warning-icon">⚠️</span>
+            <div>
+                <strong>Aviso de Privacidad:</strong> Usa ZappDetect de manera responsable y de acuerdo con las leyes locales. Esta herramienta está diseñada solo para propósitos de monitoreo legítimos.
+            </div>
+        </div>
+
+        <div class="testimonial">
+            <p>"Finalmente descubrí la verdad que estaba buscando. ZappDetect me dio la tranquilidad que necesitaba. ¡La interfaz es increíblemente fácil de usar, y la función de recuperación de mensajes es increíble!"</p>
+            <div class="testimonial-author">- María G., Cliente Verificada</div>
+        </div>
+
+        <div class="testimonial">
+            <p>"¡Vale cada centavo! El rastreo en tiempo real y la recuperación de mensajes eliminados me ayudaron a entender lo que realmente estaba pasando. Servicio profesional y discreto."</p>
+            <div class="testimonial-author">- Miguel R., Cliente Verificado</div>
+        </div>
+
+        <div class="support-section">
+            <h2>¿Necesitas Ayuda? Estamos Aquí Para Ti</h2>
+            <p class="support-subtitle">Nuestro equipo de soporte está disponible 24/7 para asistirte con cualquier pregunta</p>
+            
+            <div class="support-info">
+                <div class="support-item">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                    </svg>
+                    <a href="mailto:suportwhatsdetect@gmail.com" class="support-email">suportwhatsdetect@gmail.com</a>
+                </div>
+                <div class="support-item">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                    <span>Soporte del Área de Miembros</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>© <span id="current-year"></span> ZappDetect. Todos los derechos reservados.</p>
+            <p class="footer-disclaimer">Este producto no está afiliado a WhatsApp Inc.</p>
+        </div>
+    </div>
+
+    <script>
+        // Set dynamic year
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+        // Add staggered fade-in animation to elements
+        (function() {
+            var animatedElements = document.querySelectorAll('.step, .testimonial, .warning-box');
+            for (var i = 0; i < animatedElements.length; i++) {
+                animatedElements[i].style.animationDelay = (i * 0.15) + 's';
+                animatedElements[i].classList.add('fade-in-up');
+            }
+        })();
+    </script>
+    <script src="../upsell-tracking.js?v=1.0"></script>
+</body>
+</html>

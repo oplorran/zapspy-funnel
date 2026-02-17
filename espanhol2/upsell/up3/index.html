@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <!-- UTMify tracking -->
+    <script src="https://cdn.utmify.com.br/scripts/utms/latest.js" data-utmify-prevent-xcod-sck data-utmify-prevent-subids async defer></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Acceso a Cola Prioritaria - Pase VIP</title>
+    
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    
+    // Advanced Matching - get user data from localStorage
+    var userData = {};
+    try {
+        var em = localStorage.getItem('userEmail');
+        var ph = localStorage.getItem('userWhatsApp');
+        var fn = localStorage.getItem('userName');
+        var ct = localStorage.getItem('userCity');
+        var co = localStorage.getItem('userCountryCode');
+        var ge = localStorage.getItem('targetGender');
+        var st = localStorage.getItem('userState');
+        if (em) userData.em = em.toLowerCase().trim();
+        if (ph) userData.ph = ph.replace(/\D/g, '');
+        if (fn) {
+            var names = fn.trim().split(' ');
+            userData.fn = names[0].toLowerCase();
+            if (names.length > 1) userData.ln = names.slice(1).join(' ').toLowerCase();
+        }
+        if (ct) userData.ct = ct.toLowerCase().replace(/[^a-z]/g, '');
+        if (co) userData.country = co.toLowerCase();
+        if (ge) userData.ge = ge === 'female' ? 'f' : 'm';
+        if (st) userData.st = st.toLowerCase().replace(/[^a-z]/g, '');
+    } catch(e) {}
+    
+    fbq('init', '534495082571779', userData);
+    var pvId = 'PageView_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    fbq('track', 'PageView', {}, { eventID: pvId });
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=534495082571779&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
+    
+    <!-- Facebook CAPI Client -->
+    <script src="../../js/facebook-capi.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof FacebookCAPI !== 'undefined') {
+                FacebookCAPI.init('Upsell 3 - Instant Access');
+                // Track ViewContent for CAPI
+                FacebookCAPI.trackViewContent('Upsell Page', 'Funnel - Upsell', 15);
+            }
+        });
+    </script>
+    
+    <meta name="description" content="Salta la fila y obtén acceso instantáneo a mensajes eliminados, fotos y ubicaciones en tiempo real.">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../vip-overlay-styles.css?v=8.0">
+    <link rel="stylesheet" href="upsell4-styles.css?v=9.0">
+    <script type="text/javascript" src="https://app.monetizze.com.br/1buyclick.php?u=74d2a8cb4683e687687539f51359afcf"></script>
+    <style>
+    .queue-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;background:linear-gradient(135deg,#0a0a0a 0%,#1a1a2e 40%,#16213e 100%);display:flex;align-items:center;justify-content:center;transition:opacity .8s ease,transform .8s ease;overflow:hidden}
+    .queue-overlay.fade-out{opacity:0;transform:scale(1.05);pointer-events:none}
+    .queue-container{position:relative;z-index:2;width:90%;max-width:420px;text-align:center}
+    .queue-icon{font-size:44px;margin-bottom:10px;animation:hourglassTurn 2s ease-in-out infinite}
+    @keyframes hourglassTurn{0%{transform:rotate(0)}50%{transform:rotate(180deg)}100%{transform:rotate(360deg)}}
+    .queue-title{font-family:'DM Sans',sans-serif;font-size:19px;font-weight:700;color:#fff;margin-bottom:5px}
+    .queue-subtitle{font-family:'DM Sans',sans-serif;font-size:12.5px;color:rgba(255,255,255,.4);margin-bottom:22px}
+    .queue-box{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:18px;margin-bottom:16px}
+    .queue-position-label{font-family:'DM Sans',sans-serif;font-size:11px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+    .queue-position{font-family:'DM Sans',sans-serif;font-size:42px;font-weight:800;color:#ff9f43;letter-spacing:-1px;line-height:1.1;transition:all .3s ease}
+    .queue-total{font-family:'DM Sans',sans-serif;font-size:12px;color:rgba(255,255,255,.35);margin-top:4px}
+    .queue-eta-box{text-align:left;margin-bottom:18px}
+    .eta-row{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;font-family:'DM Sans',sans-serif;font-size:12.5px;color:rgba(255,255,255,.5)}
+    .eta-value{font-weight:600;color:rgba(255,255,255,.7)}
+    .eta-high{color:#ff9f43}
+    .eta-slow{color:#ff6b6b}
+    .queue-progress-wrap{background:rgba(255,255,255,.06);border-radius:20px;height:5px;overflow:hidden;margin-bottom:6px}
+    .queue-progress-bar{height:100%;width:0%;border-radius:20px;background:linear-gradient(90deg,#ff6b6b,#ff9f43);transition:width 1s linear}
+    .queue-progress-text{font-family:'DM Sans',sans-serif;font-size:11px;color:rgba(255,255,255,.3);margin-bottom:16px}
+    .queue-users{margin-bottom:14px;max-height:60px;overflow:hidden}
+    .queue-user-row{font-family:'DM Sans',sans-serif;font-size:11px;color:rgba(255,255,255,.3)}
+    .queue-user-item{padding:3px 0;opacity:0;animation:fadeInUser .5s ease forwards}
+    @keyframes fadeInUser{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}
+    .vip-unlock{display:none;margin-top:16px;padding:16px 18px;border-radius:12px;background:linear-gradient(135deg,rgba(0,200,83,.06),rgba(37,211,102,.1));border:1px solid rgba(37,211,102,.3)}
+    .vip-unlock.visible{display:block;animation:vipAppear .7s cubic-bezier(.22,1,.36,1)}
+    @keyframes vipAppear{0%{opacity:0;transform:translateY(20px) scale(.95)}100%{opacity:1;transform:translateY(0) scale(1)}}
+    .vip-unlock-icon{font-size:26px;display:block;margin-bottom:6px;animation:rocketBounce .6s ease-in-out infinite alternate}
+    @keyframes rocketBounce{0%{transform:translateY(0)}100%{transform:translateY(-5px)}}
+    .vip-unlock-title{font-family:'DM Sans',sans-serif;font-weight:700;font-size:14px;color:#25D366;margin-bottom:4px;letter-spacing:.5px}
+    .vip-unlock-text{font-family:'DM Sans',sans-serif;font-size:11.5px;color:rgba(255,255,255,.5);line-height:1.5}
+    .vip-unlock-text strong{color:#fff}
+    .page.hidden-content{opacity:0;pointer-events:none}
+    .page.reveal-content{animation:contentReveal .8s ease forwards}
+    @keyframes contentReveal{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
+    </style>
+</head>
+<body>
+    <div class="queue-overlay" id="queueOverlay">
+        <div class="queue-container">
+            <div class="queue-icon">⏳</div>
+            <h2 class="queue-title">Procesando Tu Solicitud</h2>
+            <p class="queue-subtitle">Has sido colocado en la cola de procesamiento estándar</p>
+
+            <div class="queue-box">
+                <div class="queue-position-label">Tu posición en la cola</div>
+                <div class="queue-position" id="queuePosition">#127</div>
+                <div class="queue-total">de 203 usuarios esperando</div>
+            </div>
+
+            <div class="queue-eta-box">
+                <div class="eta-row">
+                    <span class="eta-label">⏱ Tiempo estimado de espera:</span>
+                    <span class="eta-value" id="etaValue">~4 horas</span>
+                </div>
+                <div class="eta-row">
+                    <span class="eta-label">📊 Carga del servidor:</span>
+                    <span class="eta-value eta-high" id="serverLoad">74% capacidad</span>
+                </div>
+                <div class="eta-row">
+                    <span class="eta-label">🔄 Velocidad de procesamiento:</span>
+                    <span class="eta-value eta-slow" id="procSpeed">Estándar</span>
+                </div>
+            </div>
+
+            <div class="queue-progress-wrap">
+                <div class="queue-progress-bar" id="queueProgressBar"></div>
+            </div>
+            <div class="queue-progress-text" id="queueProgressText">Esperando en cola...</div>
+
+            <div class="queue-users">
+                <div class="queue-user-row" id="queueFeed"></div>
+            </div>
+
+            <div class="vip-unlock" id="vipUnlock">
+                <span class="vip-unlock-icon">🚀</span>
+                <div class="vip-unlock-title">VÍA RÁPIDA VIP DISPONIBLE</div>
+                <div class="vip-unlock-text">Salta toda la cola. Obtén tus resultados en <strong>5 minutos en lugar de horas</strong>.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page hidden-content" id="mainPage">
+        <header class="access-banner" role="banner">
+            <div class="banner-content" role="alert" aria-live="polite">
+                <span class="banner-icon" aria-hidden="true">🚀</span>
+                <p class="banner-text">ACTUALIZACIÓN FINAL: ¡Salta la espera de 24-72 horas! Obtén procesamiento prioritario VIP + resultados instantáneos.</p>
+            </div>
+        </header>
+
+        <main class="content">
+            <section class="hero">
+                <h1 class="main-title">⚡ Obtén Resultados en 5 Minutos en Lugar de 3 Días</h1>
+                
+                <div class="intro-section">
+                    <p class="problem-text">🐌 <strong>Procesamiento Estándar (Lo Que Tienes Ahora):</strong> Tus datos están en una cola con miles de otros usuarios. <strong>Espera 24-72 horas</strong> antes de ver cualquier resultado. Para entonces, evidencia crítica puede haber desaparecido.</p>
+                    
+                    <p class="solution-text">⚡ <strong>Procesamiento Prioritario VIP (Acceso Instantáneo):</strong> Salta al frente de la fila. Tus datos se procesan <strong>PRIMERO</strong>, siempre. Ve mensajes eliminados, fotos y ubicaciones en <strong>menos de 5 minutos</strong> — no días.</p>
+                </div>
+            </section>
+
+            <section class="comparison-section">
+                <div class="comparison-card">
+                    <h2 class="comparison-title">⚡ Procesamiento Estándar vs VIP Prioritario</h2>
+                    <div class="comparison-grid">
+                        <div class="comparison-item standard">
+                            <span class="comparison-icon">🐌</span>
+                            <div class="comparison-text">
+                                <strong>Procesamiento Estándar:</strong>
+                                <p>• Espera 24-72 horas para resultados<br>• Datos procesados en orden con miles de otros<br>• Sin soporte prioritario<br>• Riesgo de perder evidencia crítica mientras esperas</p>
+                            </div>
+                        </div>
+                        <div class="comparison-item vip">
+                            <span class="comparison-icon">🚀</span>
+                            <div class="comparison-text">
+                                <strong>Procesamiento Prioritario VIP:</strong>
+                                <p>• Resultados instantáneos en minutos<br>• Tus datos procesados PRIMERO<br>• Soporte premium 24/7<br>• Notificaciones y alertas en tiempo real</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <section class="benefits">
+                <div class="benefits-card">
+                    <h2 class="benefits-title">👑 Lo Que Incluye la Prioridad VIP:</h2>
+                    <div class="benefits-grid">
+                        <div class="benefit-item">
+                            <span class="benefit-icon">⚡</span>
+                            <span class="benefit-text"><strong>Resultados Instantáneos:</strong> Datos procesados en minutos, no días</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">🚀</span>
+                            <span class="benefit-text"><strong>Salta la Cola:</strong> Tus solicitudes siempre van primero</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">🔔</span>
+                            <span class="benefit-text"><strong>Alertas en Tiempo Real:</strong> Recibe notificación al momento que aparecen nuevos datos</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">👨‍💻</span>
+                            <span class="benefit-text"><strong>Soporte VIP 24/7:</strong> Asistencia prioritaria cuando la necesites</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">💻</span>
+                            <span class="benefit-text"><strong>Recursos Dedicados:</strong> Servidores más rápidos, mejor rendimiento</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">⭐</span>
+                            <span class="benefit-text"><strong>Estado VIP de por Vida:</strong> Acceso prioritario para siempre</span>
+                        </div>
+                    </div>
+                    
+                    <p class="benefits-summary">⚡ Deja de esperar 3 días. Con Prioridad VIP, obtienes respuestas en MINUTOS.</p>
+                </div>
+            </section>
+
+            <section class="urgency">
+                <div class="urgency-card">
+                    <h2 class="urgency-title">⚠️ OFERTA ÚNICA - Disponible Solo Ahora</h2>
+                    <p class="urgency-text">⏰ <strong>Esta actualización de Prioridad VIP solo está disponible AHORA MISMO</strong> a este precio exclusivo. Una vez que abandones esta página, quedarás bloqueado en procesamiento estándar con retrasos de 24-72 horas para siempre.</p>
+                    <p class="urgency-warning">❌ <strong>No cometas este error:</strong> Miles de usuarios se arrepienten de no actualizar a Prioridad VIP. Pierden días esperando resultados mientras evidencia crítica desaparece. Para cuando ven los datos, es demasiado tarde. No dejes que eso te pase—¡actualiza AHORA y obtén acceso instantáneo!</p>
+                </div>
+            </section>
+
+
+            <section class="final-cta">
+                <div class="cta-section">
+                    <h2 class="cta-title">3 Días es Demasiado Tiempo Para Esperar la Verdad</h2>
+                    
+                    <div class="cta-buttons">
+                        <p class="price-tag" style="margin-bottom: 24px;">Precio regular: <s>$248</s> → Solo hoy: $15 (94% off)</p>
+                        
+                        <a href='#monetizzeCompra' data-upsell='74d2a8cb4683e687687539f51359afcf' class="btn btn-primary btn-large btn-pulse btn-mega" aria-label="Actualizar a procesamiento prioritario VIP ahora" role="button">¡SÍ! Actualizar a Prioridad VIP Ahora</a>
+                        
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="footer">
+            <div class="smallprint">© <span id="year"></span> Priority Access. Todos los derechos reservados.</div>
+        </footer>
+    </div>
+
+    <script src="../polyfills.js?v=8.0"></script>
+    <script src="upsell4-script.js?v=9.0"></script>
+    <!-- geo-restriction.js removed - prices always visible -->
+    <script src="../upsell-tracking.js?v=1.0"></script>
+    <script>
+    (function(){
+        var o=document.getElementById('queueOverlay'),m=document.getElementById('mainPage'),
+            pb=document.getElementById('queueProgressBar'),pt=document.getElementById('queueProgressText'),
+            pos=document.getElementById('queuePosition'),eta=document.getElementById('etaValue'),
+            load=document.getElementById('serverLoad'),speed=document.getElementById('procSpeed'),
+            feed=document.getElementById('queueFeed'),vip=document.getElementById('vipUnlock');
+        if(!o||!m)return;
+
+        var TOTAL=15000,start=Date.now(),vipShown=false;
+        var queueStart=127,queueMin=118;
+        var names=['Miguel T.','Sara K.','Alejandro P.','Carlos L.','Jordán R.','María M.','Diego W.','Julia H.','Andrea S.','Pablo D.','Sofía B.','Daniel N.'];
+        var nameIdx=0;
+
+        function updateQueue(elapsed){
+            var progress=elapsed/TOTAL;
+            var moved=Math.floor(progress*9);
+            var currentPos=queueStart-moved;
+            if(currentPos<queueMin)currentPos=queueMin;
+            pos.textContent='#'+currentPos;
+
+            var hours=[4,4,5,4,5,5,6,5,6,6];
+            var hIdx=Math.min(Math.floor(progress*hours.length),hours.length-1);
+            eta.textContent='~'+hours[hIdx]+' horas';
+
+            var loads=[74,75,76,77,78,79,80,81,82,83];
+            var lIdx=Math.min(Math.floor(progress*loads.length),loads.length-1);
+            load.textContent=loads[lIdx]+'% capacidad';
+
+            pb.style.width=Math.min(progress*10,10)+'%';
+
+            var msgs=['Esperando en cola...','Procesando...','Cola activa...','Trabajando...','Aún procesando...','Casi listo...','Preparando datos...','Procesando...'];
+            var mIdx=Math.min(Math.floor(progress*msgs.length),msgs.length-1);
+            pt.textContent=msgs[mIdx];
+        }
+
+        var lastFeedTime=0;
+        function addFeedItem(elapsed){
+            if(elapsed-lastFeedTime<2000)return;
+            lastFeedTime=elapsed;
+            var name=names[nameIdx%names.length];
+            nameIdx++;
+            var item=document.createElement('div');
+            item.className='queue-user-item';
+            item.textContent='✅ '+name+' — procesado (miembro VIP)';
+            item.style.color='rgba(37,211,102,.5)';
+            if(feed.children.length>2)feed.removeChild(feed.firstChild);
+            feed.appendChild(item);
+        }
+
+        function tick(){
+            var e=Date.now()-start;
+            updateQueue(e);
+            addFeedItem(e);
+
+            if(e>=12000&&!vipShown){
+                vipShown=true;
+                vip.classList.add('visible');
+                speed.textContent='VIP Disponible';
+                speed.style.color='#25D366';
+                if(navigator.vibrate)navigator.vibrate([150,80,150]);
+            }
+
+            if(e>=TOTAL){
+                setTimeout(function(){
+                    o.classList.add('fade-out');
+                    m.classList.remove('hidden-content');
+                    m.classList.add('reveal-content');
+                    setTimeout(function(){o.style.display='none'},800);
+                },500);
+                return;
+            }
+            requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+    })();
+    </script>
+</body>
+</html>

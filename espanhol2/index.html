@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!-- UTMify tracking -->
+    <script src="https://cdn.utmify.com.br/scripts/utms/latest.js" data-utmify-prevent-xcod-sck data-utmify-prevent-subids async defer></script>
+    <meta charset="utf-8">
+    <meta name="facebook-domain-verification" content="88bg7nb3af9s66oo1b7oekmo287t2i" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ZapSpy.ai - Redirigiendo...</title>
+    <meta name="robots" content="noindex">
+    <link rel="shortcut icon" href="imagens/icon-site.png">
+    
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    var userData = {};
+    try {
+        var em = localStorage.getItem('userEmail');
+        var ph = localStorage.getItem('userWhatsApp');
+        var fn = localStorage.getItem('userName');
+        var ct = localStorage.getItem('userCity');
+        var co = localStorage.getItem('userCountryCode');
+        var ge = localStorage.getItem('targetGender');
+        var st = localStorage.getItem('userState');
+        if (em) userData.em = em.toLowerCase().trim();
+        if (ph) userData.ph = ph.replace(/\D/g, '');
+        if (fn) {
+            var names = fn.trim().split(' ');
+            userData.fn = names[0].toLowerCase();
+            if (names.length > 1) userData.ln = names.slice(1).join(' ').toLowerCase();
+        }
+        if (ct) userData.ct = ct.toLowerCase().replace(/[^a-z]/g, '');
+        if (co) userData.country = co.toLowerCase();
+        if (ge) userData.ge = ge === 'female' ? 'f' : 'm';
+        if (st) userData.st = st.toLowerCase().replace(/[^a-z]/g, '');
+    } catch(e) {}
+    fbq('init', '534495082571779', userData);
+    var pvId = 'PageView_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    fbq('track', 'PageView', {}, { eventID: pvId });
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=534495082571779&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
+    
+    <script>
+        if (!localStorage.getItem('funnelVisitorId')) {
+            localStorage.setItem('funnelVisitorId', 'v_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9));
+        }
+        var params = window.location.search;
+        setTimeout(function() { window.location.replace('landing.html' + params); }, 400);
+    </script>
+    
+    <style>
+        body {
+            background: #000;
+            color: #25D366;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <p>Redirigiendo...</p>
+    <script src="js/facebook-capi.js"></script>
+    <script>
+    if (typeof FacebookCAPI !== 'undefined') {
+        FacebookCAPI.init();
+        FacebookCAPI.trackViewContent('Home Page', 'Funnel - Entry', 19);
+    }
+    </script>
+    <script>
+    (function() {
+        if (!localStorage.getItem('userCity') || !localStorage.getItem('userState')) {
+            fetch('https://ipapi.co/json/').then(r => r.json()).then(function(data) {
+                if (data.city) localStorage.setItem('userCity', data.city);
+                if (data.region) localStorage.setItem('userState', data.region);
+                if (data.country_code && !localStorage.getItem('userCountryCode')) {
+                    localStorage.setItem('userCountryCode', data.country_code);
+                }
+            }).catch(function(e) { console.log('Geo detection error:', e); });
+        }
+    })();
+    </script>
+</body>
+</html>
