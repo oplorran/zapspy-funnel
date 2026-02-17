@@ -1055,6 +1055,10 @@
                             <button class="recovery-filter-clear" onclick="clearRecoveryFiltersNew()">Limpar</button>
                         </div>
                         <div class="recovery-filters-right">
+                            <button class="recovery-dispatch-log-btn" onclick="openDispatchLog()" title="Ver histórico de mensagens disparadas">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                                Histórico Disparos
+                            </button>
                             <button class="recovery-bulk-btn" onclick="bulkAdvanceRecovery()" title="Avançar todos os leads visíveis para o próximo passo do funil">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 17l5-5-5-5M6 17l5-5-5-5"/></svg>
                                 Disparar em Massa
@@ -1175,6 +1179,86 @@
                             <button class="btn-primary" onclick="sendRecoveryWhatsApp()" style="background: #25D366;">
                                 <span>📱</span> Enviar via WhatsApp
                             </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Modal Histórico de Disparos -->
+                <div class="modal-overlay" id="dispatchLogModal">
+                    <div class="modal" style="max-width: 960px; max-height: 90vh;">
+                        <div class="modal-header">
+                            <h3>Histórico de Disparos</h3>
+                            <button class="modal-close" onclick="closeDispatchLog()">&times;</button>
+                        </div>
+                        <div class="modal-body" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; max-height: calc(90vh - 60px);">
+                            <!-- Stats Cards -->
+                            <div class="dispatch-stats-bar" id="dispatchStatsBar">
+                                <div class="dispatch-stat-card">
+                                    <span class="dispatch-stat-value" id="dispatchStatTotal">0</span>
+                                    <span class="dispatch-stat-label">Total Disparos</span>
+                                </div>
+                                <div class="dispatch-stat-card dispatch-stat-sent">
+                                    <span class="dispatch-stat-value" id="dispatchStatSent">0</span>
+                                    <span class="dispatch-stat-label">Enviados</span>
+                                </div>
+                                <div class="dispatch-stat-card dispatch-stat-failed">
+                                    <span class="dispatch-stat-value" id="dispatchStatFailed">0</span>
+                                    <span class="dispatch-stat-label">Falharam</span>
+                                </div>
+                                <div class="dispatch-stat-card dispatch-stat-converted">
+                                    <span class="dispatch-stat-value" id="dispatchStatConverted">0</span>
+                                    <span class="dispatch-stat-label">Convertidos</span>
+                                </div>
+                                <div class="dispatch-stat-card">
+                                    <span class="dispatch-stat-value" id="dispatchStatLeads">0</span>
+                                    <span class="dispatch-stat-label">Leads Únicos</span>
+                                </div>
+                                <div class="dispatch-stat-card">
+                                    <span class="dispatch-stat-value" id="dispatchStat24h">0</span>
+                                    <span class="dispatch-stat-label">Últimas 24h</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Filters -->
+                            <div class="dispatch-filters">
+                                <input type="text" class="dispatch-search-input" id="dispatchSearchInput" placeholder="Buscar por email ou mensagem..." onkeyup="debounceDispatchSearch()">
+                                <select class="dispatch-filter-select" id="dispatchFilterSegment" onchange="loadDispatchLog(1)">
+                                    <option value="">Todos Segmentos</option>
+                                    <option value="lost_visitors">Visitantes Perdidos</option>
+                                    <option value="checkout_abandoned">Checkout Abandonado</option>
+                                    <option value="payment_failed">Pagamentos Recusados</option>
+                                    <option value="refund_requests">Pedidos Reembolso</option>
+                                    <option value="upsell_declined">Recusas Upsell</option>
+                                </select>
+                                <select class="dispatch-filter-select" id="dispatchFilterStatus" onchange="loadDispatchLog(1)">
+                                    <option value="">Todos Status</option>
+                                    <option value="sent">Enviado</option>
+                                    <option value="failed">Falhou</option>
+                                    <option value="converted">Convertido</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Table -->
+                            <div class="dispatch-table-wrap" style="overflow-y: auto; flex: 1;">
+                                <table class="dispatch-log-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 50px;">Status</th>
+                                            <th>Lead</th>
+                                            <th>Segmento</th>
+                                            <th>Passo</th>
+                                            <th>Mensagem</th>
+                                            <th style="width: 140px;">Data/Hora</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dispatchLogTableBody">
+                                        <tr><td colspan="6"><div class="loading"><div class="spinner"></div>Carregando...</div></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Pagination -->
+                            <div class="dispatch-pagination" id="dispatchPagination"></div>
                         </div>
                     </div>
                 </div>
@@ -6332,6 +6416,149 @@ Estou aqui para esclarecer tudo! 😊`
             loadRecoveryStats();
             loadRecoveryFunnels().then(() => loadRecoverySegmentLeads());
         }
+        
+        // ==================== DISPATCH LOG (HISTÓRICO DE DISPAROS) ====================
+        let dispatchLogPage = 1;
+        let dispatchSearchTimeout = null;
+        
+        function debounceDispatchSearch() {
+            clearTimeout(dispatchSearchTimeout);
+            dispatchSearchTimeout = setTimeout(() => loadDispatchLog(1), 400);
+        }
+        
+        async function openDispatchLog() {
+            document.getElementById('dispatchLogModal').classList.add('active');
+            loadDispatchLog(1);
+        }
+        
+        function closeDispatchLog() {
+            document.getElementById('dispatchLogModal').classList.remove('active');
+        }
+        
+        async function loadDispatchLog(page = 1) {
+            dispatchLogPage = page;
+            const tableBody = document.getElementById('dispatchLogTableBody');
+            tableBody.innerHTML = '<tr><td colspan="6"><div class="loading"><div class="spinner"></div>Carregando...</div></td></tr>';
+            
+            const segment = document.getElementById('dispatchFilterSegment').value;
+            const status = document.getElementById('dispatchFilterStatus').value;
+            const search = document.getElementById('dispatchSearchInput').value;
+            
+            try {
+                const params = new URLSearchParams({ page, limit: 25 });
+                if (segment) params.append('segment', segment);
+                if (status) params.append('status', status);
+                if (search) params.append('search', search);
+                
+                const response = await fetch(`${API_URL}/api/admin/recovery/dispatch-log?${params}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+                
+                // Update stats
+                if (data.stats) {
+                    document.getElementById('dispatchStatTotal').textContent = parseInt(data.stats.total_dispatches || 0).toLocaleString();
+                    document.getElementById('dispatchStatSent').textContent = parseInt(data.stats.sent_count || 0).toLocaleString();
+                    document.getElementById('dispatchStatFailed').textContent = parseInt(data.stats.failed_count || 0).toLocaleString();
+                    document.getElementById('dispatchStatConverted').textContent = parseInt(data.stats.converted_count || 0).toLocaleString();
+                    document.getElementById('dispatchStatLeads').textContent = parseInt(data.stats.unique_leads || 0).toLocaleString();
+                    document.getElementById('dispatchStat24h').textContent = parseInt(data.stats.last_24h || 0).toLocaleString();
+                }
+                
+                // Render table
+                if (!data.dispatches || data.dispatches.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="6"><div class="empty-state" style="padding: 40px;"><div class="empty-state-icon">📭</div><h3>Nenhum disparo encontrado</h3><p>As mensagens enviadas pelo funil aparecerão aqui</p></div></td></tr>';
+                    document.getElementById('dispatchPagination').innerHTML = '';
+                    return;
+                }
+                
+                const segmentLabels = {
+                    lost_visitors: 'Visitantes Perdidos',
+                    checkout_abandoned: 'Checkout Abandonado',
+                    payment_failed: 'Pgto Recusado',
+                    refund_requests: 'Reembolso',
+                    upsell_declined: 'Recusa Upsell'
+                };
+                
+                const segmentColors = {
+                    lost_visitors: '#a855f7',
+                    checkout_abandoned: '#f59e0b',
+                    payment_failed: '#ef4444',
+                    refund_requests: '#f97316',
+                    upsell_declined: '#3b82f6'
+                };
+                
+                const statusIcons = {
+                    sent: '<span class="dispatch-status-icon dispatch-status-sent" title="Enviado">✓</span>',
+                    failed: '<span class="dispatch-status-icon dispatch-status-failed" title="Falhou">✕</span>',
+                    converted: '<span class="dispatch-status-icon dispatch-status-converted" title="Convertido">★</span>'
+                };
+                
+                tableBody.innerHTML = data.dispatches.map(d => {
+                    const name = d.lead_name || d.lead_email?.split('@')[0] || 'Desconhecido';
+                    const initial = name[0].toUpperCase();
+                    const date = new Date(d.created_at);
+                    const dateStr = date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+                    const timeStr = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                    const segColor = segmentColors[d.segment] || '#666';
+                    const msgPreview = (d.message || '').substring(0, 80) + ((d.message || '').length > 80 ? '...' : '');
+                    const step = d.template_used ? d.template_used.replace('step_', 'Passo ') : '-';
+                    const phone = d.lead_phone || '';
+                    const verified = d.whatsapp_verified ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="#25D366" style="vertical-align: middle; margin-left: 4px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>' : '';
+                    
+                    return `<tr class="dispatch-row">
+                        <td>${statusIcons[d.status] || statusIcons.sent}</td>
+                        <td>
+                            <div class="dispatch-lead-cell">
+                                <div class="dispatch-lead-avatar" style="background: ${segColor}20; color: ${segColor};">${initial}</div>
+                                <div class="dispatch-lead-info">
+                                    <span class="dispatch-lead-name">${name}${verified}</span>
+                                    <span class="dispatch-lead-email">${d.lead_email || '-'}</span>
+                                    ${phone ? `<span class="dispatch-lead-phone">${phone}</span>` : ''}
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="dispatch-segment-badge" style="background: ${segColor}20; color: ${segColor}; border: 1px solid ${segColor}40;">${segmentLabels[d.segment] || d.segment}</span></td>
+                        <td><span class="dispatch-step-badge">${step}</span></td>
+                        <td><span class="dispatch-message-preview" title="${(d.message || '').replace(/"/g, '&quot;')}">${msgPreview}</span></td>
+                        <td><span class="dispatch-date">${dateStr}</span> <span class="dispatch-time">${timeStr}</span></td>
+                    </tr>`;
+                }).join('');
+                
+                // Pagination
+                renderDispatchPagination(data.page, data.total_pages, data.total);
+                
+            } catch (error) {
+                console.error('Error loading dispatch log:', error);
+                tableBody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><h3>Erro ao carregar</h3><p>Tente novamente</p></div></td></tr>';
+            }
+        }
+        
+        function renderDispatchPagination(page, totalPages, total) {
+            const container = document.getElementById('dispatchPagination');
+            if (totalPages <= 1) { container.innerHTML = ''; return; }
+            
+            let btns = `<button class="dispatch-page-btn" onclick="loadDispatchLog(${page - 1})" ${page <= 1 ? 'disabled' : ''}>‹</button>`;
+            
+            const start = Math.max(1, page - 2);
+            const end = Math.min(totalPages, page + 2);
+            
+            if (start > 1) btns += `<button class="dispatch-page-btn" onclick="loadDispatchLog(1)">1</button>`;
+            if (start > 2) btns += '<span class="dispatch-page-dots">...</span>';
+            
+            for (let i = start; i <= end; i++) {
+                btns += `<button class="dispatch-page-btn ${i === page ? 'active' : ''}" onclick="loadDispatchLog(${i})">${i}</button>`;
+            }
+            
+            if (end < totalPages - 1) btns += '<span class="dispatch-page-dots">...</span>';
+            if (end < totalPages) btns += `<button class="dispatch-page-btn" onclick="loadDispatchLog(${totalPages})">${totalPages}</button>`;
+            
+            btns += `<button class="dispatch-page-btn" onclick="loadDispatchLog(${page + 1})" ${page >= totalPages ? 'disabled' : ''}>›</button>`;
+            btns += `<span class="dispatch-page-info">${total} disparos</span>`;
+            
+            container.innerHTML = btns;
+        }
+        // ==================== END DISPATCH LOG ====================
         
         // ==================== END RECOVERY FUNNEL CENTER ====================
         

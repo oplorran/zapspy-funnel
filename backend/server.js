@@ -9560,7 +9560,7 @@ app.get('/api/admin/recovery/segments', authenticateToken, async (req, res) => {
 // Get leads for a specific recovery segment
 app.get('/api/admin/recovery/:segment', authenticateToken, async (req, res, next) => {
     // Skip known named routes so they can be handled by their specific handlers
-    const reservedRoutes = ['segments', 'funnels', 'templates', 'stats', 'funnel', 'contact'];
+    const reservedRoutes = ['segments', 'funnels', 'templates', 'stats', 'funnel', 'contact', 'dispatch-log'];
     if (reservedRoutes.includes(req.params.segment)) {
         return next();
     }
@@ -10400,6 +10400,92 @@ app.post('/api/admin/recovery/funnel/mark-recovered', authenticateToken, async (
     } catch (error) {
         console.error('Error marking as recovered:', error);
         res.status(500).json({ error: 'Failed to mark as recovered' });
+    }
+});
+
+// Get recovery dispatch log (message history)
+app.get('/api/admin/recovery/dispatch-log', authenticateToken, async (req, res) => {
+    try {
+        const { segment, status, page = 1, limit = 25, search } = req.query;
+        const offset = (parseInt(page) - 1) * parseInt(limit);
+        
+        let whereClause = 'WHERE 1=1';
+        const params = [];
+        let paramIndex = 1;
+        
+        if (segment) {
+            whereClause += ` AND rc.segment = $${paramIndex}`;
+            params.push(segment);
+            paramIndex++;
+        }
+        
+        if (status) {
+            whereClause += ` AND rc.status = $${paramIndex}`;
+            params.push(status);
+            paramIndex++;
+        }
+        
+        if (search) {
+            whereClause += ` AND (rc.lead_email ILIKE $${paramIndex} OR rc.message ILIKE $${paramIndex})`;
+            params.push(`%${search}%`);
+            paramIndex++;
+        }
+        
+        // Get total count
+        const countResult = await pool.query(
+            `SELECT COUNT(*) as total FROM recovery_contacts rc ${whereClause}`,
+            params
+        );
+        const total = parseInt(countResult.rows[0].total);
+        
+        // Get stats summary
+        const statsResult = await pool.query(`
+            SELECT 
+                COUNT(*) as total_dispatches,
+                COUNT(*) FILTER (WHERE status = 'sent') as sent_count,
+                COUNT(*) FILTER (WHERE status = 'failed') as failed_count,
+                COUNT(*) FILTER (WHERE status = 'converted') as converted_count,
+                COUNT(DISTINCT lead_email) as unique_leads,
+                COUNT(*) FILTER (WHERE created_at >= NOW() - interval '24 hours') as last_24h,
+                COUNT(*) FILTER (WHERE created_at >= NOW() - interval '7 days') as last_7d
+            FROM recovery_contacts
+        `);
+        
+        // Get dispatches with lead info
+        const dispatchParams = [...params, parseInt(limit), offset];
+        const dispatches = await pool.query(`
+            SELECT 
+                rc.id, rc.lead_email, rc.segment, rc.template_used, rc.channel, 
+                rc.message, rc.status, rc.created_at,
+                l.name as lead_name, l.whatsapp as lead_phone, l.funnel_language as lead_language,
+                l.whatsapp_verified, l.whatsapp_profile_pic,
+                wm.message_id as zapi_message_id, wm.zaap_id as zapi_zaap_id
+            FROM recovery_contacts rc
+            LEFT JOIN leads l ON LOWER(rc.lead_email) = LOWER(l.email)
+            LEFT JOIN LATERAL (
+                SELECT message_id, zaap_id FROM whatsapp_messages 
+                WHERE phone = REPLACE(COALESCE(l.whatsapp, ''), '+', '')
+                AND created_at >= rc.created_at - interval '5 seconds'
+                AND created_at <= rc.created_at + interval '30 seconds'
+                ORDER BY created_at DESC LIMIT 1
+            ) wm ON true
+            ${whereClause}
+            ORDER BY rc.created_at DESC
+            LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+        `, dispatchParams);
+        
+        res.json({
+            dispatches: dispatches.rows,
+            total,
+            page: parseInt(page),
+            limit: parseInt(limit),
+            total_pages: Math.ceil(total / parseInt(limit)),
+            stats: statsResult.rows[0]
+        });
+        
+    } catch (error) {
+        console.error('Error fetching dispatch log:', error);
+        res.status(500).json({ error: 'Falha ao carregar histórico de disparos' });
     }
 });
 
