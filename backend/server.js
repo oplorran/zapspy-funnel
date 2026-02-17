@@ -10406,6 +10406,16 @@ app.post('/api/admin/recovery/funnel/mark-recovered', authenticateToken, async (
 // Get recovery dispatch log (message history)
 app.get('/api/admin/recovery/dispatch-log', authenticateToken, async (req, res) => {
     try {
+        // Ensure table exists
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS recovery_contacts (
+                id SERIAL PRIMARY KEY, lead_email VARCHAR(255) NOT NULL, segment VARCHAR(50) NOT NULL,
+                template_used VARCHAR(100), channel VARCHAR(20) DEFAULT 'whatsapp', message TEXT,
+                status VARCHAR(20) DEFAULT 'sent', created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        
         const { segment, status, page = 1, limit = 25, search } = req.query;
         const offset = (parseInt(page) - 1) * parseInt(limit);
         
@@ -10451,28 +10461,22 @@ app.get('/api/admin/recovery/dispatch-log', authenticateToken, async (req, res) 
             FROM recovery_contacts
         `);
         
-        // Get dispatches with lead info
+        // Get dispatches with lead info (simplified - no LATERAL join)
         const dispatchParams = [...params, parseInt(limit), offset];
         const dispatches = await pool.query(`
             SELECT 
                 rc.id, rc.lead_email, rc.segment, rc.template_used, rc.channel, 
                 rc.message, rc.status, rc.created_at,
                 l.name as lead_name, l.whatsapp as lead_phone, l.funnel_language as lead_language,
-                l.whatsapp_verified, l.whatsapp_profile_pic,
-                wm.message_id as zapi_message_id, wm.zaap_id as zapi_zaap_id
+                l.whatsapp_verified, l.whatsapp_profile_pic
             FROM recovery_contacts rc
             LEFT JOIN leads l ON LOWER(rc.lead_email) = LOWER(l.email)
-            LEFT JOIN LATERAL (
-                SELECT message_id, zaap_id FROM whatsapp_messages 
-                WHERE phone = REPLACE(COALESCE(l.whatsapp, ''), '+', '')
-                AND created_at >= rc.created_at - interval '5 seconds'
-                AND created_at <= rc.created_at + interval '30 seconds'
-                ORDER BY created_at DESC LIMIT 1
-            ) wm ON true
             ${whereClause}
             ORDER BY rc.created_at DESC
             LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
         `, dispatchParams);
+        
+        console.log(`📋 Dispatch log: ${dispatches.rows.length} results, total: ${total}`);
         
         res.json({
             dispatches: dispatches.rows,
@@ -10485,7 +10489,7 @@ app.get('/api/admin/recovery/dispatch-log', authenticateToken, async (req, res) 
         
     } catch (error) {
         console.error('Error fetching dispatch log:', error);
-        res.status(500).json({ error: 'Falha ao carregar histórico de disparos' });
+        res.status(500).json({ error: 'Falha ao carregar histórico de disparos: ' + error.message });
     }
 });
 

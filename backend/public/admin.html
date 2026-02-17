@@ -6435,6 +6435,12 @@ Estou aqui para esclarecer tudo! 😊`
                 });
                 const data = await response.json();
                 
+                if (data.error) {
+                    console.error('Dispatch log API error:', data.error);
+                    tableBody.innerHTML = `<tr><td colspan="6"><div class="empty-state" style="padding: 40px;"><h3>Erro ao carregar</h3><p>${data.error}</p></div></td></tr>`;
+                    return;
+                }
+                
                 // Update stats
                 if (data.stats) {
                     document.getElementById('dispatchStatTotal').textContent = parseInt(data.stats.total_dispatches || 0).toLocaleString();
