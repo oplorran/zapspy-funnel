@@ -111,21 +111,21 @@
             <div class="qo-subtitle">Has sido colocado en la cola de procesamiento estándar</div>
             <div class="qo-box">
                 <div class="qo-pos-label">Tu posición en la cola</div>
-                <div class="qo-position" id="qoPosition">#2,847</div>
-                <div class="qo-total">de 3,102 usuarios esperando</div>
+                <div class="qo-position" id="qoPosition">#127</div>
+                <div class="qo-total">de 203 usuarios esperando</div>
             </div>
             <div class="qo-eta-box">
                 <div class="qo-eta-row">
                     <span class="qo-eta-label">⏱ Tiempo estimado de espera:</span>
-                    <span class="qo-eta-value" id="qoEta">~47 horas</span>
+                    <span class="qo-eta-value" id="qoEta">~4 horas</span>
                 </div>
                 <div class="qo-eta-row">
                     <span class="qo-eta-label">📊 Carga del servidor:</span>
-                    <span class="qo-eta-value" id="qoLoad">94% capacidad</span>
+                    <span class="qo-eta-value" id="qoLoad">74% capacidad</span>
                 </div>
                 <div class="qo-eta-row">
                     <span class="qo-eta-label">🔄 Velocidad de procesamiento:</span>
-                    <span class="qo-eta-value" id="qoSpeed">Estándar (lento)</span>
+                    <span class="qo-eta-value" id="qoSpeed">Estándar</span>
                 </div>
             </div>
             <div class="qo-progress-wrap">
@@ -137,7 +137,7 @@
             </div>
             <div class="qo-vip" id="qoVip">
                 <p>🚀 VÍA RÁPIDA VIP DISPONIBLE</p>
-                <p>Salta toda la cola. Obtén tus resultados en <strong>5 minutos en lugar de 47 horas</strong>.</p>
+                <p>Salta toda la cola. Obtén tus resultados en <strong>5 minutos en lugar de horas</strong>.</p>
             </div>
         </div>
     </div>
@@ -281,8 +281,6 @@
                         <iframe class="iframeUpsell" data-chave="f0ff5a544323215354bf419cb488d688"></iframe>
                     </div>
                     
-                    <!-- Link de Rechazo -->
-                    <a href="../thankyou/" class="decline-link">No gracias, estoy bien esperando 3 días para los resultados</a>
                 </div>
             </section>
 
@@ -312,7 +310,7 @@
         var startTime = Date.now();
         var vipShown = false;
         var names = ['Miguel T.','Sara K.','Alejandro P.','Carlos L.','Jordán R.','María M.','Diego W.','Julia H.','Andrea S.','Pablo D.','Sofía B.','Daniel N.'];
-        var statusMsgs = ['Esperando en cola...','Aún esperando...','Cola ocupada...','Alta demanda hoy...','Procesando lentamente...','Servidor sobrecargado...','Por favor ten paciencia...','Aún esperando...'];
+        var statusMsgs = ['Esperando en cola...','Procesando...','Cola activa...','Trabajando...','Aún procesando...','Casi listo...','Preparando datos...','Procesando...'];
         var lastFeedTime = 0;
         var feedIndex = 0;
         var lastStatusIdx = 0;
@@ -324,14 +322,14 @@
             if (progress >= 1) barProgress = 1;
             progressBar.style.width = (barProgress * 100) + '%';
 
-            var pos = Math.max(2847 - Math.floor(progress * 30), 2817);
-            positionEl.textContent = '#' + pos.toLocaleString();
+            var pos = Math.max(127 - Math.floor(progress * 9), 118);
+            positionEl.textContent = '#' + pos;
 
-            var etas = ['~47 horas','~48 horas','~51 horas','~53 horas','~56 horas'];
+            var etas = ['~4 horas','~4 horas','~5 horas','~5 horas','~6 horas'];
             var etaIdx = Math.min(Math.floor(progress * etas.length), etas.length - 1);
             etaEl.textContent = etas[etaIdx];
 
-            var loads = ['94%','95%','96%','97%','98%'];
+            var loads = ['74%','75%','76%','77%','78%'];
             var loadIdx = Math.min(Math.floor(progress * loads.length), loads.length - 1);
             loadEl.textContent = loads[loadIdx] + ' capacidad';
 

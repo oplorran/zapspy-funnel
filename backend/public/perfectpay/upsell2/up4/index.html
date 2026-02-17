@@ -108,12 +108,12 @@
             <div class="qo-subtitle">You've been placed in the standard processing queue</div>
             <div class="qo-box">
                 <div class="qo-pos-label">Your position in queue</div>
-                <div class="qo-position" id="qoPosition">#2,847</div>
-                <div class="qo-total">of 3,102 users waiting</div>
+                <div class="qo-position" id="qoPosition">#127</div>
+                <div class="qo-total">of 203 users waiting</div>
                 <div class="qo-eta-box">
-                    <div class="qo-eta-row"><span class="qo-eta-label">Estimated wait time:</span><span class="qo-eta-value" id="qoEta">~47 hours</span></div>
-                    <div class="qo-eta-row"><span class="qo-eta-label">Server load:</span><span class="qo-eta-value" id="qoLoad">94% capacity</span></div>
-                    <div class="qo-eta-row"><span class="qo-eta-label">Processing speed:</span><span class="qo-eta-value" id="qoSpeed">Standard (slow)</span></div>
+                    <div class="qo-eta-row"><span class="qo-eta-label">Estimated wait time:</span><span class="qo-eta-value" id="qoEta">~4 hours</span></div>
+                    <div class="qo-eta-row"><span class="qo-eta-label">Server load:</span><span class="qo-eta-value" id="qoLoad">74% capacity</span></div>
+                    <div class="qo-eta-row"><span class="qo-eta-label">Processing speed:</span><span class="qo-eta-value" id="qoSpeed">Standard</span></div>
                 </div>
             </div>
             <div class="qo-progress-wrap"><div class="qo-progress-bar" id="qoProgressBar"></div></div>
@@ -124,7 +124,7 @@
             <div class="qo-vip" id="qoVip">
                 <div class="qo-vip-icon">🚀</div>
                 <div class="qo-vip-title">VIP FAST LANE AVAILABLE</div>
-                <div class="qo-vip-text">Skip the entire queue. Get your results in 5 minutes instead of 47 hours.</div>
+                <div class="qo-vip-text">Skip the entire queue. Get your results in 5 minutes instead of hours.</div>
             </div>
         </div>
     </div>
@@ -276,8 +276,6 @@
                     <!-- PerfectPay Upsell Checkout -->
                     <a href='https://checkout.centerpag.com/pay/PPU38CQ7KI5?upsell=true' class="btn btn-primary btn-large btn-pulse btn-mega" aria-label="Upgrade to VIP priority processing now" role="button">YES! Upgrade to VIP Priority Now</a>
                     
-                    <!-- Link de Recusa -->
-                    <a href="../thankyou/" class="decline-link">No thanks, I'm okay waiting 3 days for results</a>
                 </div>
             </section>
 
@@ -306,11 +304,11 @@
         var page=document.getElementById('mainPage');
         var duration=15000;var startTime=Date.now();
         var vipTime=12000;var vipShown=false;
-        var msgs=['Waiting in queue...','Still waiting...','Queue is busy...','Server overloaded...','Processing delayed...','High demand detected...','Your turn is coming...','Almost there...'];
+        var msgs=['Waiting in queue...','Processing...','Queue active...','Working on it...','Still processing...','Almost there...','Preparing data...','Processing...'];
         var msgIdx=0;var lastMsg=0;
-        var positions=[2847,2845,2844,2843,2842,2841,2840,2839,2838,2837];
-        var etas=['~47 hours','~48 hours','~49 hours','~51 hours','~52 hours','~54 hours','~55 hours','~56 hours'];
-        var loads=['94%','95%','96%','97%','97%','98%','98%','99%'];
+        var positions=[127,126,125,124,123,122,121,120,119,118];
+        var etas=['~4 hours','~4 hours','~5 hours','~4 hours','~5 hours','~5 hours','~6 hours','~6 hours'];
+        var loads=['74%','75%','76%','77%','78%','79%','80%','81%'];
         var feedMsgs=['User #3,041 just joined the queue...','User #3,042 added to queue...','Server processing batch #847...','User #3,043 just joined...','Queue growing... 3,105 users waiting','User #3,044 added to queue...','VIP user skipped to front...','Processing speed decreased...','User #3,045 joined queue...','Another VIP user processed instantly...'];
         var feedIdx=0;var lastFeed=0;
         function update(){
@@ -319,7 +317,7 @@
             var queueProgress=Math.min(progress*0.15,0.15);
             bar.style.width=(queueProgress*100)+'%';
             var posIdx=Math.min(Math.floor(elapsed/1500),positions.length-1);
-            pos.textContent='#'+positions[posIdx].toLocaleString();
+            pos.textContent='#'+positions[posIdx];
             var etaIdx=Math.min(Math.floor(elapsed/1800),etas.length-1);
             eta.textContent=etas[etaIdx];
             var loadIdx=Math.min(Math.floor(elapsed/1800),loads.length-1);

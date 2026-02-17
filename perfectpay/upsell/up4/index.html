@@ -80,7 +80,7 @@
     .queue-subtitle{font-family:'DM Sans',sans-serif;font-size:12.5px;color:rgba(255,255,255,.4);margin-bottom:22px}
     .queue-box{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:18px;margin-bottom:16px}
     .queue-position-label{font-family:'DM Sans',sans-serif;font-size:11px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
-    .queue-position{font-family:'DM Sans',sans-serif;font-size:42px;font-weight:800;color:#ff6b6b;letter-spacing:-1px;line-height:1.1;transition:all .3s ease}
+    .queue-position{font-family:'DM Sans',sans-serif;font-size:42px;font-weight:800;color:#ff9f43;letter-spacing:-1px;line-height:1.1;transition:all .3s ease}
     .queue-total{font-family:'DM Sans',sans-serif;font-size:12px;color:rgba(255,255,255,.35);margin-top:4px}
     .queue-eta-box{text-align:left;margin-bottom:18px}
     .eta-row{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;font-family:'DM Sans',sans-serif;font-size:12.5px;color:rgba(255,255,255,.5)}
@@ -116,22 +116,22 @@
 
             <div class="queue-box">
                 <div class="queue-position-label">Your position in queue</div>
-                <div class="queue-position" id="queuePosition">#2,847</div>
-                <div class="queue-total">of 3,102 users waiting</div>
+                <div class="queue-position" id="queuePosition">#127</div>
+                <div class="queue-total">of 203 users waiting</div>
             </div>
 
             <div class="queue-eta-box">
                 <div class="eta-row">
                     <span class="eta-label">⏱ Estimated wait time:</span>
-                    <span class="eta-value" id="etaValue">~47 hours</span>
+                    <span class="eta-value" id="etaValue">~4 hours</span>
                 </div>
                 <div class="eta-row">
                     <span class="eta-label">📊 Server load:</span>
-                    <span class="eta-value eta-high" id="serverLoad">94% capacity</span>
+                    <span class="eta-value eta-high" id="serverLoad">74% capacity</span>
                 </div>
                 <div class="eta-row">
                     <span class="eta-label">🔄 Processing speed:</span>
-                    <span class="eta-value eta-slow" id="procSpeed">Standard (slow)</span>
+                    <span class="eta-value eta-slow" id="procSpeed">Standard</span>
                 </div>
             </div>
 
@@ -147,7 +147,7 @@
             <div class="vip-unlock" id="vipUnlock">
                 <span class="vip-unlock-icon">🚀</span>
                 <div class="vip-unlock-title">VIP FAST LANE AVAILABLE</div>
-                <div class="vip-unlock-text">Skip the entire queue. Get your results in <strong>5 minutes instead of 47 hours</strong>.</div>
+                <div class="vip-unlock-text">Skip the entire queue. Get your results in <strong>5 minutes instead of hours</strong>.</div>
             </div>
         </div>
     </div>
@@ -256,7 +256,6 @@
                         
                         <a href='https://checkout.centerpag.com/pay/PPU38CQ7KI5?upsell=true' class="btn btn-primary btn-large btn-pulse btn-mega" aria-label="Upgrade to VIP priority processing now" role="button">YES! Upgrade to VIP Priority Now</a>
                         
-                        <a href="../thankyou/" class="decline-link">No thanks, I'm okay waiting 3 days for results</a>
                     </div>
                 </div>
             </section>
@@ -282,28 +281,28 @@
         if(!o||!m)return;
 
         var TOTAL=15000,start=Date.now(),vipShown=false;
-        var queueStart=2847,queueMin=2831;
+        var queueStart=127,queueMin=118;
         var names=['Mike T.','Sarah K.','Alex P.','Chris L.','Jordan R.','Taylor M.','Casey W.','Jamie H.','Morgan S.','Riley D.','Drew B.','Quinn N.'];
         var nameIdx=0;
 
         function updateQueue(elapsed){
             var progress=elapsed/TOTAL;
-            var moved=Math.floor(progress*16);
+            var moved=Math.floor(progress*9);
             var currentPos=queueStart-moved;
             if(currentPos<queueMin)currentPos=queueMin;
-            pos.textContent='#'+currentPos.toLocaleString();
+            pos.textContent='#'+currentPos;
 
-            var hours=[47,48,51,49,52,53,47,50,54,51];
+            var hours=[4,4,5,4,5,5,6,5,6,6];
             var hIdx=Math.min(Math.floor(progress*hours.length),hours.length-1);
             eta.textContent='~'+hours[hIdx]+' hours';
 
-            var loads=[94,96,93,97,95,98,94,97,96,99];
+            var loads=[74,75,76,77,78,79,80,81,82,83];
             var lIdx=Math.min(Math.floor(progress*loads.length),loads.length-1);
             load.textContent=loads[lIdx]+'% capacity';
 
-            pb.style.width=Math.min(progress*6,6)+'%';
+            pb.style.width=Math.min(progress*10,10)+'%';
 
-            var msgs=['Waiting in queue...','Still waiting...','Queue is busy...','High demand today...','Processing slowly...','Server overloaded...','Please be patient...','Still waiting...'];
+            var msgs=['Waiting in queue...','Processing...','Queue active...','Working on it...','Still processing...','Almost there...','Preparing data...','Processing...'];
             var mIdx=Math.min(Math.floor(progress*msgs.length),msgs.length-1);
             pt.textContent=msgs[mIdx];
         }
@@ -330,7 +329,7 @@
             if(e>=12000&&!vipShown){
                 vipShown=true;
                 vip.classList.add('visible');
-                speed.textContent='VIP available!';
+                speed.textContent='VIP Available';
                 speed.style.color='#25D366';
                 if(navigator.vibrate)navigator.vibrate([150,80,150]);
             }
