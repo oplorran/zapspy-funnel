@@ -2545,11 +2545,11 @@
                                             <span style="font-size:12px; color:#6b9fff; font-weight:600;">Controle</span>
                                         </div>
                                         <div style="margin-bottom:9px;">
-                                            <label style="font-size:10px; color:#555; display:block; margin-bottom:3px; font-weight:500;">Nome</label>
-                                            <input type="text" id="abTestVariantAName" value="Controle" placeholder="Ex: Preco $47" style="width:100%; padding:7px 9px; border-radius:6px; border:1px solid #222; background:#080808; color:#ccc; font-size:12px; outline:none;">
+                                            <label style="font-size:10px; color:#555; display:block; margin-bottom:3px; font-weight:500;">Apelido (para o dashboard)</label>
+                                            <input type="text" id="abTestVariantAName" value="" placeholder="Ex: Ticket $47" style="width:100%; padding:7px 9px; border-radius:6px; border:1px solid #222; background:#080808; color:#ccc; font-size:12px; outline:none;">
                                         </div>
                                         <div>
-                                            <label style="font-size:10px; color:#555; display:block; margin-bottom:3px; font-weight:500;">URL</label>
+                                            <label style="font-size:10px; color:#555; display:block; margin-bottom:3px; font-weight:500;">URL do Funil</label>
                                             <input type="url" id="abTestUrlA" placeholder="https://ingles.zappdetect.com" required style="width:100%; padding:7px 9px; border-radius:6px; border:1px solid #222; background:#080808; color:#7ec8a0; font-size:11px; font-family:monospace; outline:none;">
                                         </div>
                                     </div>
@@ -2559,8 +2559,8 @@
                                             <span style="font-size:12px; color:#5ee6b4; font-weight:600;">Variante</span>
                                         </div>
                                         <div style="margin-bottom:9px;">
-                                            <label style="font-size:10px; color:#555; display:block; margin-bottom:3px; font-weight:500;">Nome</label>
-                                            <input type="text" id="abTestVariantBName" value="Teste" placeholder="Ex: Preco $29" style="width:100%; padding:7px 9px; border-radius:6px; border:1px solid #222; background:#080808; color:#ccc; font-size:12px; outline:none;">
+                                            <label style="font-size:10px; color:#555; display:block; margin-bottom:3px; font-weight:500;">Apelido (para o dashboard)</label>
+                                            <input type="text" id="abTestVariantBName" value="" placeholder="Ex: Ticket $29" style="width:100%; padding:7px 9px; border-radius:6px; border:1px solid #222; background:#080808; color:#ccc; font-size:12px; outline:none;">
                                         </div>
                                         <div>
                                             <label style="font-size:10px; color:#555; display:block; margin-bottom:3px; font-weight:500;">URL</label>
@@ -9151,8 +9151,8 @@ Estou aqui para esclarecer tudo! 😊`
             document.getElementById('abTestModalTitle').textContent = 'Novo Teste A/B';
             document.getElementById('abTestId').value = '';
             document.getElementById('abTestForm').reset();
-            document.getElementById('abTestVariantAName').value = 'Controle';
-            document.getElementById('abTestVariantBName').value = 'Teste';
+            document.getElementById('abTestVariantAName').value = '';
+            document.getElementById('abTestVariantBName').value = '';
             document.getElementById('abTestTrafficSplit').value = 50;
             updateTrafficSplit(50);
             document.getElementById('abTestModal').style.display = 'flex';
