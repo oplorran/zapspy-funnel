@@ -12277,7 +12277,27 @@ async function initDatabase() {
             );
         `);
         // Add unique constraint on transaction_id if not exists (prevents duplicate CAPI sends)
-        await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_capi_purchase_logs_tx_unique ON capi_purchase_logs(transaction_id) WHERE transaction_id IS NOT NULL;`);
+        try {
+            await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_capi_purchase_logs_tx_unique ON capi_purchase_logs(transaction_id) WHERE transaction_id IS NOT NULL;`);
+        } catch (indexErr) {
+            console.log('⚠️ Unique index creation failed (likely duplicates exist), cleaning up...');
+            // Remove duplicate transaction_ids, keeping the latest (highest id) entry
+            const delResult = await pool.query(`
+                DELETE FROM capi_purchase_logs a
+                USING capi_purchase_logs b
+                WHERE a.id < b.id 
+                  AND a.transaction_id IS NOT NULL 
+                  AND a.transaction_id = b.transaction_id
+            `);
+            console.log(`🧹 Removed ${delResult.rowCount} duplicate capi_purchase_logs entries`);
+            // Retry creating the unique index
+            try {
+                await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_capi_purchase_logs_tx_unique ON capi_purchase_logs(transaction_id) WHERE transaction_id IS NOT NULL;`);
+                console.log('✅ Unique index created successfully after duplicate cleanup');
+            } catch (retryErr) {
+                console.error('⚠️ Could not create unique index even after cleanup:', retryErr.message);
+            }
+        }
         
         // Create transactions table for Monetizze postbacks
         await pool.query(`
