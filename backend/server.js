@@ -9589,15 +9589,23 @@ app.get('/api/admin/recovery/segments', authenticateToken, async (req, res) => {
             ${feDateFilter}
         `, dateParams);
         
-        // 3. Payment Failed - Cancelled/refused/pending transactions (DISTINCT by email, exclude already contacted)
+        // 3. Payment Failed - Only actual failures (cancelled/refused), exclude already contacted AND already purchased
         const paymentFailed = await pool.query(`
-            SELECT COUNT(*) as count, COALESCE(SUM(max_value), 0) as total_value
+            SELECT COUNT(*) as count, COALESCE(SUM(value_brl), 0) as total_value
             FROM (
-                SELECT DISTINCT ON (LOWER(t.email)) t.email, CAST(t.value AS DECIMAL) as max_value
+                SELECT DISTINCT ON (LOWER(t.email)) t.email,
+                    CASE 
+                        WHEN t.funnel_source = 'perfectpay' THEN CAST(t.value AS DECIMAL) * ${1 / parseFloat(process.env.CONVERSION_BRL_TO_USD || '0.18')}
+                        ELSE CAST(t.value AS DECIMAL)
+                    END as value_brl
                 FROM transactions t
-                WHERE t.status IN ('cancelled', 'refused', 'pending', 'waiting_payment')
+                WHERE t.status IN ('cancelled', 'refused')
                 AND t.email IS NOT NULL AND t.email != ''
                 ${language ? `AND t.funnel_language = '${language}'` : ''}
+                AND NOT EXISTS (
+                    SELECT 1 FROM transactions t2 
+                    WHERE LOWER(t2.email) = LOWER(t.email) AND t2.status = 'approved'
+                )
                 AND NOT EXISTS (
                     SELECT 1 FROM recovery_contacts rc
                     WHERE LOWER(rc.lead_email) = LOWER(t.email)
@@ -9631,17 +9639,27 @@ app.get('/api/admin/recovery/segments', authenticateToken, async (req, res) => {
             ${feDateFilter}
         `, dateParams);
         
-        const USD_TO_BRL = 5.50;
-        const frontPrice = 47 * USD_TO_BRL;
-        const upsellPrice = 67 * USD_TO_BRL;
+        // USD to BRL rate from env (inverse of BRL_TO_USD)
+        const USD_TO_BRL = 1 / parseFloat(process.env.CONVERSION_BRL_TO_USD || '0.18');
+        
+        // Correct front product prices in USD (EN=$37, ES=$27)
+        const frontPriceEN = 37 * USD_TO_BRL;
+        const frontPriceES = 27 * USD_TO_BRL;
+        const frontPrice = language === 'es' ? frontPriceES : language === 'en' ? frontPriceEN : ((frontPriceEN + frontPriceES) / 2);
+        
+        // Average upsell price in USD (~$47 average across upsells)
+        const upsellPrice = 47 * USD_TO_BRL;
         
         const lostCount = parseInt(lostVisitors.rows[0]?.count || 0);
         const checkoutCount = parseInt(checkoutAbandoned.rows[0]?.count || 0);
         const paymentCount = parseInt(paymentFailed.rows[0]?.count || 0);
         const refundCount = parseInt(refundRequests.rows[0]?.count || 0);
         const upsellCount = parseInt(upsellDeclined.rows[0]?.count || 0);
-        const paymentValue = parseFloat(paymentFailed.rows[0]?.total_value || 0) * USD_TO_BRL;
-        const refundValue = parseFloat(refundRequests.rows[0]?.total_value || 0) * USD_TO_BRL;
+        
+        // payment_failed: values already calculated in BRL in the query (Monetizze=BRL, PerfectPay=USD*rate)
+        const paymentValue = parseFloat(paymentFailed.rows[0]?.total_value || 0);
+        // refund_requests: values stored in BRL from Monetizze transactions - no conversion needed
+        const refundValue = parseFloat(refundRequests.rows[0]?.total_value || 0);
         
         res.json({
             segments: {
@@ -9754,8 +9772,8 @@ app.get('/api/admin/recovery/:segment', authenticateToken, async (req, res, next
                     l.funnel_language as language,
                     fe.created_at as last_event_at,
                     fe.event,
-                    (CASE WHEN l.funnel_language = 'es' THEN 27.00 * 5.50 ELSE 37.00 * 5.50 END) as potential_value,
-                    'X AI Monitor' as product,
+                    (CASE WHEN l.funnel_language = 'es' THEN 27.00 ELSE 37.00 END * ${1 / parseFloat(process.env.CONVERSION_BRL_TO_USD || '0.18')}) as potential_value,
+                    CASE WHEN l.funnel_language = 'es' THEN 'Detector de Infidelidad' ELSE 'X AI Monitor' END as product,
                     (SELECT COUNT(*) FROM funnel_events fe3 WHERE fe3.visitor_id = fe.visitor_id) as event_count,
                     false as has_purchase,
                     0 as contact_attempts,
@@ -9824,8 +9842,8 @@ app.get('/api/admin/recovery/:segment', authenticateToken, async (req, res, next
                     l.funnel_language as language,
                     fe.created_at as last_event_at,
                     'checkout_clicked' as event,
-                    (CASE WHEN l.funnel_language = 'es' THEN 27.00 * 5.50 ELSE 37.00 * 5.50 END) as potential_value,
-                    'X AI Monitor' as product,
+                    (CASE WHEN l.funnel_language = 'es' THEN 27.00 ELSE 37.00 END * ${1 / parseFloat(process.env.CONVERSION_BRL_TO_USD || '0.18')}) as potential_value,
+                    CASE WHEN l.funnel_language = 'es' THEN 'Detector de Infidelidad' ELSE 'X AI Monitor' END as product,
                     1 as event_count,
                     false as has_purchase,
                     0 as contact_attempts,
@@ -9873,7 +9891,8 @@ app.get('/api/admin/recovery/:segment', authenticateToken, async (req, res, next
             totalCount = parseInt(countResult.rows[0]?.count || 0);
             
         } else if (segment === 'payment_failed') {
-            // Payment failed leads - DISTINCT by email, most recent transaction per person
+            // Payment failed leads - only actual failures (cancelled/refused), exclude already purchased
+            const usdToBrlRate = 1 / parseFloat(process.env.CONVERSION_BRL_TO_USD || '0.18');
             const result = await pool.query(`
                 SELECT DISTINCT ON (LOWER(t.email))
                     t.id,
@@ -9885,17 +9904,24 @@ app.get('/api/admin/recovery/:segment', authenticateToken, async (req, res, next
                     t.funnel_language as language,
                     t.created_at as last_event_at,
                     t.status as event,
-                    CAST(t.value AS DECIMAL) * 5.50 as potential_value,
+                    CASE 
+                        WHEN t.funnel_source = 'perfectpay' THEN CAST(t.value AS DECIMAL) * ${usdToBrlRate}
+                        ELSE CAST(t.value AS DECIMAL)
+                    END as potential_value,
                     t.product,
-                    (SELECT COUNT(*) FROM transactions t2 WHERE LOWER(t2.email) = LOWER(t.email) AND t2.status IN ('cancelled', 'refused', 'pending', 'waiting_payment')) as event_count,
+                    (SELECT COUNT(*) FROM transactions t2 WHERE LOWER(t2.email) = LOWER(t.email) AND t2.status IN ('cancelled', 'refused')) as event_count,
                     false as has_purchase,
                     0 as contact_attempts,
                     NULL as last_contact
                 FROM transactions t
                 LEFT JOIN leads l ON LOWER(t.email) = LOWER(l.email)
-                WHERE t.status IN ('cancelled', 'refused', 'pending', 'waiting_payment')
+                WHERE t.status IN ('cancelled', 'refused')
                 AND t.email IS NOT NULL AND t.email != ''
                 ${language ? `AND t.funnel_language = '${language}'` : ''}
+                AND NOT EXISTS (
+                    SELECT 1 FROM transactions t3
+                    WHERE LOWER(t3.email) = LOWER(t.email) AND t3.status = 'approved'
+                )
                 AND NOT EXISTS (
                     SELECT 1 FROM recovery_contacts rc
                     WHERE LOWER(rc.lead_email) = LOWER(t.email)
@@ -9960,10 +9986,10 @@ app.get('/api/admin/recovery/:segment', authenticateToken, async (req, res, next
                     l.funnel_language as language,
                     fe.created_at as last_event_at,
                     fe.event,
-                    67.00 as potential_value,
+                    (47.00 * ${1 / parseFloat(process.env.CONVERSION_BRL_TO_USD || '0.18')}) as potential_value,
                     CASE 
                         WHEN fe.event LIKE 'upsell_1%' THEN 'Message Vault'
-                        WHEN fe.event LIKE 'upsell_2%' THEN 'AI Vision'
+                        WHEN fe.event LIKE 'upsell_2%' THEN '360 Tracker'
                         WHEN fe.event LIKE 'upsell_3%' THEN 'VIP Priority'
                         ELSE 'Upsell'
                     END as product,
