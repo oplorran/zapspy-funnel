@@ -3316,8 +3316,8 @@ app.get('/api/admin/funnel-stats', authenticateToken, async (req, res) => {
         const params = [];
         
         if (startDate && endDate) {
-            dateFilter = ` AND created_at >= $1 AND created_at < $2 + INTERVAL '1 day'`;
-            dateFilterTx = ` AND created_at >= $1 AND created_at < $2 + INTERVAL '1 day'`;
+            dateFilter = ` AND created_at >= $1::date AND created_at < $2::date + INTERVAL '1 day'`;
+            dateFilterTx = ` AND created_at >= $1::date AND created_at < $2::date + INTERVAL '1 day'`;
             params.push(startDate, endDate);
         }
         
@@ -12277,27 +12277,27 @@ async function initDatabase() {
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
             );
         `);
-        // Add unique constraint on transaction_id if not exists (prevents duplicate CAPI sends)
+        // Add unique constraint on transaction_id (prevents duplicate CAPI sends)
+        // IMPORTANT: Must be a NON-PARTIAL index (no WHERE clause) for ON CONFLICT (transaction_id) to work
         try {
-            await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_capi_purchase_logs_tx_unique ON capi_purchase_logs(transaction_id) WHERE transaction_id IS NOT NULL;`);
-        } catch (indexErr) {
-            console.log('⚠️ Unique index creation failed (likely duplicates exist), cleaning up...');
-            // Remove duplicate transaction_ids, keeping the latest (highest id) entry
+            // First drop the old partial index if it exists (partial indexes don't work with ON CONFLICT)
+            await pool.query(`DROP INDEX IF EXISTS idx_capi_purchase_logs_tx_unique;`);
+            // Remove any NULL transaction_ids before creating non-partial unique index
+            await pool.query(`DELETE FROM capi_purchase_logs WHERE transaction_id IS NULL;`);
+            // Remove duplicates keeping the latest entry
             const delResult = await pool.query(`
                 DELETE FROM capi_purchase_logs a
                 USING capi_purchase_logs b
-                WHERE a.id < b.id 
-                  AND a.transaction_id IS NOT NULL 
-                  AND a.transaction_id = b.transaction_id
+                WHERE a.id < b.id AND a.transaction_id = b.transaction_id
             `);
-            console.log(`🧹 Removed ${delResult.rowCount} duplicate capi_purchase_logs entries`);
-            // Retry creating the unique index
-            try {
-                await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_capi_purchase_logs_tx_unique ON capi_purchase_logs(transaction_id) WHERE transaction_id IS NOT NULL;`);
-                console.log('✅ Unique index created successfully after duplicate cleanup');
-            } catch (retryErr) {
-                console.error('⚠️ Could not create unique index even after cleanup:', retryErr.message);
+            if (delResult.rowCount > 0) {
+                console.log(`🧹 Removed ${delResult.rowCount} duplicate capi_purchase_logs entries`);
             }
+            // Create NON-PARTIAL unique index (works with ON CONFLICT)
+            await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_capi_purchase_logs_tx_nonpartial ON capi_purchase_logs(transaction_id);`);
+            console.log('✅ capi_purchase_logs unique index ready (non-partial)');
+        } catch (indexErr) {
+            console.error('⚠️ capi_purchase_logs index error:', indexErr.message);
         }
         
         // Create transactions table for Monetizze postbacks
