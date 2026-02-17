@@ -1013,24 +1013,6 @@
                                 <span class="segment-value" id="segmentValue_payment_failed">$0</span>
                             </div>
                         </button>
-                        <button class="recovery-segment-tab" data-segment="refund_requests" onclick="selectRecoverySegment('refund_requests')">
-                            <div class="seg-color-bar" style="background: #f97316;"></div>
-                            <span class="segment-icon">💸</span>
-                            <div class="segment-info">
-                                <span class="segment-name">Pedidos Reembolso</span>
-                                <span class="segment-count" id="segmentCount_refund_requests">0</span>
-                                <span class="segment-value" id="segmentValue_refund_requests">$0</span>
-                            </div>
-                        </button>
-                        <button class="recovery-segment-tab" data-segment="upsell_declined" onclick="selectRecoverySegment('upsell_declined')">
-                            <div class="seg-color-bar" style="background: #3b82f6;"></div>
-                            <span class="segment-icon">📦</span>
-                            <div class="segment-info">
-                                <span class="segment-name">Recusas Upsell</span>
-                                <span class="segment-count" id="segmentCount_upsell_declined">0</span>
-                                <span class="segment-value" id="segmentValue_upsell_declined">$0</span>
-                            </div>
-                        </button>
                     </div>
                     
                     <!-- Filters Bar -->
@@ -1227,8 +1209,6 @@
                                     <option value="lost_visitors">Visitantes Perdidos</option>
                                     <option value="checkout_abandoned">Checkout Abandonado</option>
                                     <option value="payment_failed">Pagamentos Recusados</option>
-                                    <option value="refund_requests">Pedidos Reembolso</option>
-                                    <option value="upsell_declined">Recusas Upsell</option>
                                 </select>
                                 <select class="dispatch-filter-select" id="dispatchFilterStatus" onchange="loadDispatchLog(1)">
                                     <option value="">Todos Status</option>
