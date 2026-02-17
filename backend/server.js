@@ -12793,6 +12793,63 @@ async function initDatabase() {
             console.error('⚠️ Backfill error (non-blocking):', backfillError.message);
         }
         
+        // ==================== BACKFILL: Create leads for transactions without matching leads ====================
+        try {
+            const orphanTx = await pool.query(`
+                SELECT 
+                    LOWER(t.email) as email,
+                    MAX(t.name) as name,
+                    MAX(t.phone) as phone,
+                    array_agg(DISTINCT t.product) as products,
+                    SUM(CAST(t.value AS DECIMAL)) as total_spent,
+                    MIN(t.created_at) as first_purchase,
+                    MAX(t.created_at) as last_purchase,
+                    MAX(t.funnel_language) as funnel_language,
+                    MAX(t.funnel_source) as funnel_source,
+                    COUNT(*) as tx_count
+                FROM transactions t
+                WHERE t.status = 'approved' 
+                  AND t.email IS NOT NULL
+                  AND NOT EXISTS (
+                      SELECT 1 FROM leads l WHERE LOWER(l.email) = LOWER(t.email)
+                  )
+                GROUP BY LOWER(t.email)
+            `);
+            
+            if (orphanTx.rows.length > 0) {
+                console.log(`🔄 Found ${orphanTx.rows.length} buyers without matching leads, creating...`);
+                let created = 0;
+                
+                for (const tx of orphanTx.rows) {
+                    try {
+                        await pool.query(`
+                            INSERT INTO leads (email, name, whatsapp, status, funnel_language, funnel_source,
+                                products_purchased, total_spent, first_purchase_at, last_purchase_at,
+                                created_at, updated_at)
+                            VALUES (LOWER($1), $2, $3, 'converted', $4, $5, $6, $7, $8, $9, $8, NOW())
+                        `, [
+                            tx.email,
+                            tx.name || '',
+                            tx.phone || '',
+                            tx.funnel_language || 'en',
+                            tx.funnel_source || 'main',
+                            tx.products,
+                            tx.total_spent || 0,
+                            tx.first_purchase,
+                            tx.last_purchase
+                        ]);
+                        created++;
+                    } catch (insertErr) {
+                        // Skip duplicates or other errors silently
+                    }
+                }
+                
+                console.log(`✅ Created ${created} new leads from orphan transactions`);
+            }
+        } catch (orphanError) {
+            console.error('⚠️ Orphan transaction backfill error (non-blocking):', orphanError.message);
+        }
+        
     } catch (error) {
         console.error('❌ Database init error:', error.message);
     }
