@@ -5176,7 +5176,7 @@ Estou aqui para esclarecer tudo! 😊`
         
         // Z-API Diagnostics
         async function runZapiDiagnostics() {
-            showToast('Executando diagnóstico Z-API...', 'info');
+            showToast('Diagnóstico', 'Executando diagnóstico Z-API...', 'info');
             try {
                 const response = await fetch('/api/admin/whatsapp/diagnostics', {
                     headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
@@ -5228,9 +5228,9 @@ Estou aqui para esclarecer tudo! 😊`
                 </div>`;
                 
                 document.body.insertAdjacentHTML('beforeend', html);
-                showToast('Diagnóstico concluído', 'success');
+                showToast('Concluído', 'Diagnóstico Z-API finalizado', 'success');
             } catch (error) {
-                showToast('Erro ao executar diagnóstico: ' + error.message, 'error');
+                showToast('Erro', 'Falha ao executar diagnóstico: ' + error.message, 'error');
             }
         }
 
@@ -9063,8 +9063,9 @@ Estou aqui para esclarecer tudo! 😊`
         }
         
         function renderABTestCard(test) {
-            const stMap = { 'draft':{c:'#6b7280',t:'Rascunho',dot:'#6b7280'}, 'running':{c:'#10b981',t:'Rodando',dot:'#10b981'}, 'stopped':{c:'#f59e0b',t:'Pausado',dot:'#f59e0b'}, 'completed':{c:'#3b82f6',t:'Finalizado',dot:'#3b82f6'} };
+            const stMap = { 'draft':{c:'#6b7280',t:'Rascunho',bg:'#6b728015'}, 'running':{c:'#10b981',t:'Rodando',bg:'#10b98115'}, 'stopped':{c:'#f59e0b',t:'Pausado',bg:'#f59e0b15'}, 'completed':{c:'#3b82f6',t:'Finalizado',bg:'#3b82f615'} };
             const st = stMap[test.status] || stMap.draft;
+            
             const vA=parseInt(test.visitors_a)||0, vB=parseInt(test.visitors_b)||0;
             const lA=parseInt(test.leads_a)||0, lB=parseInt(test.leads_b)||0;
             const pA=parseInt(test.purchases_a)||0, pB=parseInt(test.purchases_b)||0;
@@ -9074,71 +9075,186 @@ Estou aqui para esclarecer tudo! 😊`
             const prA=vA>0?((pA/vA)*100).toFixed(1):'0.0', prB=vB>0?((pB/vB)*100).toFixed(1):'0.0';
             const rpvA=vA>0?(rA/vA).toFixed(2):'0.00', rpvB=vB>0?(rB/vB).toFixed(2):'0.00';
             const avgTktA=pA>0?(rA/pA).toFixed(2):'0.00', avgTktB=pB>0?(rB/pB).toFixed(2):'0.00';
-            const aWin=parseFloat(prA)>parseFloat(prB)&&total>30, bWin=parseFloat(prB)>parseFloat(prA)&&total>30;
+            
+            const fpA=parseInt(test.front_purchases_a)||0, fpB=parseInt(test.front_purchases_b)||0;
+            const frA=parseFloat(test.front_revenue_a)||0, frB=parseFloat(test.front_revenue_b)||0;
+            const u1pA=parseInt(test.up1_purchases_a)||0, u1pB=parseInt(test.up1_purchases_b)||0;
+            const u2pA=parseInt(test.up2_purchases_a)||0, u2pB=parseInt(test.up2_purchases_b)||0;
+            const u3pA=parseInt(test.up3_purchases_a)||0, u3pB=parseInt(test.up3_purchases_b)||0;
+            const u1rA=parseFloat(test.up1_revenue_a)||0, u1rB=parseFloat(test.up1_revenue_b)||0;
+            const u2rA=parseFloat(test.up2_revenue_a)||0, u2rB=parseFloat(test.up2_revenue_b)||0;
+            const u3rA=parseFloat(test.up3_revenue_a)||0, u3rB=parseFloat(test.up3_revenue_b)||0;
+            const urA=u1rA+u2rA+u3rA, urB=u1rB+u2rB+u3rB;
+            const u1tA=test.up1_take_a||'0.0', u1tB=test.up1_take_b||'0.0';
+            const u2tA=test.up2_take_a||'0.0', u2tB=test.up2_take_b||'0.0';
+            const u3tA=test.up3_take_a||'0.0', u3tB=test.up3_take_b||'0.0';
+            
+            const rpvWin = parseFloat(rpvA)>parseFloat(rpvB) ? 'A' : parseFloat(rpvB)>parseFloat(rpvA) ? 'B' : null;
+            const lrWin = parseFloat(lrA)>parseFloat(lrB) ? 'A' : parseFloat(lrB)>parseFloat(lrA) ? 'B' : null;
+            const prWin = parseFloat(prA)>parseFloat(prB) ? 'A' : parseFloat(prB)>parseFloat(prA) ? 'B' : null;
+            const hasData = total > 0;
+            
             const splitUrl = test.slug ? `${window.location.origin}/go/${test.slug}` : '';
             
-            const metricCell = (val,label,color) => `<div style="text-align:center;"><div style="font-size:16px; font-weight:700; color:${color||'#ddd'}; line-height:1.2;">${val}</div><div style="font-size:9px; color:#555; margin-top:3px; text-transform:uppercase; letter-spacing:0.3px;">${label}</div></div>`;
-            
-            const variantBlock = (letter, name, url, vis, lr, pr, rpv, leads, purchases, revenue, avgTkt, isWin, color) => `
-                <div style="flex:1; min-width:0; padding:16px; border-radius:10px; background:${isWin?`linear-gradient(135deg,${color}12,transparent)`:'#0e0e0e'}; border:1px solid ${isWin?color+'40':'#1e1e1e'};">
-                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <span style="background:${color}; color:#fff; width:22px; height:22px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; font-size:11px; font-weight:700;">${letter}</span>
-                            <span style="font-size:13px; font-weight:600; color:#ccc;">${name||letter}</span>
-                        </div>
-                        ${isWin?`<span style="font-size:10px; color:${color}; font-weight:600; background:${color}15; padding:2px 8px; border-radius:10px;">LIDERANDO</span>`:''}
-                    </div>
-                    ${url?`<div style="font-size:10px; color:#444; margin-bottom:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${url}">${url}</div>`:''}
-                    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:12px;">
-                        ${metricCell(vis.toLocaleString(),'Visitantes','#ddd')}
-                        ${metricCell(lr+'%','Conv. Lead','#10b981')}
-                        ${metricCell(pr+'%','Conv. Venda','#f59e0b')}
-                    </div>
-                    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:6px; padding-top:12px; border-top:1px solid #1a1a1a;">
-                        ${metricCell(leads,'Leads','#888')}
-                        ${metricCell(purchases,'Vendas','#888')}
-                        ${metricCell('$'+revenue.toFixed(0),'Receita','#888')}
-                        ${metricCell('$'+rpv,'RPV','#a78bfa')}
-                    </div>
+            const compBar = (valA, valB, colorA, colorB) => {
+                const a = parseFloat(valA)||0, b = parseFloat(valB)||0;
+                const max = Math.max(a,b,0.01);
+                const pctA = (a/max*100).toFixed(0), pctB = (b/max*100).toFixed(0);
+                return `<div style="display:flex;gap:3px;align-items:center;height:6px;">
+                    <div style="flex:1;background:#1a1a1a;border-radius:3px;overflow:hidden;height:100%;"><div style="width:${pctA}%;height:100%;background:${colorA};border-radius:3px;transition:width 0.5s;"></div></div>
+                    <div style="flex:1;background:#1a1a1a;border-radius:3px;overflow:hidden;height:100%;direction:rtl;"><div style="width:${pctB}%;height:100%;background:${colorB};border-radius:3px;transition:width 0.5s;"></div></div>
                 </div>`;
+            };
             
-            const actionBtn = (label,onclick,bg,clr) => `<button onclick="${onclick}" style="padding:5px 12px; font-size:11px; font-weight:500; border-radius:6px; border:${bg==='transparent'?'1px solid #2a2a2a':'none'}; background:${bg}; color:${clr||'#fff'}; cursor:pointer; transition:opacity 0.2s; white-space:nowrap;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">${label}</button>`;
+            const compRow = (label, valA, valB, fmtA, fmtB, colorA, colorB, highlight) => {
+                const winA = parseFloat(valA)>parseFloat(valB) && hasData;
+                const winB = parseFloat(valB)>parseFloat(valA) && hasData;
+                return `<div style="margin-bottom:10px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                        <span style="font-size:13px;font-weight:${winA?'700':'500'};color:${winA&&highlight?colorA:'#ccc'};${winA?'text-shadow:0 0 8px '+colorA+'40;':''}">${fmtA}</span>
+                        <span style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">${label}</span>
+                        <span style="font-size:13px;font-weight:${winB?'700':'500'};color:${winB&&highlight?colorB:'#ccc'};${winB?'text-shadow:0 0 8px '+colorB+'40;':''}">${fmtB}</span>
+                    </div>
+                    ${compBar(valA,valB,colorA,colorB)}
+                </div>`;
+            };
+            
+            const upsellRow = (name, pA, pB, tA, tB, rA, rB, colorA, colorB) => {
+                const hasUp = (parseInt(pA)||0)+(parseInt(pB)||0) > 0;
+                return `<div style="display:flex;align-items:center;padding:6px 0;${hasUp?'':'opacity:0.4;'}">
+                    <span style="flex:1;text-align:right;font-size:12px;color:#aaa;">
+                        <span style="color:${parseFloat(tA)>parseFloat(tB)?colorA:'#888'};font-weight:${parseFloat(tA)>parseFloat(tB)?'700':'400'};">${tA}%</span>
+                        <span style="color:#444;margin:0 4px;">·</span>
+                        <span style="font-size:11px;color:#666;">${pA} vendas</span>
+                        <span style="color:#444;margin:0 4px;">·</span>
+                        <span style="font-size:11px;color:#555;">$${parseFloat(rA).toFixed(0)}</span>
+                    </span>
+                    <span style="width:80px;text-align:center;font-size:11px;font-weight:600;color:#888;flex-shrink:0;">${name}</span>
+                    <span style="flex:1;font-size:12px;color:#aaa;">
+                        <span style="font-size:11px;color:#555;">$${parseFloat(rB).toFixed(0)}</span>
+                        <span style="color:#444;margin:0 4px;">·</span>
+                        <span style="font-size:11px;color:#666;">${pB} vendas</span>
+                        <span style="color:#444;margin:0 4px;">·</span>
+                        <span style="color:${parseFloat(tB)>parseFloat(tA)?colorB:'#888'};font-weight:${parseFloat(tB)>parseFloat(tA)?'700':'400'};">${tB}%</span>
+                    </span>
+                </div>`;
+            };
+            
+            const actionBtn = (icon,label,onclick,bg,clr) => `<button onclick="${onclick}" style="display:inline-flex;align-items:center;gap:4px;padding:6px 14px;font-size:11px;font-weight:600;border-radius:6px;border:1px solid ${bg==='transparent'?'#2a2a2a':bg};background:${bg};color:${clr||'#fff'};cursor:pointer;transition:all 0.2s;white-space:nowrap;letter-spacing:0.2px;" onmouseover="this.style.opacity='0.8';this.style.transform='translateY(-1px)'" onmouseout="this.style.opacity='1';this.style.transform='none'">${icon} ${label}</button>`;
             
             let actions = '';
-            if (test.status==='draft') actions = actionBtn('Iniciar','startABTest('+test.id+')','#10b981','#fff') + actionBtn('Editar','editABTest('+test.id+')','transparent','#888') + actionBtn('Excluir','deleteABTest('+test.id+')','transparent','#ef4444');
-            else if (test.status==='running') actions = actionBtn('Pausar','stopABTest('+test.id+')','#f59e0b','#000') + actionBtn('Vencedor','showSetWinnerModal('+test.id+')','#3b82f6','#fff') + actionBtn('Resetar','resetABTest('+test.id+')','transparent','#888');
-            else if (test.status==='stopped') actions = actionBtn('Retomar','startABTest('+test.id+')','#10b981','#fff') + actionBtn('Resetar','resetABTest('+test.id+')','transparent','#888') + actionBtn('Excluir','deleteABTest('+test.id+')','transparent','#ef4444');
-            else actions = actionBtn('Excluir','deleteABTest('+test.id+')','transparent','#ef4444');
+            if (test.status==='draft') actions = actionBtn('▶','Iniciar','startABTest('+test.id+')','#10b981','#fff') + actionBtn('✏️','Editar','editABTest('+test.id+')','transparent','#888') + actionBtn('🗑','Excluir','deleteABTest('+test.id+')','transparent','#ef4444');
+            else if (test.status==='running') actions = actionBtn('⏸','Pausar','stopABTest('+test.id+')','#f59e0b','#000') + actionBtn('🏆','Vencedor','showSetWinnerModal('+test.id+')','#3b82f6','#fff') + actionBtn('↺','Resetar','resetABTest('+test.id+')','transparent','#888');
+            else if (test.status==='stopped') actions = actionBtn('▶','Retomar','startABTest('+test.id+')','#10b981','#fff') + actionBtn('↺','Resetar','resetABTest('+test.id+')','transparent','#888') + actionBtn('🗑','Excluir','deleteABTest('+test.id+')','transparent','#ef4444');
+            else actions = actionBtn('🗑','Excluir','deleteABTest('+test.id+')','transparent','#ef4444');
+            
+            const colA = '#3b82f6', colB = '#10b981';
             
             return `
-            <div style="background:#111; border:1px solid #1e1e1e; border-radius:12px; margin-bottom:14px; overflow:hidden; ${test.status==='running'?'border-left:3px solid #10b981;':''}">
-                <div style="padding:16px 18px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #1a1a1a;">
+            <div style="background:#0d0d0d; border:1px solid #1e1e1e; border-radius:14px; margin-bottom:18px; overflow:hidden; ${test.status==='running'?'border-color:#10b98140;box-shadow:0 0 20px #10b98108;':''}">
+                <!-- HEADER -->
+                <div style="padding:14px 20px; display:flex; justify-content:space-between; align-items:center; background:#111; border-bottom:1px solid #1a1a1a;">
                     <div style="display:flex; align-items:center; gap:10px; min-width:0;">
-                        <span style="width:8px; height:8px; border-radius:50%; background:${st.dot}; flex-shrink:0; ${test.status==='running'?'box-shadow:0 0 6px '+st.dot+';':''}"></span>
-                        <span style="font-size:14px; font-weight:600; color:#ddd; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${test.name}</span>
-                        <span style="font-size:10px; color:${st.c}; background:${st.c}15; padding:2px 8px; border-radius:10px; font-weight:500; flex-shrink:0;">${st.t}</span>
-                        ${test.winner?`<span style="font-size:10px; color:#f59e0b; background:#f59e0b15; padding:2px 8px; border-radius:10px; font-weight:600; flex-shrink:0;">🏆 ${test.winner}</span>`:''}
+                        <span style="width:9px; height:9px; border-radius:50%; background:${st.c}; flex-shrink:0; ${test.status==='running'?'box-shadow:0 0 8px '+st.c+';animation:abPulse 2s infinite;':''}"></span>
+                        <span style="font-size:15px; font-weight:700; color:#eee; letter-spacing:-0.2px;">${test.name}</span>
+                        <span style="font-size:10px; color:${st.c}; background:${st.bg}; padding:3px 10px; border-radius:10px; font-weight:600; flex-shrink:0; border:1px solid ${st.c}30;">${st.t}</span>
+                        ${test.winner?`<span style="font-size:10px; color:#f59e0b; background:#f59e0b15; padding:3px 10px; border-radius:10px; font-weight:600; flex-shrink:0; border:1px solid #f59e0b30;">🏆 Vencedor: ${test.winner}</span>`:''}
                     </div>
                     <div style="display:flex; gap:6px; flex-shrink:0;">${actions}</div>
                 </div>
+                
                 ${splitUrl && (test.status==='running' || test.status==='draft') ?`
-                <div style="padding:10px 18px; background:#0a0f0a; border-bottom:1px solid #1a1a1a; display:flex; align-items:center; gap:10px;">
-                    <span style="font-size:10px; color:#555; font-weight:600; text-transform:uppercase; letter-spacing:0.3px; flex-shrink:0;">Split URL</span>
-                    <code style="flex:1; font-size:11px; color:#25D366; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${splitUrl}">${splitUrl}</code>
-                    <button onclick="navigator.clipboard.writeText('${splitUrl}');showNotification('Link copiado!','success')" style="background:#1a2a1a; color:#25D366; border:1px solid #1e2e1e; padding:4px 12px; border-radius:5px; cursor:pointer; font-size:10px; font-weight:600; flex-shrink:0; transition:all 0.2s;" onmouseover="this.style.background='#25D366';this.style.color='#000'" onmouseout="this.style.background='#1a2a1a';this.style.color='#25D366'">Copiar</button>
+                <!-- SPLIT URL BAR -->
+                <div style="padding:8px 20px; background:#080c08; border-bottom:1px solid #1a1a1a; display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:9px; color:#555; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; flex-shrink:0;">SPLIT URL</span>
+                    <code style="flex:1; font-size:11px; color:#25D366; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-family:'JetBrains Mono',monospace;" title="${splitUrl}">${splitUrl}</code>
+                    <button onclick="navigator.clipboard.writeText('${splitUrl}');showToast('Copiado!','Link copiado para a área de transferência','success')" style="background:#1a2a1a; color:#25D366; border:1px solid #25D36630; padding:4px 14px; border-radius:5px; cursor:pointer; font-size:10px; font-weight:600; flex-shrink:0; transition:all 0.2s;" onmouseover="this.style.background='#25D366';this.style.color='#000'" onmouseout="this.style.background='#1a2a1a';this.style.color='#25D366'">📋 Copiar</button>
                 </div>`:''}
-                <div style="padding:16px 18px;">
-                    <div style="display:flex; gap:12px;">
-                        ${variantBlock('A',test.variant_a_name,test.url_a,vA,lrA,prA,rpvA,lA,pA,rA,avgTktA,aWin,'#3b82f6')}
-                        ${variantBlock('B',test.variant_b_name,test.url_b,vB,lrB,prB,rpvB,lB,pB,rB,avgTktB,bWin,'#10b981')}
+                
+                <!-- VARIANT HEADERS -->
+                <div style="display:flex; padding:12px 20px 0; gap:12px;">
+                    <div style="flex:1;display:flex;align-items:center;gap:8px;justify-content:flex-end;">
+                        <span style="font-size:12px;font-weight:600;color:#aaa;">${test.variant_a_name||'Controle'}</span>
+                        <span style="background:${colA};color:#fff;width:24px;height:24px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">A</span>
                     </div>
-                    <div style="display:flex; justify-content:center; gap:20px; margin-top:12px; padding-top:12px; border-top:1px solid #1a1a1a;">
-                        <span style="font-size:11px; color:#555;">Split: <strong style="color:#888;">${test.traffic_split}/${100-test.traffic_split}</strong></span>
-                        <span style="font-size:11px; color:#555;">Total: <strong style="color:#888;">${total.toLocaleString()}</strong> visitantes</span>
-                        <span style="font-size:11px; color:#555;">Receita: <strong style="color:#10b981;">$${(rA+rB).toFixed(2)}</strong></span>
+                    <div style="width:80px;flex-shrink:0;"></div>
+                    <div style="flex:1;display:flex;align-items:center;gap:8px;">
+                        <span style="background:${colB};color:#fff;width:24px;height:24px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">B</span>
+                        <span style="font-size:12px;font-weight:600;color:#aaa;">${test.variant_b_name||'Variante'}</span>
                     </div>
                 </div>
-            </div>`;
+                ${test.url_a||test.url_b?`<div style="display:flex;padding:2px 20px 0;gap:12px;">
+                    <div style="flex:1;text-align:right;font-size:10px;color:#444;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${test.url_a||''}">${test.url_a||''}</div>
+                    <div style="width:80px;flex-shrink:0;"></div>
+                    <div style="flex:1;font-size:10px;color:#444;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${test.url_b||''}">${test.url_b||''}</div>
+                </div>`:''}
+                
+                <!-- MAIN METRICS -->
+                <div style="padding:14px 20px 0;">
+                    <div style="font-size:9px;color:#444;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #1a1a1a;">Funil Principal</div>
+                    ${compRow('Visitantes',vA,vB,vA.toLocaleString(),vB.toLocaleString(),colA,colB,false)}
+                    ${compRow('Conv. Lead',lrA,lrB,lrA+'%',lrB+'%',colA,colB,true)}
+                    ${compRow('Conv. Venda',prA,prB,prA+'%',prB+'%',colA,colB,true)}
+                    ${compRow('RPV ($/visit)',rpvA,rpvB,'$'+rpvA,'$'+rpvB,colA,colB,true)}
+                    ${compRow('Ticket Médio',avgTktA,avgTktB,'$'+avgTktA,'$'+avgTktB,colA,colB,true)}
+                </div>
+                
+                <!-- REVENUE BREAKDOWN -->
+                <div style="padding:8px 20px;">
+                    <div style="display:flex;gap:12px;">
+                        <div style="flex:1;display:flex;gap:8px;justify-content:flex-end;">
+                            <div style="text-align:center;padding:8px 12px;background:#111;border-radius:8px;border:1px solid #1a1a1a;min-width:70px;">
+                                <div style="font-size:14px;font-weight:700;color:${rA>=rB&&hasData?colA:'#ccc'};">$${rA.toFixed(0)}</div>
+                                <div style="font-size:8px;color:#555;text-transform:uppercase;letter-spacing:0.3px;margin-top:2px;">Receita Total</div>
+                            </div>
+                            <div style="text-align:center;padding:8px 12px;background:#111;border-radius:8px;border:1px solid #1a1a1a;min-width:60px;">
+                                <div style="font-size:13px;font-weight:600;color:#888;">$${frA.toFixed(0)}</div>
+                                <div style="font-size:8px;color:#555;text-transform:uppercase;letter-spacing:0.3px;margin-top:2px;">Front</div>
+                            </div>
+                            <div style="text-align:center;padding:8px 12px;background:#111;border-radius:8px;border:1px solid #1a1a1a;min-width:60px;">
+                                <div style="font-size:13px;font-weight:600;color:#a78bfa;">$${urA.toFixed(0)}</div>
+                                <div style="font-size:8px;color:#555;text-transform:uppercase;letter-spacing:0.3px;margin-top:2px;">Upsells</div>
+                            </div>
+                        </div>
+                        <div style="width:80px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+                            <span style="font-size:9px;color:#444;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;">Receita</span>
+                        </div>
+                        <div style="flex:1;display:flex;gap:8px;">
+                            <div style="text-align:center;padding:8px 12px;background:#111;border-radius:8px;border:1px solid #1a1a1a;min-width:60px;">
+                                <div style="font-size:13px;font-weight:600;color:#888;">$${frB.toFixed(0)}</div>
+                                <div style="font-size:8px;color:#555;text-transform:uppercase;letter-spacing:0.3px;margin-top:2px;">Front</div>
+                            </div>
+                            <div style="text-align:center;padding:8px 12px;background:#111;border-radius:8px;border:1px solid #1a1a1a;min-width:60px;">
+                                <div style="font-size:13px;font-weight:600;color:#a78bfa;">$${urB.toFixed(0)}</div>
+                                <div style="font-size:8px;color:#555;text-transform:uppercase;letter-spacing:0.3px;margin-top:2px;">Upsells</div>
+                            </div>
+                            <div style="text-align:center;padding:8px 12px;background:#111;border-radius:8px;border:1px solid #1a1a1a;min-width:70px;">
+                                <div style="font-size:14px;font-weight:700;color:${rB>=rA&&hasData?colB:'#ccc'};">$${rB.toFixed(0)}</div>
+                                <div style="font-size:8px;color:#555;text-transform:uppercase;letter-spacing:0.3px;margin-top:2px;">Receita Total</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- UPSELL BREAKDOWN -->
+                <div style="padding:6px 20px 14px;">
+                    <div style="font-size:9px;color:#444;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid #1a1a1a;">Take Rate Upsells</div>
+                    ${upsellRow('UP1',u1pA,u1pB,u1tA,u1tB,u1rA,u1rB,colA,colB)}
+                    ${upsellRow('UP2',u2pA,u2pB,u2tA,u2tB,u2rA,u2rB,colA,colB)}
+                    ${upsellRow('UP3',u3pA,u3pB,u3tA,u3tB,u3rA,u3rB,colA,colB)}
+                </div>
+                
+                <!-- FOOTER SUMMARY -->
+                <div style="padding:10px 20px; background:#080808; border-top:1px solid #1a1a1a; display:flex; justify-content:center; gap:24px; flex-wrap:wrap;">
+                    <span style="font-size:11px; color:#555;">Split: <strong style="color:#888;">${test.traffic_split}/${100-test.traffic_split}</strong></span>
+                    <span style="font-size:11px; color:#555;">Visitantes: <strong style="color:#888;">${total.toLocaleString()}</strong></span>
+                    <span style="font-size:11px; color:#555;">Vendas: <strong style="color:#888;">${pA+pB}</strong></span>
+                    <span style="font-size:11px; color:#555;">Receita: <strong style="color:#10b981;">$${(rA+rB).toFixed(2)}</strong></span>
+                    <span style="font-size:11px; color:#555;">Leads: <strong style="color:#888;">${lA+lB}</strong></span>
+                    ${test.started_at?`<span style="font-size:11px; color:#555;">Início: <strong style="color:#888;">${new Date(test.started_at).toLocaleDateString('pt-BR')}</strong></span>`:''}
+                </div>
+            </div>
+            <style>@keyframes abPulse{0%,100%{opacity:1}50%{opacity:0.4}}</style>`;
         }
         
         function updateTrafficSplit(value) {
@@ -9190,59 +9306,80 @@ Estou aqui para esclarecer tudo! 😊`
                 traffic_split: parseInt(document.getElementById('abTestTrafficSplit').value)
             };
             if (!data.name || !data.url_a || !data.url_b) {
-                alert('Preencha o nome e as duas URLs'); return;
+                showToast('Campos obrigatórios', 'Preencha o nome e as duas URLs', 'error');
+                return;
             }
+            let result;
             try {
                 const url = id ? `/api/admin/ab-tests/${id}` : '/api/admin/ab-tests';
                 const method = id ? 'PUT' : 'POST';
                 const response = await fetch(url, { method, headers: {'Content-Type':'application/json','Authorization':`Bearer ${authToken}`}, body: JSON.stringify(data) });
-                if (!response.ok) { const err = await response.json(); throw new Error(err.error||'Failed'); }
-                const result = await response.json();
-                closeABTestModal();
-                loadABTests();
-                if (!id && result.slug) {
-                    const splitLink = `${window.location.origin}/go/${result.slug}`;
-                    showNotification('Teste criado! Link de split: ' + splitLink, 'success');
-                } else {
-                    showNotification(id ? 'Teste atualizado!' : 'Teste criado!', 'success');
-                }
-            } catch (error) { alert('Erro: ' + error.message); }
+                if (!response.ok) { const err = await response.json().catch(()=>({})); throw new Error(err.error||'Falha ao salvar'); }
+                result = await response.json();
+            } catch (error) { 
+                showToast('Erro', error.message, 'error'); 
+                return; 
+            }
+            closeABTestModal();
+            if (!id && result.slug) {
+                const splitLink = `${window.location.origin}/go/${result.slug}`;
+                showToast('Teste Criado!', 'Link de split: ' + splitLink, 'success');
+            } else {
+                showToast('Sucesso!', id ? 'Teste atualizado!' : 'Teste criado!', 'success');
+            }
+            await loadABTests();
         }
         
         async function startABTest(id) {
             if (!confirm('Iniciar este teste? O trafego sera dividido via link de split.')) return;
             try {
                 const response = await fetch(`/api/admin/ab-tests/${id}/status`, { method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${authToken}`}, body: JSON.stringify({action:'start'}) });
-                if (!response.ok) { const err = await response.json(); throw new Error(err.error||'Failed'); }
-                loadABTests(); showNotification('Teste iniciado! Use o link de split nos anuncios.', 'success');
-            } catch (error) { alert('Erro: ' + error.message); }
+                if (!response.ok) { const err = await response.json().catch(()=>({})); throw new Error(err.error||'Failed'); }
+            } catch (error) { 
+                alert('Erro ao iniciar teste: ' + error.message); 
+                return;
+            }
+            showToast('Teste Iniciado!', 'Use o link de split nos anúncios.', 'success');
+            await loadABTests();
         }
         
         async function stopABTest(id) {
             if (!confirm('Pausar este teste?')) return;
             try {
                 const response = await fetch(`/api/admin/ab-tests/${id}/status`, { method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${authToken}`}, body: JSON.stringify({action:'stop'}) });
-                if (!response.ok) throw new Error('Failed');
-                loadABTests(); showNotification('Teste pausado', 'info');
-            } catch (error) { alert('Erro ao pausar teste'); }
+                if (!response.ok) { const err = await response.json().catch(()=>({})); throw new Error(err.error||'Failed'); }
+            } catch (error) { 
+                alert('Erro ao pausar teste: ' + error.message); 
+                return;
+            }
+            showToast('Pausado', 'Teste A/B pausado com sucesso', 'info');
+            await loadABTests();
         }
         
         async function resetABTest(id) {
             if (!confirm('ATENCAO: Isso apagara todos os dados coletados. Continuar?')) return;
             try {
                 const response = await fetch(`/api/admin/ab-tests/${id}/status`, { method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${authToken}`}, body: JSON.stringify({action:'reset'}) });
-                if (!response.ok) throw new Error('Failed');
-                loadABTests(); showNotification('Teste resetado - dados apagados', 'info');
-            } catch (error) { alert('Erro ao resetar teste'); }
+                if (!response.ok) { const err = await response.json().catch(()=>({})); throw new Error(err.error||'Failed'); }
+            } catch (error) { 
+                alert('Erro ao resetar teste: ' + error.message); 
+                return;
+            }
+            showToast('Resetado', 'Teste resetado - dados apagados', 'info');
+            await loadABTests();
         }
         
         async function deleteABTest(id) {
             if (!confirm('Excluir este teste permanentemente?')) return;
             try {
                 const response = await fetch(`/api/admin/ab-tests/${id}`, { method:'DELETE', headers:{'Authorization':`Bearer ${authToken}`} });
-                if (!response.ok) throw new Error('Failed');
-                loadABTests(); showNotification('Teste excluido', 'info');
-            } catch (error) { alert('Erro ao excluir teste'); }
+                if (!response.ok) { const err = await response.json().catch(()=>({})); throw new Error(err.error||'Failed'); }
+            } catch (error) { 
+                alert('Erro ao excluir teste: ' + error.message); 
+                return;
+            }
+            showToast('Excluído', 'Teste A/B removido com sucesso', 'info');
+            await loadABTests();
         }
         
         function showSetWinnerModal(id) {
@@ -9255,9 +9392,13 @@ Estou aqui para esclarecer tudo! 😊`
         async function setABTestWinner(id, winner) {
             try {
                 const response = await fetch(`/api/admin/ab-tests/${id}/winner`, { method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${authToken}`}, body: JSON.stringify({winner}) });
-                if (!response.ok) throw new Error('Failed');
-                loadABTests(); showNotification(`Variante ${winner} definida como vencedora!`, 'success');
-            } catch (error) { alert('Erro ao definir vencedor'); }
+                if (!response.ok) { const err = await response.json().catch(()=>({})); throw new Error(err.error||'Failed'); }
+            } catch (error) { 
+                alert('Erro ao definir vencedor: ' + error.message); 
+                return;
+            }
+            showToast('Vencedor!', `Variante ${winner} definida como vencedora!`, 'success');
+            await loadABTests();
         }
         
         // ==================== PIXEL & CAPI MONITOR ====================
@@ -9714,10 +9855,10 @@ Estou aqui para esclarecer tudo! 😊`
                 a.download = 'pixel-capi-qualidade-' + (s.startDate || '').replace(/:/g, '-') + '-a-' + (s.endDate || '').replace(/:/g, '-') + '.csv';
                 a.click();
                 URL.revokeObjectURL(a.href);
-                showNotification('CSV exportado com sucesso', 'success');
+                showToast('Sucesso!', 'CSV exportado com sucesso', 'success');
             } catch (err) {
                 console.error(err);
-                showNotification('Erro ao exportar CSV', 'error');
+                showToast('Erro', 'Erro ao exportar CSV', 'error');
             }
         }
         

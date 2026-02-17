@@ -720,7 +720,15 @@ app.get('/api/health', (req, res) => {
 
 // ==================== A/B TESTING API (URL SPLITTER) ====================
 
-// Admin: List all A/B tests with REAL stats from leads + transactions
+// Upsell product matching conditions for SQL
+const UPSELL_SQL = {
+    up1: `(t.product ILIKE '%Message Vault%' OR t.product ILIKE '%349241%' OR t.product ILIKE '%341443%' OR t.product ILIKE '%Recuperación Total%' OR t.product ILIKE '%349261%' OR t.product ILIKE '%341452%')`,
+    up2: `(t.product ILIKE '%360%' OR t.product ILIKE '%Tracker%' OR t.product ILIKE '%349242%' OR t.product ILIKE '%341444%' OR t.product ILIKE '%Visión Total%' OR t.product ILIKE '%349266%' OR t.product ILIKE '%341453%')`,
+    up3: `(t.product ILIKE '%Instant Access%' OR t.product ILIKE '%349243%' OR t.product ILIKE '%341448%' OR t.product ILIKE '%Sin Esperas%' OR t.product ILIKE '%349267%' OR t.product ILIKE '%341454%')`,
+    front: `NOT (t.product ILIKE '%Message Vault%' OR t.product ILIKE '%349241%' OR t.product ILIKE '%341443%' OR t.product ILIKE '%Recuperación Total%' OR t.product ILIKE '%349261%' OR t.product ILIKE '%341452%' OR t.product ILIKE '%360%' OR t.product ILIKE '%Tracker%' OR t.product ILIKE '%349242%' OR t.product ILIKE '%341444%' OR t.product ILIKE '%Visión Total%' OR t.product ILIKE '%349266%' OR t.product ILIKE '%341453%' OR t.product ILIKE '%Instant Access%' OR t.product ILIKE '%349243%' OR t.product ILIKE '%341448%' OR t.product ILIKE '%Sin Esperas%' OR t.product ILIKE '%349267%' OR t.product ILIKE '%341454%')`
+};
+
+// Admin: List all A/B tests with REAL stats from leads + transactions + upsell breakdown
 app.get('/api/admin/ab-tests', authenticateToken, async (req, res) => {
     try {
         const tests = await pool.query(`
@@ -730,6 +738,7 @@ app.get('/api/admin/ab-tests', authenticateToken, async (req, res) => {
                 (SELECT COUNT(*) FROM ab_test_visitors WHERE test_id = at.id AND variant = 'B') as visitors_b,
                 (SELECT COUNT(*) FROM leads WHERE ab_test_id = at.id AND ab_variant = 'A') as leads_a,
                 (SELECT COUNT(*) FROM leads WHERE ab_test_id = at.id AND ab_variant = 'B') as leads_b,
+                -- Total purchases/revenue per variant
                 (SELECT COUNT(DISTINCT t.email) FROM transactions t 
                     INNER JOIN leads l ON LOWER(t.email) = LOWER(l.email) 
                     WHERE l.ab_test_id = at.id AND l.ab_variant = 'A' AND t.status = 'approved') as purchases_a,
@@ -741,7 +750,59 @@ app.get('/api/admin/ab-tests', authenticateToken, async (req, res) => {
                     WHERE l.ab_test_id = at.id AND l.ab_variant = 'A' AND t.status = 'approved') as revenue_a,
                 (SELECT COALESCE(SUM(CAST(t.value AS DECIMAL)), 0) FROM transactions t 
                     INNER JOIN leads l ON LOWER(t.email) = LOWER(l.email) 
-                    WHERE l.ab_test_id = at.id AND l.ab_variant = 'B' AND t.status = 'approved') as revenue_b
+                    WHERE l.ab_test_id = at.id AND l.ab_variant = 'B' AND t.status = 'approved') as revenue_b,
+                -- Front-end only purchases/revenue
+                (SELECT COUNT(DISTINCT t.email) FROM transactions t 
+                    INNER JOIN leads l ON LOWER(t.email) = LOWER(l.email) 
+                    WHERE l.ab_test_id = at.id AND l.ab_variant = 'A' AND t.status = 'approved' AND ${UPSELL_SQL.front}) as front_purchases_a,
+                (SELECT COUNT(DISTINCT t.email) FROM transactions t 
+                    INNER JOIN leads l ON LOWER(t.email) = LOWER(l.email) 
+                    WHERE l.ab_test_id = at.id AND l.ab_variant = 'B' AND t.status = 'approved' AND ${UPSELL_SQL.front}) as front_purchases_b,
+                (SELECT COALESCE(SUM(CAST(t.value AS DECIMAL)), 0) FROM transactions t 
+                    INNER JOIN leads l ON LOWER(t.email) = LOWER(l.email) 
+                    WHERE l.ab_test_id = at.id AND l.ab_variant = 'A' AND t.status = 'approved' AND ${UPSELL_SQL.front}) as front_revenue_a,
+                (SELECT COALESCE(SUM(CAST(t.value AS DECIMAL)), 0) FROM transactions t 
+                    INNER JOIN leads l ON LOWER(t.email) = LOWER(l.email) 
+                    WHERE l.ab_test_id = at.id AND l.ab_variant = 'B' AND t.status = 'approved' AND ${UPSELL_SQL.front}) as front_revenue_b,
+                -- Upsell 1
+                (SELECT COUNT(DISTINCT t.email) FROM transactions t 
+                    INNER JOIN leads l ON LOWER(t.email) = LOWER(l.email) 
+                    WHERE l.ab_test_id = at.id AND l.ab_variant = 'A' AND t.status = 'approved' AND ${UPSELL_SQL.up1}) as up1_purchases_a,
+                (SELECT COUNT(DISTINCT t.email) FROM transactions t 
+                    INNER JOIN leads l ON LOWER(t.email) = LOWER(l.email) 
+                    WHERE l.ab_test_id = at.id AND l.ab_variant = 'B' AND t.status = 'approved' AND ${UPSELL_SQL.up1}) as up1_purchases_b,
+                (SELECT COALESCE(SUM(CAST(t.value AS DECIMAL)), 0) FROM transactions t 
+                    INNER JOIN leads l ON LOWER(t.email) = LOWER(l.email) 
+                    WHERE l.ab_test_id = at.id AND l.ab_variant = 'A' AND t.status = 'approved' AND ${UPSELL_SQL.up1}) as up1_revenue_a,
+                (SELECT COALESCE(SUM(CAST(t.value AS DECIMAL)), 0) FROM transactions t 
+                    INNER JOIN leads l ON LOWER(t.email) = LOWER(l.email) 
+                    WHERE l.ab_test_id = at.id AND l.ab_variant = 'B' AND t.status = 'approved' AND ${UPSELL_SQL.up1}) as up1_revenue_b,
+                -- Upsell 2
+                (SELECT COUNT(DISTINCT t.email) FROM transactions t 
+                    INNER JOIN leads l ON LOWER(t.email) = LOWER(l.email) 
+                    WHERE l.ab_test_id = at.id AND l.ab_variant = 'A' AND t.status = 'approved' AND ${UPSELL_SQL.up2}) as up2_purchases_a,
+                (SELECT COUNT(DISTINCT t.email) FROM transactions t 
+                    INNER JOIN leads l ON LOWER(t.email) = LOWER(l.email) 
+                    WHERE l.ab_test_id = at.id AND l.ab_variant = 'B' AND t.status = 'approved' AND ${UPSELL_SQL.up2}) as up2_purchases_b,
+                (SELECT COALESCE(SUM(CAST(t.value AS DECIMAL)), 0) FROM transactions t 
+                    INNER JOIN leads l ON LOWER(t.email) = LOWER(l.email) 
+                    WHERE l.ab_test_id = at.id AND l.ab_variant = 'A' AND t.status = 'approved' AND ${UPSELL_SQL.up2}) as up2_revenue_a,
+                (SELECT COALESCE(SUM(CAST(t.value AS DECIMAL)), 0) FROM transactions t 
+                    INNER JOIN leads l ON LOWER(t.email) = LOWER(l.email) 
+                    WHERE l.ab_test_id = at.id AND l.ab_variant = 'B' AND t.status = 'approved' AND ${UPSELL_SQL.up2}) as up2_revenue_b,
+                -- Upsell 3
+                (SELECT COUNT(DISTINCT t.email) FROM transactions t 
+                    INNER JOIN leads l ON LOWER(t.email) = LOWER(l.email) 
+                    WHERE l.ab_test_id = at.id AND l.ab_variant = 'A' AND t.status = 'approved' AND ${UPSELL_SQL.up3}) as up3_purchases_a,
+                (SELECT COUNT(DISTINCT t.email) FROM transactions t 
+                    INNER JOIN leads l ON LOWER(t.email) = LOWER(l.email) 
+                    WHERE l.ab_test_id = at.id AND l.ab_variant = 'B' AND t.status = 'approved' AND ${UPSELL_SQL.up3}) as up3_purchases_b,
+                (SELECT COALESCE(SUM(CAST(t.value AS DECIMAL)), 0) FROM transactions t 
+                    INNER JOIN leads l ON LOWER(t.email) = LOWER(l.email) 
+                    WHERE l.ab_test_id = at.id AND l.ab_variant = 'A' AND t.status = 'approved' AND ${UPSELL_SQL.up3}) as up3_revenue_a,
+                (SELECT COALESCE(SUM(CAST(t.value AS DECIMAL)), 0) FROM transactions t 
+                    INNER JOIN leads l ON LOWER(t.email) = LOWER(l.email) 
+                    WHERE l.ab_test_id = at.id AND l.ab_variant = 'B' AND t.status = 'approved' AND ${UPSELL_SQL.up3}) as up3_revenue_b
             FROM ab_tests at
             ORDER BY at.created_at DESC
         `);
@@ -755,6 +816,22 @@ app.get('/api/admin/ab-tests', authenticateToken, async (req, res) => {
             const pB = parseInt(test.purchases_b) || 0;
             const rA = parseFloat(test.revenue_a) || 0;
             const rB = parseFloat(test.revenue_b) || 0;
+            const fpA = parseInt(test.front_purchases_a) || 0;
+            const fpB = parseInt(test.front_purchases_b) || 0;
+            const frA = parseFloat(test.front_revenue_a) || 0;
+            const frB = parseFloat(test.front_revenue_b) || 0;
+            const u1pA = parseInt(test.up1_purchases_a) || 0;
+            const u1pB = parseInt(test.up1_purchases_b) || 0;
+            const u1rA = parseFloat(test.up1_revenue_a) || 0;
+            const u1rB = parseFloat(test.up1_revenue_b) || 0;
+            const u2pA = parseInt(test.up2_purchases_a) || 0;
+            const u2pB = parseInt(test.up2_purchases_b) || 0;
+            const u2rA = parseFloat(test.up2_revenue_a) || 0;
+            const u2rB = parseFloat(test.up2_revenue_b) || 0;
+            const u3pA = parseInt(test.up3_purchases_a) || 0;
+            const u3pB = parseInt(test.up3_purchases_b) || 0;
+            const u3rA = parseFloat(test.up3_revenue_a) || 0;
+            const u3rB = parseFloat(test.up3_revenue_b) || 0;
             
             return {
                 ...test,
@@ -767,7 +844,25 @@ app.get('/api/admin/ab-tests', authenticateToken, async (req, res) => {
                 purchase_rate_a: vA > 0 ? ((pA / vA) * 100).toFixed(2) : '0.00',
                 purchase_rate_b: vB > 0 ? ((pB / vB) * 100).toFixed(2) : '0.00',
                 rpv_a: vA > 0 ? (rA / vA).toFixed(2) : '0.00',
-                rpv_b: vB > 0 ? (rB / vB).toFixed(2) : '0.00'
+                rpv_b: vB > 0 ? (rB / vB).toFixed(2) : '0.00',
+                front_purchases_a: fpA, front_purchases_b: fpB,
+                front_revenue_a: frA, front_revenue_b: frB,
+                up1_purchases_a: u1pA, up1_purchases_b: u1pB,
+                up1_revenue_a: u1rA, up1_revenue_b: u1rB,
+                up1_take_a: fpA > 0 ? ((u1pA / fpA) * 100).toFixed(1) : '0.0',
+                up1_take_b: fpB > 0 ? ((u1pB / fpB) * 100).toFixed(1) : '0.0',
+                up2_purchases_a: u2pA, up2_purchases_b: u2pB,
+                up2_revenue_a: u2rA, up2_revenue_b: u2rB,
+                up2_take_a: fpA > 0 ? ((u2pA / fpA) * 100).toFixed(1) : '0.0',
+                up2_take_b: fpB > 0 ? ((u2pB / fpB) * 100).toFixed(1) : '0.0',
+                up3_purchases_a: u3pA, up3_purchases_b: u3pB,
+                up3_revenue_a: u3rA, up3_revenue_b: u3rB,
+                up3_take_a: fpA > 0 ? ((u3pA / fpA) * 100).toFixed(1) : '0.0',
+                up3_take_b: fpB > 0 ? ((u3pB / fpB) * 100).toFixed(1) : '0.0',
+                avg_ticket_a: pA > 0 ? (rA / pA).toFixed(2) : '0.00',
+                avg_ticket_b: pB > 0 ? (rB / pB).toFixed(2) : '0.00',
+                upsell_revenue_a: (u1rA + u2rA + u3rA),
+                upsell_revenue_b: (u1rB + u2rB + u3rB)
             };
         });
         
