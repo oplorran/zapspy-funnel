@@ -9589,7 +9589,7 @@ app.get('/api/admin/recovery/segments', authenticateToken, async (req, res) => {
             ${feDateFilter}
         `, dateParams);
         
-        // 3. Payment Failed - Only actual failures (cancelled/refused), exclude already contacted AND already purchased
+        // 3. Payment Failed - Only FRONT product failures (exclude upsells, already contacted, and already purchased)
         const paymentFailed = await pool.query(`
             SELECT COUNT(*) as count, COALESCE(SUM(value_brl), 0) as total_value
             FROM (
@@ -9602,6 +9602,14 @@ app.get('/api/admin/recovery/segments', authenticateToken, async (req, res) => {
                 WHERE t.status IN ('cancelled', 'refused')
                 AND t.email IS NOT NULL AND t.email != ''
                 ${language ? `AND t.funnel_language = '${language}'` : ''}
+                AND LOWER(COALESCE(t.product, '')) NOT LIKE '%vault%'
+                AND LOWER(COALESCE(t.product, '')) NOT LIKE '%360%'
+                AND LOWER(COALESCE(t.product, '')) NOT LIKE '%tracker%'
+                AND LOWER(COALESCE(t.product, '')) NOT LIKE '%instant%'
+                AND LOWER(COALESCE(t.product, '')) NOT LIKE '%recuperaci%'
+                AND LOWER(COALESCE(t.product, '')) NOT LIKE '%visi_n%'
+                AND LOWER(COALESCE(t.product, '')) NOT LIKE '%sin espera%'
+                AND LOWER(COALESCE(t.product, '')) NOT LIKE '%priority%'
                 AND NOT EXISTS (
                     SELECT 1 FROM transactions t2 
                     WHERE LOWER(t2.email) = LOWER(t.email) AND t2.status = 'approved'
@@ -9891,7 +9899,7 @@ app.get('/api/admin/recovery/:segment', authenticateToken, async (req, res, next
             totalCount = parseInt(countResult.rows[0]?.count || 0);
             
         } else if (segment === 'payment_failed') {
-            // Payment failed leads - only actual failures (cancelled/refused), exclude already purchased
+            // Payment failed leads - only FRONT product failures, exclude upsells and already purchased
             const usdToBrlRate = 1 / parseFloat(process.env.CONVERSION_BRL_TO_USD || '0.18');
             const result = await pool.query(`
                 SELECT DISTINCT ON (LOWER(t.email))
@@ -9918,6 +9926,14 @@ app.get('/api/admin/recovery/:segment', authenticateToken, async (req, res, next
                 WHERE t.status IN ('cancelled', 'refused')
                 AND t.email IS NOT NULL AND t.email != ''
                 ${language ? `AND t.funnel_language = '${language}'` : ''}
+                AND LOWER(COALESCE(t.product, '')) NOT LIKE '%vault%'
+                AND LOWER(COALESCE(t.product, '')) NOT LIKE '%360%'
+                AND LOWER(COALESCE(t.product, '')) NOT LIKE '%tracker%'
+                AND LOWER(COALESCE(t.product, '')) NOT LIKE '%instant%'
+                AND LOWER(COALESCE(t.product, '')) NOT LIKE '%recuperaci%'
+                AND LOWER(COALESCE(t.product, '')) NOT LIKE '%visi_n%'
+                AND LOWER(COALESCE(t.product, '')) NOT LIKE '%sin espera%'
+                AND LOWER(COALESCE(t.product, '')) NOT LIKE '%priority%'
                 AND NOT EXISTS (
                     SELECT 1 FROM transactions t3
                     WHERE LOWER(t3.email) = LOWER(t.email) AND t3.status = 'approved'
