@@ -64,7 +64,7 @@
     <script>
         // Default product value (can be overridden by A/B testing)
         window.productValue = 24;
-        window.checkoutCode = 'KKM446018';
+        window.checkoutCode = 'KCD456723';
         
         document.addEventListener('DOMContentLoaded', async function() {
             // Initialize A/B Testing and apply config
@@ -2397,7 +2397,7 @@
         function proceedToCheckout() {
             // Get current product value (may be modified by A/B testing)
             const currentValue = window.productValue || 24;
-            const currentCheckoutCode = window.checkoutCode || 'KKM446018';
+            const currentCheckoutCode = window.checkoutCode || 'KCD456723';
             
             if (typeof FacebookCAPI !== 'undefined') {
                 FacebookCAPI.trackAddToCart(currentValue, 'ZapSpy.ai VIP Access');
