@@ -6873,24 +6873,25 @@ function startAutoSync() {
     
     // Run heavy startup tasks 30 seconds after server start
     setTimeout(async () => {
-        // Step 1: Deep sync last 60 days (day-by-day to avoid pagination limits)
+        // Step 1: Deep sync last 7 days (most important - gets sales data into DB)
         await runDeepSync();
-        // Step 2: Reprocess old postback logs (fix the priority bug that overrode refunds)
-        await reprocessPostbackLogs();
-        // Step 3: Re-check each approved transaction individually for status changes
-        await recheckApprovedTransactions();
-        // Step 4: Backfill any missing refund_requests from transactions table
-        await runRefundBackfill();
-        // Step 5: Run diagnostic to see what's in the DB
-        await runDiagnosticLog();
-        // Step 6: Run CAPI catch-up after sync (catches newly synced approved sales)
-        // Note: lock prevents duplication if previous catch-up is still running
-        await sendMissingCAPIPurchases();
-        // Regular sync every 5 minutes (just yesterday + today) - near real-time
+        
+        // CRITICAL: Set up auto-sync IMMEDIATELY after deep sync, before heavy CAPI tasks
+        // This ensures sales data stays fresh every 5 minutes even while CAPI catch-up runs
         autoSyncInterval = setInterval(runAutoSync, 5 * 60 * 1000);
-        // Re-check approved transactions every 6 hours for status changes
         setInterval(recheckApprovedTransactions, 6 * 60 * 60 * 1000);
         console.log('🔄 Auto-sync scheduled: every 5 minutes | Re-check: every 6 hours | CAPI catch-up: every 30 min');
+        
+        // Step 2: Run one immediate auto-sync to catch any transactions that arrived during restart
+        try { await runAutoSync(); } catch(e) { console.error('Initial auto-sync error:', e.message); }
+        
+        // Step 3+: Background tasks (non-blocking for data freshness)
+        try { await reprocessPostbackLogs(); } catch(e) { console.error('Reprocess error:', e.message); }
+        try { await recheckApprovedTransactions(); } catch(e) { console.error('Recheck error:', e.message); }
+        try { await runRefundBackfill(); } catch(e) { console.error('Refund backfill error:', e.message); }
+        try { await runDiagnosticLog(); } catch(e) { console.error('Diagnostic error:', e.message); }
+        // CAPI catch-up runs last (heavy task, not blocking data display)
+        try { await sendMissingCAPIPurchases(); } catch(e) { console.error('CAPI catch-up error:', e.message); }
     }, 30000);
 }
 
