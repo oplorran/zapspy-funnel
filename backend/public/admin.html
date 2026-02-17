@@ -3831,12 +3831,12 @@ Estou aqui para esclarecer tudo! 😊`
             const user = getCurrentUser();
             updateUIForRole(user);
             
-            initCharts();
+            try { initCharts(); } catch(e) { console.error('⚠️ initCharts error:', e); }
             loadAllData();
             
             // Start real-time active users tracking
             if (typeof startActiveUsersRefresh === 'function') {
-                startActiveUsersRefresh();
+                try { startActiveUsersRefresh(); } catch(e) { console.log('Active users start error:', e); }
             }
         }
         
@@ -4759,8 +4759,8 @@ Estou aqui para esclarecer tudo! 😊`
             }
             
             // Also init revenue and traffic charts here (early init)
-            initRevenueChart();
-            initTrafficSourcesChart();
+            try { initRevenueChart(); } catch(e) { console.error('⚠️ initRevenueChart error:', e); }
+            try { initTrafficSourcesChart(); } catch(e) { console.error('⚠️ initTrafficSourcesChart error:', e); }
         }
         
         // ==================== SPARKLINES & TRENDS ====================
