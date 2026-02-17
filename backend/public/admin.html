@@ -3831,8 +3831,8 @@ Estou aqui para esclarecer tudo! 😊`
             const user = getCurrentUser();
             updateUIForRole(user);
             
-            loadAllData();
             initCharts();
+            loadAllData();
             
             // Start real-time active users tracking
             if (typeof startActiveUsersRefresh === 'function') {
@@ -3953,6 +3953,9 @@ Estou aqui para esclarecer tudo! 😊`
             loadCountriesData();
             loadTrendsData();
             loadTrafficSources();
+            loadTopCountriesChart();
+            loadWeeklyPerformanceChart();
+            loadConversionFunnel();
             loadClients(1);
             // loadFinancialData is only called when user opens the Financial tab (via switchTab)
             
@@ -4754,6 +4757,10 @@ Estou aqui para esclarecer tudo! 😊`
                     }
                 });
             }
+            
+            // Also init revenue and traffic charts here (early init)
+            initRevenueChart();
+            initTrafficSourcesChart();
         }
         
         // ==================== SPARKLINES & TRENDS ====================
@@ -14398,16 +14405,7 @@ Posso ajudar em algo mais? 😊`
             container.innerHTML = html;
         }
         
-        // Load additional charts on page load (not already in loadAllData)
-        document.addEventListener('DOMContentLoaded', () => {
-            if (authToken) {
-                setTimeout(() => {
-                    loadTopCountriesChart();
-                    loadWeeklyPerformanceChart();
-                    loadConversionFunnel();
-                }, 800);
-            }
-        });
+        // Additional charts are now loaded via loadAllData() - no separate DOMContentLoaded needed
         
         // ==================== SPARKLINES ====================
         function createSparkline(data, containerId) {
@@ -14752,14 +14750,7 @@ Posso ajudar em algo mais? 😊`
             }
         }
         
-        // Init new charts on load
-        document.addEventListener('DOMContentLoaded', () => {
-            initRevenueChart();
-            initTrafficSourcesChart();
-            if (authToken) {
-                setTimeout(() => { loadTrafficSources(); }, 1200);
-            }
-        });
+        // Revenue and traffic charts are now initialized via initCharts() called before loadAllData()
         
         // Update revenue chart when trends load (hook into existing loadTrendsData)
         const _origLoadTrends = typeof loadTrendsData === 'function' ? loadTrendsData : null;
