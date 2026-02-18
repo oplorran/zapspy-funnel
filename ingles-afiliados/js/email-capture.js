@@ -382,7 +382,10 @@ const EmailCapture = {
                 utm_medium: localStorage.getItem('utm_medium') || '',
                 utm_campaign: localStorage.getItem('utm_campaign') || '',
                 utm_content: localStorage.getItem('utm_content') || '',
-                utm_term: localStorage.getItem('utm_term') || ''
+                utm_term: localStorage.getItem('utm_term') || '',
+                // A/B test tracking
+                ab_test_id: localStorage.getItem('ab_test_id') ? parseInt(localStorage.getItem('ab_test_id')) : null,
+                ab_variant: localStorage.getItem('ab_variant') || null
             });
             
             // Track CAPI Lead event
