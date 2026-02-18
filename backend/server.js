@@ -5652,7 +5652,7 @@ async function syncMonetizzeSalesCore(startDate, endDate) {
             const name = compradorData.nome || vendaData.nome;
             const productName = produtoData.nome || vendaData.produto_nome;
             const productCode = produtoData.codigo || vendaData.produto_codigo;
-            const value = vendaData.valorRecebido || vendaData.comissao || vendaData.valor;
+            const value = vendaData.valor || vendaData.valorRecebido || vendaData.comissao;
             const statusCode = String(tipoEvento.codigo || item.codigo_status || '2');
             
             if (productCode && !validProductCodes.includes(String(productCode))) {
@@ -5787,6 +5787,7 @@ async function syncMonetizzeSalesCore(startDate, endDate) {
                 DO UPDATE SET 
                     monetizze_status = $7,
                     status = $8,
+                    value = $6,
                     raw_data = $9,
                     funnel_language = $10,
                     funnel_source = $11,
@@ -6096,7 +6097,7 @@ async function runDeepSync() {
                         }
                         
                         const productName = (item.produto || {}).nome || 'Unknown';
-                        const value = vendaData.valorLiquido || vendaData.comissao || vendaData.valor || '0';
+                        const value = vendaData.valor || vendaData.valorRecebido || vendaData.comissao || '0';
                         const buyerName = compradorData.nome || '';
                         const buyerPhone = compradorData.telefone || '';
                         
@@ -7299,8 +7300,8 @@ app.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async (re
                 const productName = produtoData.nome || vendaData.produto_nome;
                 const productCode = produtoData.codigo || vendaData.produto_codigo;
                 
-                // Priority: comissao (commission) > valorRecebido > valor
-                const value = vendaData.valorRecebido || vendaData.comissao || vendaData.valor;
+                // Priority: valor (gross sale value) to match Monetizze's "Valor Venda" and postback behavior
+                const value = vendaData.valor || vendaData.valorRecebido || vendaData.comissao;
                 const status = vendaData.status || tipoEvento.descricao;
                 const statusCode = String(tipoEvento.codigo || item.codigo_status || '2');
                 

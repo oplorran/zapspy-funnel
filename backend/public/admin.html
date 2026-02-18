@@ -3653,29 +3653,40 @@ Estou aqui para esclarecer tudo! 😊`
             
             const now = new Date();
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            let startDate, endDate = new Date();
+            
+            function fmtDate(d) {
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const dd = String(d.getDate()).padStart(2, '0');
+                return `${y}-${m}-${dd}`;
+            }
+            
+            let startDate, endDate;
             
             switch(filter) {
                 case 'today':
-                    startDate = today;
+                    startDate = new Date(today);
+                    endDate = new Date(today);
                     break;
                 case 'yesterday':
                     startDate = new Date(today);
                     startDate.setDate(today.getDate() - 1);
-                    endDate = today;
+                    endDate = new Date(startDate);
                     break;
                 case 'this_week':
                     startDate = new Date(today);
-                    startDate.setDate(today.getDate() - today.getDay()); // Sunday
+                    startDate.setDate(today.getDate() - today.getDay());
+                    endDate = new Date(today);
                     break;
                 case 'last_week':
                     startDate = new Date(today);
                     startDate.setDate(today.getDate() - today.getDay() - 7);
                     endDate = new Date(today);
-                    endDate.setDate(today.getDate() - today.getDay());
+                    endDate.setDate(today.getDate() - today.getDay() - 1);
                     break;
                 case 'this_month':
                     startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                    endDate = new Date(today);
                     break;
                 case 'last_month':
                     startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
@@ -3684,18 +3695,22 @@ Estou aqui para esclarecer tudo! 😊`
                 case 'last_7':
                     startDate = new Date(today);
                     startDate.setDate(today.getDate() - 7);
+                    endDate = new Date(today);
                     break;
                 case 'last_15':
                     startDate = new Date(today);
                     startDate.setDate(today.getDate() - 15);
+                    endDate = new Date(today);
                     break;
                 case 'last_30':
                     startDate = new Date(today);
                     startDate.setDate(today.getDate() - 30);
+                    endDate = new Date(today);
                     break;
                 case 'last_60':
                     startDate = new Date(today);
                     startDate.setDate(today.getDate() - 60);
+                    endDate = new Date(today);
                     break;
                 default:
                     return null;
@@ -3704,8 +3719,8 @@ Estou aqui para esclarecer tudo! 😊`
             const result = {
                 start: startDate.toISOString(),
                 end: endDate.toISOString(),
-                startDate: startDate.toISOString().split('T')[0],
-                endDate: endDate.toISOString().split('T')[0]
+                startDate: fmtDate(startDate),
+                endDate: fmtDate(endDate)
             };
             
             console.log('📊 Date range:', result);
