@@ -2912,14 +2912,8 @@
         let vturbLoaded = false;
         
         function loadVTurbPlayer() {
-            if (vturbLoaded) return;
-            vturbLoaded = true;
-            
-            // Cargar script del player VTurb solo cuando sea necesario
-            var s = document.createElement("script");
-            s.src = "https://scripts.converteai.net/d331dfa7-f65a-427e-934f-2c0eb96fde35/players/68ffbd09ebbcac2e8cb83b23/v4/player.js";
-            s.async = true;
-            document.head.appendChild(s);
+            // VSL removed - do not load player
+            return;
         }
         
         function startHacking() {
@@ -3137,12 +3131,11 @@
 
             function addTerminalLine() {
                 if (commandIndex >= fastCommands.length) {
-                    // Redirigir a conversaciones después de animación final
+                    // Redirigir directamente al CTA (saltar conversas)
                     setTimeout(() => {
                         const urlParams = new URLSearchParams(window.location.search);
-                        const gender = urlParams.get('gender');
-                        const genderParam = gender ? '&gender=' + gender : '';
-                        window.location.href = 'conversas.html?phone=' + encodeURIComponent(currentPhone) + genderParam;
+                        const gender = urlParams.get('gender') || 'male';
+                        window.location.href = 'cta-unified.html?gender=' + gender;
                     }, 1500);
                     return;
                 }

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>ZapSpy.ai - Data Being Deleted</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="shortcut icon" href="../../imagens/icon-site.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/remarketing.css">
+
+    <!-- Meta Pixel -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+
+    var userData = {};
+    try {
+        var em = localStorage.getItem('userEmail');
+        var ph = localStorage.getItem('userWhatsApp');
+        if (em) userData.em = em.toLowerCase().trim();
+        if (ph) userData.ph = ph.replace(/\D/g, '');
+    } catch(e) {}
+    fbq('init', '726299943423075', userData);
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=726299943423075&ev=PageView&noscript=1"/></noscript>
+</head>
+<body>
+
+<div class="rmk-container">
+    <!-- Header -->
+    <div class="rmk-header">
+        <div class="rmk-logo">Zap<span>Spy</span>.ai</div>
+    </div>
+
+    <!-- Alert Banner -->
+    <div class="rmk-alert-banner">
+        <div class="rmk-alert-dot"></div>
+        <div class="rmk-alert-text">
+            <strong>Security Protocol Initiated</strong><br>
+            Investigation data is being permanently erased from our servers.
+        </div>
+    </div>
+
+    <!-- Target Card -->
+    <div class="rmk-target-card" id="targetCard" style="display:none;">
+        <div class="rmk-target-avatar" id="targetAvatar"></div>
+        <div class="rmk-target-info">
+            <div class="rmk-target-label">Target Under Investigation</div>
+            <div class="rmk-target-phone" id="targetPhone"></div>
+            <div class="rmk-target-status">Data deletion in progress</div>
+        </div>
+    </div>
+
+    <!-- Terminal Animation -->
+    <div class="rmk-terminal">
+        <div class="rmk-terminal-header">
+            <div class="rmk-terminal-dot red"></div>
+            <div class="rmk-terminal-dot yellow"></div>
+            <div class="rmk-terminal-dot green"></div>
+            <div class="rmk-terminal-title">zapspy@secure-server</div>
+        </div>
+        <div class="rmk-terminal-body" id="terminalBody"></div>
+    </div>
+
+    <!-- Deletion Progress -->
+    <div class="rmk-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span style="font-size:13px;color:var(--red-alert);font-weight:600;">Deleting investigation data...</span>
+            <span style="font-size:13px;color:var(--text-primary);font-weight:700;" id="progressPercent">0%</span>
+        </div>
+        <div class="rmk-progress">
+            <div class="rmk-progress-bar red" id="progressBar" style="width:0%"></div>
+        </div>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:8px;">
+            Once deletion reaches 100%, all recovered messages, photos and conversation logs will be permanently erased.
+        </p>
+    </div>
+
+    <!-- Data Found Summary -->
+    <div class="rmk-card">
+        <div class="rmk-card-header">
+            <div class="rmk-card-icon red">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><circle cx="12" cy="17" r="1"/></svg>
+            </div>
+            <div>
+                <div class="rmk-card-title">Data Being Erased</div>
+                <div class="rmk-card-subtitle">Evidence found before deletion started</div>
+            </div>
+        </div>
+        <ul class="rmk-features">
+            <li>23 hidden conversations discovered</li>
+            <li>147 deleted messages recovered</li>
+            <li>38 photos and videos found</li>
+            <li>12 late-night message exchanges</li>
+            <li>GPS location history available</li>
+        </ul>
+    </div>
+
+    <!-- Timer -->
+    <div class="rmk-timer">
+        <div class="rmk-timer-label">Data permanently erased in</div>
+        <div class="rmk-timer-value" id="countdown">10:00</div>
+    </div>
+
+    <!-- CTA -->
+    <button class="rmk-cta danger" id="ctaButton" onclick="handleCTA()">
+        STOP DELETION - Keep My Results
+        <span class="rmk-cta-subtitle">Save all evidence before it's gone forever</span>
+    </button>
+
+    <div class="rmk-guarantee mt-16">
+        <div class="rmk-guarantee-icon">&#128274;</div>
+        <div class="rmk-guarantee-text">
+            <strong>100% Anonymous Access.</strong> The target will never know they are being monitored. 256-bit encrypted connection.
+        </div>
+    </div>
+
+    <div class="rmk-social-proof">
+        <span class="rmk-live-dot"></span>
+        <span id="liveCount">1,847</span> people saved their data today
+    </div>
+
+    <div class="rmk-footer">
+        ZapSpy.ai - Secure Intelligence Platform<br>
+        All data is encrypted and stored on secure servers.<br>
+        &copy; 2025 ZapSpy.ai. All rights reserved.
+    </div>
+</div>
+
+<script src="../js/remarketing-tracking.js"></script>
+<script>
+(function() {
+    // Initialize tracking
+    RmkTracking.init('Remarketing - Expired', 'remarketing_expired', 49);
+
+    // Load target data from localStorage
+    var target = RmkTracking.getTargetData();
+    if (target.phone) {
+        document.getElementById('targetCard').style.display = 'flex';
+        document.getElementById('targetPhone').textContent = target.phone;
+        document.getElementById('targetAvatar').textContent = target.gender === 'female' ? '\uD83D\uDC69' : '\uD83D\uDC68';
+    }
+
+    // Terminal animation
+    var lines = [
+        { text: 'root@zapspy:~# initiate data_purge --target=' + (target.phone || 'UNKNOWN'), cls: '' },
+        { text: '[WARN] 23 active conversations found...', cls: 'warning' },
+        { text: '[WARN] 147 deleted messages in recovery buffer...', cls: 'warning' },
+        { text: '[WARN] 38 media files queued for deletion...', cls: 'warning' },
+        { text: 'Purging conversation logs... /data/msgs/', cls: '' },
+        { text: 'Purging media cache... /data/media/', cls: '' },
+        { text: 'Purging GPS records... /data/location/', cls: '' },
+        { text: '[ALERT] Evidence files marked for permanent deletion', cls: 'error' },
+        { text: 'Estimated completion: 10 minutes', cls: 'info' },
+        { text: 'To cancel: ACCESS_REQUIRED', cls: 'error' }
+    ];
+
+    var terminalBody = document.getElementById('terminalBody');
+    lines.forEach(function(line, i) {
+        setTimeout(function() {
+            var el = document.createElement('div');
+            el.className = 'rmk-terminal-line' + (line.cls ? ' ' + line.cls : '');
+            el.textContent = line.text;
+            el.style.animationDelay = '0s';
+            terminalBody.appendChild(el);
+            terminalBody.scrollTop = terminalBody.scrollHeight;
+        }, i * 800);
+    });
+
+    // Progress bar animation
+    var progress = 0;
+    var progressBar = document.getElementById('progressBar');
+    var progressPercent = document.getElementById('progressPercent');
+    var progressInterval = setInterval(function() {
+        progress += Math.random() * 0.5;
+        if (progress > 72) progress = 72;
+        progressBar.style.width = progress.toFixed(1) + '%';
+        progressPercent.textContent = progress.toFixed(0) + '%';
+    }, 2000);
+
+    // Countdown timer with shake effect at low time
+    var timerEl = document.getElementById('countdown');
+    startTimer('countdown', 600, function() {
+        timerEl.textContent = 'EXPIRED';
+        timerEl.style.color = 'var(--red-alert)';
+    });
+    setInterval(function() {
+        var text = timerEl.textContent;
+        if (text.indexOf('0') === 0 && text.length === 5) {
+            timerEl.parentElement.classList.add('shake');
+            setTimeout(function() { timerEl.parentElement.classList.remove('shake'); }, 600);
+        }
+    }, 60000);
+
+    // Live counter variation
+    var liveEl = document.getElementById('liveCount');
+    setInterval(function() {
+        var n = 1700 + Math.floor(Math.random() * 300);
+        liveEl.textContent = n.toLocaleString();
+    }, 5000);
+
+    // Terminal continues adding lines periodically
+    var extraLines = [
+        { text: 'rm -rf /data/conversations/thread_0847.db', cls: '' },
+        { text: 'rm -rf /data/media/IMG_deleted_*.jpg (38 files)', cls: '' },
+        { text: '[WARN] Backup buffer cleared: 2.4GB freed', cls: 'warning' },
+        { text: 'rm -rf /data/gps/location_history.log', cls: '' },
+        { text: '[ALERT] Point of no return approaching...', cls: 'error' },
+        { text: 'rm -rf /data/contacts/suspicious_list.dat', cls: '' },
+        { text: '[CRITICAL] 67% of evidence permanently destroyed', cls: 'error' }
+    ];
+    var extraIdx = 0;
+    setInterval(function() {
+        if (extraIdx < extraLines.length) {
+            var line = extraLines[extraIdx];
+            var el = document.createElement('div');
+            el.className = 'rmk-terminal-line' + (line.cls ? ' ' + line.cls : '');
+            el.textContent = line.text;
+            el.style.animationDelay = '0s';
+            terminalBody.appendChild(el);
+            terminalBody.scrollTop = terminalBody.scrollHeight;
+            extraIdx++;
+        }
+    }, 6000);
+
+    // Activity Feed
+    startActivityFeed([
+        { emoji: '\uD83D\uDC69', name: 'Sarah from Texas', action: 'just saved her investigation data', time: '2 min ago' },
+        { emoji: '\uD83D\uDC68', name: 'Mike from Florida', action: 'stopped data deletion in time', time: '4 min ago' },
+        { emoji: '\uD83D\uDC69', name: 'Jessica from California', action: 'recovered all deleted messages', time: '5 min ago' },
+        { emoji: '\uD83D\uDC68', name: 'David from New York', action: 'unlocked full access just now', time: '1 min ago' },
+        { emoji: '\uD83D\uDC69', name: 'Amanda from Ohio', action: 'saved 147 deleted messages', time: '3 min ago' },
+        { emoji: '\uD83D\uDC68', name: 'Carlos from Arizona', action: 'stopped deletion at 71%', time: '6 min ago' }
+    ], 9000);
+
+    // Tab title urgency
+    initTabTitle('\u26A0\uFE0F Your data is being deleted!');
+
+    // Exit intent
+    initExitIntent({
+        icon: '\uD83D\uDEA8',
+        title: 'Wait! Your data is being destroyed!',
+        text: 'Once deletion reaches 100%, all 23 conversations and 147 deleted messages will be gone forever. Stop the deletion now.',
+        ctaLabel: 'STOP DELETION NOW',
+        ctaClass: 'danger',
+        ctaAction: 'handleCTA()'
+    });
+})();
+
+function handleCTA() {
+    var target = RmkTracking.getTargetData();
+    RmkTracking.trackEvent('Lead', {
+        content_name: 'Remarketing Expired CTA',
+        value: 49,
+        currency: 'USD'
+    });
+    if (target.phone) {
+        window.location.href = '../../cta-unified.html?gender=' + target.gender + '&returning=1';
+    } else {
+        window.location.href = '../../landing.html';
+    }
+}
+</script>
+
+</body>
+</html>

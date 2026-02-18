@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>ZapSpy.ai - Completa Tu Compra</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="shortcut icon" href="../../imagens/icon-site.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/remarketing.css">
+
+    <!-- Meta Pixel -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+
+    var userData = {};
+    try {
+        var em = localStorage.getItem('userEmail');
+        var ph = localStorage.getItem('userWhatsApp');
+        if (em) userData.em = em.toLowerCase().trim();
+        if (ph) userData.ph = ph.replace(/\D/g, '');
+    } catch(e) {}
+    fbq('init', '726299943423075', userData);
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=726299943423075&ev=PageView&noscript=1"/></noscript>
+
+    <style>
+        .retry-solutions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .retry-solution {
+            background: var(--bg-secondary);
+            border: 1px solid var(--divider);
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+        .retry-solution-number {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(37, 211, 102, 0.15);
+            color: var(--green-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        .retry-solution-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        .retry-solution-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        .retry-card-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+            background: rgba(37, 211, 102, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .retry-card-icon svg {
+            width: 32px;
+            height: 32px;
+            stroke: var(--green-primary);
+        }
+        .retry-or-divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 20px 0;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+        .retry-or-divider::before,
+        .retry-or-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--divider);
+        }
+    </style>
+</head>
+<body>
+
+<div class="rmk-container">
+    <!-- Header -->
+    <div class="rmk-header">
+        <div class="rmk-logo">Zap<span>Spy</span>.ai</div>
+    </div>
+
+    <!-- Success-style card -->
+    <div class="rmk-card" style="text-align:center;">
+        <div class="retry-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        </div>
+        <div class="rmk-card-title" style="font-size:20px;margin-bottom:8px;">&iquest;Problema con el Pago? &iexcl;Sin Problema!</div>
+        <div class="rmk-card-body" style="text-align:center;">
+            A veces los pagos son rechazados por protocolos de seguridad bancaria o l&iacute;mites temporales. Esto es muy com&uacute;n y f&aacute;cil de solucionar.
+        </div>
+    </div>
+
+    <!-- Alert Banner -->
+    <div class="rmk-alert-banner success">
+        <div class="rmk-alert-dot"></div>
+        <div class="rmk-alert-text">
+            <strong>Tu acceso sigue reservado.</strong><br>
+            Estamos guardando tu lugar mientras resuelves el pago.
+        </div>
+    </div>
+
+    <!-- Target Card -->
+    <div class="rmk-target-card" id="targetCard" style="display:none;">
+        <div class="rmk-target-avatar" id="targetAvatar"></div>
+        <div class="rmk-target-info">
+            <div class="rmk-target-label">Acceso Reservado Para</div>
+            <div class="rmk-target-phone" id="targetPhone"></div>
+            <div class="rmk-target-status" style="color:var(--orange-alert);">Esperando completar el pago</div>
+        </div>
+    </div>
+
+    <!-- Success Stats -->
+    <div class="rmk-stats-row">
+        <div class="rmk-stat">
+            <div class="rmk-stat-value">94%</div>
+            <div class="rmk-stat-label">&Eacute;xito en 2do intento</div>
+        </div>
+        <div class="rmk-stat">
+            <div class="rmk-stat-value">3.4K</div>
+            <div class="rmk-stat-label">Pagos hoy</div>
+        </div>
+        <div class="rmk-stat">
+            <div class="rmk-stat-value">100%</div>
+            <div class="rmk-stat-label">Seguro</div>
+        </div>
+    </div>
+
+    <!-- Solutions -->
+    <div class="rmk-section-title">3 Formas F&aacute;ciles de Solucionar Esto</div>
+
+    <div class="retry-solutions">
+        <div class="retry-solution">
+            <div class="retry-solution-number">1</div>
+            <div>
+                <div class="retry-solution-title">Prueba Otra Tarjeta</div>
+                <div class="retry-solution-text">Usa otra tarjeta de cr&eacute;dito o d&eacute;bito. Las tarjetas internacionales (Visa/Mastercard) tienen la mayor tasa de aprobaci&oacute;n.</div>
+            </div>
+        </div>
+        <div class="retry-solution">
+            <div class="retry-solution-number">2</div>
+            <div>
+                <div class="retry-solution-title">Usa la Tarjeta de Otra Persona</div>
+                <div class="retry-solution-text">Puedes usar de forma segura la tarjeta de un amigo o familiar. El acceso est&aacute; vinculado a tu cuenta, no a la tarjeta. 100% seguro y an&oacute;nimo.</div>
+            </div>
+        </div>
+        <div class="retry-solution">
+            <div class="retry-solution-number">3</div>
+            <div>
+                <div class="retry-solution-title">Llama a Tu Banco</div>
+                <div class="retry-solution-text">Tu banco puede haber bloqueado la transacci&oacute;n por seguridad. Una llamada r&aacute;pida para autorizarla generalmente soluciona el problema al instante.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timer -->
+    <div class="rmk-timer">
+        <div class="rmk-timer-label">La reserva expira en</div>
+        <div class="rmk-timer-value" id="countdown">30:00</div>
+    </div>
+
+    <!-- Primary CTA -->
+    <button class="rmk-cta primary" onclick="handleRetry()">
+        INTENTAR DE NUEVO - Completar Mi Compra
+        <span class="rmk-cta-subtitle">Pago seguro - encriptaci&oacute;n 256-bit</span>
+    </button>
+
+    <!-- Trust Badges -->
+    <div class="rmk-trust-badges">
+        <div class="rmk-trust-badge">
+            <div class="rmk-trust-badge-icon">&#128179;</div>
+            <div class="rmk-trust-badge-text">Visa / Master</div>
+        </div>
+        <div class="rmk-trust-badge">
+            <div class="rmk-trust-badge-icon">&#128274;</div>
+            <div class="rmk-trust-badge-text">SSL 256-bit</div>
+        </div>
+        <div class="rmk-trust-badge">
+            <div class="rmk-trust-badge-icon">&#128737;</div>
+            <div class="rmk-trust-badge-text">Devoluci&oacute;n 30 d&iacute;as</div>
+        </div>
+        <div class="rmk-trust-badge">
+            <div class="rmk-trust-badge-icon">&#9989;</div>
+            <div class="rmk-trust-badge-text">Monetizze Verificado</div>
+        </div>
+    </div>
+
+    <div class="retry-or-divider">o prueba con un monto menor</div>
+
+    <!-- Secondary CTA - Discount -->
+    <button class="rmk-cta secondary" onclick="handleDiscount()" style="border-color:rgba(37,211,102,0.3);color:var(--green-primary);">
+        &#127873; Obt&eacute;n 50% OFF - Paga solo $9.50
+        <span class="rmk-cta-subtitle" style="color:var(--text-muted);">Montos menores tienen mayor tasa de aprobaci&oacute;n</span>
+    </button>
+
+    <!-- FAQ -->
+    <div class="rmk-card mt-24">
+        <div class="rmk-card-title" style="margin-bottom:16px;">Preguntas Frecuentes</div>
+
+        <div class="rmk-faq-item">
+            <div class="rmk-faq-question">&iquest;Por qu&eacute; fue rechazado mi pago?</div>
+            <div class="rmk-faq-answer">
+                Los bancos a menudo bloquean transacciones en l&iacute;nea como medida de seguridad, especialmente para compras internacionales o primeras compras en una nueva plataforma. Esto es normal y no significa que haya un problema con tu tarjeta.
+            </div>
+        </div>
+
+        <div class="rmk-faq-item">
+            <div class="rmk-faq-question">&iquest;El pago es seguro?</div>
+            <div class="rmk-faq-answer">
+                S&iacute;, 100%. Nuestros pagos son procesados por Monetizze, una de las mayores plataformas de pago. Todas las transacciones usan encriptaci&oacute;n SSL de 256-bit. Tus datos nunca se almacenan en nuestros servidores.
+            </div>
+        </div>
+
+        <div class="rmk-faq-item">
+            <div class="rmk-faq-question">&iquest;Me devolver&aacute;n el dinero si no estoy satisfecho?</div>
+            <div class="rmk-faq-answer">
+                Absolutamente. Ofrecemos una garant&iacute;a de devoluci&oacute;n de 30 d&iacute;as. Si no est&aacute;s satisfecho por cualquier raz&oacute;n, simplemente solicita un reembolso y recibir&aacute;s el 100% de tu dinero de vuelta. Sin preguntas.
+            </div>
+        </div>
+
+        <div class="rmk-faq-item">
+            <div class="rmk-faq-question">&iquest;El objetivo sabr&aacute; que lo estoy monitoreando?</div>
+            <div class="rmk-faq-answer">
+                No. ZapSpy.ai opera en modo completamente sigiloso. El objetivo nunca recibir&aacute; ninguna notificaci&oacute;n o indicaci&oacute;n de que sus mensajes est&aacute;n siendo accedidos. Tu identidad est&aacute; 100% protegida.
+            </div>
+        </div>
+
+        <div class="rmk-faq-item">
+            <div class="rmk-faq-question">&iquest;Puedo usar la tarjeta de otra persona?</div>
+            <div class="rmk-faq-answer">
+                S&iacute;, puedes usar cualquier tarjeta de cr&eacute;dito o d&eacute;bito v&aacute;lida con el permiso del titular. El acceso est&aacute; vinculado a tu cuenta ZapSpy, no al m&eacute;todo de pago utilizado.
+            </div>
+        </div>
+    </div>
+
+    <!-- Guarantee -->
+    <div class="rmk-guarantee mt-16">
+        <div class="rmk-guarantee-icon">&#128737;</div>
+        <div class="rmk-guarantee-text">
+            <strong>Garant&iacute;a de Devoluci&oacute;n de 30 D&iacute;as.</strong> Reembolso completo si no est&aacute;s satisfecho. Sin preguntas.
+        </div>
+    </div>
+
+    <div class="rmk-social-proof">
+        <span class="rmk-live-dot"></span>
+        <span id="liveCount">3,412</span> pagos exitosos procesados hoy
+    </div>
+
+    <div class="rmk-footer">
+        ZapSpy.ai - Plataforma de Inteligencia Segura<br>
+        Pago seguro procesado por Monetizze.<br>
+        &copy; 2025 ZapSpy.ai. Todos los derechos reservados.
+    </div>
+</div>
+
+<script src="../js/remarketing-tracking.js"></script>
+<script>
+(function() {
+    RmkTracking.init('Remarketing - Retry', 'remarketing_retry', 19);
+
+    var target = RmkTracking.getTargetData();
+    if (target.phone) {
+        document.getElementById('targetCard').style.display = 'flex';
+        document.getElementById('targetPhone').textContent = target.phone;
+        document.getElementById('targetAvatar').textContent = target.gender === 'female' ? '\uD83D\uDC69' : '\uD83D\uDC68';
+    }
+
+    startTimer('countdown', 1800, function() {
+        document.getElementById('countdown').textContent = 'EXPIRADO';
+    });
+
+    var liveEl = document.getElementById('liveCount');
+    setInterval(function() {
+        var n = 3200 + Math.floor(Math.random() * 400);
+        liveEl.textContent = n.toLocaleString();
+    }, 5000);
+
+    startActivityFeed([
+        { emoji: '\u2705', name: 'Miguel de M\u00e9xico', action: '\u00A1pago aprobado en el 2do intento!', time: 'hace 1 min' },
+        { emoji: '\u2705', name: 'Ana de Espa\u00f1a', action: 'us\u00f3 otra tarjeta - \u00A1\u00e9xito!', time: 'hace 3 min' },
+        { emoji: '\u2705', name: 'Roberto de Argentina', action: 'resolvi\u00f3 el pago y desbloque\u00f3 acceso', time: 'hace 2 min' },
+        { emoji: '\u2705', name: 'Laura de Colombia', action: 'aprobada con el enlace de 50% off', time: 'hace 5 min' },
+        { emoji: '\u2705', name: 'Javier de Madrid', action: 'llam\u00f3 al banco, \u00A1pago aprobado!', time: 'hace 4 min' }
+    ], 10000);
+
+    initTabTitle('\u2705 Problema de pago resuelto');
+
+    initExitIntent({
+        icon: '\uD83D\uDCB3',
+        title: '\u00A1Tu acceso sigue reservado!',
+        text: 'El 94% de los usuarios resuelven problemas de pago en su segundo intento. Prueba otra tarjeta o usa nuestro enlace de 50% off para un monto menor.',
+        ctaLabel: 'INTENTAR DE NUEVO - $19',
+        ctaClass: 'primary',
+        ctaAction: 'handleRetry()'
+    });
+})();
+
+function handleRetry() {
+    RmkTracking.trackInitiateCheckout(19, 'ZapSpy VIP - Retry Full Price');
+    var url = RmkTracking.buildCheckoutUrl('KKS456737', 19);
+    window.location.href = url;
+}
+
+function handleDiscount() {
+    RmkTracking.trackInitiateCheckout(9.50, 'ZapSpy VIP - Retry 50% OFF');
+    var url = RmkTracking.buildCheckoutUrl('KMS455971', 9.50);
+    window.location.href = url;
+}
+</script>
+
+</body>
+</html>

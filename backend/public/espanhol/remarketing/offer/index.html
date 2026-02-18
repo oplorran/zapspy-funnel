@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>ZapSpy.ai - Oferta Exclusiva</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="shortcut icon" href="../../imagens/icon-site.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/remarketing.css">
+
+    <!-- Meta Pixel -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+
+    var userData = {};
+    try {
+        var em = localStorage.getItem('userEmail');
+        var ph = localStorage.getItem('userWhatsApp');
+        if (em) userData.em = em.toLowerCase().trim();
+        if (ph) userData.ph = ph.replace(/\D/g, '');
+    } catch(e) {}
+    fbq('init', '726299943423075', userData);
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=726299943423075&ev=PageView&noscript=1"/></noscript>
+</head>
+<body>
+
+<div class="rmk-container">
+    <!-- Header -->
+    <div class="rmk-header">
+        <div class="rmk-logo">Zap<span>Spy</span>.ai</div>
+    </div>
+
+    <!-- Alert Banner -->
+    <div class="rmk-alert-banner success">
+        <div class="rmk-alert-dot"></div>
+        <div class="rmk-alert-text">
+            <strong>&iexcl;Guardamos tu lugar!</strong><br>
+            Tus resultados de investigaci&oacute;n siguen disponibles. Oferta exclusiva abajo.
+        </div>
+    </div>
+
+    <!-- Target Card -->
+    <div class="rmk-target-card" id="targetCard" style="display:none;">
+        <div class="rmk-target-avatar" id="targetAvatar"></div>
+        <div class="rmk-target-info">
+            <div class="rmk-target-label">Resultados de Investigaci&oacute;n Listos</div>
+            <div class="rmk-target-phone" id="targetPhone"></div>
+            <div class="rmk-target-status" style="color:var(--green-primary);">Datos asegurados - Esperando desbloqueo</div>
+        </div>
+    </div>
+
+    <!-- Results Summary -->
+    <div class="rmk-card">
+        <div class="rmk-card-header">
+            <div class="rmk-card-icon green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <div>
+                <div class="rmk-card-title">Resultados Encontrados Para Ti</div>
+                <div class="rmk-card-subtitle">Escaneo completado - esperando acceso</div>
+            </div>
+        </div>
+        <ul class="rmk-features">
+            <li>23 conversaciones ocultas descubiertas</li>
+            <li>147 mensajes eliminados recuperados</li>
+            <li>38 fotos y videos encontrados</li>
+            <li>12 intercambios de mensajes nocturnos detectados</li>
+            <li>Historial de ubicaci&oacute;n GPS mapeado</li>
+            <li>Puntuaci&oacute;n de sospecha: <strong style="color:var(--red-alert)">87/100</strong></li>
+        </ul>
+    </div>
+
+    <!-- Exclusive Offer -->
+    <div class="rmk-section-title">Oferta Exclusiva de Regreso</div>
+    <div class="rmk-section-subtitle">Porque estuviste tan cerca, te damos un descuento especial. Esta oferta <strong style="color:var(--red-alert)">no est&aacute; disponible</strong> en nuestro sitio web.</div>
+
+    <!-- Stats Row -->
+    <div class="rmk-stats-row">
+        <div class="rmk-stat">
+            <div class="rmk-stat-value">23</div>
+            <div class="rmk-stat-label">Chats Ocultos</div>
+        </div>
+        <div class="rmk-stat">
+            <div class="rmk-stat-value">147</div>
+            <div class="rmk-stat-label">Msgs Eliminados</div>
+        </div>
+        <div class="rmk-stat">
+            <div class="rmk-stat-value" style="color:var(--red-alert);">87%</div>
+            <div class="rmk-stat-label">Nivel Sospecha</div>
+        </div>
+    </div>
+
+    <!-- Comparison -->
+    <div class="rmk-comparison">
+        <div class="rmk-compare-col dimmed">
+            <div class="rmk-compare-label">Regular</div>
+            <div class="rmk-compare-price">$39</div>
+            <div class="rmk-compare-note">Precio del sitio web</div>
+        </div>
+        <div class="rmk-compare-col highlight">
+            <div class="rmk-compare-label">Tu Precio</div>
+            <div class="rmk-compare-price">$19.50</div>
+            <div class="rmk-compare-note">50% OFF - Exclusivo</div>
+        </div>
+    </div>
+
+    <p style="text-align:center;font-size:13px;color:var(--text-muted);margin-bottom:16px;">Pago &uacute;nico. Sin suscripci&oacute;n. Sin cargos ocultos.</p>
+
+    <!-- Timer -->
+    <div class="rmk-timer">
+        <div class="rmk-timer-label">La oferta expira en</div>
+        <div class="rmk-timer-value" id="countdown">15:00</div>
+    </div>
+
+    <!-- CTA -->
+    <button class="rmk-cta primary" onclick="handleCheckout()" style="animation:glowPulse 2s ease-in-out infinite;">
+        DESBLOQUEAR AHORA - 50% OFF
+        <span class="rmk-cta-subtitle">Solo $19.50 - Ahorra $19.50 hoy</span>
+    </button>
+
+    <!-- Trust Badges -->
+    <div class="rmk-trust-badges">
+        <div class="rmk-trust-badge">
+            <div class="rmk-trust-badge-icon">&#128274;</div>
+            <div class="rmk-trust-badge-text">Encriptado</div>
+        </div>
+        <div class="rmk-trust-badge">
+            <div class="rmk-trust-badge-icon">&#128737;</div>
+            <div class="rmk-trust-badge-text">Devoluci&oacute;n 30 d&iacute;as</div>
+        </div>
+        <div class="rmk-trust-badge">
+            <div class="rmk-trust-badge-icon">&#128065;</div>
+            <div class="rmk-trust-badge-text">100% An&oacute;nimo</div>
+        </div>
+        <div class="rmk-trust-badge">
+            <div class="rmk-trust-badge-icon">&#9889;</div>
+            <div class="rmk-trust-badge-text">Acceso Inmediato</div>
+        </div>
+    </div>
+
+    <div class="rmk-gradient-divider"></div>
+
+    <!-- What You Get -->
+    <div class="rmk-card mt-24">
+        <div class="rmk-card-header">
+            <div class="rmk-card-icon blue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            </div>
+            <div>
+                <div class="rmk-card-title">El Acceso VIP Completo Incluye</div>
+            </div>
+        </div>
+        <ul class="rmk-features">
+            <li>Lee todos los mensajes de WhatsApp en tiempo real</li>
+            <li>Recupera mensajes y medios eliminados</li>
+            <li>Ve todas las fotos y videos enviados/recibidos</li>
+            <li>Accede al historial de conversaciones</li>
+            <li>An&oacute;nimo - 100% indetectable</li>
+            <li>Garant&iacute;a de devoluci&oacute;n de 30 d&iacute;as</li>
+        </ul>
+    </div>
+
+    <!-- Testimonials -->
+    <div class="rmk-section-title mt-24">Lo Que Otros Descubrieron</div>
+
+    <div class="rmk-testimonial">
+        <div class="rmk-testimonial-header">
+            <div class="rmk-testimonial-avatar">&#128105;</div>
+            <div>
+                <div class="rmk-testimonial-name">Laura M.</div>
+                <div class="rmk-testimonial-date">hace 2 d&iacute;as</div>
+            </div>
+        </div>
+        <div class="rmk-testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <div class="rmk-testimonial-text">"Casi no lo compro pero estoy tan contenta de haberlo hecho. Descubr&iacute; todo lo que necesitaba saber. Los mensajes eliminados fueron los m&aacute;s reveladores..."</div>
+    </div>
+
+    <div class="rmk-testimonial">
+        <div class="rmk-testimonial-header">
+            <div class="rmk-testimonial-avatar">&#128104;</div>
+            <div>
+                <div class="rmk-testimonial-name">Roberto G.</div>
+                <div class="rmk-testimonial-date">hace 5 d&iacute;as</div>
+            </div>
+        </div>
+        <div class="rmk-testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <div class="rmk-testimonial-text">"Era esc&eacute;ptico al principio pero realmente funciona. Recuper&eacute; mensajes que fueron eliminados hace meses. Ahora s&eacute; la verdad."</div>
+    </div>
+
+    <div class="rmk-testimonial">
+        <div class="rmk-testimonial-header">
+            <div class="rmk-testimonial-avatar">&#128105;</div>
+            <div>
+                <div class="rmk-testimonial-name">Carmen T.</div>
+                <div class="rmk-testimonial-date">hace 1 semana</div>
+            </div>
+        </div>
+        <div class="rmk-testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9734;</div>
+        <div class="rmk-testimonial-text">"Los mensajes nocturnos fueron reveladores. Finalmente dej&eacute; de vivir en la duda. Vale cada centavo."</div>
+    </div>
+
+    <!-- Guarantee -->
+    <div class="rmk-guarantee mt-24">
+        <div class="rmk-guarantee-icon">&#128737;</div>
+        <div class="rmk-guarantee-text">
+            <strong>Garant&iacute;a de Devoluci&oacute;n de 30 D&iacute;as.</strong> Si no est&aacute;s satisfecho por cualquier raz&oacute;n, obt&eacute;n un reembolso completo. Sin preguntas.
+        </div>
+    </div>
+
+    <div class="rmk-social-proof">
+        <span class="rmk-live-dot"></span>
+        <span id="liveCount">2,134</span> personas desbloquearon acceso completo hoy
+    </div>
+
+    <div class="rmk-footer">
+        ZapSpy.ai - Plataforma de Inteligencia Segura<br>
+        Pago seguro procesado por Monetizze.<br>
+        &copy; 2025 ZapSpy.ai. Todos los derechos reservados.
+    </div>
+
+    <div style="height:80px;"></div>
+</div>
+
+<!-- Sticky Footer CTA -->
+<div class="rmk-sticky-footer">
+    <button class="rmk-cta primary" onclick="handleCheckout()">
+        DESBLOQUEAR AHORA - $19.50 (50% OFF)
+    </button>
+</div>
+
+<script src="../js/remarketing-tracking.js"></script>
+<script>
+(function() {
+    RmkTracking.init('Remarketing - Offer', 'remarketing_offer', 19.50);
+
+    var target = RmkTracking.getTargetData();
+    if (target.phone) {
+        document.getElementById('targetCard').style.display = 'flex';
+        document.getElementById('targetPhone').textContent = target.phone;
+        document.getElementById('targetAvatar').textContent = target.gender === 'female' ? '\uD83D\uDC69' : '\uD83D\uDC68';
+    }
+
+    startTimer('countdown', 900, function() {
+        document.getElementById('countdown').textContent = 'EXPIRADO';
+    });
+
+    var liveEl = document.getElementById('liveCount');
+    setInterval(function() {
+        var n = 1900 + Math.floor(Math.random() * 400);
+        liveEl.textContent = n.toLocaleString();
+    }, 5000);
+
+    startActivityFeed([
+        { emoji: '\uD83D\uDC69', name: 'Mar\u00eda de Madrid', action: 'acaba de desbloquear acceso completo con 50% off', time: 'hace 1 min' },
+        { emoji: '\uD83D\uDC68', name: 'Carlos de M\u00e9xico', action: 'recuper\u00f3 89 mensajes eliminados', time: 'hace 3 min' },
+        { emoji: '\uD83D\uDC69', name: 'Ana de Buenos Aires', action: 'us\u00f3 el enlace exclusivo ahora', time: 'hace 2 min' },
+        { emoji: '\uD83D\uDC68', name: 'Diego de Colombia', action: 'encontr\u00f3 evidencia en chats ocultos', time: 'hace 5 min' },
+        { emoji: '\uD83D\uDC69', name: 'Sof\u00eda de Espa\u00f1a', action: 'ahorr\u00f3 $19.50 con la oferta especial', time: 'hace 4 min' }
+    ], 10000);
+
+    initTabTitle('\uD83C\uDF81 50% OFF - \u00A1No te lo pierdas!');
+
+    initExitIntent({
+        icon: '\uD83C\uDF81',
+        title: '\u00A1Espera! \u00A1Tu 50% OFF sigue activo!',
+        text: 'Este descuento exclusivo no durar\u00e1. Obt\u00e9n acceso completo a todas las conversaciones ocultas y mensajes eliminados por solo $19.50.',
+        ctaLabel: 'OBTENER 50% OFF AHORA - $19.50',
+        ctaClass: 'primary',
+        ctaAction: 'handleCheckout()'
+    });
+})();
+
+function handleCheckout() {
+    RmkTracking.trackInitiateCheckout(19.50, 'ZapSpy VIP - Remarketing 50% OFF');
+    var url = RmkTracking.buildCheckoutUrl('KMS455971', 19.50);
+    window.location.href = url;
+}
+</script>
+
+</body>
+</html>

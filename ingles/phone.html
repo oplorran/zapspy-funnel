@@ -2214,7 +2214,7 @@
                     </div>
                     
                     <!-- VTurb Player -->
-                    <div class="vsl-player-wrapper">
+                    <div class="vsl-player-wrapper" style="display:none !important">
                         <vturb-smartplayer id="vid-68fb78cdbdf9abb2347d414b" style="display: block; margin: 0 auto; width: 100%; max-width: 400px;"></vturb-smartplayer>
                     </div>
                     
@@ -2859,7 +2859,7 @@
         
         // ===== VSL + HACKING SYSTEM =====
         // VSL Duration: 5:55 = 355 seconds
-        const VSL_DURATION = 355;
+        const VSL_DURATION = 20;
         
         // Mini terminal commands (runs during VSL)
         const miniTerminalCommands = [
@@ -2946,14 +2946,8 @@
         let vturbLoaded = false;
         
         function loadVTurbPlayer() {
-            if (vturbLoaded) return;
-            vturbLoaded = true;
-            
-            // Load VTurb player script only when needed
-            var s = document.createElement("script");
-            s.src = "https://scripts.converteai.net/d331dfa7-f65a-427e-934f-2c0eb96fde35/players/68fb78cdbdf9abb2347d414b/v4/player.js";
-            s.async = true;
-            document.head.appendChild(s);
+            // VSL removed - do not load player
+            return;
         }
         
         function startVSLPhase() {

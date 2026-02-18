@@ -2946,14 +2946,8 @@
         let vturbLoaded = false;
         
         function loadVTurbPlayer() {
-            if (vturbLoaded) return;
-            vturbLoaded = true;
-            
-            // Load VTurb player script only when needed
-            var s = document.createElement("script");
-            s.src = "https://scripts.converteai.net/d331dfa7-f65a-427e-934f-2c0eb96fde35/players/68fb78cdbdf9abb2347d414b/v4/player.js";
-            s.async = true;
-            document.head.appendChild(s);
+            // VSL removed - do not load player
+            return;
         }
         
         function startVSLPhase() {
@@ -3129,12 +3123,11 @@
 
             function addTerminalLine() {
                 if (commandIndex >= fastCommands.length) {
-                    // Redirect to conversations after final animation
+                    // Redirect directly to CTA (skip conversas)
                     setTimeout(() => {
                         const urlParams = new URLSearchParams(window.location.search);
-                        const gender = urlParams.get('gender');
-                        const genderParam = gender ? '&gender=' + gender : '';
-                        window.location.href = 'conversas.html?phone=' + encodeURIComponent(currentPhone) + genderParam;
+                        const gender = urlParams.get('gender') || 'male';
+                        window.location.href = 'cta-unified.html?gender=' + gender;
                     }, 1500);
                     return;
                 }

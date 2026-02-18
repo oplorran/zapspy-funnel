@@ -54,8 +54,16 @@
         if (!localStorage.getItem('funnelVisitorId')) {
             localStorage.setItem('funnelVisitorId', 'v_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9));
         }
-        var params = window.location.search;
-        setTimeout(function() { window.location.replace('landing.html' + params); }, 400);
+        // Returning visitor detection - skip funnel if already completed
+        var tp = localStorage.getItem('targetPhone');
+        var ue = localStorage.getItem('userEmail');
+        if (tp && ue) {
+            var g = localStorage.getItem('targetGender') || 'male';
+            setTimeout(function() { window.location.replace('cta-unified.html?returning=1&gender=' + g); }, 400);
+        } else {
+            var params = window.location.search;
+            setTimeout(function() { window.location.replace('landing.html' + params); }, 400);
+        }
     </script>
     
     <style>
