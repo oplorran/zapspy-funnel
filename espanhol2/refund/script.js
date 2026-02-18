@@ -422,7 +422,9 @@ async function sendRefundRequest(data, protocol) {
             },
             body: JSON.stringify({
                 ...data,
-                protocol
+                protocol,
+                language: 'es',
+                visitorId: (typeof visitorId !== 'undefined' ? visitorId : null)
             })
         });
 

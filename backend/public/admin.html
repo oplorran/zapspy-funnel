@@ -1866,7 +1866,7 @@
                 
                 <!-- Template Selection Modal -->
                 <div class="modal-overlay" id="templateModal" style="display: none;">
-                    <div class="modal-content" style="max-width: 600px;">
+                    <div class="modal-content" style="max-width: 640px;">
                         <div class="modal-header" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.1));">
                             <h3>📝 Selecionar Template de Mensagem</h3>
                             <button class="modal-close" onclick="closeTemplateModal()">×</button>
@@ -1876,7 +1876,7 @@
                                 <!-- Client info loaded dynamically -->
                             </div>
                             
-                            <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+                            <div style="display: flex; gap: 12px; margin-bottom: 16px;">
                                 <button class="btn-secondary" onclick="setTemplateChannel('whatsapp')" id="btnChannelWhatsapp" style="flex: 1; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;">
                                     <span style="font-size: 20px;">💬</span> WhatsApp
                                 </button>
@@ -1884,26 +1884,44 @@
                                     <span style="font-size: 20px;">📧</span> Email
                                 </button>
                             </div>
+
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                                <span style="font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Idioma:</span>
+                                <div id="templateLangSelector" style="display: flex; gap: 6px;">
+                                    <button onclick="setTemplateLang('en')" id="btnLangEN" class="refund-lang-btn" title="English">🇺🇸 EN</button>
+                                    <button onclick="setTemplateLang('es')" id="btnLangES" class="refund-lang-btn" title="Español">🇪🇸 ES</button>
+                                    <button onclick="setTemplateLang('pt')" id="btnLangPT" class="refund-lang-btn" title="Português">🇧🇷 PT</button>
+                                </div>
+                                <span id="templateLangAutoTag" style="font-size: 10px; color: var(--text-muted); margin-left: 4px;">(auto-detectado)</span>
+                            </div>
                             
                             <h4 style="margin-bottom: 12px; color: var(--text-secondary);">Escolha o template:</h4>
-                            <div id="templateOptions" style="display: flex; flex-direction: column; gap: 12px;">
-                                <button class="template-option" onclick="selectTemplate('first_contact')" style="background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: left; cursor: pointer; transition: all 0.2s;">
-                                    <div style="font-weight: 600; margin-bottom: 4px;">👋 Primeiro Contato</div>
-                                    <div style="font-size: 12px; color: var(--text-muted);">Entender o problema e oferecer ajuda</div>
-                                </button>
-                                <button class="template-option" onclick="selectTemplate('technical_support')" style="background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: left; cursor: pointer; transition: all 0.2s;">
-                                    <div style="font-weight: 600; margin-bottom: 4px;">🔧 Suporte Técnico</div>
-                                    <div style="font-size: 12px; color: var(--text-muted);">Ajudar com problemas de acesso ou uso</div>
-                                </button>
-                                <button class="template-option" onclick="selectTemplate('offer_bonus')" style="background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: left; cursor: pointer; transition: all 0.2s;">
-                                    <div style="font-weight: 600; margin-bottom: 4px;">🎁 Oferta Especial</div>
-                                    <div style="font-size: 12px; color: var(--text-muted);">Oferecer bônus ou desconto para manter</div>
-                                </button>
-                                <button class="template-option" onclick="selectTemplate('confirm_refund')" style="background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: left; cursor: pointer; transition: all 0.2s;">
-                                    <div style="font-weight: 600; margin-bottom: 4px;">💸 Confirmar Reembolso</div>
-                                    <div style="font-size: 12px; color: var(--text-muted);">Informar que o reembolso será processado</div>
-                                </button>
+                            <div id="templateOptions" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Message Preview Modal -->
+                <div class="modal-overlay" id="messagePreviewModal" style="display: none;">
+                    <div class="modal-content" style="max-width: 600px;">
+                        <div class="modal-header" style="background: linear-gradient(135deg, rgba(37, 211, 102, 0.2), rgba(37, 211, 102, 0.05));">
+                            <h3 id="previewModalTitle">📤 Preview da Mensagem</h3>
+                            <button class="modal-close" onclick="closeMessagePreview()">×</button>
+                        </div>
+                        <div class="modal-body" style="padding: 24px;">
+                            <div id="previewClientBar" style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-tertiary); padding: 12px 16px; border-radius: 10px; margin-bottom: 16px;">
                             </div>
+                            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Mensagem:</label>
+                            <textarea id="previewMessageText" style="width: 100%; min-height: 220px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 10px; padding: 16px; color: var(--text-primary); font-size: 14px; line-height: 1.6; resize: vertical; outline: none; font-family: inherit;" spellcheck="false"></textarea>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+                                <span style="font-size: 11px; color: var(--text-muted);">Pode editar o texto antes de enviar</span>
+                            </div>
+                        </div>
+                        <div class="modal-footer" style="display: flex; gap: 12px; justify-content: flex-end; padding: 16px 24px;">
+                            <button class="btn-secondary" onclick="closeMessagePreview()">Cancelar</button>
+                            <button class="btn-primary" id="previewSendBtn" onclick="confirmSendMessage()" style="display: flex; align-items: center; gap: 8px;">
+                                <span id="previewSendIcon">💬</span> Enviar Mensagem
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -8038,42 +8056,57 @@ Estou aqui para esclarecer tudo! 😊`
                 'rejected': { text: 'Rejeitado', color: '#71717a', icon: '❌' }
             };
             
-            const reasonLabels = {
-                'not_expected': 'Não atendeu expectativas',
-                'technical': 'Problema técnico',
-                'duplicate': 'Cobrança duplicada',
-                'unauthorized': 'Não autorizado',
-                'changed_mind': 'Desistiu da compra',
-                'no_access': 'Sem acesso ao produto',
-                'other': 'Outro motivo'
+            const reasonLabelsI18n = {
+                'not_expected': { en: 'Did not meet expectations', es: 'No cumplió expectativas', pt: 'Não atendeu expectativas' },
+                'technical': { en: 'Technical problem', es: 'Problema técnico', pt: 'Problema técnico' },
+                'duplicate': { en: 'Duplicate charge', es: 'Cobro duplicado', pt: 'Cobrança duplicada' },
+                'unauthorized': { en: 'Unauthorized', es: 'No autorizado', pt: 'Não autorizado' },
+                'changed_mind': { en: 'Changed mind', es: 'Cambió de opinión', pt: 'Desistiu da compra' },
+                'no_access': { en: 'No product access', es: 'Sin acceso al producto', pt: 'Sem acesso ao produto' },
+                'other': { en: 'Other reason', es: 'Otro motivo', pt: 'Outro motivo' }
             };
+            function getReasonLabel(key, lang) {
+                const entry = reasonLabelsI18n[key];
+                if (!entry) return key || '-';
+                return entry[lang] || entry['en'] || key;
+            }
             
             let html = '';
             filtered.forEach(r => {
                 const status = statusLabels[r.status] || statusLabels['pending'];
-                const reason = reasonLabels[r.reason] || r.reason || '-';
+                const clientLang = r.funnel_language || 'en';
+                const reason = getReasonLabel(r.reason, clientLang);
                 const value = r.value ? `R$ ${parseFloat(r.value).toFixed(2)}` : '-';
                 
-                // Calculate time since request
+                // Time urgency
                 const timeSince = getTimeSince(r.created_at);
                 const isNew = isWithin24Hours(r.created_at);
+                const hoursAgo = r.created_at ? (Date.now() - new Date(r.created_at).getTime()) / 3600000 : 0;
+                let timeColor = '#22c55e';
+                let timeBorder = 'rgba(34,197,94,0.2)';
+                if (hoursAgo > 48) { timeColor = '#ef4444'; timeBorder = 'rgba(239,68,68,0.15)'; }
+                else if (hoursAgo > 24) { timeColor = '#f59e0b'; timeBorder = 'rgba(245,158,11,0.15)'; }
                 const newBadge = isNew ? '<span style="background:#22c55e;color:white;padding:2px 6px;border-radius:8px;font-size:9px;margin-left:4px;">NOVO</span>' : '';
                 
-                // Notes count
                 const notes = r.notes ? (Array.isArray(r.notes) ? r.notes : []) : [];
                 const notesCount = notes.length;
                 
-                // Funnel language badge
-                const funnelBadge = r.funnel_language === 'es' 
-                    ? '<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:600;background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);">🇪🇸 Espanhol</span>'
-                    : r.funnel_language === 'en'
-                    ? '<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:600;background:rgba(59,130,246,0.15);color:#3b82f6;border:1px solid rgba(59,130,246,0.3);">🇺🇸 Inglês</span>'
-                    : '<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:600;background:rgba(113,113,122,0.15);color:#71717a;border:1px solid rgba(113,113,122,0.3);">❓ N/A</span>';
+                // Compact language flag
+                const langFlags = { en: '🇺🇸', es: '🇪🇸', pt: '🇧🇷' };
+                const langColors = { en: '#3b82f6', es: '#f59e0b', pt: '#22c55e' };
+                const langLabel = r.funnel_language ? `<span style="display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;background:${langColors[r.funnel_language] || '#71717a'}18;color:${langColors[r.funnel_language] || '#71717a'};border:1px solid ${langColors[r.funnel_language] || '#71717a'}33;">${langFlags[r.funnel_language] || '❓'} ${r.funnel_language.toUpperCase()}</span>` : '<span style="font-size:10px;color:#71717a;">-</span>';
                 
-                html += `<tr style="${isNew ? 'background: rgba(34, 197, 94, 0.05);' : ''}">
+                // Reason tooltip with full details
+                const reasonPt = getReasonLabel(r.reason, 'pt');
+                const reasonClient = getReasonLabel(r.reason, clientLang);
+                const reasonTooltip = r.details ? `${reasonClient}\n\n${r.details.substring(0, 200)}` : reasonClient;
+                
+                const rowBg = hoursAgo > 48 ? 'background:rgba(239,68,68,0.04);' : (isNew ? 'background:rgba(34,197,94,0.04);' : '');
+                
+                html += `<tr style="${rowBg}">
                     <td><code style="background:var(--bg-tertiary);padding:4px 8px;border-radius:6px;font-size:11px;">${r.protocol || '-'}</code>${newBadge}</td>
-                    <td style="font-size:12px;color:${isNew ? '#22c55e' : 'var(--text-muted)'}">${timeSince}</td>
-                    <td>${funnelBadge}</td>
+                    <td style="font-size:12px;font-weight:600;color:${timeColor};border-left:3px solid ${timeColor};padding-left:10px;" title="Aguardando há ${timeSince}">${timeSince}</td>
+                    <td>${langLabel}</td>
                     <td>
                         <div style="font-weight:600;">${r.full_name || '-'}</div>
                     </td>
@@ -8081,7 +8114,7 @@ Estou aqui para esclarecer tudo! 😊`
                         <div style="font-size:12px;">${r.email || '-'}</div>
                         <div style="font-size:11px;color:var(--text-muted);">${r.phone || '-'}</div>
                     </td>
-                    <td style="font-size:12px;" title="${reason}">${reason.length > 20 ? reason.substring(0,20)+'...' : reason}</td>
+                    <td style="font-size:12px;cursor:help;" title="${reasonTooltip.replace(/"/g, '&quot;')}">${reasonClient.length > 22 ? reasonClient.substring(0,22)+'...' : reasonClient}</td>
                     <td style="font-weight:600;color:var(--danger);">${value}</td>
                     <td>
                         <span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;background:${status.color}22;color:${status.color};border:1px solid ${status.color}44;">
@@ -8095,12 +8128,12 @@ Estou aqui para esclarecer tudo! 😊`
                     </td>
                     <td>
                         <div style="display:flex;gap:4px;flex-wrap:nowrap;align-items:center;">
-                            <button onclick="openRefundModal(${r.id})" style="background:var(--bg-tertiary);border:1px solid var(--border);border-radius:6px;padding:5px 8px;cursor:pointer;font-size:11px;white-space:nowrap;" title="Ver detalhes">👁️</button>
-                            <button onclick="openTemplateModal(${r.id})" style="background:#25d36622;border:1px solid #25d36644;border-radius:6px;padding:5px 8px;cursor:pointer;font-size:11px;color:#25d366;white-space:nowrap;" title="Enviar via Z-API">💬 Z-API</button>
-                            ${r.status === 'pending' ? `<button onclick="updateRefundStatus(${r.id}, 'handling')" style="background:#8b5cf622;border:1px solid #8b5cf644;border-radius:6px;padding:5px 8px;cursor:pointer;font-size:11px;color:#8b5cf6;white-space:nowrap;" title="Iniciar tratamento">🎯 Tratar</button>` : ''}
+                            <button onclick="openRefundModal(${r.id})" class="refund-action-btn" style="background:var(--bg-tertiary);border:1px solid var(--border);color:var(--text-secondary);" title="Ver ficha completa do cliente">👁️ Ficha</button>
+                            <button onclick="openTemplateModal(${r.id})" class="refund-action-btn" style="background:#25d36615;border:1px solid #25d36644;color:#25d366;" title="Enviar mensagem via WhatsApp ou Email (${r.funnel_language ? r.funnel_language.toUpperCase() : 'EN'})">💬 Contato</button>
+                            ${r.status === 'pending' ? `<button onclick="updateRefundStatus(${r.id}, 'handling')" class="refund-action-btn" style="background:#8b5cf615;border:1px solid #8b5cf644;color:#8b5cf6;" title="Marcar como em tratamento">🎯 Tratar</button>` : ''}
                             ${r.status === 'handling' || r.status === 'processing' ? `
-                                <button onclick="updateRefundStatus(${r.id}, 'convinced')" style="background:#22c55e22;border:1px solid #22c55e44;border-radius:6px;padding:5px 8px;cursor:pointer;font-size:11px;color:#22c55e;white-space:nowrap;" title="Cliente convencido">🏆 Convencido</button>
-                                <button onclick="updateRefundStatus(${r.id}, 'refunded')" style="background:#3b82f622;border:1px solid #3b82f644;border-radius:6px;padding:5px 8px;cursor:pointer;font-size:11px;color:#3b82f6;white-space:nowrap;" title="Conceder reembolso">💸 Reembolsar</button>
+                                <button onclick="updateRefundStatus(${r.id}, 'convinced')" class="refund-action-btn" style="background:#22c55e15;border:1px solid #22c55e44;color:#22c55e;" title="Cliente foi convencido a manter">🏆</button>
+                                <button onclick="updateRefundStatus(${r.id}, 'refunded')" class="refund-action-btn" style="background:#3b82f615;border:1px solid #3b82f644;color:#3b82f6;" title="Processar reembolso">💸</button>
                             ` : ''}
                         </div>
                     </td>
@@ -8426,17 +8459,14 @@ Estou aqui para esclarecer tudo! 😊`
                 'rejected': { text: 'Rejeitado', class: 'status-rejected' }
             };
             
-            const reasonLabels = {
-                'not_expected': 'Não atendeu expectativas',
-                'technical': 'Problema técnico',
-                'duplicate': 'Cobrança duplicada',
-                'unauthorized': 'Não autorizado',
-                'changed_mind': 'Desistiu da compra',
-                'no_access': 'Sem acesso ao produto',
-                'other': 'Outro motivo',
+            const reasonLabelsLocal = {
                 'Reembolso via Monetizze': 'Reembolso Monetizze',
                 'Chargeback - Disputa de cartão': 'Chargeback'
             };
+            function getReasonProcessed(key, lang) {
+                if (reasonLabelsLocal[key]) return reasonLabelsLocal[key];
+                return getReasonLabel(key, lang || 'en');
+            }
             
             const sourceLabels = {
                 'form': { text: '📝 Formulário', color: '#3b82f6' },
@@ -8458,7 +8488,7 @@ Estou aqui para esclarecer tudo! 😊`
             let html = '';
             refunds.forEach(r => {
                 const status = statusLabels[r.status] || { text: r.status, class: 'status-pending' };
-                const reason = reasonLabels[r.reason] || r.reason || '-';
+                const reason = getReasonProcessed(r.reason, r.funnel_language);
                 const date = r.created_at ? new Date(r.created_at).toLocaleDateString('pt-BR') : '-';
                 const source = sourceLabels[r.source] || sourceLabels['form'];
                 const refundType = r.source === 'monetizze' 
@@ -8546,15 +8576,7 @@ Estou aqui para esclarecer tudo! 😊`
                 'rejected': { text: 'Rejeitado', class: 'status-rejected' }
             };
             
-            const reasonLabels = {
-                'not_expected': 'Produto não atendeu expectativas',
-                'technical': 'Problema técnico de acesso',
-                'duplicate': 'Cobrança duplicada no cartão',
-                'unauthorized': 'Compra não autorizada',
-                'changed_mind': 'Desistiu da compra',
-                'no_access': 'Não recebeu acesso ao produto',
-                'other': 'Outro motivo'
-            };
+            const refundLang = refund.funnel_language || 'en';
             
             const date = refund.created_at ? formatDateTime(refund.created_at) : '-';
             const purchaseDate = refund.purchase_date ? formatDate(refund.purchase_date) : '-';
@@ -8697,7 +8719,7 @@ Estou aqui para esclarecer tudo! 😊`
                         <h4 class="refund-section-title">📦 DETALHES DA COMPRA</h4>
                         <div class="refund-info-box">
                             <div class="refund-info-row"><span class="refund-label">Data da Compra:</span> <span class="refund-value">${purchaseDate}</span></div>
-                            <div class="refund-info-row"><span class="refund-label">Motivo:</span> <span class="refund-value refund-reason">${reasonLabels[refund.reason] || refund.reason || '-'}</span></div>
+                            <div class="refund-info-row"><span class="refund-label">Motivo:</span> <span class="refund-value refund-reason">${getReasonLabel(refund.reason, refundLang)}</span></div>
                             ${refund.value ? `<div class="refund-info-row"><span class="refund-label">Valor:</span> <span class="refund-value" style="color: var(--danger); font-weight: 600;">R$ ${parseFloat(refund.value).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span></div>` : ''}
                         </div>
                     </div>
@@ -8798,11 +8820,92 @@ Estou aqui para esclarecer tudo! 😊`
         }
         
         // ==================== TEMPLATE SYSTEM ====================
+        let selectedTemplateLang = 'en';
+        let pendingPreview = null;
+
+        function getRefundTemplates(name, protocol) {
+            return {
+                'first_contact': {
+                    icon: '👋', label_pt: 'Primeiro Contato', desc_pt: 'Entender o problema e oferecer ajuda',
+                    en: {
+                        subject: `About your request #${protocol}`,
+                        message: `Hi ${name}! 👋\n\nI noticed you submitted a refund request for our product (Protocol: ${protocol}).\n\nBefore we proceed, I'd really love to understand what happened. Often we can resolve technical issues or answer questions that could improve your experience.\n\nCould you tell me what led you to this decision?\n\nI'm here to help! 🤝`
+                    },
+                    es: {
+                        subject: `Sobre tu solicitud #${protocol}`,
+                        message: `¡Hola ${name}! 👋\n\nVi que solicitaste un reembolso de nuestro producto (Protocolo: ${protocol}).\n\nAntes de continuar, me gustaría mucho entender qué sucedió. Muchas veces logramos resolver problemas técnicos o aclarar dudas que pueden mejorar tu experiencia.\n\n¿Podrías contarme qué te llevó a esta decisión?\n\n¡Estoy aquí para ayudarte! 🤝`
+                    },
+                    pt: {
+                        subject: `Sobre sua solicitação #${protocol}`,
+                        message: `Olá ${name}! 👋\n\nVi que você solicitou um reembolso do nosso produto (Protocolo: ${protocol}).\n\nAntes de prosseguir, gostaria muito de entender melhor o que aconteceu. Muitas vezes conseguimos resolver problemas técnicos ou esclarecer dúvidas que podem mudar sua experiência.\n\nPoderia me contar o que te levou a essa decisão?\n\nEstou aqui para ajudar! 🤝`
+                    }
+                },
+                'technical_support': {
+                    icon: '🔧', label_pt: 'Suporte Técnico', desc_pt: 'Ajudar com problemas de acesso ou uso',
+                    en: {
+                        subject: `Technical support - Request #${protocol}`,
+                        message: `Hi ${name}!\n\nI received your refund request and noticed there might have been a technical issue.\n\nI'd like to offer personalized support to resolve any difficulty with accessing or using the product.\n\nI can help you with:\n✅ Platform access\n✅ Feature questions\n✅ Required settings\n\nWould you like to schedule a quick call to sort this out together?`
+                    },
+                    es: {
+                        subject: `Soporte técnico - Solicitud #${protocol}`,
+                        message: `¡Hola ${name}!\n\nRecibí tu solicitud de reembolso y noté que pudo haber habido un problema técnico.\n\nMe gustaría ofrecerte soporte personalizado para resolver cualquier dificultad de acceso o uso del producto.\n\nPuedo ayudarte con:\n✅ Acceso a la plataforma\n✅ Dudas sobre funcionalidades\n✅ Configuraciones necesarias\n\n¿Podemos agendar una llamada rápida para resolverlo juntos?`
+                    },
+                    pt: {
+                        subject: `Suporte técnico - Solicitação #${protocol}`,
+                        message: `Olá ${name}!\n\nRecebi sua solicitação de reembolso e notei que pode ter havido algum problema técnico.\n\nGostaria de oferecer suporte personalizado para resolver qualquer dificuldade de acesso ou uso do produto.\n\nPosso te ajudar com:\n✅ Acesso à plataforma\n✅ Dúvidas sobre funcionalidades\n✅ Configurações necessárias\n\nPodemos agendar uma chamada rápida para resolver isso juntos?`
+                    }
+                },
+                'offer_bonus': {
+                    icon: '🎁', label_pt: 'Oferta Especial', desc_pt: 'Oferecer bônus ou desconto para manter',
+                    en: {
+                        subject: `Special offer - Request #${protocol}`,
+                        message: `Hi ${name}!\n\nBefore processing your refund, I'd like to make you a special offer.\n\nAs a way to thank you for your trust, I'm offering:\n\n🎁 [Describe bonus/discount]\n⭐ Priority support\n📚 Additional exclusive material\n\nWhat do you think? Would this make you reconsider?\n\nLooking forward to hearing from you! 😊`
+                    },
+                    es: {
+                        subject: `Oferta especial - Solicitud #${protocol}`,
+                        message: `¡Hola ${name}!\n\nAntes de procesar tu reembolso, me gustaría hacerte una propuesta especial.\n\nComo forma de agradecer tu confianza, te estoy ofreciendo:\n\n🎁 [Describir bono/descuento]\n⭐ Soporte prioritario\n📚 Material exclusivo adicional\n\n¿Qué te parece? ¿Esto haría que lo reconsideres?\n\n¡Quedo atento! 😊`
+                    },
+                    pt: {
+                        subject: `Proposta especial - Solicitação #${protocol}`,
+                        message: `Olá ${name}!\n\nAntes de processar seu reembolso, gostaria de fazer uma proposta especial.\n\nComo forma de retribuir sua confiança, estou oferecendo:\n\n🎁 [Descrever bônus/desconto]\n⭐ Suporte prioritário\n📚 Material exclusivo adicional\n\nO que acha? Isso faria você reconsiderar?\n\nFico no aguardo! 😊`
+                    }
+                },
+                'confirm_refund': {
+                    icon: '💸', label_pt: 'Confirmar Reembolso', desc_pt: 'Informar que o reembolso será processado',
+                    en: {
+                        subject: `Refund confirmation - #${protocol}`,
+                        message: `Hi ${name},\n\nI'm writing to let you know that your refund request (Protocol: ${protocol}) has been successfully processed.\n\nThe amount will be returned to your original payment method within 7 business days.\n\nWe're sorry we didn't meet your expectations. If you change your mind in the future, we'll be here.\n\nThank you for your understanding.`
+                    },
+                    es: {
+                        subject: `Confirmación de reembolso - #${protocol}`,
+                        message: `Hola ${name},\n\nTe informo que tu solicitud de reembolso (Protocolo: ${protocol}) fue procesada con éxito.\n\nEl valor será devuelto a tu método de pago original en hasta 7 días hábiles.\n\nLamentamos no haber cumplido tus expectativas. Si cambias de opinión en el futuro, estaremos aquí.\n\nGracias por tu comprensión.`
+                    },
+                    pt: {
+                        subject: `Confirmação de reembolso - #${protocol}`,
+                        message: `Olá ${name},\n\nInformo que sua solicitação de reembolso (Protocolo: ${protocol}) foi processada com sucesso.\n\nO valor será estornado em sua forma de pagamento em até 7 dias úteis.\n\nLamentamos que não tenha tido a experiência esperada. Se mudar de ideia no futuro, estaremos aqui.\n\nObrigado pela compreensão.`
+                    }
+                }
+            };
+        }
+
+        function renderTemplateButtons(name, protocol) {
+            const templates = getRefundTemplates(name, protocol);
+            const container = document.getElementById('templateOptions');
+            container.innerHTML = Object.entries(templates).map(([key, t]) => `
+                <button class="template-option" onclick="selectTemplate('${key}')" style="background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; text-align: left; cursor: pointer; transition: all 0.2s;">
+                    <div style="font-weight: 600; margin-bottom: 3px;">${t.icon} ${t.label_pt}</div>
+                    <div style="font-size: 12px; color: var(--text-muted);">${t.desc_pt}</div>
+                </button>
+            `).join('');
+        }
+
         function openTemplateModal(refundId) {
             currentTemplateRefund = allRefunds.find(r => r.id === refundId);
             if (!currentTemplateRefund) return;
-            
-            // Update client info
+
+            const lang = currentTemplateRefund.funnel_language || 'en';
+            setTemplateLang(lang, true);
+
             document.getElementById('templateClientInfo').innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
@@ -8815,10 +8918,9 @@ Estou aqui para esclarecer tudo! 😊`
                     </div>
                 </div>
             `;
-            
-            // Reset channel selection
+
+            renderTemplateButtons(currentTemplateRefund.full_name || 'Customer', currentTemplateRefund.protocol || '');
             setTemplateChannel('whatsapp');
-            
             document.getElementById('templateModal').style.display = 'flex';
         }
         
@@ -8829,8 +8931,6 @@ Estou aqui para esclarecer tudo! 😊`
         
         function setTemplateChannel(channel) {
             selectedTemplateChannel = channel;
-            
-            // Update button styles
             const whatsappBtn = document.getElementById('btnChannelWhatsapp');
             const emailBtn = document.getElementById('btnChannelEmail');
             
@@ -8850,52 +8950,87 @@ Estou aqui para esclarecer tudo! 😊`
                 whatsappBtn.style.borderColor = 'var(--border)';
             }
         }
+
+        function setTemplateLang(lang, isAuto) {
+            selectedTemplateLang = lang;
+            ['en', 'es', 'pt'].forEach(l => {
+                const btn = document.getElementById('btnLang' + l.toUpperCase());
+                if (!btn) return;
+                if (l === lang) {
+                    btn.style.background = 'var(--accent)';
+                    btn.style.color = 'white';
+                    btn.style.borderColor = 'var(--accent)';
+                } else {
+                    btn.style.background = 'transparent';
+                    btn.style.color = 'var(--text-secondary)';
+                    btn.style.borderColor = 'var(--border)';
+                }
+            });
+            const tag = document.getElementById('templateLangAutoTag');
+            if (tag) tag.textContent = isAuto ? '(auto-detectado)' : '(manual)';
+        }
         
-        async function selectTemplate(templateId) {
+        function selectTemplate(templateId) {
             if (!currentTemplateRefund) return;
             
-            const name = currentTemplateRefund.full_name || 'Cliente';
+            const name = currentTemplateRefund.full_name || 'Customer';
             const protocol = currentTemplateRefund.protocol || '';
             const phone = currentTemplateRefund.phone || currentTemplateRefund.whatsapp || '';
             const email = currentTemplateRefund.email || '';
             const refundId = currentTemplateRefund.id;
-            
-            const templates = {
-                'first_contact': {
-                    subject: `Sobre sua solicitação #${protocol}`,
-                    message: `Olá ${name}! 👋\n\nVi que você solicitou um reembolso do nosso produto (Protocolo: ${protocol}).\n\nAntes de prosseguir, gostaria muito de entender melhor o que aconteceu. Muitas vezes conseguimos resolver problemas técnicos ou esclarecer dúvidas que podem mudar sua experiência.\n\nPoderia me contar o que te levou a essa decisão?\n\nEstou aqui para ajudar! 🤝`
-                },
-                'technical_support': {
-                    subject: `Suporte técnico - Solicitação #${protocol}`,
-                    message: `Olá ${name}!\n\nRecebi sua solicitação de reembolso e notei que pode ter havido algum problema técnico.\n\nGostaria de oferecer suporte personalizado para resolver qualquer dificuldade de acesso ou uso do produto.\n\nPosso te ajudar com:\n✅ Acesso à plataforma\n✅ Dúvidas sobre funcionalidades\n✅ Configurações necessárias\n\nPodemos agendar uma chamada rápida para resolver isso juntos?`
-                },
-                'offer_bonus': {
-                    subject: `Proposta especial - Solicitação #${protocol}`,
-                    message: `Olá ${name}!\n\nAntes de processar seu reembolso, gostaria de fazer uma proposta especial.\n\nComo forma de retribuir sua confiança, estou oferecendo:\n\n🎁 [Descrever bônus/desconto]\n⭐ Suporte prioritário\n📚 Material exclusivo adicional\n\nO que acha? Isso faria você reconsiderar?\n\nFico no aguardo! 😊`
-                },
-                'confirm_refund': {
-                    subject: `Confirmação de reembolso - #${protocol}`,
-                    message: `Olá ${name},\n\nInformo que sua solicitação de reembolso (Protocolo: ${protocol}) foi processada com sucesso.\n\nO valor será estornado em sua forma de pagamento em até 7 dias úteis.\n\nLamentamos que não tenha tido a experiência esperada. Se mudar de ideia no futuro, estaremos aqui.\n\nObrigado pela compreensão.`
-                }
-            };
-            
-            const template = templates[templateId];
-            if (!template) return;
-            
+            const lang = selectedTemplateLang || 'en';
+
+            const templates = getRefundTemplates(name, protocol);
+            const tpl = templates[templateId];
+            if (!tpl || !tpl[lang]) return;
+
+            const template = tpl[lang];
+            const langFlags = { en: '🇺🇸', es: '🇪🇸', pt: '🇧🇷' };
+            const channelLabel = selectedTemplateChannel === 'whatsapp' ? '💬 WhatsApp' : '📧 Email';
+            const dest = selectedTemplateChannel === 'whatsapp' ? (phone || '-') : (email || '-');
+
+            pendingPreview = { templateId, template, refundId, phone, email, channel: selectedTemplateChannel, lang };
+
+            document.getElementById('previewModalTitle').textContent = `📤 Preview - ${tpl.icon} ${tpl.label_pt}`;
+            document.getElementById('previewClientBar').innerHTML = `
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="font-weight:600;">${name}</span>
+                    <span style="font-size:11px;padding:3px 8px;border-radius:6px;background:var(--accent);color:white;">${langFlags[lang] || ''} ${lang.toUpperCase()}</span>
+                </div>
+                <div style="font-size:12px;color:var(--text-muted);">${channelLabel} → ${dest}</div>
+            `;
+            document.getElementById('previewMessageText').value = template.message;
+            document.getElementById('previewSendIcon').textContent = selectedTemplateChannel === 'whatsapp' ? '💬' : '📧';
+
             closeTemplateModal();
-            
-            if (selectedTemplateChannel === 'whatsapp') {
+            document.getElementById('messagePreviewModal').style.display = 'flex';
+        }
+
+        function closeMessagePreview() {
+            document.getElementById('messagePreviewModal').style.display = 'none';
+            pendingPreview = null;
+        }
+
+        async function confirmSendMessage() {
+            if (!pendingPreview) return;
+            const { templateId, template, refundId, phone, email, channel, lang } = pendingPreview;
+            const editedMessage = document.getElementById('previewMessageText').value.trim();
+            if (!editedMessage) { showToast('Erro', 'Mensagem vazia', 'error'); return; }
+
+            closeMessagePreview();
+
+            if (channel === 'whatsapp') {
                 if (!phone) { showToast('Erro', 'Telefone não disponível', 'error'); return; }
                 showToast('Enviando...', 'Enviando via WhatsApp Z-API', 'info');
                 try {
                     const resp = await fetch(`${API_URL}/api/admin/refunds/${refundId}/send-message`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-                        body: JSON.stringify({ channel: 'whatsapp', template_key: templateId, message: template.message, phone })
+                        body: JSON.stringify({ channel: 'whatsapp', template_key: templateId, message: editedMessage, phone })
                     });
                     const data = await resp.json();
                     if (data.success) {
-                        showToast('Enviado!', 'Mensagem enviada automaticamente via Z-API', 'success');
+                        showToast('Enviado!', 'Mensagem enviada via Z-API', 'success');
                         loadRefunds();
                     } else {
                         showToast('Erro', data.error || 'Falha no envio', 'error');
@@ -8903,17 +9038,16 @@ Estou aqui para esclarecer tudo! 😊`
                 } catch (err) {
                     showToast('Erro', 'Falha na conexão', 'error');
                 }
-            } else if (selectedTemplateChannel === 'email' && email) {
-                const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(email)}&su=${encodeURIComponent(template.subject)}&body=${encodeURIComponent(template.message)}`;
+            } else if (channel === 'email' && email) {
+                const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(email)}&su=${encodeURIComponent(template.subject)}&body=${encodeURIComponent(editedMessage)}`;
                 window.open(gmailUrl, '_blank');
-                // Log the email send
                 try {
                     await fetch(`${API_URL}/api/admin/refunds/${refundId}/send-message`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-                        body: JSON.stringify({ channel: 'email', template_key: templateId, message: template.message, email })
+                        body: JSON.stringify({ channel: 'email', template_key: templateId, message: editedMessage, email })
                     });
-                } catch (e) { /* ignore log error */ }
+                } catch (e) { /* ignore */ }
                 showToast('Email', 'Gmail aberto com a mensagem', 'success');
                 loadRefunds();
             } else {

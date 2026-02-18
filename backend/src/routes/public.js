@@ -659,7 +659,8 @@ router.post('/api/refund', async (req, res) => {
             reason,
             details,
             protocol,
-            visitorId  // NEW: visitorId from FingerprintJS
+            language,
+            visitorId
         } = req.body;
 
         // Validation
@@ -672,8 +673,8 @@ router.post('/api/refund', async (req, res) => {
 
         // ==================== CROSS-REFERENCE DATA ====================
         // Try to find this person in our leads and transactions to enrich the refund data
-        // Priority: 1. visitorId (most reliable), 2. email
-        let detectedLanguage = null;
+        // Language priority: 1. explicit from form, 2. cross-reference
+        let detectedLanguage = (language === 'en' || language === 'es' || language === 'pt') ? language : null;
         let detectedValue = null;
         let matchedTransactionId = null;
         
@@ -693,7 +694,7 @@ router.post('/api/refund', async (req, res) => {
                 
                 if (txByVisitorResult.rows.length > 0) {
                     const tx = txByVisitorResult.rows[0];
-                    detectedLanguage = tx.funnel_language || null;
+                    if (!detectedLanguage) detectedLanguage = tx.funnel_language || null;
                     detectedValue = tx.value || null;
                     matchedTransactionId = tx.transaction_id || null;
                     console.log(`🔗 Refund cross-ref: Found transaction by visitorId! -> lang: ${detectedLanguage}, value: R$${detectedValue}, txId: ${matchedTransactionId}`);
