@@ -3834,15 +3834,14 @@ Estou aqui para esclarecer tudo! 😊`
                 const checkoutAbandoned = salesData.checkoutAbandoned || 0;
                 const checkoutClicked = salesData.checkoutClicked || 0;
                 
-                const totalSales = salesData.approved || 0;
-                const totalRevenue = salesData.revenue || 0;
+                const upsellStats = salesData.upsellStats || {};
+                const totalSales = upsellStats.front || 0;
+                const totalRevenue = salesData.frontRevenue || 0;
+                const allTransactionsRevenue = salesData.revenue || 0;
+                const upsellRevenue = salesData.upsellRevenue || 0;
                 const avgTicket = totalSales > 0 ? totalRevenue / totalSales : 0;
-                // Taxa de conversão real: vendas aprovadas / total de leads
                 const convRate = totalLeads > 0 ? ((totalSales / totalLeads) * 100) : 0;
                 const abandonRate = checkoutClicked > 0 ? ((checkoutAbandoned / checkoutClicked) * 100) : 0;
-                
-                // Upsells (upsell1 + upsell2 + upsell3)
-                const upsellStats = salesData.upsellStats || {};
                 const totalUpsells = (upsellStats.upsell1 || 0) + (upsellStats.upsell2 || 0) + (upsellStats.upsell3 || 0);
                 
                 // Refunds count
@@ -3871,13 +3870,14 @@ Estou aqui para esclarecer tudo! 😊`
                 setEl('overviewCheckoutRate', checkoutConvRate.toFixed(1) + '%');
                 setEl('overviewCheckoutRateInfo', `${totalSales} de ${checkoutClicked} checkouts`);
                 
-                // 5. Vendas
+                // 5. Vendas (compradores únicos do front-end)
                 setEl('overviewSales', totalSales.toLocaleString('pt-BR'));
                 setEl('overviewSalesInfo', 'aprovadas');
                 
-                // 6. Faturamento
-                setEl('overviewRevenue', 'R$ ' + totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 }));
-                setEl('overviewRevenueInfo', 'total aprovado');
+                // 6. Faturamento (receita total: front + upsells)
+                const totalRevenueDisplay = totalRevenue + upsellRevenue;
+                setEl('overviewRevenue', 'R$ ' + totalRevenueDisplay.toLocaleString('pt-BR', { minimumFractionDigits: 2 }));
+                setEl('overviewRevenueInfo', `front: R$ ${totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} + upsells: R$ ${upsellRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
                 
                 // Update main KPI cards - Row 2: Rates and Losses
                 
@@ -3915,7 +3915,7 @@ Estou aqui para esclarecer tudo! 😊`
                 // Update quick actions
                 setEl('quickRecoveryText', `${checkoutAbandoned} abandonos de checkout`);
                 setEl('quickLeadsText', `${totalLeads} leads no período`);
-                setEl('quickSalesText', 'R$ ' + totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 }));
+                setEl('quickSalesText', 'R$ ' + totalRevenueDisplay.toLocaleString('pt-BR', { minimumFractionDigits: 2 }));
                 
                 // Update nav badge
                 const navRecoveryEl = document.getElementById('navRecoveryCount');
@@ -4633,13 +4633,15 @@ Estou aqui para esclarecer tudo! 😊`
                 if (statsRes.status === 401) { logout(); return; }
                 
                 const stats = await statsRes.json();
-                const sales = salesRes?.ok ? await salesRes.json() : { approved: 0, revenue: 0, today: 0 };
+                const sales = salesRes?.ok ? await salesRes.json() : { approved: 0, revenue: 0, frontRevenue: 0, upsellRevenue: 0, today: 0, upsellStats: {} };
                 
-                // Calculate metrics
+                // Calculate metrics using front-end sales only (not upsells)
                 const salesToday = sales.today || 0;
-                const revenueTotal = sales.revenue || 0;
-                const approvedTotal = sales.approved || 0;
-                const avgTicketCalc = approvedTotal > 0 ? revenueTotal / approvedTotal : 0;
+                const frontRevenue = sales.frontRevenue || 0;
+                const upsellRevenueTotal = sales.upsellRevenue || 0;
+                const revenueTotal = frontRevenue + upsellRevenueTotal;
+                const approvedTotal = sales.upsellStats?.front || 0;
+                const avgTicketCalc = approvedTotal > 0 ? frontRevenue / approvedTotal : 0;
                 const revenueTodayEstimate = salesToday * avgTicketCalc;
                 const converted = stats.byStatus?.find(s => s.status === 'converted')?.count || 0;
                 const rate = stats.total > 0 ? ((converted / stats.total) * 100).toFixed(1) : 0;
@@ -13155,12 +13157,14 @@ Posso ajudar em algo mais? 😊`
                         const stats = await statsRes.json();
                         const sales = await salesRes.json();
                         
-                        console.log(`🔄 Auto-refresh: ${new Date().toLocaleTimeString()} | Vendas: ${sales.approved} | Faturamento: R$${sales.revenue?.toFixed(2)}`);
+                        const currentFrontSales = sales.upsellStats?.front || 0;
+                        const currentTotalRevenue = (sales.frontRevenue || 0) + (sales.upsellRevenue || 0);
+                        console.log(`🔄 Auto-refresh: ${new Date().toLocaleTimeString()} | Vendas: ${currentFrontSales} | Faturamento: R$${currentTotalRevenue.toFixed(2)}`);
                         
-                        // Check for new sales
-                        if (lastSalesCount > 0 && sales.approved > lastSalesCount) {
-                            const newSales = sales.approved - lastSalesCount;
-                            showNewSaleNotification(newSales, sales.revenue);
+                        // Check for new sales (based on unique front-end buyers)
+                        if (lastSalesCount > 0 && currentFrontSales > lastSalesCount) {
+                            const newSales = currentFrontSales - lastSalesCount;
+                            showNewSaleNotification(newSales, currentTotalRevenue);
                         }
                         
                         // Check for new leads
@@ -13169,7 +13173,7 @@ Posso ajudar em algo mais? 😊`
                             showToast('🆕 Novo Lead!', `${newLeads} novo(s) lead(s) capturado(s)`, 'success');
                         }
                         
-                        lastSalesCount = sales.approved || 0;
+                        lastSalesCount = currentFrontSales;
                         lastLeadsCount = stats.total || 0;
                         
                         // Update real-time indicator
@@ -13200,7 +13204,7 @@ Posso ajudar em algo mais? 😊`
                 }
                 if (salesRes.ok) {
                     const sales = await salesRes.json();
-                    lastSalesCount = sales.approved || 0;
+                    lastSalesCount = sales.upsellStats?.front || 0;
                 }
             } catch (e) { console.log('Init counts error:', e); }
         }
@@ -13434,8 +13438,8 @@ Posso ajudar em algo mais? 😊`
                     const sales = await salesRes.json();
                     
                     document.getElementById('roiLeads').value = stats.total || 0;
-                    document.getElementById('roiSales').value = sales.approved || 0;
-                    document.getElementById('roiRevenue').value = (sales.revenue || 0).toFixed(2);
+                    document.getElementById('roiSales').value = sales.upsellStats?.front || 0;
+                    document.getElementById('roiRevenue').value = ((sales.frontRevenue || 0) + (sales.upsellRevenue || 0)).toFixed(2);
                     
                     calculateROI();
                     showToast('Dados carregados', 'Valores atualizados do painel', 'success');

@@ -1255,12 +1255,12 @@ app.get('/api/admin/stats/trends', authenticateToken, async (req, res) => {
                 [cappedDays * 2, cappedDays]
             ),
             pool.query(
-                `SELECT COUNT(*) as count, COALESCE(SUM(CASE WHEN CAST(value AS numeric) > 0 THEN CAST(value AS numeric) ELSE 0 END), 0) as revenue 
+                `SELECT COUNT(DISTINCT email) as count, COALESCE(SUM(CASE WHEN CAST(value AS numeric) > 0 THEN CAST(value AS numeric) ELSE 0 END), 0) as revenue 
                  FROM transactions WHERE status = 'approved' AND created_at >= NOW() - make_interval(days => $1)`,
                 [cappedDays]
             ),
             pool.query(
-                `SELECT COUNT(*) as count, COALESCE(SUM(CASE WHEN CAST(value AS numeric) > 0 THEN CAST(value AS numeric) ELSE 0 END), 0) as revenue 
+                `SELECT COUNT(DISTINCT email) as count, COALESCE(SUM(CASE WHEN CAST(value AS numeric) > 0 THEN CAST(value AS numeric) ELSE 0 END), 0) as revenue 
                  FROM transactions WHERE status = 'approved' 
                    AND created_at >= NOW() - make_interval(days => $1) 
                    AND created_at < NOW() - make_interval(days => $2)`,
@@ -1273,7 +1273,7 @@ app.get('/api/admin/stats/trends', authenticateToken, async (req, res) => {
                 [cappedDays]
             ),
             pool.query(
-                `SELECT DATE(created_at AT TIME ZONE 'America/Sao_Paulo') as day, COUNT(*) as count,
+                `SELECT DATE(created_at AT TIME ZONE 'America/Sao_Paulo') as day, COUNT(DISTINCT email) as count,
                         COALESCE(SUM(CASE WHEN CAST(value AS numeric) > 0 THEN CAST(value AS numeric) ELSE 0 END), 0) as revenue
                  FROM transactions WHERE status = 'approved' AND created_at >= NOW() - make_interval(days => $1) 
                  GROUP BY day ORDER BY day ASC`,
@@ -3010,7 +3010,7 @@ app.get('/api/admin/stats/comparison', authenticateToken, async (req, res) => {
         `);
         
         const currentWeekSales = await pool.query(`
-            SELECT COUNT(*), COALESCE(SUM(CAST(value AS DECIMAL)), 0) as revenue
+            SELECT COUNT(DISTINCT email) as count, COALESCE(SUM(CAST(value AS DECIMAL)), 0) as revenue
             FROM transactions 
             WHERE status = 'approved' AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '7 days')::date
         `);
@@ -3023,7 +3023,7 @@ app.get('/api/admin/stats/comparison', authenticateToken, async (req, res) => {
         `);
         
         const previousWeekSales = await pool.query(`
-            SELECT COUNT(*), COALESCE(SUM(CAST(value AS DECIMAL)), 0) as revenue
+            SELECT COUNT(DISTINCT email) as count, COALESCE(SUM(CAST(value AS DECIMAL)), 0) as revenue
             FROM transactions 
             WHERE status = 'approved' 
             AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '14 days')::date
@@ -3078,7 +3078,7 @@ app.get('/api/admin/stats/period-comparison', authenticateToken, async (req, res
             `);
             
             currentSales = await pool.query(`
-                SELECT COUNT(*), COALESCE(SUM(CAST(value AS DECIMAL)), 0) as revenue
+                SELECT COUNT(DISTINCT email) as count, COALESCE(SUM(CAST(value AS DECIMAL)), 0) as revenue
                 FROM transactions 
                 WHERE status = 'approved' 
                 AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date = (NOW() AT TIME ZONE 'America/Sao_Paulo')::date
@@ -3091,7 +3091,7 @@ app.get('/api/admin/stats/period-comparison', authenticateToken, async (req, res
             `);
             
             previousSales = await pool.query(`
-                SELECT COUNT(*), COALESCE(SUM(CAST(value AS DECIMAL)), 0) as revenue
+                SELECT COUNT(DISTINCT email) as count, COALESCE(SUM(CAST(value AS DECIMAL)), 0) as revenue
                 FROM transactions 
                 WHERE status = 'approved' 
                 AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date = ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '1 day')::date
@@ -3122,7 +3122,7 @@ app.get('/api/admin/stats/period-comparison', authenticateToken, async (req, res
             `);
             
             currentSales = await pool.query(`
-                SELECT COUNT(*), COALESCE(SUM(CAST(value AS DECIMAL)), 0) as revenue
+                SELECT COUNT(DISTINCT email) as count, COALESCE(SUM(CAST(value AS DECIMAL)), 0) as revenue
                 FROM transactions 
                 WHERE status = 'approved' 
                 AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '${currentInterval}')::date
@@ -3136,7 +3136,7 @@ app.get('/api/admin/stats/period-comparison', authenticateToken, async (req, res
             `);
             
             previousSales = await pool.query(`
-                SELECT COUNT(*), COALESCE(SUM(CAST(value AS DECIMAL)), 0) as revenue
+                SELECT COUNT(DISTINCT email) as count, COALESCE(SUM(CAST(value AS DECIMAL)), 0) as revenue
                 FROM transactions 
                 WHERE status = 'approved' 
                 AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '${previousInterval}')::date
@@ -3186,7 +3186,7 @@ app.get('/api/admin/stats/heatmap', authenticateToken, async (req, res) => {
                 SELECT 
                     EXTRACT(HOUR FROM created_at AT TIME ZONE 'America/Sao_Paulo') as hour,
                     EXTRACT(DOW FROM created_at AT TIME ZONE 'America/Sao_Paulo') as day_of_week,
-                    COUNT(*) as count
+                    COUNT(DISTINCT email) as count
                 FROM transactions
                 WHERE status = 'approved' 
                 AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '30 days')::date
@@ -3224,7 +3224,7 @@ app.get('/api/admin/stats/countries-sales', authenticateToken, async (req, res) 
             SELECT 
                 COALESCE(l.country, 'Unknown') as country_code,
                 COALESCE(l.country, 'Desconhecido') as country_name,
-                COUNT(t.id) as sales,
+                COUNT(DISTINCT t.email) as sales,
                 COALESCE(SUM(CAST(t.value AS DECIMAL)), 0) as revenue
             FROM transactions t
             LEFT JOIN leads l ON t.email = l.email
@@ -3301,11 +3301,11 @@ app.get('/api/admin/stats/weekly-performance', authenticateToken, async (req, re
             ORDER BY day_of_week
         `);
         
-        // Get sales by day of week (last 4 weeks)
+        // Get sales by day of week (last 4 weeks) - unique buyers only
         const salesResult = await pool.query(`
             SELECT 
                 EXTRACT(DOW FROM created_at AT TIME ZONE 'America/Sao_Paulo') as day_of_week,
-                COUNT(*) as count
+                COUNT(DISTINCT email) as count
             FROM transactions
             WHERE status = 'approved'
             AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '28 days')::date
@@ -3359,8 +3359,8 @@ app.get('/api/admin/funnel-stats', authenticateToken, async (req, res) => {
         `, params);
         const checkouts = parseInt(checkoutRes.rows[0]?.count || 0);
         
-        // Total approved sales
-        const salesRes = await pool.query(`SELECT COUNT(*) as count FROM transactions WHERE status = 'approved'${dateFilterTx}`, params);
+        // Total approved sales (unique front-end buyers, not counting upsells as separate sales)
+        const salesRes = await pool.query(`SELECT COUNT(DISTINCT email) as count FROM transactions WHERE status = 'approved'${dateFilterTx}`, params);
         const totalSales = parseInt(salesRes.rows[0]?.count || 0);
         
         // Visitors (page views - people who entered the funnel)
@@ -11678,29 +11678,48 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
             up3Keywords = `(${enUp3Keywords}) OR (${esUp3Keywords})`;
         }
         
-        const frontSales = await pool.query(`
-            SELECT COUNT(DISTINCT email) as count 
-            FROM transactions 
-            WHERE status = 'approved' AND (${frontKeywords}) ${langCondition}${sourceCondition}${dateCondition}
-        `, langParams);
-        
-        const upsell1Sales = await pool.query(`
-            SELECT COUNT(DISTINCT email) as count 
-            FROM transactions 
-            WHERE status = 'approved' AND (${up1Keywords}) ${langCondition}${sourceCondition}${dateCondition}
-        `, langParams);
-        
-        const upsell2Sales = await pool.query(`
-            SELECT COUNT(DISTINCT email) as count 
-            FROM transactions 
-            WHERE status = 'approved' AND (${up2Keywords}) ${langCondition}${sourceCondition}${dateCondition}
-        `, langParams);
-        
-        const upsell3Sales = await pool.query(`
-            SELECT COUNT(DISTINCT email) as count 
-            FROM transactions 
-            WHERE status = 'approved' AND (${up3Keywords}) ${langCondition}${sourceCondition}${dateCondition}
-        `, langParams);
+        const [frontSales, upsell1Sales, upsell2Sales, upsell3Sales, frontRevenueResult, up1RevenueResult, up2RevenueResult, up3RevenueResult] = await Promise.all([
+            pool.query(`
+                SELECT COUNT(DISTINCT email) as count 
+                FROM transactions 
+                WHERE status = 'approved' AND (${frontKeywords}) ${langCondition}${sourceCondition}${dateCondition}
+            `, langParams),
+            pool.query(`
+                SELECT COUNT(DISTINCT email) as count 
+                FROM transactions 
+                WHERE status = 'approved' AND (${up1Keywords}) ${langCondition}${sourceCondition}${dateCondition}
+            `, langParams),
+            pool.query(`
+                SELECT COUNT(DISTINCT email) as count 
+                FROM transactions 
+                WHERE status = 'approved' AND (${up2Keywords}) ${langCondition}${sourceCondition}${dateCondition}
+            `, langParams),
+            pool.query(`
+                SELECT COUNT(DISTINCT email) as count 
+                FROM transactions 
+                WHERE status = 'approved' AND (${up3Keywords}) ${langCondition}${sourceCondition}${dateCondition}
+            `, langParams),
+            pool.query(`
+                SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total 
+                FROM transactions 
+                WHERE status = 'approved' AND (${frontKeywords}) ${langCondition}${sourceCondition}${dateCondition}
+            `, langParams),
+            pool.query(`
+                SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total 
+                FROM transactions 
+                WHERE status = 'approved' AND (${up1Keywords}) ${langCondition}${sourceCondition}${dateCondition}
+            `, langParams),
+            pool.query(`
+                SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total 
+                FROM transactions 
+                WHERE status = 'approved' AND (${up2Keywords}) ${langCondition}${sourceCondition}${dateCondition}
+            `, langParams),
+            pool.query(`
+                SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total 
+                FROM transactions 
+                WHERE status = 'approved' AND (${up3Keywords}) ${langCondition}${sourceCondition}${dateCondition}
+            `, langParams)
+        ]);
         
         const frontCount = parseInt(frontSales.rows[0].count) || 0;
         const up1Count = parseInt(upsell1Sales.rows[0].count) || 0;
@@ -11708,7 +11727,11 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
         const up3Count = parseInt(upsell3Sales.rows[0].count) || 0;
         
         const totalUpsellCount = up1Count + up2Count + up3Count;
-        const upsellRevenue = parseFloat(upsellRevenueResult.rows[0].total) || 0;
+        const frontRevenue = parseFloat(frontRevenueResult.rows[0].total) || 0;
+        const up1Revenue = parseFloat(up1RevenueResult.rows[0].total) || 0;
+        const up2Revenue = parseFloat(up2RevenueResult.rows[0].total) || 0;
+        const up3Revenue = parseFloat(up3RevenueResult.rows[0].total) || 0;
+        const upsellRevenue = up1Revenue + up2Revenue + up3Revenue;
         const avgUpsellTicket = totalUpsellCount > 0 ? upsellRevenue / totalUpsellCount : 0;
         
         res.json({
@@ -11718,13 +11741,13 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
             cancelled: parseInt(cancelledResult.rows[0].count),
             lostRevenue: parseFloat(lostRevenueResult.rows[0].total) || 0,
             revenue: parseFloat(revenueResult.rows[0].total) || 0,
+            frontRevenue: frontRevenue,
             upsellRevenue: upsellRevenue,
             avgUpsellTicket: avgUpsellTicket,
             checkoutAbandoned: checkoutAbandoned,
             checkoutClicked: checkoutClicked,
             today: parseInt(todayResult.rows[0].count),
             thisWeek: parseInt(weekResult.rows[0].count),
-            // Real payment attempts for approval rate
             totalAttempts: parseInt(totalAttemptsResult.rows[0].count),
             approvedAttempts: parseInt(approvedAttemptsResult.rows[0].count),
             conversionRate: parseFloat(conversionRate),
@@ -11733,9 +11756,13 @@ app.get('/api/admin/sales', authenticateToken, async (req, res) => {
             source: source || 'all',
             upsellStats: {
                 front: frontCount,
+                frontRevenue: frontRevenue,
                 upsell1: up1Count,
+                upsell1Revenue: up1Revenue,
                 upsell2: up2Count,
+                upsell2Revenue: up2Revenue,
                 upsell3: up3Count,
+                upsell3Revenue: up3Revenue,
                 total: totalUpsellCount,
                 takeRate1: frontCount > 0 ? ((up1Count / frontCount) * 100).toFixed(1) : 0,
                 takeRate2: frontCount > 0 ? ((up2Count / frontCount) * 100).toFixed(1) : 0,
