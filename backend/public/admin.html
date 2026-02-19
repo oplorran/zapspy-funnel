@@ -3546,15 +3546,10 @@ Posso ajudar com alguma dúvida?</textarea>
         
         const statusLabels = { 'new': 'Novo', 'contacted': 'Contatado', 'converted': 'Convertido', 'lost': 'Perdido' };
         
-        // Convert country code to flag emoji
         function getCountryFlag(countryCode) {
-            if (!countryCode) return '🌍';
-            const code = countryCode.toUpperCase();
-            // Convert country code to regional indicator symbols
-            const flag = code.split('').map(char => 
-                String.fromCodePoint(0x1F1E6 + char.charCodeAt(0) - 65)
-            ).join('');
-            return flag;
+            if (!countryCode || countryCode === 'XX') return '<img src="https://flagcdn.com/w40/un.png" alt="🌍" style="width:24px;height:16px;object-fit:cover;border-radius:3px;vertical-align:middle;" onerror="this.outerHTML=\'🌍\'">';
+            const code = countryCode.toLowerCase();
+            return `<img src="https://flagcdn.com/w40/${code}.png" alt="${countryCode}" style="width:24px;height:16px;object-fit:cover;border-radius:3px;vertical-align:middle;" onerror="this.outerHTML='🌍'">`;
         }
         
         const pageTitles = {
@@ -7527,7 +7522,7 @@ Estou aqui para esclarecer tudo! 😊`
             
             // Update subtitle
             const countryFlag = lead.country_code ? getCountryFlag(lead.country_code) : '🌍';
-            document.getElementById('customerJourneySubtitle').textContent = `${lead.name || lead.email} • ${countryFlag} ${lead.country || 'País desconhecido'}`;
+            document.getElementById('customerJourneySubtitle').innerHTML = `${lead.name || lead.email} &bull; ${countryFlag} ${lead.country || 'País desconhecido'}`;
             
             // Update summary cards
             document.getElementById('summaryVisits').textContent = summary.visitCount || 1;
@@ -10115,11 +10110,11 @@ Estou aqui para esclarecer tudo! 😊`
                 const dateRange = getGlobalDateRange();
                 
                 let leadsUrl = `${API_URL}/api/admin/leads?limit=10000`;
-                let transactionsUrl = `${API_URL}/api/admin/transactions`;
+                let transactionsUrl = `${API_URL}/api/admin/transactions?limit=50000`;
                 
                 if (dateRange) {
                     leadsUrl += `&startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`;
-                    transactionsUrl += `?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`;
+                    transactionsUrl += `&startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`;
                 }
                 
                 const [leadsRes, transactionsRes] = await Promise.all([
@@ -10381,7 +10376,7 @@ Estou aqui para esclarecer tudo! 😊`
                 const medalIcon = globalIndex === 0 ? '🥇' : globalIndex === 1 ? '🥈' : globalIndex === 2 ? '🥉' : '';
                 const rowBg = country.isUnknown ? 'rgba(245, 158, 11, 0.03)' : 'transparent';
                 const rowBorder = country.isUnknown ? 'rgba(245, 158, 11, 0.1)' : 'rgba(255,255,255,0.04)';
-                const flagDisplay = country.isUnknown ? '🌐' : getCountryFlag(country.country_code);
+                const flagDisplay = country.isUnknown ? getCountryFlag('XX') : getCountryFlag(country.country_code);
                 const countryName = country.isUnknown ? 'Desconhecido' : country.country;
                 
                 html += `

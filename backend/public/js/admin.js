@@ -8,15 +8,10 @@
         
         const statusLabels = { 'new': 'Novo', 'contacted': 'Contatado', 'converted': 'Convertido', 'lost': 'Perdido' };
         
-        // Convert country code to flag emoji
         function getCountryFlag(countryCode) {
-            if (!countryCode) return '🌍';
-            const code = countryCode.toUpperCase();
-            // Convert country code to regional indicator symbols
-            const flag = code.split('').map(char => 
-                String.fromCodePoint(0x1F1E6 + char.charCodeAt(0) - 65)
-            ).join('');
-            return flag;
+            if (!countryCode || countryCode === 'XX') return '<img src="https://flagcdn.com/w40/un.png" alt="🌍" style="width:24px;height:16px;object-fit:cover;border-radius:3px;vertical-align:middle;" onerror="this.outerHTML=\'🌍\'">';
+            const code = countryCode.toLowerCase();
+            return `<img src="https://flagcdn.com/w40/${code}.png" alt="${countryCode}" style="width:24px;height:16px;object-fit:cover;border-radius:3px;vertical-align:middle;" onerror="this.outerHTML='🌍'">`;
         }
         
         const pageTitles = {
