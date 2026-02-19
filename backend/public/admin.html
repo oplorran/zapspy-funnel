@@ -710,76 +710,85 @@
                 <!-- Tab: Financial -->
                 <div class="tab-content" id="tab-financial">
                     <div class="funnel-page-header">
-                        <h2>💰 Financeiro</h2>
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <button onclick="toggleFinancialCurrency()" id="finCurrencyToggleBtn" style="padding: 6px 14px; border-radius: 8px; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: var(--text-secondary); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;">
-                                💱 <span id="finCurrencyToggleLabel">USD → BRL</span>
-                            </button>
-                            <span id="finExchangeRateDisplay" style="font-size: 11px; color: var(--text-muted); padding: 4px 10px; background: rgba(255,255,255,0.03); border-radius: 6px;">$1 = R$ 5,80</span>
-                        </div>
+                        <h2>Financeiro</h2>
+                        <span style="font-size: 12px; color: var(--text-muted);">Controle financeiro da operacao em R$ (BRL)</span>
                     </div>
                     
-                    <!-- KPI Cards Row 1: Revenue -->
-                    <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 20px;">
+                    <!-- KPI Cards: HOJE -->
+                    <div style="margin-bottom: 6px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; padding-left: 4px;">Hoje</div>
+                    <div class="stats-grid" style="grid-template-columns: repeat(5, 1fr); margin-bottom: 16px;">
                         <div class="stat-card">
-                            <div class="stat-header">
-                                <span class="stat-label">Faturamento Hoje</span>
-                                <div class="stat-icon green">💵</div>
-                            </div>
-                            <div class="stat-value green" id="finRevenueToday" style="line-height: 1.2;">$0</div>
+                            <div class="stat-header"><span class="stat-label">Faturamento</span><div class="stat-icon green">💵</div></div>
+                            <div class="stat-value green" id="finRevenueToday" style="line-height: 1.2; font-size: 20px;">R$ 0,00</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-header">
-                                <span class="stat-label">Vendas Hoje</span>
-                                <div class="stat-icon blue">🛒</div>
-                            </div>
+                            <div class="stat-header"><span class="stat-label">Vendas</span><div class="stat-icon blue">🛒</div></div>
                             <div class="stat-value blue" id="finSalesToday">0</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-header">
-                                <span class="stat-label">Custos Hoje</span>
-                                <div class="stat-icon orange">📉</div>
-                            </div>
-                            <div class="stat-value orange" id="finCostsToday" style="line-height: 1.2;">$0</div>
+                            <div class="stat-header"><span class="stat-label">Custos</span><div class="stat-icon orange">📉</div></div>
+                            <div class="stat-value orange" id="finCostsToday" style="line-height: 1.2; font-size: 20px;">R$ 0,00</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-header">
-                                <span class="stat-label">Lucro Hoje</span>
-                                <div class="stat-icon purple">📊</div>
-                            </div>
-                            <div class="stat-value" id="finProfitToday" style="line-height: 1.2;">$0</div>
+                            <div class="stat-header"><span class="stat-label">Reembolsos</span><div class="stat-icon" style="background: rgba(239,68,68,0.15); color: #ef4444;">🔄</div></div>
+                            <div class="stat-value" id="finRefundsToday" style="line-height: 1.2; font-size: 20px; color: #ef4444;">R$ 0,00</div>
+                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;" id="finRefundsCountToday">0 devoluções</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header"><span class="stat-label">Lucro</span><div class="stat-icon purple">📊</div></div>
+                            <div class="stat-value" id="finProfitToday" style="line-height: 1.2; font-size: 20px;">R$ 0,00</div>
                         </div>
                     </div>
                     
-                    <!-- KPI Cards Row 2: Period Summary -->
-                    <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 24px;">
+                    <!-- KPI Cards: MES -->
+                    <div style="margin-bottom: 6px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; padding-left: 4px;">Este Mês</div>
+                    <div class="stats-grid" style="grid-template-columns: repeat(5, 1fr); margin-bottom: 16px;">
                         <div class="stat-card">
-                            <div class="stat-header">
-                                <span class="stat-label">Faturamento Mês</span>
-                                <div class="stat-icon green">📅</div>
-                            </div>
-                            <div class="stat-value green" id="finRevenueMonth" style="line-height: 1.2; font-size: 22px;">$0</div>
+                            <div class="stat-header"><span class="stat-label">Faturamento</span><div class="stat-icon green">📅</div></div>
+                            <div class="stat-value green" id="finRevenueMonth" style="line-height: 1.2; font-size: 20px;">R$ 0,00</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-header">
-                                <span class="stat-label">Vendas Mês</span>
-                                <div class="stat-icon blue">📦</div>
-                            </div>
-                            <div class="stat-value blue" id="finSalesMonth" style="font-size: 22px;">0</div>
+                            <div class="stat-header"><span class="stat-label">Vendas</span><div class="stat-icon blue">📦</div></div>
+                            <div class="stat-value blue" id="finSalesMonth" style="font-size: 20px;">0</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-header">
-                                <span class="stat-label">Custos Mês</span>
-                                <div class="stat-icon orange">💸</div>
-                            </div>
-                            <div class="stat-value orange" id="finCostsMonth" style="line-height: 1.2; font-size: 22px;">$0</div>
+                            <div class="stat-header"><span class="stat-label">Custos</span><div class="stat-icon orange">💸</div></div>
+                            <div class="stat-value orange" id="finCostsMonth" style="line-height: 1.2; font-size: 20px;">R$ 0,00</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-header">
-                                <span class="stat-label">Lucro Mês</span>
-                                <div class="stat-icon purple">🏆</div>
-                            </div>
-                            <div class="stat-value" id="finProfitMonth" style="line-height: 1.2; font-size: 22px;">$0</div>
+                            <div class="stat-header"><span class="stat-label">Reembolsos</span><div class="stat-icon" style="background: rgba(239,68,68,0.15); color: #ef4444;">🔄</div></div>
+                            <div class="stat-value" id="finRefundsMonth" style="line-height: 1.2; font-size: 20px; color: #ef4444;">R$ 0,00</div>
+                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;" id="finRefundsCountMonth">0 devoluções</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header"><span class="stat-label">Lucro</span><div class="stat-icon purple">🏆</div></div>
+                            <div class="stat-value" id="finProfitMonth" style="line-height: 1.2; font-size: 20px;">R$ 0,00</div>
+                        </div>
+                    </div>
+                    
+                    <!-- KPI Cards: ANO -->
+                    <div style="margin-bottom: 6px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; padding-left: 4px;">Acumulado do Ano</div>
+                    <div class="stats-grid" style="grid-template-columns: repeat(5, 1fr); margin-bottom: 20px;">
+                        <div class="stat-card">
+                            <div class="stat-header"><span class="stat-label">Faturamento</span><div class="stat-icon green">📆</div></div>
+                            <div class="stat-value green" id="finRevenueYear" style="line-height: 1.2; font-size: 20px;">R$ 0,00</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header"><span class="stat-label">Vendas</span><div class="stat-icon blue">🛍️</div></div>
+                            <div class="stat-value blue" id="finSalesYear" style="font-size: 20px;">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header"><span class="stat-label">Custos</span><div class="stat-icon orange">💰</div></div>
+                            <div class="stat-value orange" id="finCostsYear" style="line-height: 1.2; font-size: 20px;">R$ 0,00</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header"><span class="stat-label">Reembolsos</span><div class="stat-icon" style="background: rgba(239,68,68,0.15); color: #ef4444;">🔄</div></div>
+                            <div class="stat-value" id="finRefundsYear" style="line-height: 1.2; font-size: 20px; color: #ef4444;">R$ 0,00</div>
+                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;" id="finRefundsCountYear">0 devoluções</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header"><span class="stat-label">Lucro</span><div class="stat-icon purple">🎯</div></div>
+                            <div class="stat-value" id="finProfitYear" style="line-height: 1.2; font-size: 20px;">R$ 0,00</div>
                         </div>
                     </div>
                     
@@ -802,7 +811,7 @@
                         <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;">
                             <div>
                                 <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">CPA Médio</div>
-                                <div style="font-size: 28px; font-weight: 700; line-height: 1.2;" id="finCPAMonth">$0</div>
+                                <div style="font-size: 28px; font-weight: 700; line-height: 1.2;" id="finCPAMonth">R$ 0,00</div>
                             </div>
                             <div style="font-size: 32px;">💰</div>
                         </div>
@@ -812,23 +821,23 @@
                     <div class="data-panel" style="margin-bottom: 24px;">
                         <div class="panel-header">
                             <div class="panel-title">
-                                <h2>➕ Registrar Custo</h2>
-                                <span class="panel-count">Adicione custos diários da operação</span>
+                                <h2>Registrar Custo</h2>
+                                <span class="panel-count">Adicione custos diarios da operacao (R$)</span>
                             </div>
                         </div>
-                        <div style="padding: 20px; display: grid; grid-template-columns: 140px 1fr 160px 160px 130px auto; gap: 12px; align-items: end;">
+                        <div style="padding: 20px; display: grid; grid-template-columns: 130px 1fr 160px 140px auto; gap: 12px; align-items: end;">
                             <div>
                                 <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Data</label>
                                 <input type="date" id="finCostDate" class="funnel-selector" style="width: 100%;">
                             </div>
                             <div>
                                 <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Descrição</label>
-                                <input type="text" id="finCostDescription" placeholder="Ex: Investimento Ads Facebook" class="funnel-selector" style="width: 100%;">
+                                <input type="text" id="finCostDescription" placeholder="Ex: Meta Ads - Campanha X" class="funnel-selector" style="width: 100%;">
                             </div>
                             <div>
                                 <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Categoria</label>
                                 <select id="finCostCategory" class="funnel-selector" style="width: 100%;">
-                                    <option value="advertising">📣 Publicidade</option>
+                                    <option value="advertising">📣 Publicidade/Ads</option>
                                     <option value="design">🎨 Design</option>
                                     <option value="tools">🔧 Ferramentas</option>
                                     <option value="salary">👤 Salário/Freelancer</option>
@@ -839,28 +848,20 @@
                                 </select>
                             </div>
                             <div>
-                                <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Valor</label>
-                                <input type="number" id="finCostAmount" placeholder="0.00" step="0.01" min="0" class="funnel-selector" style="width: 100%;">
-                            </div>
-                            <div>
-                                <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Moeda</label>
-                                <select id="finCostCurrency" class="funnel-selector" style="width: 100%;" onchange="updateCostCurrencyHint()">
-                                    <option value="BRL">🇧🇷 BRL</option>
-                                    <option value="USD">🇺🇸 USD</option>
-                                </select>
+                                <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Valor (R$)</label>
+                                <input type="number" id="finCostAmount" placeholder="0,00" step="0.01" min="0" class="funnel-selector" style="width: 100%;">
                             </div>
                             <div>
                                 <button onclick="addFinancialCost()" style="padding: 10px 20px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='none'">+ Adicionar</button>
                             </div>
                         </div>
-                        <div id="finCostCurrencyHint" style="padding: 0 20px 12px; font-size: 11px; color: var(--text-muted);"></div>
                     </div>
                     
                     <!-- Daily P&L Table -->
                     <div class="data-panel" style="margin-bottom: 24px;">
                         <div class="panel-header">
                             <div class="panel-title">
-                                <h2>📅 Resultado Diário</h2>
+                                <h2>Resultado Diário</h2>
                                 <span class="panel-count" id="finDailyPeriod">Últimos 30 dias</span>
                             </div>
                             <div class="panel-actions" style="display: flex; gap: 12px; align-items: center;">
@@ -877,16 +878,44 @@
                             <thead>
                                 <tr>
                                     <th>Data</th>
-                                    <th>Vendas</th>
-                                    <th>Faturamento</th>
-                                    <th>Custos</th>
-                                    <th>Lucro</th>
-                                    <th>Margem</th>
-                                    <th>ROI</th>
+                                    <th style="text-align: center;">Vendas</th>
+                                    <th style="text-align: right;">Faturamento</th>
+                                    <th style="text-align: right;">Custos</th>
+                                    <th style="text-align: right;">Reembolsos</th>
+                                    <th style="text-align: right;">Lucro</th>
+                                    <th style="text-align: center;">Margem</th>
+                                    <th style="text-align: center;">ROI</th>
                                 </tr>
                             </thead>
                             <tbody id="finDailyTableBody">
-                                <tr><td colspan="7"><div class="loading"><div class="spinner"></div>Carregando...</div></td></tr>
+                                <tr><td colspan="8"><div class="loading"><div class="spinner"></div>Carregando...</div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Monthly P&L Table -->
+                    <div class="data-panel" style="margin-bottom: 24px;">
+                        <div class="panel-header">
+                            <div class="panel-title">
+                                <h2>Resultado Mensal</h2>
+                                <span class="panel-count">Últimos 12 meses</span>
+                            </div>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Mês</th>
+                                    <th style="text-align: center;">Vendas</th>
+                                    <th style="text-align: right;">Faturamento</th>
+                                    <th style="text-align: right;">Custos</th>
+                                    <th style="text-align: right;">Reembolsos</th>
+                                    <th style="text-align: right;">Lucro</th>
+                                    <th style="text-align: center;">Margem</th>
+                                    <th style="text-align: center;">ROI</th>
+                                </tr>
+                            </thead>
+                            <tbody id="finMonthlyTableBody">
+                                <tr><td colspan="8"><div class="loading"><div class="spinner"></div>Carregando...</div></td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -895,13 +924,13 @@
                     <div class="data-panel">
                         <div class="panel-header">
                             <div class="panel-title">
-                                <h2>📋 Custos Registrados</h2>
+                                <h2>Custos Registrados</h2>
                                 <span class="panel-count" id="finCostCount">0 custos</span>
                             </div>
                             <div class="panel-actions" style="display: flex; gap: 12px; align-items: center;">
                                 <select class="funnel-selector" id="finCostCategoryFilter" onchange="loadFinancialCosts()" style="min-width: 160px;">
-                                    <option value="">📦 Todas Categorias</option>
-                                    <option value="advertising">📣 Publicidade</option>
+                                    <option value="">Todas Categorias</option>
+                                    <option value="advertising">📣 Publicidade/Ads</option>
                                     <option value="design">🎨 Design</option>
                                     <option value="tools">🔧 Ferramentas</option>
                                     <option value="salary">👤 Salário/Freelancer</option>
@@ -918,14 +947,12 @@
                                     <th>Data</th>
                                     <th>Categoria</th>
                                     <th>Descrição</th>
-                                    <th>Valor</th>
-                                    <th>Moeda</th>
-                                    <th>Valor USD</th>
-                                    <th>Ações</th>
+                                    <th style="text-align: right;">Valor (R$)</th>
+                                    <th style="text-align: center;">Ações</th>
                                 </tr>
                             </thead>
                             <tbody id="finCostsTableBody">
-                                <tr><td colspan="7"><div class="loading"><div class="spinner"></div>Carregando custos...</div></td></tr>
+                                <tr><td colspan="5"><div class="loading"><div class="spinner"></div>Carregando custos...</div></td></tr>
                             </tbody>
                         </table>
                         <div id="finCostsPaginationContainer"></div>
@@ -11892,8 +11919,7 @@ Posso ajudar em algo mais? 😊`
         
         // ==================== CLIENTS TAB ====================
         let clientsCurrentPage = 1;
-        let clientsPrimaryCurrency = 'BRL'; // 'USD' or 'BRL' - default BRL (R$ grande, $ pequeno)
-        let financialPrimaryCurrency = 'USD'; // 'USD' or 'BRL' - for financial tab
+        let clientsPrimaryCurrency = 'BRL';
         
         // Exchange rate USD -> BRL (updated periodically)
         let exchangeRate = 5.80; // fallback
@@ -12197,61 +12223,19 @@ Posso ajudar em algo mais? 😊`
         
         // ==================== FINANCIAL TAB ====================
         
-        function toggleFinancialCurrency() {
-            financialPrimaryCurrency = financialPrimaryCurrency === 'USD' ? 'BRL' : 'USD';
-            const label = document.getElementById('finCurrencyToggleLabel');
-            if (label) label.textContent = financialPrimaryCurrency === 'USD' ? 'USD → BRL' : 'BRL → USD';
-            const btn = document.getElementById('finCurrencyToggleBtn');
-            if (btn) btn.style.borderColor = financialPrimaryCurrency === 'BRL' ? 'rgba(16, 185, 129, 0.4)' : 'var(--border)';
-            loadFinancialData();
+        function finBRL(value) {
+            return 'R$ ' + (parseFloat(value) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
         
-        function finFormatDual(valueUSD) {
-            const usd = parseFloat(valueUSD) || 0;
-            const brl = usd * exchangeRate;
-            const usdStr = '$' + usd.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            const brlStr = 'R$ ' + brl.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            
-            if (financialPrimaryCurrency === 'USD') {
-                return `<span style="font-size: inherit; font-weight: inherit; display: block;">${usdStr}</span>
-                        <span style="font-size: 0.55em; color: var(--text-muted); font-weight: 500; display: block; margin-top: 2px;">≈ ${brlStr}</span>`;
-            } else {
-                return `<span style="font-size: inherit; font-weight: inherit; display: block;">${brlStr}</span>
-                        <span style="font-size: 0.55em; color: var(--text-muted); font-weight: 500; display: block; margin-top: 2px;">≈ ${usdStr}</span>`;
-            }
-        }
-        
-        function finFormatInline(valueUSD) {
-            const usd = parseFloat(valueUSD) || 0;
-            const brl = usd * exchangeRate;
-            if (financialPrimaryCurrency === 'USD') {
-                return `$${usd.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} <span style="font-size: 10px; color: var(--text-muted);">≈ R$ ${brl.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>`;
-            } else {
-                return `R$ ${brl.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} <span style="font-size: 10px; color: var(--text-muted);">≈ $${usd.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>`;
-            }
-        }
-        
-        function updateCostCurrencyHint() {
-            const currency = document.getElementById('finCostCurrency')?.value || 'BRL';
-            const hint = document.getElementById('finCostCurrencyHint');
-            if (hint) {
-                if (currency === 'BRL') {
-                    hint.innerHTML = `💡 O valor será convertido automaticamente para USD usando a cotação atual ($1 = R$ ${exchangeRate.toLocaleString('pt-BR', {minimumFractionDigits: 2})})`;
-                } else {
-                    hint.textContent = '💡 O valor já está em USD, será registrado diretamente.';
-                }
-            }
-        }
-        
-        // Set default date to today on load
         function initFinancialForm() {
             const dateInput = document.getElementById('finCostDate');
             if (dateInput && !dateInput.value) {
-                const today = new Date();
-                dateInput.value = today.toISOString().split('T')[0];
+                dateInput.value = new Date().toISOString().split('T')[0];
             }
-            updateCostCurrencyHint();
         }
+        
+        function finSetText(id, txt) { const el = document.getElementById(id); if (el) el.textContent = txt; }
+        function finSetColor(id, value) { const el = document.getElementById(id); if (el) el.style.color = value >= 0 ? '#10b981' : '#ef4444'; }
         
         async function loadFinancialData() {
             try {
@@ -12275,91 +12259,118 @@ Posso ajudar em algo mais? 😊`
                 }
                 const data = await response.json();
                 
-                // Update exchange rate display
-                const rateEl = document.getElementById('finExchangeRateDisplay');
-                if (rateEl) rateEl.textContent = `$1 = R$ ${exchangeRate.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                // Today
+                finSetText('finRevenueToday', finBRL(data.today.revenue));
+                finSetText('finSalesToday', data.today.sales.toLocaleString('pt-BR'));
+                finSetText('finCostsToday', finBRL(data.today.costs));
+                finSetText('finRefundsToday', finBRL(data.today.refunds));
+                finSetText('finRefundsCountToday', `${data.today.refundCount || 0} devoluções`);
+                finSetText('finProfitToday', finBRL(data.today.profit));
+                finSetColor('finProfitToday', data.today.profit);
                 
-                // Update KPI cards - Today
-                const setH = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
-                const setT = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+                // Month
+                finSetText('finRevenueMonth', finBRL(data.month.revenue));
+                finSetText('finSalesMonth', data.month.sales.toLocaleString('pt-BR'));
+                finSetText('finCostsMonth', finBRL(data.month.costs));
+                finSetText('finRefundsMonth', finBRL(data.month.refunds));
+                finSetText('finRefundsCountMonth', `${data.month.refundCount || 0} devoluções`);
+                finSetText('finProfitMonth', finBRL(data.month.profit));
+                finSetColor('finProfitMonth', data.month.profit);
                 
-                setH('finRevenueToday', finFormatDual(data.today.revenue));
-                setT('finSalesToday', data.today.sales.toLocaleString('pt-BR'));
-                setH('finCostsToday', finFormatDual(data.today.costs));
-                
-                const profitTodayEl = document.getElementById('finProfitToday');
-                if (profitTodayEl) {
-                    profitTodayEl.innerHTML = finFormatDual(data.today.profit);
-                    profitTodayEl.style.color = data.today.profit >= 0 ? '#10b981' : '#ef4444';
-                }
-                
-                // Update KPI cards - Month
-                setH('finRevenueMonth', finFormatDual(data.month.revenue));
-                setT('finSalesMonth', data.month.sales.toLocaleString('pt-BR'));
-                setH('finCostsMonth', finFormatDual(data.month.costs));
-                
-                const profitMonthEl = document.getElementById('finProfitMonth');
-                if (profitMonthEl) {
-                    profitMonthEl.innerHTML = finFormatDual(data.month.profit);
-                    profitMonthEl.style.color = data.month.profit >= 0 ? '#10b981' : '#ef4444';
+                // Year
+                if (data.year) {
+                    finSetText('finRevenueYear', finBRL(data.year.revenue));
+                    finSetText('finSalesYear', data.year.sales.toLocaleString('pt-BR'));
+                    finSetText('finCostsYear', finBRL(data.year.costs));
+                    finSetText('finRefundsYear', finBRL(data.year.refunds));
+                    finSetText('finRefundsCountYear', `${data.year.refundCount || 0} devoluções`);
+                    finSetText('finProfitYear', finBRL(data.year.profit));
+                    finSetColor('finProfitYear', data.year.profit);
                 }
                 
                 // ROI, Margin, CPA
                 const roiEl = document.getElementById('finROIMonth');
                 if (roiEl) {
-                    roiEl.textContent = data.month.roi.toFixed(1) + '%';
+                    roiEl.textContent = (data.month.roi || 0).toFixed(1) + '%';
                     roiEl.style.color = data.month.roi >= 0 ? '#10b981' : '#ef4444';
                 }
-                
                 const marginEl = document.getElementById('finMarginMonth');
                 if (marginEl) {
-                    marginEl.textContent = data.month.margin.toFixed(1) + '%';
+                    marginEl.textContent = (data.month.margin || 0).toFixed(1) + '%';
                     marginEl.style.color = data.month.margin >= 0 ? '#10b981' : '#ef4444';
                 }
+                finSetText('finCPAMonth', finBRL(data.month.cpa));
                 
-                const cpaEl = document.getElementById('finCPAMonth');
-                if (cpaEl) {
-                    cpaEl.innerHTML = finFormatDual(data.month.cpa);
-                }
-                
-                // Render daily P&L table
+                // Daily P&L table
                 const tbody = document.getElementById('finDailyTableBody');
                 if (tbody && data.daily) {
                     const periodLabel = document.getElementById('finDailyPeriod');
                     if (periodLabel) periodLabel.textContent = `Últimos ${days} dias`;
                     
                     if (data.daily.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">Nenhum dado no período</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: var(--text-muted);">Nenhum dado no período</td></tr>';
                     } else {
                         tbody.innerHTML = data.daily.map(row => {
                             const revenue = parseFloat(row.revenue || 0);
                             const costs = parseFloat(row.costs || 0);
+                            const refunds = parseFloat(row.refunds || 0);
                             const profit = parseFloat(row.profit || 0);
                             const sales = parseInt(row.sales || 0);
+                            const totalDeductions = costs + refunds;
                             const margin = revenue > 0 ? ((profit / revenue) * 100).toFixed(1) : '0.0';
-                            const roi = costs > 0 ? (((revenue - costs) / costs) * 100).toFixed(1) : (revenue > 0 ? '∞' : '0.0');
+                            const roi = totalDeductions > 0 ? (((revenue - totalDeductions) / totalDeductions) * 100).toFixed(1) : (revenue > 0 ? '∞' : '0.0');
                             const date = new Date(row.day + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' });
-                            
                             const isToday = new Date(row.day + 'T12:00:00').toDateString() === new Date().toDateString();
                             const rowStyle = isToday ? 'background: rgba(99, 102, 241, 0.05); font-weight: 600;' : '';
-                            const profitColor = profit >= 0 ? '#10b981' : '#ef4444';
-                            const marginColor = parseFloat(margin) >= 0 ? '#10b981' : '#ef4444';
-                            const roiColor = roi === '∞' || parseFloat(roi) >= 0 ? '#10b981' : '#ef4444';
                             
                             return `<tr style="${rowStyle}">
                                 <td>${isToday ? '📌 ' : ''}${date}</td>
-                                <td style="color: #3b82f6; font-weight: 600;">${sales}</td>
-                                <td style="color: #10b981;">${finFormatInline(revenue)}</td>
-                                <td style="color: #f59e0b;">${finFormatInline(costs)}</td>
-                                <td style="color: ${profitColor}; font-weight: 600;">${finFormatInline(profit)}</td>
-                                <td style="color: ${marginColor};">${margin}%</td>
-                                <td style="color: ${roiColor};">${roi}%</td>
+                                <td style="text-align: center; color: #3b82f6; font-weight: 600;">${sales}</td>
+                                <td style="text-align: right; color: #10b981;">${finBRL(revenue)}</td>
+                                <td style="text-align: right; color: #f59e0b;">${costs > 0 ? finBRL(costs) : '-'}</td>
+                                <td style="text-align: right; color: ${refunds > 0 ? '#ef4444' : 'var(--text-muted)'};">${refunds > 0 ? finBRL(refunds) : '-'}</td>
+                                <td style="text-align: right; color: ${profit >= 0 ? '#10b981' : '#ef4444'}; font-weight: 600;">${finBRL(profit)}</td>
+                                <td style="text-align: center; color: ${parseFloat(margin) >= 0 ? '#10b981' : '#ef4444'};">${margin}%</td>
+                                <td style="text-align: center; color: ${roi === '∞' || parseFloat(roi) >= 0 ? '#10b981' : '#ef4444'};">${roi}%</td>
                             </tr>`;
                         }).join('');
                     }
                 }
                 
-                // Also load costs list
+                // Monthly P&L table
+                const mtbody = document.getElementById('finMonthlyTableBody');
+                if (mtbody && data.monthly) {
+                    if (data.monthly.length === 0) {
+                        mtbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: var(--text-muted);">Nenhum dado</td></tr>';
+                    } else {
+                        mtbody.innerHTML = data.monthly.map(row => {
+                            const revenue = parseFloat(row.revenue || 0);
+                            const costs = parseFloat(row.costs || 0);
+                            const refunds = parseFloat(row.refunds || 0);
+                            const profit = parseFloat(row.profit || 0);
+                            const sales = parseInt(row.sales || 0);
+                            const totalDeductions = costs + refunds;
+                            const margin = revenue > 0 ? ((profit / revenue) * 100).toFixed(1) : '0.0';
+                            const roi = totalDeductions > 0 ? (((revenue - totalDeductions) / totalDeductions) * 100).toFixed(1) : (revenue > 0 ? '∞' : '0.0');
+                            const monthDate = new Date(row.month + 'T12:00:00');
+                            const monthName = monthDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+                            const isCurrentMonth = monthDate.getMonth() === new Date().getMonth() && monthDate.getFullYear() === new Date().getFullYear();
+                            const rowStyle = isCurrentMonth ? 'background: rgba(99, 102, 241, 0.05); font-weight: 600;' : '';
+                            
+                            return `<tr style="${rowStyle}">
+                                <td style="text-transform: capitalize;">${isCurrentMonth ? '📌 ' : ''}${monthName}</td>
+                                <td style="text-align: center; color: #3b82f6; font-weight: 600;">${sales}</td>
+                                <td style="text-align: right; color: #10b981;">${finBRL(revenue)}</td>
+                                <td style="text-align: right; color: #f59e0b;">${costs > 0 ? finBRL(costs) : '-'}</td>
+                                <td style="text-align: right; color: ${refunds > 0 ? '#ef4444' : 'var(--text-muted)'};">${refunds > 0 ? finBRL(refunds) : '-'}</td>
+                                <td style="text-align: right; color: ${profit >= 0 ? '#10b981' : '#ef4444'}; font-weight: 600;">${finBRL(profit)}</td>
+                                <td style="text-align: center; color: ${parseFloat(margin) >= 0 ? '#10b981' : '#ef4444'};">${margin}%</td>
+                                <td style="text-align: center; color: ${roi === '∞' || parseFloat(roi) >= 0 ? '#10b981' : '#ef4444'};">${roi}%</td>
+                            </tr>`;
+                        }).join('');
+                    }
+                }
+                
                 loadFinancialCosts();
                 
             } catch (error) {
@@ -12370,71 +12381,59 @@ Posso ajudar em algo mais? 😊`
         
         let finCostsCurrentPage = 1;
         
+        const finCategoryLabels = {
+            'advertising': '📣 Publicidade',
+            'design': '🎨 Design',
+            'tools': '🔧 Ferramentas',
+            'salary': '👤 Salário',
+            'platform_fees': '🏦 Taxas',
+            'taxes': '📋 Impostos',
+            'hosting': '☁️ Hospedagem',
+            'other': '📦 Outros'
+        };
+        
         async function loadFinancialCosts(page = 1) {
             finCostsCurrentPage = page;
             try {
                 const category = document.getElementById('finCostCategoryFilter')?.value || '';
-                
                 let params = [`page=${page}`, 'limit=30'];
                 if (category) params.push(`category=${category}`);
                 
                 const response = await fetch(`${API_URL}/api/admin/financial/costs?${params.join('&')}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                
                 if (!response.ok) throw new Error('Falha ao carregar custos');
                 const data = await response.json();
                 
-                const setT = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
-                setT('finCostCount', `${data.pagination.total} custos`);
+                finSetText('finCostCount', `${data.pagination.total} custos | Total: ${finBRL(data.stats.totalBrl)}`);
                 
                 const tbody = document.getElementById('finCostsTableBody');
                 if (!tbody) return;
                 
-                const categoryLabels = {
-                    'advertising': '📣 Publicidade',
-                    'design': '🎨 Design',
-                    'tools': '🔧 Ferramentas',
-                    'salary': '👤 Salário',
-                    'platform_fees': '🏦 Taxas',
-                    'taxes': '📋 Impostos',
-                    'hosting': '☁️ Hospedagem',
-                    'other': '📦 Outros'
-                };
-                
                 if (!data.costs || data.costs.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">Nenhum custo registrado</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: var(--text-muted);">Nenhum custo registrado</td></tr>';
                     return;
                 }
                 
                 tbody.innerHTML = data.costs.map(cost => {
                     const date = new Date(cost.cost_date + 'T12:00:00').toLocaleDateString('pt-BR');
-                    const catLabel = categoryLabels[cost.category] || cost.category;
+                    const catLabel = finCategoryLabels[cost.category] || cost.category;
                     const amount = parseFloat(cost.amount || 0);
-                    const amountUsd = parseFloat(cost.amount_usd || 0);
-                    const amountStr = cost.currency === 'BRL' 
-                        ? `R$ ${amount.toLocaleString('pt-BR', {minimumFractionDigits: 2})}` 
-                        : `$${amount.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-                    const usdStr = `$${amountUsd.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-                    const xRate = cost.exchange_rate ? `(${parseFloat(cost.exchange_rate).toFixed(2)})` : '';
                     
                     return `<tr>
                         <td style="font-size: 13px;">${date}</td>
                         <td><span style="padding: 3px 8px; border-radius: 6px; font-size: 11px; background: rgba(255,255,255,0.05); border: 1px solid var(--border);">${catLabel}</span></td>
-                        <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${cost.description}">${cost.description}</td>
-                        <td style="font-weight: 600;">${amountStr}</td>
-                        <td style="font-size: 12px;">${cost.currency === 'BRL' ? '🇧🇷' : '🇺🇸'} ${cost.currency} ${xRate}</td>
-                        <td style="font-weight: 600; color: #f59e0b;">${usdStr}</td>
-                        <td>
-                            <div style="display: flex; gap: 4px;">
-                                <button class="action-btn" onclick="editFinancialCost(${cost.id}, '${cost.cost_date}', '${cost.category}', '${cost.description.replace(/'/g, "\\'")}', ${cost.amount}, '${cost.currency}')" title="Editar">✏️</button>
+                        <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${cost.description}">${cost.description}</td>
+                        <td style="text-align: right; font-weight: 600; color: #f59e0b;">${finBRL(amount)}</td>
+                        <td style="text-align: center;">
+                            <div style="display: flex; gap: 4px; justify-content: center;">
+                                <button class="action-btn" onclick="editFinancialCost(${cost.id}, '${cost.cost_date}', '${cost.category}', '${cost.description.replace(/'/g, "\\'")}', ${cost.amount})" title="Editar">✏️</button>
                                 <button class="action-btn danger" onclick="deleteFinancialCost(${cost.id})" title="Excluir">🗑️</button>
                             </div>
                         </td>
                     </tr>`;
                 }).join('');
                 
-                // Render pagination
                 renderFinCostsPagination(data.pagination);
                 
             } catch (error) {
@@ -12445,24 +12444,18 @@ Posso ajudar em algo mais? 😊`
         function renderFinCostsPagination(pagination) {
             const container = document.getElementById('finCostsPaginationContainer');
             if (!container || !pagination) return;
-            
             const { page, totalPages, total } = pagination;
             if (totalPages <= 1) { container.innerHTML = ''; return; }
             
-            let html = '<div class="pagination" style="display: flex; justify-content: center; align-items: center; gap: 8px; padding: 16px 0;">';
-            html += `<button class="btn-secondary" onclick="loadFinancialCosts(${page - 1})" ${page <= 1 ? 'disabled' : ''} style="padding: 6px 12px;">◀ Anterior</button>`;
-            
+            let html = '<div style="display: flex; justify-content: center; align-items: center; gap: 8px; padding: 16px 0;">';
+            html += `<button class="btn-secondary" onclick="loadFinancialCosts(${page - 1})" ${page <= 1 ? 'disabled' : ''} style="padding: 6px 12px;">◀</button>`;
             const startPage = Math.max(1, page - 2);
             const endPage = Math.min(totalPages, page + 2);
             for (let i = startPage; i <= endPage; i++) {
-                const isActive = i === page;
-                html += `<button class="btn-secondary" onclick="loadFinancialCosts(${i})" style="padding: 6px 10px; ${isActive ? 'background: var(--primary); color: white; border-color: var(--primary);' : ''}">${i}</button>`;
+                html += `<button class="btn-secondary" onclick="loadFinancialCosts(${i})" style="padding: 6px 10px; ${i === page ? 'background: var(--primary); color: white; border-color: var(--primary);' : ''}">${i}</button>`;
             }
-            
-            html += `<button class="btn-secondary" onclick="loadFinancialCosts(${page + 1})" ${page >= totalPages ? 'disabled' : ''} style="padding: 6px 12px;">Próximo ▶</button>`;
-            html += `<span style="color: var(--text-muted); font-size: 12px; margin-left: 12px;">Página ${page} de ${totalPages} (${total} custos)</span>`;
-            html += '</div>';
-            
+            html += `<button class="btn-secondary" onclick="loadFinancialCosts(${page + 1})" ${page >= totalPages ? 'disabled' : ''} style="padding: 6px 12px;">▶</button>`;
+            html += `<span style="color: var(--text-muted); font-size: 12px; margin-left: 12px;">Pág. ${page}/${totalPages} (${total})</span></div>`;
             container.innerHTML = html;
         }
         
@@ -12471,7 +12464,6 @@ Posso ajudar em algo mais? 😊`
             const description = document.getElementById('finCostDescription')?.value?.trim();
             const category = document.getElementById('finCostCategory')?.value;
             const amount = document.getElementById('finCostAmount')?.value;
-            const currency = document.getElementById('finCostCurrency')?.value || 'BRL';
             
             if (!costDate || !description || !amount || parseFloat(amount) <= 0) {
                 showToast('Erro', 'Preencha todos os campos: data, descrição e valor.', 'error');
@@ -12481,18 +12473,8 @@ Posso ajudar em algo mais? 😊`
             try {
                 const response = await fetch(`${API_URL}/api/admin/financial/costs`, {
                     method: 'POST',
-                    headers: { 
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        cost_date: costDate,
-                        category,
-                        description,
-                        amount: parseFloat(amount),
-                        currency,
-                        exchange_rate: exchangeRate
-                    })
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cost_date: costDate, category, description, amount: parseFloat(amount) })
                 });
                 
                 if (!response.ok) {
@@ -12500,13 +12482,9 @@ Posso ajudar em algo mais? 😊`
                     throw new Error(err.error || 'Falha ao adicionar custo');
                 }
                 
-                showToast('Sucesso', `Custo "${description}" adicionado!`, 'success');
-                
-                // Clear form
+                showToast('Sucesso', `Custo "${description}" adicionado - ${finBRL(amount)}`, 'success');
                 document.getElementById('finCostDescription').value = '';
                 document.getElementById('finCostAmount').value = '';
-                
-                // Reload data
                 loadFinancialData();
                 
             } catch (error) {
@@ -12514,15 +12492,15 @@ Posso ajudar em algo mais? 😊`
             }
         }
         
-        function editFinancialCost(id, date, category, description, amount, currency) {
+        function editFinancialCost(id, date, category, description, amount) {
             const modal = document.createElement('div');
             modal.id = 'editCostModal';
             modal.className = 'modal-overlay';
             modal.style.cssText = 'display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 10000; align-items: center; justify-content: center; padding: 20px;';
             modal.innerHTML = `
-                <div style="background: var(--bg-secondary, #1a1a2e); border-radius: 16px; max-width: 500px; width: 100%; border: 1px solid var(--border, #333); box-shadow: 0 20px 60px rgba(0,0,0,0.5);">
+                <div style="background: var(--bg-secondary, #1a1a2e); border-radius: 16px; max-width: 480px; width: 100%; border: 1px solid var(--border, #333); box-shadow: 0 20px 60px rgba(0,0,0,0.5);">
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid var(--border, #333);">
-                        <h3 style="margin: 0;">✏️ Editar Custo</h3>
+                        <h3 style="margin: 0;">Editar Custo</h3>
                         <button onclick="document.getElementById('editCostModal').remove()" style="background: none; border: none; color: var(--text-primary); font-size: 24px; cursor: pointer;">&times;</button>
                     </div>
                     <div style="padding: 24px; display: grid; gap: 16px;">
@@ -12549,16 +12527,9 @@ Posso ajudar em algo mais? 😊`
                                 </select>
                             </div>
                             <div>
-                                <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Moeda</label>
-                                <select id="editCostCurrency" class="funnel-selector" style="width: 100%;">
-                                    <option value="BRL" ${currency === 'BRL' ? 'selected' : ''}>🇧🇷 BRL</option>
-                                    <option value="USD" ${currency === 'USD' ? 'selected' : ''}>🇺🇸 USD</option>
-                                </select>
+                                <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Valor (R$)</label>
+                                <input type="number" id="editCostAmount" value="${amount}" step="0.01" min="0" class="funnel-selector" style="width: 100%;">
                             </div>
-                        </div>
-                        <div>
-                            <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Valor</label>
-                            <input type="number" id="editCostAmount" value="${amount}" step="0.01" min="0" class="funnel-selector" style="width: 100%;">
                         </div>
                         <button onclick="saveEditedCost(${id})" style="padding: 12px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px;">Salvar Alterações</button>
                     </div>
@@ -12573,7 +12544,6 @@ Posso ajudar em algo mais? 😊`
             const description = document.getElementById('editCostDesc')?.value?.trim();
             const category = document.getElementById('editCostCat')?.value;
             const amount = document.getElementById('editCostAmount')?.value;
-            const currency = document.getElementById('editCostCurrency')?.value;
             
             if (!costDate || !description || !amount) {
                 showToast('Erro', 'Preencha todos os campos', 'error');
@@ -12583,22 +12553,11 @@ Posso ajudar em algo mais? 😊`
             try {
                 const response = await fetch(`${API_URL}/api/admin/financial/costs/${id}`, {
                     method: 'PUT',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        cost_date: costDate,
-                        category,
-                        description,
-                        amount: parseFloat(amount),
-                        currency,
-                        exchange_rate: exchangeRate
-                    })
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cost_date: costDate, category, description, amount: parseFloat(amount) })
                 });
                 
                 if (!response.ok) throw new Error('Falha ao atualizar');
-                
                 document.getElementById('editCostModal')?.remove();
                 showToast('Sucesso', 'Custo atualizado!', 'success');
                 loadFinancialData();
@@ -12616,12 +12575,9 @@ Posso ajudar em algo mais? 😊`
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                
                 if (!response.ok) throw new Error('Falha ao excluir');
-                
                 showToast('Sucesso', 'Custo excluído!', 'success');
                 loadFinancialData();
-                
             } catch (error) {
                 showToast('Erro', error.message, 'error');
             }

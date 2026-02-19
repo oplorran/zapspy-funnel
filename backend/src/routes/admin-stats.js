@@ -427,8 +427,7 @@ router.get('/api/admin/financial/summary', authenticateToken, async (req, res) =
         const language = req.query.language || '';
         const source = req.query.source || '';
         
-        // Build transaction filters
-        let txConditions = [`t.status = 'approved'`];
+        let txConditions = [];
         let txParams = [];
         
         if (language) {
@@ -449,62 +448,119 @@ router.get('/api/admin/financial/summary', authenticateToken, async (req, res) =
             txParams.push(source);
         }
         
-        const txWhere = txConditions.join(' AND ');
+        const langSourceFilter = txConditions.length > 0 ? ' AND ' + txConditions.join(' AND ') : '';
         
-        console.log('📊 Financial summary request - days:', days, 'language:', language, 'source:', source);
+        // PerfectPay USD->BRL conversion rate
+        const usdToBrl = 1 / parseFloat(process.env.CONVERSION_BRL_TO_USD || '0.18');
         
-        // Today's revenue and sales (use NULLIF to handle empty strings in value)
-        const todayQuery = `
-            SELECT 
-                COALESCE(SUM(CASE WHEN t.value ~ '^[0-9.]+$' THEN CAST(t.value AS DECIMAL) ELSE 0 END), 0) as revenue,
-                COUNT(*) as sales
+        // Revenue expression: Monetizze values are BRL, PerfectPay values need USD->BRL conversion
+        const revenueBRL = `
+            CASE 
+                WHEN t.value ~ '^[0-9.]+$' AND t.funnel_source = 'perfectpay' 
+                    THEN CAST(t.value AS DECIMAL) * ${usdToBrl.toFixed(2)}
+                WHEN t.value ~ '^[0-9.]+$' 
+                    THEN CAST(t.value AS DECIMAL)
+                ELSE 0 
+            END
+        `;
+        
+        // Today's approved revenue + sales
+        const todayRevenueQuery = `
+            SELECT COALESCE(SUM(${revenueBRL}), 0) as revenue, COUNT(*) as sales
             FROM transactions t
-            WHERE ${txWhere}
+            WHERE t.status = 'approved'
             AND (t.created_at AT TIME ZONE 'America/Sao_Paulo')::date = CURRENT_DATE
+            ${langSourceFilter}
         `;
         
-        // This month's revenue and sales
-        const monthQuery = `
-            SELECT 
-                COALESCE(SUM(CASE WHEN t.value ~ '^[0-9.]+$' THEN CAST(t.value AS DECIMAL) ELSE 0 END), 0) as revenue,
-                COUNT(*) as sales
+        // Today's refunds
+        const todayRefundsQuery = `
+            SELECT COALESCE(SUM(${revenueBRL}), 0) as refunds, COUNT(*) as refund_count
             FROM transactions t
-            WHERE ${txWhere}
-            AND (t.created_at AT TIME ZONE 'America/Sao_Paulo')::date >= date_trunc('month', CURRENT_DATE)
+            WHERE t.status IN ('refunded', 'chargeback')
+            AND (t.created_at AT TIME ZONE 'America/Sao_Paulo')::date = CURRENT_DATE
+            ${langSourceFilter}
         `;
         
-        // Today's costs
+        // Today's costs (BRL)
         const todayCostsQuery = `
-            SELECT COALESCE(SUM(amount_usd), 0) as total_usd
-            FROM financial_costs
-            WHERE cost_date = CURRENT_DATE
+            SELECT COALESCE(SUM(amount), 0) as total FROM financial_costs WHERE cost_date = CURRENT_DATE
         `;
         
-        // This month's costs
+        // Month's approved revenue + sales
+        const monthRevenueQuery = `
+            SELECT COALESCE(SUM(${revenueBRL}), 0) as revenue, COUNT(*) as sales
+            FROM transactions t
+            WHERE t.status = 'approved'
+            AND (t.created_at AT TIME ZONE 'America/Sao_Paulo')::date >= date_trunc('month', CURRENT_DATE)
+            ${langSourceFilter}
+        `;
+        
+        // Month's refunds
+        const monthRefundsQuery = `
+            SELECT COALESCE(SUM(${revenueBRL}), 0) as refunds, COUNT(*) as refund_count
+            FROM transactions t
+            WHERE t.status IN ('refunded', 'chargeback')
+            AND (t.created_at AT TIME ZONE 'America/Sao_Paulo')::date >= date_trunc('month', CURRENT_DATE)
+            ${langSourceFilter}
+        `;
+        
+        // Month's costs (BRL)
         const monthCostsQuery = `
-            SELECT COALESCE(SUM(amount_usd), 0) as total_usd
-            FROM financial_costs
-            WHERE cost_date >= date_trunc('month', CURRENT_DATE)::date
+            SELECT COALESCE(SUM(amount), 0) as total FROM financial_costs WHERE cost_date >= date_trunc('month', CURRENT_DATE)::date
         `;
         
-        // Daily breakdown for the period
+        // Year's approved revenue + sales
+        const yearRevenueQuery = `
+            SELECT COALESCE(SUM(${revenueBRL}), 0) as revenue, COUNT(*) as sales
+            FROM transactions t
+            WHERE t.status = 'approved'
+            AND (t.created_at AT TIME ZONE 'America/Sao_Paulo')::date >= date_trunc('year', CURRENT_DATE)
+            ${langSourceFilter}
+        `;
+        
+        // Year's refunds
+        const yearRefundsQuery = `
+            SELECT COALESCE(SUM(${revenueBRL}), 0) as refunds, COUNT(*) as refund_count
+            FROM transactions t
+            WHERE t.status IN ('refunded', 'chargeback')
+            AND (t.created_at AT TIME ZONE 'America/Sao_Paulo')::date >= date_trunc('year', CURRENT_DATE)
+            ${langSourceFilter}
+        `;
+        
+        // Year's costs (BRL)
+        const yearCostsQuery = `
+            SELECT COALESCE(SUM(amount), 0) as total FROM financial_costs WHERE cost_date >= date_trunc('year', CURRENT_DATE)::date
+        `;
+        
+        // Daily breakdown
         const safeDays = Math.min(Math.max(parseInt(days) || 30, 1), 365);
         
         const dailyQuery = `
             WITH daily_revenue AS (
                 SELECT 
                     (t.created_at AT TIME ZONE 'America/Sao_Paulo')::date as day,
-                    COALESCE(SUM(CASE WHEN t.value ~ '^[0-9.]+$' THEN CAST(t.value AS DECIMAL) ELSE 0 END), 0) as revenue,
+                    COALESCE(SUM(${revenueBRL}), 0) as revenue,
                     COUNT(*) as sales
                 FROM transactions t
-                WHERE ${txWhere}
+                WHERE t.status = 'approved'
                 AND (t.created_at AT TIME ZONE 'America/Sao_Paulo')::date >= CURRENT_DATE - INTERVAL '${safeDays} days'
+                ${langSourceFilter}
+                GROUP BY (t.created_at AT TIME ZONE 'America/Sao_Paulo')::date
+            ),
+            daily_refunds AS (
+                SELECT 
+                    (t.created_at AT TIME ZONE 'America/Sao_Paulo')::date as day,
+                    COALESCE(SUM(${revenueBRL}), 0) as refunds,
+                    COUNT(*) as refund_count
+                FROM transactions t
+                WHERE t.status IN ('refunded', 'chargeback')
+                AND (t.created_at AT TIME ZONE 'America/Sao_Paulo')::date >= CURRENT_DATE - INTERVAL '${safeDays} days'
+                ${langSourceFilter}
                 GROUP BY (t.created_at AT TIME ZONE 'America/Sao_Paulo')::date
             ),
             daily_costs AS (
-                SELECT 
-                    cost_date as day,
-                    COALESCE(SUM(amount_usd), 0) as costs
+                SELECT cost_date as day, COALESCE(SUM(amount), 0) as costs
                 FROM financial_costs
                 WHERE cost_date >= CURRENT_DATE - INTERVAL '${safeDays} days'
                 GROUP BY cost_date
@@ -512,8 +568,7 @@ router.get('/api/admin/financial/summary', authenticateToken, async (req, res) =
             date_series AS (
                 SELECT generate_series(
                     (CURRENT_DATE - INTERVAL '${safeDays} days')::date,
-                    CURRENT_DATE,
-                    '1 day'::interval
+                    CURRENT_DATE, '1 day'::interval
                 )::date as day
             )
             SELECT 
@@ -521,9 +576,12 @@ router.get('/api/admin/financial/summary', authenticateToken, async (req, res) =
                 COALESCE(dr.revenue, 0) as revenue,
                 COALESCE(dr.sales, 0) as sales,
                 COALESCE(dc.costs, 0) as costs,
-                COALESCE(dr.revenue, 0) - COALESCE(dc.costs, 0) as profit
+                COALESCE(drf.refunds, 0) as refunds,
+                COALESCE(drf.refund_count, 0) as refund_count,
+                COALESCE(dr.revenue, 0) - COALESCE(dc.costs, 0) - COALESCE(drf.refunds, 0) as profit
             FROM date_series ds
             LEFT JOIN daily_revenue dr ON ds.day = dr.day
+            LEFT JOIN daily_refunds drf ON ds.day = drf.day
             LEFT JOIN daily_costs dc ON ds.day = dc.day
             ORDER BY ds.day DESC
         `;
@@ -533,127 +591,123 @@ router.get('/api/admin/financial/summary', authenticateToken, async (req, res) =
             WITH monthly_revenue AS (
                 SELECT 
                     date_trunc('month', (t.created_at AT TIME ZONE 'America/Sao_Paulo')::date)::date as month,
-                    COALESCE(SUM(CASE WHEN t.value ~ '^[0-9.]+$' THEN CAST(t.value AS DECIMAL) ELSE 0 END), 0) as revenue,
+                    COALESCE(SUM(${revenueBRL}), 0) as revenue,
                     COUNT(*) as sales
                 FROM transactions t
-                WHERE ${txWhere}
+                WHERE t.status = 'approved'
                 AND (t.created_at AT TIME ZONE 'America/Sao_Paulo')::date >= CURRENT_DATE - INTERVAL '12 months'
+                ${langSourceFilter}
+                GROUP BY date_trunc('month', (t.created_at AT TIME ZONE 'America/Sao_Paulo')::date)::date
+            ),
+            monthly_refunds AS (
+                SELECT 
+                    date_trunc('month', (t.created_at AT TIME ZONE 'America/Sao_Paulo')::date)::date as month,
+                    COALESCE(SUM(${revenueBRL}), 0) as refunds,
+                    COUNT(*) as refund_count
+                FROM transactions t
+                WHERE t.status IN ('refunded', 'chargeback')
+                AND (t.created_at AT TIME ZONE 'America/Sao_Paulo')::date >= CURRENT_DATE - INTERVAL '12 months'
+                ${langSourceFilter}
                 GROUP BY date_trunc('month', (t.created_at AT TIME ZONE 'America/Sao_Paulo')::date)::date
             ),
             monthly_costs AS (
                 SELECT 
                     date_trunc('month', cost_date)::date as month,
-                    COALESCE(SUM(amount_usd), 0) as costs
+                    COALESCE(SUM(amount), 0) as costs
                 FROM financial_costs
                 WHERE cost_date >= CURRENT_DATE - INTERVAL '12 months'
                 GROUP BY date_trunc('month', cost_date)::date
+            ),
+            all_months AS (
+                SELECT DISTINCT month FROM (
+                    SELECT month FROM monthly_revenue
+                    UNION SELECT month FROM monthly_refunds
+                    UNION SELECT month FROM monthly_costs
+                ) combined
             )
             SELECT 
-                COALESCE(mr.month, mc.month) as month,
+                am.month,
                 COALESCE(mr.revenue, 0) as revenue,
                 COALESCE(mr.sales, 0) as sales,
                 COALESCE(mc.costs, 0) as costs,
-                COALESCE(mr.revenue, 0) - COALESCE(mc.costs, 0) as profit
-            FROM monthly_revenue mr
-            FULL OUTER JOIN monthly_costs mc ON mr.month = mc.month
-            ORDER BY month DESC
+                COALESCE(mrf.refunds, 0) as refunds,
+                COALESCE(mrf.refund_count, 0) as refund_count,
+                COALESCE(mr.revenue, 0) - COALESCE(mc.costs, 0) - COALESCE(mrf.refunds, 0) as profit
+            FROM all_months am
+            LEFT JOIN monthly_revenue mr ON am.month = mr.month
+            LEFT JOIN monthly_refunds mrf ON am.month = mrf.month
+            LEFT JOIN monthly_costs mc ON am.month = mc.month
+            ORDER BY am.month DESC
             LIMIT 12
         `;
         
-        // Execute queries one by one for better error identification
-        let todayResult, monthResult, todayCosts, monthCosts, dailyResult, monthlyResult;
+        const [
+            todayRevResult, todayRefResult, todayCostResult,
+            monthRevResult, monthRefResult, monthCostResult,
+            yearRevResult, yearRefResult, yearCostResult,
+            dailyResult, monthlyResult
+        ] = await Promise.all([
+            pool.query(todayRevenueQuery, txParams),
+            pool.query(todayRefundsQuery, txParams),
+            pool.query(todayCostsQuery),
+            pool.query(monthRevenueQuery, txParams),
+            pool.query(monthRefundsQuery, txParams),
+            pool.query(monthCostsQuery),
+            pool.query(yearRevenueQuery, txParams),
+            pool.query(yearRefundsQuery, txParams),
+            pool.query(yearCostsQuery),
+            pool.query(dailyQuery, txParams),
+            pool.query(monthlyQuery, txParams)
+        ]);
         
-        try {
-            console.log('📊 Running todayQuery...');
-            todayResult = await pool.query(todayQuery, txParams);
-        } catch (e) {
-            console.error('❌ todayQuery failed:', e.message);
-            throw e;
-        }
+        const todayRev = parseFloat(todayRevResult.rows[0]?.revenue || 0);
+        const todaySales = parseInt(todayRevResult.rows[0]?.sales || 0);
+        const todayRef = parseFloat(todayRefResult.rows[0]?.refunds || 0);
+        const todayRefCount = parseInt(todayRefResult.rows[0]?.refund_count || 0);
+        const todayCost = parseFloat(todayCostResult.rows[0]?.total || 0);
+        const todayProfit = todayRev - todayCost - todayRef;
         
-        try {
-            console.log('📊 Running monthQuery...');
-            monthResult = await pool.query(monthQuery, txParams);
-        } catch (e) {
-            console.error('❌ monthQuery failed:', e.message);
-            throw e;
-        }
+        const monthRev = parseFloat(monthRevResult.rows[0]?.revenue || 0);
+        const monthSales = parseInt(monthRevResult.rows[0]?.sales || 0);
+        const monthRef = parseFloat(monthRefResult.rows[0]?.refunds || 0);
+        const monthRefCount = parseInt(monthRefResult.rows[0]?.refund_count || 0);
+        const monthCost = parseFloat(monthCostResult.rows[0]?.total || 0);
+        const monthTotalCosts = monthCost + monthRef;
+        const monthProfit = monthRev - monthTotalCosts;
         
-        try {
-            console.log('📊 Running todayCostsQuery...');
-            todayCosts = await pool.query(todayCostsQuery);
-        } catch (e) {
-            console.error('❌ todayCostsQuery failed:', e.message);
-            throw e;
-        }
-        
-        try {
-            console.log('📊 Running monthCostsQuery...');
-            monthCosts = await pool.query(monthCostsQuery);
-        } catch (e) {
-            console.error('❌ monthCostsQuery failed:', e.message);
-            throw e;
-        }
-        
-        try {
-            console.log('📊 Running dailyQuery...');
-            dailyResult = await pool.query(dailyQuery, txParams);
-        } catch (e) {
-            console.error('❌ dailyQuery failed:', e.message);
-            throw e;
-        }
-        
-        try {
-            console.log('📊 Running monthlyQuery...');
-            monthlyResult = await pool.query(monthlyQuery, txParams);
-        } catch (e) {
-            console.error('❌ monthlyQuery failed:', e.message);
-            throw e;
-        }
-        
-        console.log('✅ All financial queries completed successfully');
-        
-        const todayData = todayResult.rows[0] || {};
-        const monthData = monthResult.rows[0] || {};
-        const todayCostData = todayCosts.rows[0] || {};
-        const monthCostData = monthCosts.rows[0] || {};
-        
-        const todayRevenue = parseFloat(todayData.revenue || 0);
-        const todaySales = parseInt(todayData.sales || 0);
-        const todayCost = parseFloat(todayCostData.total_usd || 0);
-        const todayProfit = todayRevenue - todayCost;
-        
-        const monthRevenue = parseFloat(monthData.revenue || 0);
-        const monthSales = parseInt(monthData.sales || 0);
-        const monthCost = parseFloat(monthCostData.total_usd || 0);
-        const monthProfit = monthRevenue - monthCost;
-        
-        const monthROI = monthCost > 0 ? ((monthRevenue - monthCost) / monthCost * 100) : 0;
-        const monthMargin = monthRevenue > 0 ? ((monthRevenue - monthCost) / monthRevenue * 100) : 0;
+        const monthROI = monthTotalCosts > 0 ? ((monthRev - monthTotalCosts) / monthTotalCosts * 100) : 0;
+        const monthMargin = monthRev > 0 ? (monthProfit / monthRev * 100) : 0;
         const monthCPA = monthSales > 0 ? monthCost / monthSales : 0;
+        
+        const yearRev = parseFloat(yearRevResult.rows[0]?.revenue || 0);
+        const yearSales = parseInt(yearRevResult.rows[0]?.sales || 0);
+        const yearRef = parseFloat(yearRefResult.rows[0]?.refunds || 0);
+        const yearRefCount = parseInt(yearRefResult.rows[0]?.refund_count || 0);
+        const yearCost = parseFloat(yearCostResult.rows[0]?.total || 0);
+        const yearProfit = yearRev - yearCost - yearRef;
         
         res.json({
             today: {
-                revenue: todayRevenue,
-                sales: todaySales,
-                costs: todayCost,
-                profit: todayProfit
+                revenue: todayRev, sales: todaySales, costs: todayCost,
+                refunds: todayRef, refundCount: todayRefCount, profit: todayProfit
             },
             month: {
-                revenue: monthRevenue,
-                sales: monthSales,
-                costs: monthCost,
-                profit: monthProfit,
+                revenue: monthRev, sales: monthSales, costs: monthCost,
+                refunds: monthRef, refundCount: monthRefCount, profit: monthProfit,
                 roi: Math.round(monthROI * 100) / 100,
                 margin: Math.round(monthMargin * 100) / 100,
                 cpa: Math.round(monthCPA * 100) / 100
+            },
+            year: {
+                revenue: yearRev, sales: yearSales, costs: yearCost,
+                refunds: yearRef, refundCount: yearRefCount, profit: yearProfit
             },
             daily: dailyResult.rows,
             monthly: monthlyResult.rows
         });
         
     } catch (error) {
-        console.error('❌ Error fetching financial summary:', error.message, error.stack?.split('\n').slice(0, 3).join('\n'));
+        console.error('❌ Error fetching financial summary:', error.message);
         res.status(500).json({ error: 'Failed to fetch financial summary', details: error.message });
     }
 });
@@ -699,8 +753,7 @@ router.get('/api/admin/financial/costs', authenticateToken, async (req, res) => 
         
         const sumQuery = `
             SELECT 
-                COALESCE(SUM(amount_usd), 0) as total_usd,
-                COALESCE(SUM(CASE WHEN currency = 'BRL' THEN amount ELSE 0 END), 0) as total_brl,
+                COALESCE(SUM(amount), 0) as total_brl,
                 COUNT(*) as count
             FROM financial_costs ${whereClause}
         `;
@@ -718,7 +771,6 @@ router.get('/api/admin/financial/costs', authenticateToken, async (req, res) => 
         res.json({
             costs: costsResult.rows,
             stats: {
-                totalUsd: parseFloat(stats.total_usd || 0),
                 totalBrl: parseFloat(stats.total_brl || 0),
                 count: parseInt(stats.count || 0)
             },
@@ -736,34 +788,24 @@ router.get('/api/admin/financial/costs', authenticateToken, async (req, res) => 
     }
 });
 
-// Add a new cost
+// Add a new cost (always BRL)
 router.post('/api/admin/financial/costs', authenticateToken, async (req, res) => {
     try {
-        const { cost_date, category, description, amount, currency, exchange_rate, notes } = req.body;
+        const { cost_date, category, description, amount, notes } = req.body;
         
         if (!cost_date || !description || !amount) {
             return res.status(400).json({ error: 'Data, descrição e valor são obrigatórios' });
         }
         
-        // Convert to USD if BRL
-        let amountUsd = parseFloat(amount);
-        let xRate = parseFloat(exchange_rate) || null;
-        
-        if (currency === 'BRL' && xRate) {
-            amountUsd = parseFloat(amount) / xRate;
-        } else if (currency === 'BRL') {
-            // Use a default rate if none provided
-            amountUsd = parseFloat(amount) / 5.80;
-            xRate = 5.80;
-        }
+        const amountBrl = parseFloat(amount);
         
         const result = await pool.query(`
-            INSERT INTO financial_costs (cost_date, category, description, amount, currency, amount_usd, exchange_rate, notes, created_by)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            INSERT INTO financial_costs (cost_date, category, description, amount, currency, notes, created_by)
+            VALUES ($1, $2, $3, $4, 'BRL', $5, $6)
             RETURNING *
-        `, [cost_date, category || 'other', description, parseFloat(amount), currency || 'BRL', Math.round(amountUsd * 100) / 100, xRate, notes || null, req.user?.id || null]);
+        `, [cost_date, category || 'other', description, amountBrl, notes || null, req.user?.id || null]);
         
-        console.log(`💰 New cost added: ${description} - ${currency} ${amount} (USD ${amountUsd.toFixed(2)}) on ${cost_date}`);
+        console.log(`💰 Custo adicionado: ${description} - R$ ${amountBrl.toFixed(2)} em ${cost_date}`);
         
         res.json({ success: true, cost: result.rows[0] });
         
@@ -773,29 +815,19 @@ router.post('/api/admin/financial/costs', authenticateToken, async (req, res) =>
     }
 });
 
-// Update a cost
+// Update a cost (always BRL)
 router.put('/api/admin/financial/costs/:id', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
-        const { cost_date, category, description, amount, currency, exchange_rate, notes } = req.body;
-        
-        let amountUsd = parseFloat(amount);
-        let xRate = parseFloat(exchange_rate) || null;
-        
-        if (currency === 'BRL' && xRate) {
-            amountUsd = parseFloat(amount) / xRate;
-        } else if (currency === 'BRL') {
-            amountUsd = parseFloat(amount) / 5.80;
-            xRate = 5.80;
-        }
+        const { cost_date, category, description, amount, notes } = req.body;
         
         const result = await pool.query(`
             UPDATE financial_costs 
-            SET cost_date = $1, category = $2, description = $3, amount = $4, currency = $5, 
-                amount_usd = $6, exchange_rate = $7, notes = $8, updated_at = NOW()
-            WHERE id = $9
+            SET cost_date = $1, category = $2, description = $3, amount = $4, currency = 'BRL',
+                notes = $5, updated_at = NOW()
+            WHERE id = $6
             RETURNING *
-        `, [cost_date, category, description, parseFloat(amount), currency, Math.round(amountUsd * 100) / 100, xRate, notes || null, id]);
+        `, [cost_date, category, description, parseFloat(amount), notes || null, id]);
         
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Cost not found' });
