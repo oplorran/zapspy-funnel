@@ -402,14 +402,8 @@ router.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async 
         if (startDate) params.append('date_min', `${startDate} 00:00:00`);
         if (endDate) params.append('date_max', `${endDate} 23:59:59`);
         ['1','2','3','4','5','6','8','9'].forEach(s => params.append('status[]', s));
-        
-        const validProductCodes = [
-            '341972', '349241', '349242', '349243',
-            '330254', '341443', '341444', '341448',
-            '349260', '349261', '349266', '349267',
-            '338375', '341452', '341453', '341454'
-        ];
-        validProductCodes.forEach(code => params.append('product[]', code));
+        // No product filter on API level - filter at processing level instead
+        // This ensures refunds/chargebacks for ALL products are captured
         
         const txUrl = `https://api.monetizze.com.br/2.1/transactions?${params.toString()}`;
         console.log('🌐 Fetching transactions from Monetizze API 2.1:', txUrl);
@@ -569,7 +563,8 @@ router.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async 
                     '349260', '349261', '349266', '349267',
                     '338375', '341452', '341453', '341454'
                 ];
-                if (productCode && !validProductCodesInner.includes(String(productCode))) {
+                const isRefundOrChargeback = ['4','8','9'].includes(statusCode);
+                if (productCode && !validProductCodesInner.includes(String(productCode)) && !isRefundOrChargeback) {
                     console.log(`⏭️ Skipping product not in our funnel: ${productCode} - ${productName}`);
                     skipped++;
                     continue;
@@ -581,7 +576,8 @@ router.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async 
                 const spanishCodes = ['349260', '349261', '349266', '349267', '338375', '341452', '341453', '341454'];
                 const affiliateCodes = ['330254', '341443', '341444', '341448', '338375', '341452', '341453', '341454'];
                 
-                let funnelLanguage = spanishCodes.includes(String(productCode)) ? 'es' : 'en';
+                const pNameLower = (productName || '').toLowerCase();
+                let funnelLanguage = spanishCodes.includes(String(productCode)) || pNameLower.includes('espanhol') || pNameLower.includes('spanish') || pNameLower.includes('español') || pNameLower.includes('recuperaci') || pNameLower.includes('infidelidad') ? 'es' : 'en';
                 const funnelSource = affiliateCodes.includes(String(productCode)) ? 'affiliate' : 'main';
                 
                 const statusMap = {

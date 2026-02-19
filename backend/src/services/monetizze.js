@@ -247,22 +247,21 @@ async function syncMonetizzeSalesCore(startDate, endDate) {
             const value = vendaData.valor || vendaData.valorRecebido || vendaData.comissao;
             const statusCode = String(tipoEvento.codigo || item.codigo_status || '2');
             
-            if (productCode && !validProductCodes.includes(String(productCode))) {
+            const isRefundOrChargeback = ['4','8','9'].includes(statusCode);
+            if (productCode && !validProductCodes.includes(String(productCode)) && !isRefundOrChargeback) {
                 skipped++;
                 continue;
             }
             
-            // Priority: dataInicio (Data Pedido in Monetizze UI) for consistent ordering
-            // dataFinalizada only exists for completed sales, so use dataInicio for all
             const saleDateStr = vendaData.dataInicio || vendaData.dataFinalizada || vendaData.dataVenda || vendaData.data || null;
             const saleDate = parseMonetizzeDate(saleDateStr);
             
-            // Debug log for date parsing (remove after testing)
             if (synced < 5) {
                 console.log(`📅 DEBUG DATE - Using: "${saleDateStr}" | Parsed: ${saleDate ? saleDate.toISOString() : 'null'} | dataFinalizada: "${vendaData.dataFinalizada}" | dataInicio: "${vendaData.dataInicio}"`);
             }
             
-            const funnelLanguage = spanishCodes.includes(String(productCode)) ? 'es' : 'en';
+            const pName = (productName || '').toLowerCase();
+            const funnelLanguage = spanishCodes.includes(String(productCode)) || pName.includes('espanhol') || pName.includes('spanish') || pName.includes('español') || pName.includes('recuperaci') || pName.includes('infidelidad') ? 'es' : 'en';
             const funnelSource = affiliateCodes.includes(String(productCode)) ? 'affiliate' : 'main';
             
             // Map status - IMPORTANT: check if sale is actually finalized
@@ -599,14 +598,7 @@ async function runDeepSync() {
             params.append('date_max', `${endDate} 23:59:59`);
             // 3=cancelled, 4=refunded, 8=chargeback, 9=chargeback alt
             ['3', '4', '8', '9'].forEach(s => params.append('status[]', s));
-            
-            const validProductCodes = [
-                '341972', '349241', '349242', '349243',
-                '330254', '341443', '341444', '341448',
-                '349260', '349261', '349266', '349267',
-                '338375', '341452', '341453', '341454'
-            ];
-            validProductCodes.forEach(code => params.append('product[]', code));
+            // No product filter for refunds/chargebacks - we want ALL regardless of product
             
             const txUrl = `https://api.monetizze.com.br/2.1/transactions?${params.toString()}`;
             console.log(`🌐 Fetching refunded/cancelled/chargeback transactions (${startDate} to ${endDate})...`);
