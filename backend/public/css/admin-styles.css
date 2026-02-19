@@ -2590,31 +2590,16 @@
 }
 
 /* Countries table responsive */
-@media (max-width: 900px) {
-    .countries-table-header,
-    #countriesListContainer > div,
-    #countriesTotalsRow {
-        grid-template-columns: 30px 1.2fr 80px 60px 60px 90px 80px !important;
-        gap: 6px !important;
-        padding-left: 12px !important;
-        padding-right: 12px !important;
-        font-size: 12px !important;
+@media (max-width: 768px) {
+    #countriesListContainer tr td:nth-child(5),
+    #countriesTotalsRow tr td:nth-child(5),
+    #countriesListContainer tr td:nth-child(7),
+    #countriesTotalsRow tr td:nth-child(7) {
+        display: none;
     }
-}
-
-@media (max-width: 640px) {
-    .countries-table-header,
-    #countriesListContainer > div,
-    #countriesTotalsRow {
-        grid-template-columns: 28px 1fr 60px 50px 90px !important;
-    }
-    .countries-table-header > span:nth-child(5),
-    #countriesListContainer > div > div:nth-child(5),
-    #countriesTotalsRow > div:nth-child(5),
-    .countries-table-header > span:nth-child(7),
-    #countriesListContainer > div > div:nth-child(7),
-    #countriesTotalsRow > div:nth-child(7) {
-        display: none !important;
+    thead tr th:nth-child(5),
+    thead tr th:nth-child(7) {
+        display: none;
     }
 }
 

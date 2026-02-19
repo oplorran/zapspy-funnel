@@ -2144,24 +2144,21 @@
                     <!-- Countries Ranking Section -->
                     <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; overflow: hidden;">
                         <!-- Toolbar -->
-                        <div style="padding: 16px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <h3 style="margin: 0; font-size: 16px; font-weight: 600;">Ranking de Países</h3>
-                                <span id="countriesCount" style="background: rgba(99, 102, 241, 0.15); color: #818cf8; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;">0</span>
+                        <div style="padding: 12px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <h3 style="margin: 0; font-size: 15px; font-weight: 600;">Ranking de Países</h3>
+                                <span id="countriesCount" style="background: rgba(99, 102, 241, 0.15); color: #818cf8; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">0</span>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                                <div style="position: relative;">
-                                    <input type="text" id="countriesSearch" placeholder="Buscar país..." oninput="filterCountriesTable()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 8px 14px 8px 36px; color: #fff; font-size: 13px; width: 200px; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='rgba(99,102,241,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
-                                    <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.3); font-size: 14px;">🔍</span>
-                                </div>
-                                <select id="countriesSortBy" onchange="sortCountriesTable()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 8px 14px; color: #fff; font-size: 13px; outline: none; cursor: pointer;">
+                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                <input type="text" id="countriesSearch" placeholder="Buscar país..." oninput="filterCountriesTable()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 6px 12px; color: #fff; font-size: 12px; width: 160px; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='rgba(99,102,241,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+                                <select id="countriesSortBy" onchange="sortCountriesTable()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 6px 10px; color: #fff; font-size: 12px; outline: none; cursor: pointer;">
                                     <option value="leads" style="background: #1a1a2e;">Ordenar: Leads</option>
-                                    <option value="converted" style="background: #1a1a2e;">Ordenar: Conversões</option>
+                                    <option value="converted" style="background: #1a1a2e;">Ordenar: Vendas</option>
                                     <option value="conversionRate" style="background: #1a1a2e;">Ordenar: Taxa %</option>
                                     <option value="revenue" style="background: #1a1a2e;">Ordenar: Faturamento</option>
                                     <option value="avgTicket" style="background: #1a1a2e;">Ordenar: Ticket Médio</option>
                                 </select>
-                                <select id="countriesPerPage" onchange="changeCountriesPerPage()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 8px 14px; color: #fff; font-size: 13px; outline: none; cursor: pointer;">
+                                <select id="countriesPerPage" onchange="changeCountriesPerPage()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 6px 10px; color: #fff; font-size: 12px; outline: none; cursor: pointer;">
                                     <option value="10" style="background: #1a1a2e;">10 / página</option>
                                     <option value="25" style="background: #1a1a2e;">25 / página</option>
                                     <option value="50" style="background: #1a1a2e;">50 / página</option>
@@ -2170,31 +2167,31 @@
                             </div>
                         </div>
                         
-                        <!-- Table Header -->
-                        <div class="countries-table-header" style="padding: 10px 24px; background: rgba(255,255,255,0.02); border-bottom: 1px solid rgba(255,255,255,0.06); display: grid; grid-template-columns: 44px 1.5fr 1fr 90px 80px 110px 100px; align-items: center; gap: 12px;">
-                            <span style="font-size: 10px; color: rgba(255,255,255,0.3); text-transform: uppercase; font-weight: 700; letter-spacing: 0.8px; text-align: center;">#</span>
-                            <span style="font-size: 10px; color: rgba(255,255,255,0.3); text-transform: uppercase; font-weight: 700; letter-spacing: 0.8px;">País</span>
-                            <span style="font-size: 10px; color: rgba(255,255,255,0.3); text-transform: uppercase; font-weight: 700; letter-spacing: 0.8px;">Leads</span>
-                            <span style="font-size: 10px; color: rgba(255,255,255,0.3); text-transform: uppercase; font-weight: 700; letter-spacing: 0.8px; text-align: center;">Vendas</span>
-                            <span style="font-size: 10px; color: rgba(255,255,255,0.3); text-transform: uppercase; font-weight: 700; letter-spacing: 0.8px; text-align: center;">Taxa</span>
-                            <span style="font-size: 10px; color: rgba(255,255,255,0.3); text-transform: uppercase; font-weight: 700; letter-spacing: 0.8px; text-align: right;">Faturamento</span>
-                            <span style="font-size: 10px; color: rgba(255,255,255,0.3); text-transform: uppercase; font-weight: 700; letter-spacing: 0.8px; text-align: right;">Ticket Médio</span>
-                        </div>
-                        
-                        <!-- Countries List -->
-                        <div id="countriesListContainer">
-                            <div style="padding: 60px 24px; text-align: center; color: rgba(255,255,255,0.4);">
-                                <div style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;">🌍</div>
-                                <p>Clique em "Atualizar Dados" para carregar</p>
-                            </div>
-                        </div>
-                        
-                        <!-- Totals Row -->
-                        <div id="countriesTotalsRow" style="display: none; padding: 14px 24px; background: rgba(99, 102, 241, 0.08); border-top: 2px solid rgba(99, 102, 241, 0.3); display: none; grid-template-columns: 44px 1.5fr 1fr 90px 80px 110px 100px; align-items: center; gap: 12px;"></div>
+                        <!-- Table -->
+                        <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+                            <thead>
+                                <tr style="background: rgba(255,255,255,0.02); border-bottom: 1px solid rgba(255,255,255,0.06);">
+                                    <th style="width: 36px; padding: 8px 12px; font-size: 10px; color: rgba(255,255,255,0.35); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; text-align: center;">#</th>
+                                    <th style="padding: 8px 12px; font-size: 10px; color: rgba(255,255,255,0.35); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; text-align: left;">País</th>
+                                    <th style="width: 90px; padding: 8px 12px; font-size: 10px; color: rgba(255,255,255,0.35); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; text-align: right;">Leads</th>
+                                    <th style="width: 70px; padding: 8px 12px; font-size: 10px; color: rgba(255,255,255,0.35); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; text-align: center;">Vendas</th>
+                                    <th style="width: 65px; padding: 8px 12px; font-size: 10px; color: rgba(255,255,255,0.35); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; text-align: center;">Taxa</th>
+                                    <th style="width: 110px; padding: 8px 12px; font-size: 10px; color: rgba(255,255,255,0.35); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; text-align: right;">Faturamento</th>
+                                    <th style="width: 100px; padding: 8px 12px; font-size: 10px; color: rgba(255,255,255,0.35); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; text-align: right;">Ticket Médio</th>
+                                </tr>
+                            </thead>
+                            <tbody id="countriesListContainer">
+                                <tr><td colspan="7" style="padding: 48px 20px; text-align: center; color: rgba(255,255,255,0.4);">
+                                    <div style="font-size: 36px; margin-bottom: 12px; opacity: 0.5;">🌍</div>
+                                    <p style="margin: 0;">Clique em "Atualizar Dados" para carregar</p>
+                                </td></tr>
+                            </tbody>
+                            <tfoot id="countriesTotalsRow" style="display: none;"></tfoot>
+                        </table>
                         
                         <!-- Pagination -->
-                        <div id="countriesPagination" style="padding: 14px 24px; border-top: 1px solid rgba(255,255,255,0.06); display: none; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-                            <span id="countriesPaginationInfo" style="font-size: 13px; color: rgba(255,255,255,0.4);">Mostrando 0 de 0</span>
+                        <div id="countriesPagination" style="padding: 10px 20px; border-top: 1px solid rgba(255,255,255,0.06); display: none; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                            <span id="countriesPaginationInfo" style="font-size: 12px; color: rgba(255,255,255,0.4);">Mostrando 0 de 0</span>
                             <div id="countriesPaginationButtons" style="display: flex; align-items: center; gap: 4px;"></div>
                         </div>
                     </div>
@@ -10378,76 +10375,53 @@ Estou aqui para esclarecer tudo! 😊`
             const container = document.getElementById('countriesListContainer');
             
             if (!countries || countries.length === 0) {
-                container.innerHTML = `
-                    <div style="padding: 60px 24px; text-align: center; color: rgba(255,255,255,0.4);">
-                        <div style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;">🌍</div>
-                        <h3 style="margin: 0 0 8px; color: rgba(255,255,255,0.6);">Nenhum dado encontrado</h3>
-                        <p style="margin: 0;">${countriesState.searchTerm ? 'Nenhum país corresponde à busca.' : 'Os leads ainda não possuem informação de localização.'}</p>
-                    </div>
-                `;
+                container.innerHTML = `<tr><td colspan="7" style="padding: 48px 20px; text-align: center; color: rgba(255,255,255,0.4);">
+                    <div style="font-size: 36px; margin-bottom: 12px; opacity: 0.5;">🌍</div>
+                    <p style="margin: 0;">${countriesState.searchTerm ? 'Nenhum país corresponde à busca.' : 'Os leads ainda não possuem informação de localização.'}</p>
+                </td></tr>`;
                 return;
             }
             
-            const maxLeads = Math.max(...countriesState.allData.map(c => c.leads));
             const totalLeads = countriesState.totalLeads;
             
             let html = '';
             countries.forEach((country, idx) => {
                 const globalIndex = startIndex + idx;
-                const leadsPercent = maxLeads > 0 ? (country.leads / maxLeads) * 100 : 0;
                 const sharePercent = totalLeads > 0 ? ((country.leads / totalLeads) * 100).toFixed(1) : '0.0';
-                const conversionColor = country.conversionRate >= 5 ? '#10b981' : country.conversionRate >= 2 ? '#f59e0b' : '#ef4444';
-                const isTop3 = globalIndex < 3 && !country.isUnknown;
-                const medalIcon = globalIndex === 0 ? '🥇' : globalIndex === 1 ? '🥈' : globalIndex === 2 ? '🥉' : '';
-                const rowBg = country.isUnknown ? 'rgba(245, 158, 11, 0.03)' : 'transparent';
-                const rowBorder = country.isUnknown ? 'rgba(245, 158, 11, 0.1)' : 'rgba(255,255,255,0.04)';
-                const flagDisplay = country.isUnknown ? getCountryFlag('XX') : getCountryFlag(country.country_code);
+                const convColor = country.conversionRate >= 5 ? '#10b981' : country.conversionRate >= 2 ? '#f59e0b' : '#ef4444';
+                const flagDisplay = country.isUnknown ? getCountryFlag('XX', 20) : getCountryFlag(country.country_code, 20);
                 const countryName = country.isUnknown ? 'Desconhecido' : country.country;
-                const clickAction = country.isUnknown ? '' : `onclick="viewCountryLeads('${country.country_code}', '${countryName.replace(/'/g, "\\'")}')" style="cursor: pointer;"`;
+                const clickAttr = country.isUnknown ? '' : `onclick="viewCountryLeads('${country.country_code}', '${countryName.replace(/'/g, "\\'")}')"`;
+                const rowBg = country.isUnknown ? 'rgba(245, 158, 11, 0.03)' : 'transparent';
+                const rankDisplay = country.isUnknown ? '—' : (globalIndex + 1);
+                const rankColor = globalIndex < 3 && !country.isUnknown ? '#fff' : 'rgba(255,255,255,0.3)';
                 
-                html += `
-                    <div ${clickAction} class="country-row" style="padding: 14px 24px; border-bottom: 1px solid ${rowBorder}; display: grid; grid-template-columns: 44px 1.5fr 1fr 90px 80px 110px 100px; align-items: center; gap: 12px; transition: background 0.2s; background: ${rowBg};" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='${rowBg}'">
-                        <div style="font-size: ${isTop3 ? '20px' : '13px'}; font-weight: 600; color: ${isTop3 ? '#fff' : 'rgba(255,255,255,0.35)'}; text-align: center;">
-                            ${country.isUnknown ? '<span style="color: rgba(245,158,11,0.6);">—</span>' : (medalIcon || `${globalIndex + 1}`)}
+                html += `<tr ${clickAttr} style="cursor: ${country.isUnknown ? 'default' : 'pointer'}; background: ${rowBg}; border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='${rowBg}'">
+                    <td style="padding: 10px 12px; text-align: center; font-size: 12px; font-weight: 600; color: ${rankColor};">${rankDisplay}</td>
+                    <td style="padding: 10px 12px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 28px; height: 20px; border-radius: 3px; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05);">${flagDisplay}</div>
+                            <span style="font-weight: 500; font-size: 13px; color: ${country.isUnknown ? '#f59e0b' : '#fff'}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${countryName}</span>
+                            <span style="font-size: 10px; color: rgba(255,255,255,0.25); flex-shrink: 0;">${country.isUnknown ? '' : country.country_code}</span>
                         </div>
-                        
-                        <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
-                            <div style="width: 38px; height: 28px; background: ${country.isUnknown ? 'rgba(245,158,11,0.1)' : 'rgba(255,255,255,0.05)'}; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden;">
-                                ${flagDisplay}
-                            </div>
-                            <div style="min-width: 0;">
-                                <div style="font-weight: 600; font-size: 13px; color: ${country.isUnknown ? '#f59e0b' : '#fff'}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${countryName}</div>
-                                <div style="font-size: 11px; color: rgba(255,255,255,0.35);">${country.isUnknown ? 'Sem localização' : country.country_code}</div>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px;">
-                                <span style="font-weight: 700; color: #fff; font-size: 15px;">${country.leads.toLocaleString('pt-BR')}</span>
-                                <span style="font-size: 11px; color: rgba(255,255,255,0.3);">${sharePercent}%</span>
-                            </div>
-                            <div style="height: 3px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden;">
-                                <div style="height: 100%; width: ${leadsPercent}%; background: ${country.isUnknown ? 'rgba(245,158,11,0.5)' : 'linear-gradient(90deg, #6366f1, #8b5cf6)'}; border-radius: 2px; transition: width 0.5s ease;"></div>
-                            </div>
-                        </div>
-                        
-                        <div style="text-align: center;">
-                            <span style="display: inline-block; padding: 3px 10px; background: ${country.converted > 0 ? 'rgba(16, 185, 129, 0.15)' : 'rgba(255,255,255,0.05)'}; color: ${country.converted > 0 ? '#10b981' : 'rgba(255,255,255,0.3)'}; border-radius: 20px; font-weight: 600; font-size: 13px;">${country.converted}</span>
-                        </div>
-                        
-                        <div style="text-align: center;">
-                            <span style="color: ${country.converted > 0 ? conversionColor : 'rgba(255,255,255,0.25)'}; font-weight: 700; font-size: 13px;">${country.conversionRate.toFixed(1)}%</span>
-                        </div>
-                        
-                        <div style="text-align: right;">
-                            <span style="font-weight: 700; color: ${country.revenue > 0 ? '#10b981' : 'rgba(255,255,255,0.25)'}; font-size: 13px;">${formatBRL(country.revenue)}</span>
-                        </div>
-                        
-                        <div style="text-align: right;">
-                            <span style="font-weight: 600; color: ${country.avgTicket > 0 ? '#818cf8' : 'rgba(255,255,255,0.25)'}; font-size: 13px;">${country.avgTicket > 0 ? formatBRL(country.avgTicket) : '-'}</span>
-                        </div>
-                    </div>
-                `;
+                    </td>
+                    <td style="padding: 10px 12px; text-align: right;">
+                        <span style="font-weight: 600; color: #fff; font-size: 13px;">${country.leads.toLocaleString('pt-BR')}</span>
+                        <span style="font-size: 10px; color: rgba(255,255,255,0.3); margin-left: 4px;">(${sharePercent}%)</span>
+                    </td>
+                    <td style="padding: 10px 12px; text-align: center;">
+                        <span style="font-weight: 600; font-size: 13px; color: ${country.converted > 0 ? '#10b981' : 'rgba(255,255,255,0.25)'};">${country.converted}</span>
+                    </td>
+                    <td style="padding: 10px 12px; text-align: center;">
+                        <span style="font-weight: 600; font-size: 12px; color: ${country.converted > 0 ? convColor : 'rgba(255,255,255,0.2)'};">${country.conversionRate.toFixed(1)}%</span>
+                    </td>
+                    <td style="padding: 10px 12px; text-align: right;">
+                        <span style="font-weight: 600; color: ${country.revenue > 0 ? '#10b981' : 'rgba(255,255,255,0.2)'}; font-size: 13px;">${formatBRL(country.revenue)}</span>
+                    </td>
+                    <td style="padding: 10px 12px; text-align: right;">
+                        <span style="font-weight: 500; color: ${country.avgTicket > 0 ? '#818cf8' : 'rgba(255,255,255,0.2)'}; font-size: 13px;">${country.avgTicket > 0 ? formatBRL(country.avgTicket) : '—'}</span>
+                    </td>
+                </tr>`;
             });
             
             container.innerHTML = html;
@@ -10470,15 +10444,17 @@ Estou aqui para esclarecer tudo! 😊`
             const avgRate = totals.leads > 0 ? ((totals.converted / totals.leads) * 100).toFixed(1) : '0.0';
             const avgTicket = totals.converted > 0 ? (totals.revenue / totals.converted) : 0;
             
-            totalsRow.style.display = 'grid';
+            totalsRow.style.display = 'table-footer-group';
             totalsRow.innerHTML = `
-                <div style="text-align: center; font-weight: 700; color: rgba(255,255,255,0.4); font-size: 11px;">Σ</div>
-                <div style="font-weight: 700; color: rgba(255,255,255,0.6); font-size: 13px;">TOTAL (${data.length} países)</div>
-                <div style="font-weight: 700; color: #fff; font-size: 14px;">${totals.leads.toLocaleString('pt-BR')}</div>
-                <div style="text-align: center; font-weight: 700; color: #10b981; font-size: 13px;">${totals.converted}</div>
-                <div style="text-align: center; font-weight: 700; color: #f59e0b; font-size: 13px;">${avgRate}%</div>
-                <div style="text-align: right; font-weight: 700; color: #10b981; font-size: 13px;">${formatBRL(totals.revenue)}</div>
-                <div style="text-align: right; font-weight: 700; color: #818cf8; font-size: 13px;">${avgTicket > 0 ? formatBRL(avgTicket) : '-'}</div>
+                <tr style="background: rgba(99, 102, 241, 0.06); border-top: 2px solid rgba(99, 102, 241, 0.25);">
+                    <td style="padding: 10px 12px; text-align: center; font-weight: 700; color: rgba(255,255,255,0.4); font-size: 11px;">Σ</td>
+                    <td style="padding: 10px 12px; font-weight: 700; color: rgba(255,255,255,0.6); font-size: 12px;">TOTAL (${data.length} países)</td>
+                    <td style="padding: 10px 12px; text-align: right; font-weight: 700; color: #fff; font-size: 13px;">${totals.leads.toLocaleString('pt-BR')}</td>
+                    <td style="padding: 10px 12px; text-align: center; font-weight: 700; color: #10b981; font-size: 13px;">${totals.converted}</td>
+                    <td style="padding: 10px 12px; text-align: center; font-weight: 700; color: #f59e0b; font-size: 13px;">${avgRate}%</td>
+                    <td style="padding: 10px 12px; text-align: right; font-weight: 700; color: #10b981; font-size: 13px;">${formatBRL(totals.revenue)}</td>
+                    <td style="padding: 10px 12px; text-align: right; font-weight: 700; color: #818cf8; font-size: 13px;">${avgTicket > 0 ? formatBRL(avgTicket) : '—'}</td>
+                </tr>
             `;
         }
         
