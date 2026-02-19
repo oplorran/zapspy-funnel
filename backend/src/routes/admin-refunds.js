@@ -216,7 +216,47 @@ router.post('/api/admin/backfill-refunds', authenticateToken, requireAdmin, asyn
 // Get all refund requests (protected)
 router.get('/api/admin/refunds', authenticateToken, async (req, res) => {
     try {
-        // Auto-backfill: sync transactions with refunded/chargeback status to refund_requests
+        // Step 1: Fix transaction statuses that were overwritten by auto-sync
+        try {
+            const fixResult = await pool.query(`
+                UPDATE transactions 
+                SET status = CASE 
+                    WHEN monetizze_status IN ('8', '9') THEN 'chargeback'
+                    WHEN monetizze_status = '4' THEN 'refunded'
+                END,
+                updated_at = NOW()
+                WHERE monetizze_status IN ('4', '8', '9')
+                  AND status NOT IN ('refunded', 'chargeback')
+                RETURNING transaction_id, email, status
+            `);
+            if (fixResult.rows.length > 0) {
+                console.log(`Status fix: ${fixResult.rows.length} transactions corrected from monetizze_status`);
+            }
+            
+            // Also check raw_data for chargeback/refund keywords
+            const fixRawResult = await pool.query(`
+                UPDATE transactions 
+                SET status = CASE 
+                    WHEN raw_data::text ILIKE '%chargeback%' OR raw_data::text ILIKE '%disputa%' THEN 'chargeback'
+                    ELSE 'refunded'
+                END,
+                updated_at = NOW()
+                WHERE status NOT IN ('refunded', 'chargeback')
+                  AND (
+                    raw_data::text ILIKE '%chargeback%' 
+                    OR raw_data::text ILIKE '%disputa%'
+                    OR (raw_data::text ILIKE '%devolvida%' AND raw_data::text ILIKE '%reembolso%')
+                  )
+                RETURNING transaction_id, email, status
+            `);
+            if (fixRawResult.rows.length > 0) {
+                console.log(`Raw data fix: ${fixRawResult.rows.length} transactions corrected from raw_data`);
+            }
+        } catch (fixErr) {
+            console.error('Status fix error (non-blocking):', fixErr.message);
+        }
+        
+        // Step 2: Create refund_requests for transactions with refunded/chargeback status
         try {
             const backfillResult = await pool.query(`
                 SELECT t.transaction_id, t.email, t.phone, t.name, t.product, t.value, 
@@ -230,6 +270,8 @@ router.get('/api/admin/refunds', authenticateToken, async (req, res) => {
             for (const tx of backfillResult.rows) {
                 const refundProtocol = `MON-${String(tx.transaction_id).substring(0, 12).toUpperCase()}`;
                 const refundType = tx.status === 'chargeback' ? 'chargeback' : 'refund';
+                const pLower = (tx.product || '').toLowerCase();
+                const lang = tx.funnel_language || (pLower.includes('espanhol') || pLower.includes('recuperaci') || pLower.includes('infidelidad') ? 'es' : 'en');
                 await pool.query(`
                     INSERT INTO refund_requests (
                         protocol, full_name, email, phone, product, reason, 
@@ -248,12 +290,12 @@ router.get('/api/admin/refunds', authenticateToken, async (req, res) => {
                     refundType,
                     String(tx.transaction_id),
                     parseFloat(tx.value) || 0,
-                    tx.funnel_language || 'en',
+                    lang,
                     tx.created_at || new Date()
                 ]);
             }
             if (backfillResult.rows.length > 0) {
-                console.log(`Auto-backfill: ${backfillResult.rows.length} refund_requests synced`);
+                console.log(`Auto-backfill: ${backfillResult.rows.length} refund_requests created`);
             }
         } catch (bfErr) {
             console.error('Auto-backfill error (non-blocking):', bfErr.message);
