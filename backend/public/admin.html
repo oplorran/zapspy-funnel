@@ -9284,18 +9284,25 @@ Estou aqui para esclarecer tudo! 😊`
             const u1pA=parseInt(test.up1_purchases_a)||0, u1pB=parseInt(test.up1_purchases_b)||0;
             const u2pA=parseInt(test.up2_purchases_a)||0, u2pB=parseInt(test.up2_purchases_b)||0;
             const u3pA=parseInt(test.up3_purchases_a)||0, u3pB=parseInt(test.up3_purchases_b)||0;
+            const u4pA=parseInt(test.up4_purchases_a)||0, u4pB=parseInt(test.up4_purchases_b)||0;
             const u1rA=parseFloat(test.up1_revenue_a)||0, u1rB=parseFloat(test.up1_revenue_b)||0;
             const u2rA=parseFloat(test.up2_revenue_a)||0, u2rB=parseFloat(test.up2_revenue_b)||0;
             const u3rA=parseFloat(test.up3_revenue_a)||0, u3rB=parseFloat(test.up3_revenue_b)||0;
-            const urA=u1rA+u2rA+u3rA, urB=u1rB+u2rB+u3rB;
+            const u4rA=parseFloat(test.up4_revenue_a)||0, u4rB=parseFloat(test.up4_revenue_b)||0;
+            const urA=u1rA+u2rA+u3rA+u4rA, urB=u1rB+u2rB+u3rB+u4rB;
             const u1tA=test.up1_take_a||'0.0', u1tB=test.up1_take_b||'0.0';
             const u2tA=test.up2_take_a||'0.0', u2tB=test.up2_take_b||'0.0';
             const u3tA=test.up3_take_a||'0.0', u3tB=test.up3_take_b||'0.0';
+            const u4tA=test.up4_take_a||'0.0', u4tB=test.up4_take_b||'0.0';
             
-            const rpvWin = parseFloat(rpvA)>parseFloat(rpvB) ? 'A' : parseFloat(rpvB)>parseFloat(rpvA) ? 'B' : null;
-            const lrWin = parseFloat(lrA)>parseFloat(lrB) ? 'A' : parseFloat(lrB)>parseFloat(lrA) ? 'B' : null;
-            const prWin = parseFloat(prA)>parseFloat(prB) ? 'A' : parseFloat(prB)>parseFloat(prA) ? 'B' : null;
             const hasData = total > 0;
+            
+            // Lift calculation (B vs A)
+            const liftRPV = parseFloat(rpvA)>0 ? (((parseFloat(rpvB)-parseFloat(rpvA))/parseFloat(rpvA))*100).toFixed(1) : '0.0';
+            const liftCR = parseFloat(prA)>0 ? (((parseFloat(prB)-parseFloat(prA))/parseFloat(prA))*100).toFixed(1) : '0.0';
+            
+            // Days running
+            const daysRunning = test.started_at ? Math.max(1, Math.ceil((new Date() - new Date(test.started_at)) / 86400000)) : 0;
             
             const splitUrl = test.slug ? `${window.location.origin}/go/${test.slug}` : '';
             
@@ -9304,8 +9311,8 @@ Estou aqui para esclarecer tudo! 😊`
                 const max = Math.max(a,b,0.01);
                 const pctA = (a/max*100).toFixed(0), pctB = (b/max*100).toFixed(0);
                 return `<div style="display:flex;gap:3px;align-items:center;height:6px;">
-                    <div style="flex:1;background:#1a1a1a;border-radius:3px;overflow:hidden;height:100%;"><div style="width:${pctA}%;height:100%;background:${colorA};border-radius:3px;transition:width 0.5s;"></div></div>
-                    <div style="flex:1;background:#1a1a1a;border-radius:3px;overflow:hidden;height:100%;direction:rtl;"><div style="width:${pctB}%;height:100%;background:${colorB};border-radius:3px;transition:width 0.5s;"></div></div>
+                    <div style="flex:1;background:var(--bg-tertiary);border-radius:3px;overflow:hidden;height:100%;"><div style="width:${pctA}%;height:100%;background:${colorA};border-radius:3px;transition:width 0.5s;"></div></div>
+                    <div style="flex:1;background:var(--bg-tertiary);border-radius:3px;overflow:hidden;height:100%;direction:rtl;"><div style="width:${pctB}%;height:100%;background:${colorB};border-radius:3px;transition:width 0.5s;"></div></div>
                 </div>`;
             };
             
@@ -9314,9 +9321,9 @@ Estou aqui para esclarecer tudo! 😊`
                 const winB = parseFloat(valB)>parseFloat(valA) && hasData;
                 return `<div style="margin-bottom:10px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-                        <span style="font-size:13px;font-weight:${winA?'700':'500'};color:${winA&&highlight?colorA:'#ccc'};${winA?'text-shadow:0 0 8px '+colorA+'40;':''}">${fmtA}</span>
-                        <span style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">${label}</span>
-                        <span style="font-size:13px;font-weight:${winB?'700':'500'};color:${winB&&highlight?colorB:'#ccc'};${winB?'text-shadow:0 0 8px '+colorB+'40;':''}">${fmtB}</span>
+                        <span style="font-size:13px;font-weight:${winA?'700':'500'};color:${winA&&highlight?colorA:'var(--text-secondary)'};${winA?'text-shadow:0 0 8px '+colorA+'40;':''}">${fmtA}</span>
+                        <span style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">${label}</span>
+                        <span style="font-size:13px;font-weight:${winB?'700':'500'};color:${winB&&highlight?colorB:'var(--text-secondary)'};${winB?'text-shadow:0 0 8px '+colorB+'40;':''}">${fmtB}</span>
                     </div>
                     ${compBar(valA,valB,colorA,colorB)}
                 </div>`;
@@ -9325,41 +9332,41 @@ Estou aqui para esclarecer tudo! 😊`
             const upsellRow = (name, pA, pB, tA, tB, rA, rB, colorA, colorB) => {
                 const hasUp = (parseInt(pA)||0)+(parseInt(pB)||0) > 0;
                 return `<div style="display:flex;align-items:center;padding:6px 0;${hasUp?'':'opacity:0.4;'}">
-                    <span style="flex:1;text-align:right;font-size:12px;color:#aaa;">
-                        <span style="color:${parseFloat(tA)>parseFloat(tB)?colorA:'#888'};font-weight:${parseFloat(tA)>parseFloat(tB)?'700':'400'};">${tA}%</span>
-                        <span style="color:#444;margin:0 4px;">·</span>
-                        <span style="font-size:11px;color:#666;">${pA} vendas</span>
-                        <span style="color:#444;margin:0 4px;">·</span>
-                        <span style="font-size:11px;color:#555;">$${parseFloat(rA).toFixed(0)}</span>
+                    <span style="flex:1;text-align:right;font-size:12px;color:var(--text-secondary);">
+                        <span style="color:${parseFloat(tA)>parseFloat(tB)?colorA:'var(--text-muted)'};font-weight:${parseFloat(tA)>parseFloat(tB)?'700':'400'};">${tA}%</span>
+                        <span style="color:var(--border);margin:0 4px;">·</span>
+                        <span style="font-size:11px;color:var(--text-muted);">${pA} vendas</span>
+                        <span style="color:var(--border);margin:0 4px;">·</span>
+                        <span style="font-size:11px;color:var(--text-muted);">$${parseFloat(rA).toFixed(0)}</span>
                     </span>
-                    <span style="width:80px;text-align:center;font-size:11px;font-weight:600;color:#888;flex-shrink:0;">${name}</span>
-                    <span style="flex:1;font-size:12px;color:#aaa;">
-                        <span style="font-size:11px;color:#555;">$${parseFloat(rB).toFixed(0)}</span>
-                        <span style="color:#444;margin:0 4px;">·</span>
-                        <span style="font-size:11px;color:#666;">${pB} vendas</span>
-                        <span style="color:#444;margin:0 4px;">·</span>
-                        <span style="color:${parseFloat(tB)>parseFloat(tA)?colorB:'#888'};font-weight:${parseFloat(tB)>parseFloat(tA)?'700':'400'};">${tB}%</span>
+                    <span style="width:80px;text-align:center;font-size:11px;font-weight:600;color:var(--text-muted);flex-shrink:0;">${name}</span>
+                    <span style="flex:1;font-size:12px;color:var(--text-secondary);">
+                        <span style="font-size:11px;color:var(--text-muted);">$${parseFloat(rB).toFixed(0)}</span>
+                        <span style="color:var(--border);margin:0 4px;">·</span>
+                        <span style="font-size:11px;color:var(--text-muted);">${pB} vendas</span>
+                        <span style="color:var(--border);margin:0 4px;">·</span>
+                        <span style="color:${parseFloat(tB)>parseFloat(tA)?colorB:'var(--text-muted)'};font-weight:${parseFloat(tB)>parseFloat(tA)?'700':'400'};">${tB}%</span>
                     </span>
                 </div>`;
             };
             
-            const actionBtn = (icon,label,onclick,bg,clr) => `<button onclick="${onclick}" style="display:inline-flex;align-items:center;gap:4px;padding:6px 14px;font-size:11px;font-weight:600;border-radius:6px;border:1px solid ${bg==='transparent'?'#2a2a2a':bg};background:${bg};color:${clr||'#fff'};cursor:pointer;transition:all 0.2s;white-space:nowrap;letter-spacing:0.2px;" onmouseover="this.style.opacity='0.8';this.style.transform='translateY(-1px)'" onmouseout="this.style.opacity='1';this.style.transform='none'">${icon} ${label}</button>`;
+            const actionBtn = (icon,label,onclick,bg,clr) => `<button onclick="${onclick}" style="display:inline-flex;align-items:center;gap:4px;padding:6px 14px;font-size:11px;font-weight:600;border-radius:6px;border:1px solid ${bg==='transparent'?'var(--border)':bg};background:${bg};color:${clr||'#fff'};cursor:pointer;transition:all 0.2s;white-space:nowrap;letter-spacing:0.2px;" onmouseover="this.style.opacity='0.8';this.style.transform='translateY(-1px)'" onmouseout="this.style.opacity='1';this.style.transform='none'">${icon} ${label}</button>`;
             
             let actions = '';
-            if (test.status==='draft') actions = actionBtn('▶','Iniciar','startABTest('+test.id+')','#10b981','#fff') + actionBtn('✏️','Editar','editABTest('+test.id+')','transparent','#888') + actionBtn('🗑','Excluir','deleteABTest('+test.id+')','transparent','#ef4444');
-            else if (test.status==='running') actions = actionBtn('⏸','Pausar','stopABTest('+test.id+')','#f59e0b','#000') + actionBtn('🏆','Vencedor','showSetWinnerModal('+test.id+')','#3b82f6','#fff') + actionBtn('↺','Resetar','resetABTest('+test.id+')','transparent','#888');
-            else if (test.status==='stopped') actions = actionBtn('▶','Retomar','startABTest('+test.id+')','#10b981','#fff') + actionBtn('↺','Resetar','resetABTest('+test.id+')','transparent','#888') + actionBtn('🗑','Excluir','deleteABTest('+test.id+')','transparent','#ef4444');
+            if (test.status==='draft') actions = actionBtn('▶','Iniciar','startABTest('+test.id+')','#10b981','#fff') + actionBtn('✏️','Editar','editABTest('+test.id+')','transparent','var(--text-muted)') + actionBtn('🗑','Excluir','deleteABTest('+test.id+')','transparent','#ef4444');
+            else if (test.status==='running') actions = actionBtn('⏸','Pausar','stopABTest('+test.id+')','#f59e0b','#000') + actionBtn('🏆','Vencedor','showSetWinnerModal('+test.id+')','#3b82f6','#fff') + actionBtn('↺','Resetar','resetABTest('+test.id+')','transparent','var(--text-muted)');
+            else if (test.status==='stopped') actions = actionBtn('▶','Retomar','startABTest('+test.id+')','#10b981','#fff') + actionBtn('↺','Resetar','resetABTest('+test.id+')','transparent','var(--text-muted)') + actionBtn('🗑','Excluir','deleteABTest('+test.id+')','transparent','#ef4444');
             else actions = actionBtn('🗑','Excluir','deleteABTest('+test.id+')','transparent','#ef4444');
             
             const colA = '#3b82f6', colB = '#10b981';
             
             return `
-            <div style="background:#0d0d0d; border:1px solid #1e1e1e; border-radius:14px; margin-bottom:18px; overflow:hidden; ${test.status==='running'?'border-color:#10b98140;box-shadow:0 0 20px #10b98108;':''}">
+            <div class="ab-test-card" style="background:var(--bg-card); border:1px solid var(--border); border-radius:14px; margin-bottom:18px; overflow:hidden; ${test.status==='running'?'border-color:#10b98140;box-shadow:0 0 20px #10b98108;':''}">
                 <!-- HEADER -->
-                <div style="padding:14px 20px; display:flex; justify-content:space-between; align-items:center; background:#111; border-bottom:1px solid #1a1a1a;">
+                <div style="padding:14px 20px; display:flex; justify-content:space-between; align-items:center; background:var(--bg-secondary); border-bottom:1px solid var(--border);">
                     <div style="display:flex; align-items:center; gap:10px; min-width:0;">
                         <span style="width:9px; height:9px; border-radius:50%; background:${st.c}; flex-shrink:0; ${test.status==='running'?'box-shadow:0 0 8px '+st.c+';animation:abPulse 2s infinite;':''}"></span>
-                        <span style="font-size:15px; font-weight:700; color:#eee; letter-spacing:-0.2px;">${test.name}</span>
+                        <span style="font-size:15px; font-weight:700; color:var(--text-primary); letter-spacing:-0.2px;">${test.name}</span>
                         <span style="font-size:10px; color:${st.c}; background:${st.bg}; padding:3px 10px; border-radius:10px; font-weight:600; flex-shrink:0; border:1px solid ${st.c}30;">${st.t}</span>
                         ${test.winner?`<span style="font-size:10px; color:#f59e0b; background:#f59e0b15; padding:3px 10px; border-radius:10px; font-weight:600; flex-shrink:0; border:1px solid #f59e0b30;">🏆 Vencedor: ${test.winner}</span>`:''}
                     </div>
@@ -9367,34 +9374,33 @@ Estou aqui para esclarecer tudo! 😊`
                 </div>
                 
                 ${splitUrl && (test.status==='running' || test.status==='draft') ?`
-                <!-- SPLIT URL BAR -->
-                <div style="padding:8px 20px; background:#080c08; border-bottom:1px solid #1a1a1a; display:flex; align-items:center; gap:10px;">
-                    <span style="font-size:9px; color:#555; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; flex-shrink:0;">SPLIT URL</span>
+                <div style="padding:8px 20px; background:var(--bg-primary); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:9px; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:0.5px; flex-shrink:0;">SPLIT URL</span>
                     <code style="flex:1; font-size:11px; color:#25D366; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-family:'JetBrains Mono',monospace;" title="${splitUrl}">${splitUrl}</code>
-                    <button onclick="navigator.clipboard.writeText('${splitUrl}');showToast('Copiado!','Link copiado para a área de transferência','success')" style="background:#1a2a1a; color:#25D366; border:1px solid #25D36630; padding:4px 14px; border-radius:5px; cursor:pointer; font-size:10px; font-weight:600; flex-shrink:0; transition:all 0.2s;" onmouseover="this.style.background='#25D366';this.style.color='#000'" onmouseout="this.style.background='#1a2a1a';this.style.color='#25D366'">📋 Copiar</button>
+                    <button onclick="navigator.clipboard.writeText('${splitUrl}');showToast('Copiado!','Link copiado','success')" style="background:#1a2a1a; color:#25D366; border:1px solid #25D36630; padding:4px 14px; border-radius:5px; cursor:pointer; font-size:10px; font-weight:600; flex-shrink:0;">📋 Copiar</button>
                 </div>`:''}
                 
                 <!-- VARIANT HEADERS -->
                 <div style="display:flex; padding:12px 20px 0; gap:12px;">
                     <div style="flex:1;display:flex;align-items:center;gap:8px;justify-content:flex-end;">
-                        <span style="font-size:12px;font-weight:600;color:#aaa;">${test.variant_a_name||'Controle'}</span>
+                        <span style="font-size:12px;font-weight:600;color:var(--text-secondary);">${test.variant_a_name||'Controle'}</span>
                         <span style="background:${colA};color:#fff;width:24px;height:24px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">A</span>
                     </div>
                     <div style="width:80px;flex-shrink:0;"></div>
                     <div style="flex:1;display:flex;align-items:center;gap:8px;">
                         <span style="background:${colB};color:#fff;width:24px;height:24px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">B</span>
-                        <span style="font-size:12px;font-weight:600;color:#aaa;">${test.variant_b_name||'Variante'}</span>
+                        <span style="font-size:12px;font-weight:600;color:var(--text-secondary);">${test.variant_b_name||'Variante'}</span>
                     </div>
                 </div>
                 ${test.url_a||test.url_b?`<div style="display:flex;padding:2px 20px 0;gap:12px;">
-                    <div style="flex:1;text-align:right;font-size:10px;color:#444;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${test.url_a||''}">${test.url_a||''}</div>
+                    <div style="flex:1;text-align:right;font-size:10px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${test.url_a||''}">${test.url_a||''}</div>
                     <div style="width:80px;flex-shrink:0;"></div>
-                    <div style="flex:1;font-size:10px;color:#444;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${test.url_b||''}">${test.url_b||''}</div>
+                    <div style="flex:1;font-size:10px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${test.url_b||''}">${test.url_b||''}</div>
                 </div>`:''}
                 
                 <!-- MAIN METRICS -->
                 <div style="padding:14px 20px 0;">
-                    <div style="font-size:9px;color:#444;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #1a1a1a;">Funil Principal</div>
+                    <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">Funil Principal</div>
                     ${compRow('Visitantes',vA,vB,vA.toLocaleString(),vB.toLocaleString(),colA,colB,false)}
                     ${compRow('Conv. Lead',lrA,lrB,lrA+'%',lrB+'%',colA,colB,true)}
                     ${compRow('Conv. Venda',prA,prB,prA+'%',prB+'%',colA,colB,true)}
@@ -9406,34 +9412,34 @@ Estou aqui para esclarecer tudo! 😊`
                 <div style="padding:8px 20px;">
                     <div style="display:flex;gap:12px;">
                         <div style="flex:1;display:flex;gap:8px;justify-content:flex-end;">
-                            <div style="text-align:center;padding:8px 12px;background:#111;border-radius:8px;border:1px solid #1a1a1a;min-width:70px;">
-                                <div style="font-size:14px;font-weight:700;color:${rA>=rB&&hasData?colA:'#ccc'};">$${rA.toFixed(0)}</div>
-                                <div style="font-size:8px;color:#555;text-transform:uppercase;letter-spacing:0.3px;margin-top:2px;">Receita Total</div>
+                            <div style="text-align:center;padding:8px 12px;background:var(--bg-secondary);border-radius:8px;border:1px solid var(--border);min-width:70px;">
+                                <div style="font-size:14px;font-weight:700;color:${rA>=rB&&hasData?colA:'var(--text-secondary)'};">$${rA.toFixed(0)}</div>
+                                <div style="font-size:8px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;margin-top:2px;">Receita Total</div>
                             </div>
-                            <div style="text-align:center;padding:8px 12px;background:#111;border-radius:8px;border:1px solid #1a1a1a;min-width:60px;">
-                                <div style="font-size:13px;font-weight:600;color:#888;">$${frA.toFixed(0)}</div>
-                                <div style="font-size:8px;color:#555;text-transform:uppercase;letter-spacing:0.3px;margin-top:2px;">Front</div>
+                            <div style="text-align:center;padding:8px 12px;background:var(--bg-secondary);border-radius:8px;border:1px solid var(--border);min-width:60px;">
+                                <div style="font-size:13px;font-weight:600;color:var(--text-muted);">$${frA.toFixed(0)}</div>
+                                <div style="font-size:8px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;margin-top:2px;">Front</div>
                             </div>
-                            <div style="text-align:center;padding:8px 12px;background:#111;border-radius:8px;border:1px solid #1a1a1a;min-width:60px;">
+                            <div style="text-align:center;padding:8px 12px;background:var(--bg-secondary);border-radius:8px;border:1px solid var(--border);min-width:60px;">
                                 <div style="font-size:13px;font-weight:600;color:#a78bfa;">$${urA.toFixed(0)}</div>
-                                <div style="font-size:8px;color:#555;text-transform:uppercase;letter-spacing:0.3px;margin-top:2px;">Upsells</div>
+                                <div style="font-size:8px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;margin-top:2px;">Upsells</div>
                             </div>
                         </div>
                         <div style="width:80px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
-                            <span style="font-size:9px;color:#444;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;">Receita</span>
+                            <span style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:700;">Receita</span>
                         </div>
                         <div style="flex:1;display:flex;gap:8px;">
-                            <div style="text-align:center;padding:8px 12px;background:#111;border-radius:8px;border:1px solid #1a1a1a;min-width:60px;">
-                                <div style="font-size:13px;font-weight:600;color:#888;">$${frB.toFixed(0)}</div>
-                                <div style="font-size:8px;color:#555;text-transform:uppercase;letter-spacing:0.3px;margin-top:2px;">Front</div>
+                            <div style="text-align:center;padding:8px 12px;background:var(--bg-secondary);border-radius:8px;border:1px solid var(--border);min-width:60px;">
+                                <div style="font-size:13px;font-weight:600;color:var(--text-muted);">$${frB.toFixed(0)}</div>
+                                <div style="font-size:8px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;margin-top:2px;">Front</div>
                             </div>
-                            <div style="text-align:center;padding:8px 12px;background:#111;border-radius:8px;border:1px solid #1a1a1a;min-width:60px;">
+                            <div style="text-align:center;padding:8px 12px;background:var(--bg-secondary);border-radius:8px;border:1px solid var(--border);min-width:60px;">
                                 <div style="font-size:13px;font-weight:600;color:#a78bfa;">$${urB.toFixed(0)}</div>
-                                <div style="font-size:8px;color:#555;text-transform:uppercase;letter-spacing:0.3px;margin-top:2px;">Upsells</div>
+                                <div style="font-size:8px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;margin-top:2px;">Upsells</div>
                             </div>
-                            <div style="text-align:center;padding:8px 12px;background:#111;border-radius:8px;border:1px solid #1a1a1a;min-width:70px;">
-                                <div style="font-size:14px;font-weight:700;color:${rB>=rA&&hasData?colB:'#ccc'};">$${rB.toFixed(0)}</div>
-                                <div style="font-size:8px;color:#555;text-transform:uppercase;letter-spacing:0.3px;margin-top:2px;">Receita Total</div>
+                            <div style="text-align:center;padding:8px 12px;background:var(--bg-secondary);border-radius:8px;border:1px solid var(--border);min-width:70px;">
+                                <div style="font-size:14px;font-weight:700;color:${rB>=rA&&hasData?colB:'var(--text-secondary)'};">$${rB.toFixed(0)}</div>
+                                <div style="font-size:8px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;margin-top:2px;">Receita Total</div>
                             </div>
                         </div>
                     </div>
@@ -9441,20 +9447,24 @@ Estou aqui para esclarecer tudo! 😊`
                 
                 <!-- UPSELL BREAKDOWN -->
                 <div style="padding:6px 20px 14px;">
-                    <div style="font-size:9px;color:#444;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid #1a1a1a;">Take Rate Upsells</div>
+                    <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border);">Take Rate Upsells</div>
                     ${upsellRow('UP1',u1pA,u1pB,u1tA,u1tB,u1rA,u1rB,colA,colB)}
                     ${upsellRow('UP2',u2pA,u2pB,u2tA,u2tB,u2rA,u2rB,colA,colB)}
                     ${upsellRow('UP3',u3pA,u3pB,u3tA,u3tB,u3rA,u3rB,colA,colB)}
+                    ${upsellRow('UP4',u4pA,u4pB,u4tA,u4tB,u4rA,u4rB,colA,colB)}
                 </div>
                 
                 <!-- FOOTER SUMMARY -->
-                <div style="padding:10px 20px; background:#080808; border-top:1px solid #1a1a1a; display:flex; justify-content:center; gap:24px; flex-wrap:wrap;">
-                    <span style="font-size:11px; color:#555;">Split: <strong style="color:#888;">${test.traffic_split}/${100-test.traffic_split}</strong></span>
-                    <span style="font-size:11px; color:#555;">Visitantes: <strong style="color:#888;">${total.toLocaleString()}</strong></span>
-                    <span style="font-size:11px; color:#555;">Vendas: <strong style="color:#888;">${pA+pB}</strong></span>
-                    <span style="font-size:11px; color:#555;">Receita: <strong style="color:#10b981;">$${(rA+rB).toFixed(2)}</strong></span>
-                    <span style="font-size:11px; color:#555;">Leads: <strong style="color:#888;">${lA+lB}</strong></span>
-                    ${test.started_at?`<span style="font-size:11px; color:#555;">Início: <strong style="color:#888;">${new Date(test.started_at).toLocaleDateString('pt-BR')}</strong></span>`:''}
+                <div style="padding:10px 20px; background:var(--bg-primary); border-top:1px solid var(--border); display:flex; justify-content:center; gap:24px; flex-wrap:wrap;">
+                    <span style="font-size:11px; color:var(--text-muted);">Split: <strong style="color:var(--text-secondary);">${test.traffic_split}/${100-test.traffic_split}</strong></span>
+                    <span style="font-size:11px; color:var(--text-muted);">Visitantes: <strong style="color:var(--text-secondary);">${total.toLocaleString()}</strong></span>
+                    <span style="font-size:11px; color:var(--text-muted);">Vendas: <strong style="color:var(--text-secondary);">${pA+pB}</strong></span>
+                    <span style="font-size:11px; color:var(--text-muted);">Receita: <strong style="color:#10b981;">$${(rA+rB).toFixed(2)}</strong></span>
+                    <span style="font-size:11px; color:var(--text-muted);">Leads: <strong style="color:var(--text-secondary);">${lA+lB}</strong></span>
+                    ${daysRunning>0?`<span style="font-size:11px; color:var(--text-muted);">Lift RPV: <strong style="color:${parseFloat(liftRPV)>0?'#10b981':parseFloat(liftRPV)<0?'#ef4444':'var(--text-secondary)'};">${parseFloat(liftRPV)>0?'+':''}${liftRPV}%</strong></span>`:''}
+                    ${daysRunning>0?`<span style="font-size:11px; color:var(--text-muted);">Lift Conv: <strong style="color:${parseFloat(liftCR)>0?'#10b981':parseFloat(liftCR)<0?'#ef4444':'var(--text-secondary)'};">${parseFloat(liftCR)>0?'+':''}${liftCR}%</strong></span>`:''}
+                    ${test.started_at?`<span style="font-size:11px; color:var(--text-muted);">Início: <strong style="color:var(--text-secondary);">${new Date(test.started_at).toLocaleDateString('pt-BR')}</strong></span>`:''}
+                    ${daysRunning>0?`<span style="font-size:11px; color:var(--text-muted);">${daysRunning} dia${daysRunning>1?'s':''}</span>`:''}
                 </div>
             </div>
             <style>@keyframes abPulse{0%,100%{opacity:1}50%{opacity:0.4}}</style>`;

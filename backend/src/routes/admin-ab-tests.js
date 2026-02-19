@@ -80,7 +80,20 @@ router.get('/api/admin/ab-tests', authenticateToken, async (req, res) => {
                     WHERE l.ab_test_id = at.id AND l.ab_variant = 'A' AND t.status = 'approved' AND ${UPSELL_SQL.up3}) as up3_revenue_a,
                 (SELECT COALESCE(SUM(CAST(t.value AS DECIMAL)), 0) FROM transactions t 
                     INNER JOIN leads l ON LOWER(t.email) = LOWER(l.email) 
-                    WHERE l.ab_test_id = at.id AND l.ab_variant = 'B' AND t.status = 'approved' AND ${UPSELL_SQL.up3}) as up3_revenue_b
+                    WHERE l.ab_test_id = at.id AND l.ab_variant = 'B' AND t.status = 'approved' AND ${UPSELL_SQL.up3}) as up3_revenue_b,
+                -- Upsell 4
+                (SELECT COUNT(DISTINCT t.email) FROM transactions t 
+                    INNER JOIN leads l ON LOWER(t.email) = LOWER(l.email) 
+                    WHERE l.ab_test_id = at.id AND l.ab_variant = 'A' AND t.status = 'approved' AND ${UPSELL_SQL.up4}) as up4_purchases_a,
+                (SELECT COUNT(DISTINCT t.email) FROM transactions t 
+                    INNER JOIN leads l ON LOWER(t.email) = LOWER(l.email) 
+                    WHERE l.ab_test_id = at.id AND l.ab_variant = 'B' AND t.status = 'approved' AND ${UPSELL_SQL.up4}) as up4_purchases_b,
+                (SELECT COALESCE(SUM(CAST(t.value AS DECIMAL)), 0) FROM transactions t 
+                    INNER JOIN leads l ON LOWER(t.email) = LOWER(l.email) 
+                    WHERE l.ab_test_id = at.id AND l.ab_variant = 'A' AND t.status = 'approved' AND ${UPSELL_SQL.up4}) as up4_revenue_a,
+                (SELECT COALESCE(SUM(CAST(t.value AS DECIMAL)), 0) FROM transactions t 
+                    INNER JOIN leads l ON LOWER(t.email) = LOWER(l.email) 
+                    WHERE l.ab_test_id = at.id AND l.ab_variant = 'B' AND t.status = 'approved' AND ${UPSELL_SQL.up4}) as up4_revenue_b
             FROM ab_tests at
             ORDER BY at.created_at DESC
         `);
@@ -110,6 +123,10 @@ router.get('/api/admin/ab-tests', authenticateToken, async (req, res) => {
             const u3pB = parseInt(test.up3_purchases_b) || 0;
             const u3rA = parseFloat(test.up3_revenue_a) || 0;
             const u3rB = parseFloat(test.up3_revenue_b) || 0;
+            const u4pA = parseInt(test.up4_purchases_a) || 0;
+            const u4pB = parseInt(test.up4_purchases_b) || 0;
+            const u4rA = parseFloat(test.up4_revenue_a) || 0;
+            const u4rB = parseFloat(test.up4_revenue_b) || 0;
             
             return {
                 ...test,
@@ -137,10 +154,14 @@ router.get('/api/admin/ab-tests', authenticateToken, async (req, res) => {
                 up3_revenue_a: u3rA, up3_revenue_b: u3rB,
                 up3_take_a: fpA > 0 ? ((u3pA / fpA) * 100).toFixed(1) : '0.0',
                 up3_take_b: fpB > 0 ? ((u3pB / fpB) * 100).toFixed(1) : '0.0',
+                up4_purchases_a: u4pA, up4_purchases_b: u4pB,
+                up4_revenue_a: u4rA, up4_revenue_b: u4rB,
+                up4_take_a: fpA > 0 ? ((u4pA / fpA) * 100).toFixed(1) : '0.0',
+                up4_take_b: fpB > 0 ? ((u4pB / fpB) * 100).toFixed(1) : '0.0',
                 avg_ticket_a: pA > 0 ? (rA / pA).toFixed(2) : '0.00',
                 avg_ticket_b: pB > 0 ? (rB / pB).toFixed(2) : '0.00',
-                upsell_revenue_a: (u1rA + u2rA + u3rA),
-                upsell_revenue_b: (u1rB + u2rB + u3rB)
+                upsell_revenue_a: (u1rA + u2rA + u3rA + u4rA),
+                upsell_revenue_b: (u1rB + u2rB + u3rB + u4rB)
             };
         });
         
