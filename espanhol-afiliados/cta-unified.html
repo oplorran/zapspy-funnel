@@ -2392,7 +2392,10 @@
         }
         
         // Proceed to checkout with all tracking
+        var checkoutLocked = false;
         function proceedToCheckout() {
+            if (checkoutLocked) return;
+            checkoutLocked = true;
             // Obtener valor actual del producto (puede ser modificado por A/B testing)
             const currentValue = window.productValue || 39;
             const currentCheckoutCode = window.checkoutCode || 'DZC357746';
@@ -2549,7 +2552,10 @@
         // X Ai - Detector de Infidelidad - 50% OFF para exit popup / back redirect
         const CHECKOUT_50_OFF_BASE = 'https://pay.monetizze.com.br/DZC357746';
         
+        var checkout50Locked = false;
         function goToCheckout50Off() {
+            if (checkout50Locked) return;
+            checkout50Locked = true;
             // Track 50% off click
             if (typeof FunnelTracker !== 'undefined') {
                 FunnelTracker.track('checkout_50off_clicked', { discount: '50%' });

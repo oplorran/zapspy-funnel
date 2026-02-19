@@ -2394,7 +2394,10 @@
         }
         
         // Proceed to checkout with all tracking
+        var checkoutLocked = false;
         function proceedToCheckout() {
+            if (checkoutLocked) return;
+            checkoutLocked = true;
             // Get current product value (may be modified by A/B testing)
             const currentValue = window.productValue || 49;
             const currentCheckoutCode = window.checkoutCode || 'PPU38CQ7KHI';
@@ -2548,7 +2551,10 @@
         // TODO: Substituir pelo link PerfectPay de 50% off quando disponível
         const CHECKOUT_50_OFF_BASE = 'https://go.centerpag.com/PPU38CQ7KHI';
         
+        var checkout50Locked = false;
         function goToCheckout50Off() {
+            if (checkout50Locked) return;
+            checkout50Locked = true;
             // Track 50% off click
             if (typeof FunnelTracker !== 'undefined') {
                 FunnelTracker.track('checkout_50off_clicked', { discount: '50%' });

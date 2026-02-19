@@ -803,16 +803,13 @@ router.all('/api/postback/monetizze', async (req, res) => {
             // Include actual sale time so Facebook gets the correct event_time
             const capiOptions = { language: funnelLanguage, eventTime: saleDate || null };
             
-            // Status 7 = Abandono de Checkout -> InitiateCheckout event
-            if (statusStr === '7') {
-                console.log(`📤 Sending InitiateCheckout to Facebook CAPI (${funnelLanguage})...`);
-                await sendToFacebookCAPI('InitiateCheckout', fbUserData, fbCustomData, eventSourceUrl, `${eventId}_checkout`, capiOptions);
-            }
-            
-            // Status 1 = Aguardando pagamento -> Also InitiateCheckout (they started checkout)
-            if (statusStr === '1') {
-                console.log(`📤 Sending InitiateCheckout (pending) to Facebook CAPI (${funnelLanguage})...`);
-                await sendToFacebookCAPI('InitiateCheckout', fbUserData, fbCustomData, eventSourceUrl, `${eventId}_pending`, capiOptions);
+            // Status 7 and 1: InitiateCheckout is already sent by the frontend (Browser Pixel + CAPI)
+            // with proper event_id deduplication. Sending it again here from the postback would create
+            // DUPLICATE events in the Ads Manager because the event_ids are different.
+            // The frontend sends: Browser Pixel + CAPI (same eventID = 1 event after dedup)
+            // If we also send here: CAPI with different eventID = Facebook counts as a 2nd event
+            if (statusStr === '7' || statusStr === '1') {
+                console.log(`ℹ️ Status ${statusStr}: InitiateCheckout NOT sent via postback (already sent by frontend to avoid duplicates)`);
             }
             
             // Status 2 or 6 = Aprovada/Completa -> DELAYED Purchase event
@@ -1376,16 +1373,10 @@ router.all('/api/postback/perfectpay', async (req, res) => {
             const eventId = `perfectpay_${transactionCode}_${statusEnum}`;
             const capiOptions = { language: funnelLanguage, eventTime: saleDate || null };
             
-            // Status 12 = precheckout (abandono) -> InitiateCheckout
-            if (statusEnum === '12') {
-                console.log(`📤 PerfectPay: Sending InitiateCheckout to Facebook CAPI...`);
-                await sendToFacebookCAPI('InitiateCheckout', fbUserData, fbCustomData, eventSourceUrl, `${eventId}_checkout`, capiOptions);
-            }
-            
-            // Status 1 = pending -> InitiateCheckout
-            if (statusEnum === '1') {
-                console.log(`📤 PerfectPay: Sending InitiateCheckout (pending) to Facebook CAPI...`);
-                await sendToFacebookCAPI('InitiateCheckout', fbUserData, fbCustomData, eventSourceUrl, `${eventId}_pending`, capiOptions);
+            // Status 12 and 1: InitiateCheckout already sent by frontend (Browser Pixel + CAPI)
+            // Sending again here would create DUPLICATE events in Ads Manager
+            if (statusEnum === '12' || statusEnum === '1') {
+                console.log(`ℹ️ PerfectPay Status ${statusEnum}: InitiateCheckout NOT sent via postback (already sent by frontend)`);
             }
             
             // Status 2, 8, 10 = approved/authorized/completed -> Purchase

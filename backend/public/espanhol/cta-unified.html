@@ -2357,7 +2357,10 @@
         }
         
         // Proceed to checkout with all tracking
+        var checkoutLocked = false;
         function proceedToCheckout() {
+            if (checkoutLocked) return;
+            checkoutLocked = true;
             // Track AddToCart + InitiateCheckout (Pixel + CAPI with same event_id)
             if (typeof FacebookCAPI !== 'undefined') {
                 FacebookCAPI.trackAddToCart(27.00, 'ZapSpy.ai VIP Access');
@@ -2506,7 +2509,10 @@
         // X Ai - Detector de Infidelidad - 50% OFF para exit popup / back redirect
         const CHECKOUT_50_OFF_BASE = 'https://pay.monetizze.com.br/KMS455971';
         
+        var checkout50Locked = false;
         function goToCheckout50Off() {
+            if (checkout50Locked) return;
+            checkout50Locked = true;
             // Track 50% off click
             if (typeof FunnelTracker !== 'undefined') {
                 FunnelTracker.track('checkout_50off_clicked', { discount: '50%' });
