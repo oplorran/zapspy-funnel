@@ -122,9 +122,8 @@ async function syncMonetizzeSalesCore(startDate, endDate) {
     const params = new URLSearchParams();
     if (startDate) params.append('date_min', `${startDate} 00:00:00`);
     if (endDate) params.append('date_max', `${endDate} 23:59:59`);
-    // Monetizze API only supports status 1-6. Chargebacks (8/9) come via postback only.
-    // 1=Pending, 2=Approved, 3=Cancelled, 4=Refunded/Devolvida, 5=Blocked, 6=Complete
-    ['1','2','3','4','5','6'].forEach(s => params.append('status[]', s));
+    // 1=Pending, 2=Approved, 3=Cancelled, 4=Refunded, 5=Blocked, 6=Complete, 8/9=Chargeback
+    ['1','2','3','4','5','6','8','9'].forEach(s => params.append('status[]', s));
     
     const validProductCodes = [
         '341972', '349241', '349242', '349243',
@@ -379,7 +378,11 @@ async function syncMonetizzeSalesCore(startDate, endDate) {
                 ON CONFLICT (transaction_id) 
                 DO UPDATE SET 
                     monetizze_status = $7,
-                    status = $8,
+                    status = CASE 
+                        WHEN $8 IN ('refunded', 'chargeback') THEN $8
+                        WHEN transactions.status IN ('refunded', 'chargeback') THEN transactions.status
+                        ELSE $8
+                    END,
                     value = $6,
                     raw_data = $9,
                     funnel_language = $10,
