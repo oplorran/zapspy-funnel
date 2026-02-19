@@ -7,10 +7,10 @@
     // Page view is tracked via upsell-tracking.js
 
     // ============================================
-    // COUNTDOWN TIMER
+    // COUNTDOWN TIMER WITH AUTO-RESTART
     // ============================================
-    const STORAGE_KEY = 'upsell3_timer_end_es';
-    const TIMER_DURATION = 10 * 60; // 10 minutes
+    const STORAGE_KEY = 'upsell2_timer_end_es';
+    const TIMER_DURATION = 12 * 60 + 47; // 12:47
     let totalSeconds;
     
     function initTimer() {
@@ -42,7 +42,7 @@
         return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
     }
     
-    function updateTimer() {
+    function updateAllTimers() {
         var formatted = format(totalSeconds);
         if (countdownEl) countdownEl.textContent = formatted;
         if (countdownCtaEl) countdownCtaEl.textContent = formatted;
@@ -51,7 +51,7 @@
     function tick(){
         if (totalSeconds <= 0) {
             restartTimer();
-            updateTimer();
+            updateAllTimers();
             
             // Visual feedback when timer restarts
             var timerBar = document.querySelector('.timer-bar');
@@ -64,12 +64,40 @@
             return;
         }
         totalSeconds -= 1;
-        updateTimer();
+        updateAllTimers();
     }
     
     initTimer();
-    updateTimer();
-    setInterval(tick, 1000);
+    updateAllTimers();
+    var timer = setInterval(tick, 1000);
+
+    // ============================================
+    // DYNAMIC SCARCITY NUMBERS
+    // ============================================
+    function updateScarcityNumber() {
+        var scarcityEl = document.querySelector('.scarcity-text strong');
+        if (scarcityEl) {
+            var baseNumber = Math.floor(Math.random() * (52 - 24 + 1)) + 24;
+            scarcityEl.textContent = baseNumber + ' personas';
+        }
+    }
+    
+    function scheduleScarcityUpdate() {
+        var delay = (Math.floor(Math.random() * 30) + 30) * 1000;
+        setTimeout(function() {
+            updateScarcityNumber();
+            scheduleScarcityUpdate();
+        }, delay);
+    }
+    
+    updateScarcityNumber();
+    scheduleScarcityUpdate();
+
+    // ============================================
+    // FOOTER YEAR
+    // ============================================
+    var yearEl = document.getElementById('year');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
 
     // ============================================
     // LIVE ACTIVITY FEED - REALISTIC & ANIMATED
@@ -90,10 +118,10 @@
     ];
     
     var actions = [
-        'saltó la espera de 3 días',
-        'obtuvo procesamiento prioritario VIP',
-        'desbloqueó resultados instantáneos',
-        'actualizó a acceso VIP'
+        'desbloqueó todas las redes sociales',
+        'agregó rastreo GPS',
+        'actualizó al paquete completo',
+        'activó monitoreo total'
     ];
     
     var activityFeed = document.getElementById('activityFeed');
@@ -184,45 +212,4 @@
     // Initialize feed and start updates
     initActivityFeed();
     scheduleActivityUpdate();
-
-    // ============================================
-    // FOOTER YEAR
-    // ============================================
-    var yearEl = document.getElementById('year');
-    if (yearEl) yearEl.textContent = new Date().getFullYear();
-
-    // ============================================
-    // URGENCY EFFECTS
-    // ============================================
-    function addUrgencyEffects() {
-        var urgencyCard = document.querySelector('.urgency-card');
-        if (urgencyCard) {
-            urgencyCard.style.animation = 'gentle-glow 2s ease-in-out infinite alternate';
-        }
-    }
-
-    window.addEventListener('load', addUrgencyEffects);
-
-    // ============================================
-    // FADE-IN ANIMATIONS
-    // ============================================
-    var style = document.createElement('style');
-    style.textContent = `
-        @keyframes gentle-glow {
-            0% { box-shadow: 0 4px 12px rgba(220, 53, 69, 0.1); }
-            100% { box-shadow: 0 8px 24px rgba(220, 53, 69, 0.25); }
-        }
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .fade-in { animation: fadeInUp 0.6s ease forwards; }
-    `;
-    document.head.appendChild(style);
-
-    var sections = document.querySelectorAll('.testimonial, .benefits, .urgency, .final-cta');
-    sections.forEach(function(section, index) {
-        section.style.animationDelay = (index * 0.15) + 's';
-        section.classList.add('fade-in');
-    });
 })();

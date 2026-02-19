@@ -5,7 +5,7 @@
     <script src="https://cdn.utmify.com.br/scripts/utms/latest.js" data-utmify-prevent-xcod-sck data-utmify-prevent-subids async defer></script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Analista de Comportamiento IA - Detección Inteligente de Patrones</title>
+    <title>Recupera Conversaciones, Fotos y Videos Eliminados</title>
     
     <!-- Meta Pixel Code -->
     <script>
@@ -18,6 +18,7 @@
     s.parentNode.insertBefore(t,s)}(window, document,'script',
     'https://connect.facebook.net/en_US/fbevents.js');
     
+    // Advanced Matching - get user data from localStorage
     var userData = {};
     try {
         var em = localStorage.getItem('userEmail');
@@ -54,287 +55,493 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             if (typeof FacebookCAPI !== 'undefined') {
-                FacebookCAPI.init('Upsell 1 - AI Behavior Analyst');
-                FacebookCAPI.trackViewContent('Upsell Page', 'Funnel - Upsell', 19);
+                FacebookCAPI.init('Upsell 1 - Message Vault');
+                // Track ViewContent for CAPI
+                FacebookCAPI.trackViewContent('Upsell Page', 'Funnel - Upsell', 37);
             }
         });
     </script>
     
-    <meta name="description" content="Análisis de comportamiento impulsado por IA que detecta patrones sospechosos, predice acciones y te alerta antes de que se eliminen evidencias.">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+    <meta name="description" content="Oferta especial: recupera conversaciones, fotos y videos eliminados de los últimos 90 días.">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔓</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../vip-overlay-styles.css?v=8.0">
-    <link rel="stylesheet" href="upsell1-styles.css?v=9.0">
-    <!-- MONETIZZE: Reemplazar hash con el hash de producto UP4 -->
-    <script type="text/javascript" src="https://app.monetizze.com.br/1buyclick.php?u=REPLACE_WITH_MONETIZZE_UP1_ES_HASH"></script>
+    <link rel="stylesheet" href="upsell2-styles.css?v=9.0">
+    <script type="text/javascript" src="https://app.monetizze.com.br/1buyclick.php?u=c5fcb2f7ba87f745a8d8dc1c65dd8bf1"></script>
     <style>
-    .scan-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;background:linear-gradient(135deg,#0a0a0a 0%,#1a1025 40%,#0f1a2e 100%);display:flex;align-items:center;justify-content:center;transition:opacity .8s ease,transform .8s ease;overflow:hidden}
-    .scan-overlay.fade-out{opacity:0;transform:scale(1.05);pointer-events:none}
-    .scan-container{position:relative;z-index:2;width:90%;max-width:420px;text-align:center}
-    .scan-icon{font-size:44px;margin-bottom:10px;animation:brainPulse 1.5s ease-in-out infinite}
-    @keyframes brainPulse{0%,100%{transform:scale(1);filter:drop-shadow(0 0 8px rgba(139,92,246,.4))}50%{transform:scale(1.1);filter:drop-shadow(0 0 20px rgba(139,92,246,.8))}}
-    .scan-title{font-family:'DM Sans',sans-serif;font-size:19px;font-weight:700;color:#fff;margin-bottom:5px}
-    .scan-subtitle{font-family:'DM Sans',sans-serif;font-size:12.5px;color:rgba(255,255,255,.4);margin-bottom:22px}
-    .scan-box{background:rgba(255,255,255,.04);border:1px solid rgba(139,92,246,.15);border-radius:14px;padding:18px;margin-bottom:16px}
-    .scan-label{font-family:'DM Sans',sans-serif;font-size:11px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
-    .scan-bars{display:flex;flex-direction:column;gap:8px}
-    .scan-bar-item{display:flex;align-items:center;gap:10px;font-family:'DM Sans',sans-serif;font-size:12px;color:rgba(255,255,255,.5)}
-    .scan-bar-label{width:100px;text-align:right;flex-shrink:0}
-    .scan-bar-track{flex:1;height:6px;background:rgba(255,255,255,.06);border-radius:20px;overflow:hidden}
-    .scan-bar-fill{height:100%;width:0%;border-radius:20px;transition:width 1.5s ease}
-    .bar-purple{background:linear-gradient(90deg,#8b5cf6,#a78bfa)}
-    .bar-red{background:linear-gradient(90deg,#ef4444,#f87171)}
-    .bar-yellow{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
-    .bar-green{background:linear-gradient(90deg,#22c55e,#4ade80)}
-    .scan-bar-value{width:40px;font-weight:600;color:rgba(255,255,255,.7);font-size:11px}
-    .scan-findings{margin-top:14px;text-align:left;font-family:'DM Sans',sans-serif}
-    .scan-finding{padding:5px 0;font-size:12px;color:rgba(255,255,255,.4);opacity:0;transform:translateX(-10px);transition:all .4s ease}
-    .scan-finding.visible{opacity:1;transform:translateX(0)}
-    .scan-finding.alert{color:#f87171}
-    .scan-finding.warn{color:#fbbf24}
-    .scan-finding.ok{color:#4ade80}
-    .scan-result{display:none;margin-top:16px;padding:16px 18px;border-radius:12px;background:linear-gradient(135deg,rgba(139,92,246,.06),rgba(139,92,246,.12));border:1px solid rgba(139,92,246,.3)}
-    .scan-result.visible{display:block;animation:resultAppear .7s cubic-bezier(.22,1,.36,1)}
-    @keyframes resultAppear{0%{opacity:0;transform:translateY(20px) scale(.95)}100%{opacity:1;transform:translateY(0) scale(1)}}
-    .scan-result-icon{font-size:26px;display:block;margin-bottom:6px;animation:brainBounce .6s ease-in-out infinite alternate}
-    @keyframes brainBounce{0%{transform:translateY(0)}100%{transform:translateY(-5px)}}
-    .scan-result-title{font-family:'DM Sans',sans-serif;font-weight:700;font-size:14px;color:#a78bfa;margin-bottom:4px;letter-spacing:.5px}
-    .scan-result-text{font-family:'DM Sans',sans-serif;font-size:11.5px;color:rgba(255,255,255,.5);line-height:1.5}
-    .scan-result-text strong{color:#fff}
-    .page.hidden-content{opacity:0;pointer-events:none}
-    .page.reveal-content{animation:contentReveal .8s ease forwards}
-    @keyframes contentReveal{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
+        /* ========== LOADING OVERLAY ========== */
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 99999;
+            background: linear-gradient(135deg, #0a0a1a 0%, #0d1b2a 40%, #1b2838 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.8s ease, transform 0.8s ease;
+            overflow: hidden;
+        }
+        .loading-overlay.fade-out {
+            opacity: 0;
+            transform: scale(1.05);
+            pointer-events: none;
+        }
+        .loading-overlay::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle at 30% 50%, rgba(0, 200, 83, 0.04) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 50%, rgba(37, 211, 102, 0.03) 0%, transparent 50%);
+            animation: bgPulse 4s ease-in-out infinite;
+        }
+        @keyframes bgPulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+        .loading-overlay::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(37, 211, 102, 0.6), transparent);
+            animation: scanLine 3s linear infinite;
+        }
+        @keyframes scanLine {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+        .loading-container {
+            position: relative;
+            z-index: 2;
+            width: 90%;
+            max-width: 440px;
+            text-align: center;
+        }
+        .loading-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            animation: iconFloat 2s ease-in-out infinite;
+        }
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .loading-title {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 8px;
+            letter-spacing: -0.3px;
+        }
+        .loading-subtitle {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 28px;
+        }
+        .progress-wrapper {
+            background: rgba(255,255,255,0.08);
+            border-radius: 20px;
+            height: 8px;
+            overflow: hidden;
+            margin-bottom: 32px;
+            position: relative;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            border-radius: 20px;
+            background: linear-gradient(90deg, #25D366, #00c853, #25D366);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s linear infinite;
+            transition: width 0.5s ease;
+        }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .progress-percent {
+            font-family: 'DM Sans', monospace;
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 8px;
+            margin-bottom: 24px;
+        }
+        .loading-steps {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            text-align: left;
+        }
+        .loading-step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            margin-bottom: 6px;
+            border-radius: 10px;
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+        }
+        .loading-step.active {
+            opacity: 1;
+            transform: translateX(0);
+            color: rgba(255,255,255,0.9);
+            background: rgba(255,255,255,0.03);
+        }
+        .loading-step.done {
+            opacity: 1;
+            transform: translateX(0);
+            color: rgba(255,255,255,0.5);
+        }
+        .loading-step .step-icon {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 14px;
+            flex-shrink: 0;
+            transition: all 0.4s ease;
+        }
+        .loading-step .step-icon.pending {
+            background: rgba(255,255,255,0.08);
+            border: 2px solid rgba(255,255,255,0.15);
+        }
+        .loading-step.active .step-icon.pending {
+            border-color: #25D366;
+            background: rgba(37, 211, 102, 0.1);
+        }
+        .loading-step.active .step-icon.pending::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #25D366;
+            animation: pulse 1s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.4); opacity: 0.5; }
+        }
+        .loading-step .step-icon.check {
+            background: #25D366;
+            border: 2px solid #25D366;
+            color: #fff;
+            font-size: 13px;
+            animation: checkPop 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        @keyframes checkPop {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+        .loading-step .step-text {
+            flex: 1;
+        }
+        .loading-step .step-dots {
+            display: none;
+        }
+        .loading-step.active .step-dots {
+            display: inline;
+            animation: dots 1.5s steps(4) infinite;
+        }
+        @keyframes dots {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+        }
+        .loading-step.active .step-dots::after {
+            content: '';
+            animation: dotContent 1.5s steps(1) infinite;
+        }
+        @keyframes dotContent {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+        }
+        .discovery-alert {
+            display: none;
+            margin-top: 20px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            background: rgba(255, 193, 7, 0.08);
+            border: 1px solid rgba(255, 193, 7, 0.25);
+            animation: alertSlide 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .discovery-alert.visible {
+            display: block;
+        }
+        @keyframes alertSlide {
+            0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .discovery-alert .alert-icon {
+            font-size: 24px;
+            display: block;
+            margin-bottom: 8px;
+            animation: alertPulse 0.8s ease-in-out infinite alternate;
+        }
+        @keyframes alertPulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+        .discovery-alert .alert-title {
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 700;
+            font-size: 15px;
+            color: #ffc107;
+            margin-bottom: 4px;
+        }
+        .discovery-alert .alert-text {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12px;
+            color: rgba(255,255,255,0.6);
+            line-height: 1.5;
+        }
+        .discovery-alert .alert-text strong {
+            color: #fff;
+        }
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: rgba(37, 211, 102, 0.3);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .page.hidden-content {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .page.reveal-content {
+            animation: contentReveal 0.8s ease forwards;
+        }
+        @keyframes contentReveal {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
-    <div class="scan-overlay" id="scanOverlay">
-        <div class="scan-container">
-            <div class="scan-icon">🧠</div>
-            <h2 class="scan-title">IA Escaneando Tus Datos Recopilados...</h2>
-            <p class="scan-subtitle">Ejecutando análisis de patrones de comportamiento en la cuenta monitoreada</p>
+    <!-- ========== LOADING OVERLAY ========== -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-container">
+            <div class="loading-icon">🔐</div>
+            <div class="loading-title">Configurando Tu Cuenta</div>
+            <div class="loading-subtitle">Por favor espera mientras configuramos tu acceso...</div>
 
-            <div class="scan-box">
-                <div class="scan-label">Progreso del Análisis</div>
-                <div class="scan-bars">
-                    <div class="scan-bar-item">
-                        <span class="scan-bar-label">Mensajes</span>
-                        <div class="scan-bar-track"><div class="scan-bar-fill bar-purple" id="barMessages"></div></div>
-                        <span class="scan-bar-value" id="valMessages">0%</span>
-                    </div>
-                    <div class="scan-bar-item">
-                        <span class="scan-bar-label">Ubicaciones</span>
-                        <div class="scan-bar-track"><div class="scan-bar-fill bar-green" id="barLocations"></div></div>
-                        <span class="scan-bar-value" id="valLocations">0%</span>
-                    </div>
-                    <div class="scan-bar-item">
-                        <span class="scan-bar-label">Archivos</span>
-                        <div class="scan-bar-track"><div class="scan-bar-fill bar-yellow" id="barMedia"></div></div>
-                        <span class="scan-bar-value" id="valMedia">0%</span>
-                    </div>
-                    <div class="scan-bar-item">
-                        <span class="scan-bar-label">Comportamiento</span>
-                        <div class="scan-bar-track"><div class="scan-bar-fill bar-red" id="barBehavior"></div></div>
-                        <span class="scan-bar-value" id="valBehavior">0%</span>
-                    </div>
-                </div>
+            <div class="progress-wrapper">
+                <div class="progress-bar" id="progressBar"></div>
             </div>
+            <div class="progress-percent" id="progressPercent">0%</div>
 
-            <div class="scan-findings" id="scanFindings"></div>
+            <ul class="loading-steps" id="loadingSteps">
+                <li class="loading-step" data-step="0">
+                    <span class="step-icon pending"></span>
+                    <span class="step-text">Confirmando tu pago<span class="step-dots"></span></span>
+                </li>
+                <li class="loading-step" data-step="1">
+                    <span class="step-icon pending"></span>
+                    <span class="step-text">Activando licencia ZapSpy<span class="step-dots"></span></span>
+                </li>
+                <li class="loading-step" data-step="2">
+                    <span class="step-icon pending"></span>
+                    <span class="step-text">Conectando a servidores seguros<span class="step-dots"></span></span>
+                </li>
+                <li class="loading-step" data-step="3">
+                    <span class="step-icon pending"></span>
+                    <span class="step-text">Cargando panel de monitoreo<span class="step-dots"></span></span>
+                </li>
+                <li class="loading-step" data-step="4">
+                    <span class="step-icon pending"></span>
+                    <span class="step-text">Buscando actualizaciones disponibles<span class="step-dots"></span></span>
+                </li>
+            </ul>
 
-            <div class="scan-result" id="scanResult">
-                <span class="scan-result-icon">🧠</span>
-                <div class="scan-result-title">ANALISTA DE COMPORTAMIENTO IA DISPONIBLE</div>
-                <div class="scan-result-text"><strong>3 patrones sospechosos detectados.</strong> La IA puede monitorear continuamente y predecir cambios de comportamiento en tiempo real.</div>
+            <div class="discovery-alert" id="discoveryAlert">
+                <span class="alert-icon">⚡</span>
+                <div class="alert-title">ACTUALIZACIÓN EXCLUSIVA DESBLOQUEADA</div>
+                <div class="alert-text">Como nuevo miembro, has sido seleccionado para una <strong>oferta exclusiva única</strong> — disponible solo por los próximos 15 minutos.</div>
             </div>
         </div>
     </div>
 
     <div class="page hidden-content" id="mainPage">
         <main class="content">
-            <section class="hero">
-                <h1 class="main-title">🧠 Deja de Adivinar. Deja que la IA Prediga Su Próximo Movimiento</h1>
-                
-                <div class="intro-section">
-                    <p class="problem-text">😰 <strong>Ahora mismo, estás reaccionando:</strong> Revisas mensajes, ubicaciones y fotos DESPUÉS del hecho. Para cuando ves algo sospechoso, ya han cubierto sus huellas. Siempre estás <strong>un paso atrás</strong>.</p>
+            <div class="hero-icon" aria-hidden="true">
+                <div class="whatsapp-icon">📱</div>
+            </div>
+            
+            <!-- HEADLINE -->
+            <h1 class="headline">🔓 REVELADO: Ve Cada Mensaje Que Eliminaron (Incluso de Hace 90 Días)</h1>
+            <p class="subhead">En solo 5 minutos, descubre los textos, fotos y videos eliminados que pensaban que habían desaparecido para siempre. Funciona en cualquier teléfono — no se necesitan habilidades técnicas.</p>
+
+            <!-- CTA SECTION -->
+            <section class="final-cta-section">
+                <div class="final-cta-card">
+                    <h3 class="final-cta-title">¿Listo Para Ver Lo Que Eliminaron?</h3>
                     
-                    <p class="solution-text">🧠 <strong>Con el Analista de Comportamiento IA:</strong> Nuestra IA aprende sus patrones y <strong>predice comportamiento sospechoso ANTES de que suceda</strong>. Recibe alertas cuando el comportamiento se desvía de lo normal — como eliminaciones repentinas de mensajes, nuevos contactos nocturnos o patrones de ubicación inusuales.</p>
-                </div>
-            </section>
-
-            <section class="ai-features-section">
-                <div class="ai-features-card">
-                    <h2 class="ai-features-title">🧠 Funciones de Detección Impulsadas por IA</h2>
-                    <div class="ai-features-grid">
-                        <div class="ai-feature-item">
-                            <span class="ai-feature-icon">📊</span>
-                            <span class="ai-feature-name">Reconocimiento de Patrones</span>
-                            <span class="ai-feature-desc">La IA aprende su rutina diaria y marca cualquier desviación — actividad nocturna, nuevos contactos, cambios de horario.</span>
-                        </div>
-                        <div class="ai-feature-item">
-                            <span class="ai-feature-icon">⚡</span>
-                            <span class="ai-feature-name">Alertas Predictivas</span>
-                            <span class="ai-feature-desc">Recibe notificaciones ANTES de que eliminen mensajes o fotos. La IA detecta patrones de comportamiento pre-eliminación.</span>
-                        </div>
-                        <div class="ai-feature-item">
-                            <span class="ai-feature-icon">🔍</span>
-                            <span class="ai-feature-name">Análisis de Contactos Sospechosos</span>
-                            <span class="ai-feature-desc">La IA identifica y clasifica automáticamente contactos por nivel de riesgo según frecuencia y horario de interacción.</span>
-                        </div>
-                        <div class="ai-feature-item">
-                            <span class="ai-feature-icon">📈</span>
-                            <span class="ai-feature-name">Reportes de Tendencia</span>
-                            <span class="ai-feature-desc">Reportes semanales generados por IA mostrando cambios de comportamiento, evaluaciones de riesgo y puntuaciones de confianza.</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="comparison-section">
-                <div class="comparison-card">
-                    <h2 class="comparison-title">👁️ Monitoreo Manual vs Analista IA</h2>
-                    <div class="comparison-grid">
-                        <div class="comparison-item manual">
-                            <span class="comparison-icon">😰</span>
-                            <div class="comparison-text">
-                                <strong>Monitoreo Manual:</strong>
-                                <p>• Revisas datos manualmente, horas después<br>• Pierdes el 80% de patrones sospechosos<br>• Siempre reaccionando, nunca adelantándote<br>• Evidencia eliminada antes de que la veas</p>
-                            </div>
-                        </div>
-                        <div class="comparison-item ai">
-                            <span class="comparison-icon">🧠</span>
-                            <div class="comparison-text">
-                                <strong>Analista de Comportamiento IA:</strong>
-                                <p>• La IA monitorea 24/7 automáticamente<br>• Detecta el 97% de cambios de comportamiento<br>• Predice acciones antes de que sucedan<br>• Te alerta en tiempo real</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-
-            <section class="benefits">
-                <div class="benefits-card">
-                    <h2 class="benefits-title">🧠 Lo Que Incluye el Analista de Comportamiento IA:</h2>
-                    <div class="benefits-grid">
-                        <div class="benefit-item">
-                            <span class="benefit-icon">🧠</span>
-                            <span class="benefit-text"><strong>Motor de Patrones IA:</strong> Aprende comportamiento y detecta anomalías</span>
-                        </div>
-                        <div class="benefit-item">
-                            <span class="benefit-icon">⚡</span>
-                            <span class="benefit-text"><strong>Alertas Predictivas:</strong> Sabe qué pasa antes de que pase</span>
-                        </div>
-                        <div class="benefit-item">
-                            <span class="benefit-icon">🔍</span>
-                            <span class="benefit-text"><strong>Puntuación de Riesgo:</strong> La IA clasifica contactos por nivel de sospecha</span>
-                        </div>
-                        <div class="benefit-item">
-                            <span class="benefit-icon">📈</span>
-                            <span class="benefit-text"><strong>Reportes Semanales IA:</strong> Resúmenes automatizados de análisis de comportamiento</span>
-                        </div>
-                        <div class="benefit-item">
-                            <span class="benefit-icon">🔔</span>
-                            <span class="benefit-text"><strong>Monitoreo en Tiempo Real:</strong> Vigilancia IA 24/7, nunca duerme</span>
-                        </div>
-                        <div class="benefit-item">
-                            <span class="benefit-icon">🛡️</span>
-                            <span class="benefit-text"><strong>Protección de Evidencia:</strong> Guarda datos automáticamente antes de eliminación</span>
-                        </div>
-                    </div>
+                    <p class="final-cta-subtitle">Los mensajes eliminados a menudo contienen las respuestas que buscas. Una vez que desaparecen, se pierden para siempre — a menos que actúes ahora.</p>
                     
-                    <p class="benefits-summary">🧠 Deja de adivinar. Deja que la IA haga el trabajo de detective por ti — 24/7, automáticamente.</p>
-                </div>
-            </section>
-
-
-            <section class="final-cta">
-                <div class="cta-section">
-                    <h2 class="cta-title">Deja de Estar 3 Pasos Atrás. Deja que la IA Prediga Sus Movimientos</h2>
-                    <p class="cta-text">Ya tienes las herramientas de monitoreo. Ahora agrega la capa de inteligencia. El Analista IA convierte datos crudos en predicciones accionables.</p>
+                    <p class="price-tag" style="margin-bottom: 24px;">Precio regular: <s>$197</s> → Solo hoy: $37 (81% off)</p>
                     
-                    
-                    <div class="cta-buttons">
-                        <!-- MONETIZZE: Reemplazar hash con el hash de producto UP4 -->
-                        <a href='#monetizzeCompra' data-upsell='REPLACE_WITH_MONETIZZE_UP1_ES_HASH' class="btn btn-primary btn-large btn-pulse btn-mega" aria-label="Activar Analista de Comportamiento IA ahora" role="button">¡SÍ! Activar Analista de Comportamiento IA</a>
-                        
-                    </div>
+                    <a href='#monetizzeCompra' data-upsell='c5fcb2f7ba87f745a8d8dc1c65dd8bf1' class="btn btn-primary btn-large btn-pulse btn-mega" aria-label="Recuperar conversaciones eliminadas de WhatsApp ahora" role="button">¡Sí! Quiero Recuperar Mensajes Eliminados Ahora</a>
                 </div>
             </section>
 
         </main>
 
         <footer class="footer">
-            <div class="smallprint">© <span id="year"></span> AI Behavior Analysis. Todos los derechos reservados.</div>
+            <div class="smallprint">© <span id="year"></span> Secure Recovery Suite. Todos los derechos reservados.</div>
         </footer>
     </div>
 
     <script src="../polyfills.js?v=8.0"></script>
-    <script src="upsell1-script.js?v=9.0"></script>
-    <script src="../upsell-tracking.js?v=2.0"></script>
+    <script src="upsell2-script.js?v=9.0"></script>
+    <!-- geo-restriction.js removed - prices always visible -->
+    <script src="../upsell-tracking.js?v=1.0"></script>
+
     <script>
-    (function(){
-        var o=document.getElementById('scanOverlay'),m=document.getElementById('mainPage'),
-            findings=document.getElementById('scanFindings'),result=document.getElementById('scanResult');
-        if(!o||!m)return;
+    // ==========================================
+    // LOADING OVERLAY - 15 second delay
+    // ==========================================
+    (function() {
+        var overlay = document.getElementById('loadingOverlay');
+        var mainPage = document.getElementById('mainPage');
+        var progressBar = document.getElementById('progressBar');
+        var progressPercent = document.getElementById('progressPercent');
+        var steps = document.querySelectorAll('.loading-step');
+        var discoveryAlert = document.getElementById('discoveryAlert');
 
-        var bars=[
-            {el:document.getElementById('barMessages'),val:document.getElementById('valMessages'),target:100,speed:1.2},
-            {el:document.getElementById('barLocations'),val:document.getElementById('valLocations'),target:100,speed:1.0},
-            {el:document.getElementById('barMedia'),val:document.getElementById('valMedia'),target:100,speed:0.8},
-            {el:document.getElementById('barBehavior'),val:document.getElementById('valBehavior'),target:100,speed:0.6}
+        if (!overlay || !mainPage) return;
+
+        var stepTimeline = [
+            { activateAt: 0,    completeAt: 2500,  progress: 20 },
+            { activateAt: 2500, completeAt: 5000,  progress: 40 },
+            { activateAt: 5000, completeAt: 7500,  progress: 60 },
+            { activateAt: 7500, completeAt: 10000, progress: 80 },
+            { activateAt: 10000, completeAt: 12500, progress: 95 }
         ];
 
-        var findingsData=[
-            {time:3000,text:'📡 Escaneando patrones de mensajes...',cls:''},
-            {time:5000,text:'⚠️ Patrón de eliminación inusual detectado a las 2:47 AM',cls:'warn'},
-            {time:7000,text:'🔍 Analizando frecuencia de contactos...',cls:''},
-            {time:9000,text:'🚨 3 nuevos contactos con interacciones nocturnas',cls:'alert'},
-            {time:10500,text:'📍 Anomalía de ubicación: Visitas repetidas a dirección desconocida',cls:'alert'},
-            {time:12000,text:'✅ Modelo IA listo — patrones de comportamiento mapeados',cls:'ok'}
-        ];
+        var TOTAL_DURATION = 15000;
+        var startTime = Date.now();
+        var currentProgress = 0;
+        var alertShown = false;
 
-        var TOTAL=15000,start=Date.now(),resultShown=false;
-
-        function tick(){
-            var e=Date.now()-start;
-            var progress=Math.min(e/TOTAL,1);
-
-            bars.forEach(function(b){
-                var adjusted=Math.min(progress/(b.speed*0.8)*100,100);
-                b.el.style.width=adjusted+'%';
-                b.val.textContent=Math.floor(adjusted)+'%';
-            });
-
-            findingsData.forEach(function(f){
-                if(e>=f.time&&!f.shown){
-                    f.shown=true;
-                    var div=document.createElement('div');
-                    div.className='scan-finding '+(f.cls||'');
-                    div.textContent=f.text;
-                    findings.appendChild(div);
-                    setTimeout(function(){div.classList.add('visible');},50);
-                    if(findings.children.length>4){
-                        findings.children[0].style.opacity='0';
-                        setTimeout(function(){if(findings.children[0])findings.removeChild(findings.children[0]);},300);
-                    }
-                }
-            });
-
-            if(e>=12500&&!resultShown){
-                resultShown=true;
-                result.classList.add('visible');
-                if(navigator.vibrate)navigator.vibrate([150,80,150]);
+        function createParticles() {
+            for (var i = 0; i < 20; i++) {
+                var p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.top = Math.random() * 100 + '%';
+                p.style.animationDuration = (3 + Math.random() * 4) + 's';
+                p.style.animationDelay = Math.random() * 2 + 's';
+                p.style.opacity = (0.1 + Math.random() * 0.3).toString();
+                p.style.animation = 'particleDrift ' + (4 + Math.random() * 6) + 's linear infinite';
+                overlay.appendChild(p);
             }
+            var style = document.createElement('style');
+            style.textContent = '@keyframes particleDrift { 0% { transform: translateY(0) translateX(0); opacity: 0; } 20% { opacity: 0.4; } 80% { opacity: 0.4; } 100% { transform: translateY(-120px) translateX(' + (Math.random() * 60 - 30) + 'px); opacity: 0; } }';
+            document.head.appendChild(style);
+        }
+        createParticles();
 
-            if(e>=TOTAL){
-                setTimeout(function(){
-                    o.classList.add('fade-out');
-                    m.classList.remove('hidden-content');
-                    m.classList.add('reveal-content');
-                    setTimeout(function(){o.style.display='none'},800);
-                },500);
+        function activateStep(index) {
+            if (index >= steps.length) return;
+            steps[index].classList.add('active');
+        }
+
+        function completeStep(index) {
+            if (index >= steps.length) return;
+            var step = steps[index];
+            step.classList.remove('active');
+            step.classList.add('done');
+            var icon = step.querySelector('.step-icon');
+            if (icon) {
+                icon.classList.remove('pending');
+                icon.classList.add('check');
+                icon.innerHTML = '✓';
+            }
+        }
+
+        function updateProgress(target) {
+            if (target > currentProgress) {
+                currentProgress = target;
+                progressBar.style.width = currentProgress + '%';
+                progressPercent.textContent = currentProgress + '%';
+            }
+        }
+
+        function showAlert() {
+            if (alertShown) return;
+            alertShown = true;
+            discoveryAlert.classList.add('visible');
+            if (navigator.vibrate) {
+                navigator.vibrate([100, 50, 100]);
+            }
+        }
+
+        function finishLoading() {
+            updateProgress(100);
+            progressPercent.textContent = '100%';
+            setTimeout(function() {
+                overlay.classList.add('fade-out');
+                mainPage.classList.remove('hidden-content');
+                mainPage.classList.add('reveal-content');
+                setTimeout(function() {
+                    overlay.style.display = 'none';
+                }, 800);
+            }, 500);
+        }
+
+        var stepsActivated = [];
+        var stepsCompleted = [];
+        for (var i = 0; i < stepTimeline.length; i++) {
+            stepsActivated.push(false);
+            stepsCompleted.push(false);
+        }
+
+        function tick() {
+            var elapsed = Date.now() - startTime;
+            for (var i = 0; i < stepTimeline.length; i++) {
+                if (!stepsActivated[i] && elapsed >= stepTimeline[i].activateAt) {
+                    stepsActivated[i] = true;
+                    activateStep(i);
+                }
+                if (!stepsCompleted[i] && elapsed >= stepTimeline[i].completeAt) {
+                    stepsCompleted[i] = true;
+                    completeStep(i);
+                    updateProgress(stepTimeline[i].progress);
+                }
+            }
+            if (elapsed >= 12500 && !alertShown) {
+                showAlert();
+            }
+            for (var j = 0; j < stepTimeline.length; j++) {
+                if (elapsed >= stepTimeline[j].activateAt && elapsed < stepTimeline[j].completeAt) {
+                    var stepProgress = (elapsed - stepTimeline[j].activateAt) / (stepTimeline[j].completeAt - stepTimeline[j].activateAt);
+                    var prevProgress = j > 0 ? stepTimeline[j - 1].progress : 0;
+                    var targetProgress = stepTimeline[j].progress;
+                    var interpolated = Math.floor(prevProgress + (targetProgress - prevProgress) * stepProgress);
+                    updateProgress(interpolated);
+                    break;
+                }
+            }
+            if (elapsed >= TOTAL_DURATION) {
+                finishLoading();
                 return;
             }
             requestAnimationFrame(tick);
@@ -343,4 +550,5 @@
     })();
     </script>
 </body>
+    
 </html>

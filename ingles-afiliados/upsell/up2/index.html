@@ -5,7 +5,7 @@
     <script src="https://cdn.utmify.com.br/scripts/utms/latest.js" data-utmify-prevent-xcod-sck data-utmify-prevent-subids async defer></script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Recover Deleted Conversations, Photos and Videos</title>
+    <title>Exclusive Upgrade - ZappDetect V2</title>
     
     <!-- Meta Pixel Code -->
     <script>
@@ -55,128 +55,207 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             if (typeof FacebookCAPI !== 'undefined') {
-                FacebookCAPI.init('Upsell 2 - Message Vault');
+                FacebookCAPI.init('Upsell 2 - 360 Tracker');
                 // Track ViewContent for CAPI
-                FacebookCAPI.trackViewContent('Upsell Page', 'Funnel - Upsell', 47);
+                FacebookCAPI.trackViewContent('Upsell Page', 'Funnel - Upsell', 45);
             }
         });
     </script>
     
-    <meta name="description" content="Special offer: recover deleted conversations, photos and videos from the last 90 days.">
+    <meta name="description" content="Limited-time exclusive upgrade offer for loyal ZappDetect customers.">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔓</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../vip-overlay-styles.css?v=8.0">
-    <link rel="stylesheet" href="upsell2-styles.css?v=9.0">
-    <script type="text/javascript" src="https://app.monetizze.com.br/1buyclick.php?u=6599d38af770e81ae8bf496b1e50684d"></script>
+    <link rel="stylesheet" href="upsell3-styles.css?v=9.0">
+    <script type="text/javascript" src="https://app.monetizze.com.br/1buyclick.php?u=3ddb6f07442fb683ac2cc90756de4e0b"></script>
     <style>
-        .loading-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;background:linear-gradient(135deg,#0a0a1a 0%,#0d1b2a 40%,#1b2838 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .8s ease,transform .8s ease;overflow:hidden}
-        .loading-overlay.fade-out{opacity:0;transform:scale(1.05);pointer-events:none}
-        .loading-overlay::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 30% 50%,rgba(0,200,83,.04) 0%,transparent 50%),radial-gradient(circle at 70% 50%,rgba(37,211,102,.03) 0%,transparent 50%);animation:bgPulse 4s ease-in-out infinite}
-        @keyframes bgPulse{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.1);opacity:1}}
-        .loading-overlay::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(37,211,102,.6),transparent);animation:scanLine 3s linear infinite}
-        @keyframes scanLine{0%{top:0}100%{top:100%}}
-        .loading-container{position:relative;z-index:2;width:90%;max-width:440px;text-align:center}
-        .loading-icon{font-size:48px;margin-bottom:12px;animation:iconFloat 2s ease-in-out infinite}
-        @keyframes iconFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-        .loading-title{font-family:'DM Sans',sans-serif;font-size:20px;font-weight:700;color:#fff;margin-bottom:8px}
-        .loading-subtitle{font-family:'DM Sans',sans-serif;font-size:13px;color:rgba(255,255,255,.5);margin-bottom:28px}
-        .progress-wrapper{background:rgba(255,255,255,.08);border-radius:20px;height:8px;overflow:hidden;margin-bottom:32px}
-        .progress-bar{height:100%;width:0%;border-radius:20px;background:linear-gradient(90deg,#25D366,#00c853,#25D366);background-size:200% 100%;animation:shimmer 1.5s linear infinite;transition:width .5s ease}
-        @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-        .progress-percent{font-family:'DM Sans',monospace;font-size:12px;color:rgba(255,255,255,.4);margin-top:8px;margin-bottom:24px}
-        .loading-steps{list-style:none;padding:0;margin:0;text-align:left}
-        .loading-step{display:flex;align-items:center;gap:12px;padding:10px 16px;margin-bottom:6px;border-radius:10px;opacity:0;transform:translateX(-20px);transition:all .5s cubic-bezier(.22,1,.36,1);font-family:'DM Sans',sans-serif;font-size:14px;color:rgba(255,255,255,.6)}
-        .loading-step.active{opacity:1;transform:translateX(0);color:rgba(255,255,255,.9);background:rgba(255,255,255,.03)}
-        .loading-step.done{opacity:1;transform:translateX(0);color:rgba(255,255,255,.5)}
-        .loading-step .step-icon{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:14px;flex-shrink:0;transition:all .4s ease}
-        .loading-step .step-icon.pending{background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.15)}
-        .loading-step.active .step-icon.pending{border-color:#25D366;background:rgba(37,211,102,.1)}
-        .loading-step.active .step-icon.pending::after{content:'';width:8px;height:8px;border-radius:50%;background:#25D366;animation:pulse 1s ease-in-out infinite}
-        @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.5}}
-        .loading-step .step-icon.check{background:#25D366;border:2px solid #25D366;color:#fff;font-size:13px;animation:checkPop .4s cubic-bezier(.22,1,.36,1)}
-        @keyframes checkPop{0%{transform:scale(0)}50%{transform:scale(1.3)}100%{transform:scale(1)}}
-        .loading-step .step-text{flex:1}
-        .loading-step .step-dots{display:none}
-        .loading-step.active .step-dots{display:inline}
-        .loading-step.active .step-dots::after{content:'';animation:dotContent 1.5s steps(1) infinite}
-        @keyframes dotContent{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}}
-        .discovery-alert{display:none;margin-top:20px;padding:16px 20px;border-radius:12px;background:rgba(255,193,7,.08);border:1px solid rgba(255,193,7,.25);animation:alertSlide .6s cubic-bezier(.22,1,.36,1)}
-        .discovery-alert.visible{display:block}
-        @keyframes alertSlide{0%{opacity:0;transform:translateY(20px) scale(.95)}100%{opacity:1;transform:translateY(0) scale(1)}}
-        .discovery-alert .alert-icon{font-size:24px;display:block;margin-bottom:8px;animation:alertPulse .8s ease-in-out infinite alternate}
-        @keyframes alertPulse{0%{transform:scale(1)}100%{transform:scale(1.1)}}
-        .discovery-alert .alert-title{font-family:'DM Sans',sans-serif;font-weight:700;font-size:15px;color:#ffc107;margin-bottom:4px}
-        .discovery-alert .alert-text{font-family:'DM Sans',sans-serif;font-size:12px;color:rgba(255,255,255,.6);line-height:1.5}
-        .discovery-alert .alert-text strong{color:#fff}
-        .page.hidden-content{opacity:0;pointer-events:none}
-        .page.reveal-content{animation:contentReveal .8s ease forwards}
-        @keyframes contentReveal{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
+    .scan-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;background:linear-gradient(135deg,#0a0014 0%,#1a0a2e 40%,#0d1b3a 100%);display:flex;align-items:center;justify-content:center;transition:opacity .8s ease,transform .8s ease;overflow:hidden}
+    .scan-overlay.fade-out{opacity:0;transform:scale(1.05);pointer-events:none}
+    .scan-overlay::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(138,43,226,.7),transparent);animation:scanLine2 2.5s linear infinite}
+    @keyframes scanLine2{0%{top:0}100%{top:100%}}
+    .scan-container{position:relative;z-index:2;width:90%;max-width:440px;text-align:center}
+    .radar-icon{font-size:48px;margin-bottom:10px;animation:radarSpin 3s linear infinite}
+    @keyframes radarSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+    .scan-title{font-family:'DM Sans',sans-serif;font-size:19px;font-weight:700;color:#fff;margin-bottom:6px}
+    .scan-subtitle{font-family:'DM Sans',sans-serif;font-size:13px;color:rgba(255,255,255,.45);margin-bottom:24px}
+    .scan-progress-wrap{background:rgba(255,255,255,.08);border-radius:20px;height:6px;overflow:hidden;margin-bottom:28px}
+    .scan-progress-bar{height:100%;width:0%;border-radius:20px;background:linear-gradient(90deg,#8a2be2,#da70d6,#8a2be2);background-size:200% 100%;animation:shimmer2 1.5s linear infinite;transition:width .4s ease}
+    @keyframes shimmer2{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    .scan-percent{font-family:'DM Sans',monospace;font-size:12px;color:rgba(255,255,255,.35);margin-top:6px;margin-bottom:20px}
+    .scan-platforms{text-align:left}
+    .platform-row{display:flex;align-items:center;gap:10px;padding:9px 14px;margin-bottom:5px;border-radius:10px;opacity:.3;transform:translateX(-15px);transition:all .5s cubic-bezier(.22,1,.36,1);font-family:'DM Sans',sans-serif;font-size:13.5px;color:rgba(255,255,255,.5)}
+    .platform-row.scanning{opacity:1;transform:translateX(0);color:rgba(255,255,255,.85);background:rgba(138,43,226,.08);border:1px solid rgba(138,43,226,.15)}
+    .platform-row.done{opacity:1;transform:translateX(0);color:rgba(255,255,255,.55);background:transparent;border:1px solid transparent}
+    .platform-icon-wrap{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:rgba(255,255,255,.05);flex-shrink:0}
+    .platform-row.scanning .platform-icon-wrap{background:rgba(138,43,226,.15)}
+    .platform-emoji{font-size:16px}
+    .platform-name{flex:1;font-weight:500}
+    .platform-status{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+    .platform-row.scanning .platform-status{color:#da70d6}
+    .platform-row.done .platform-status{color:#25D366}
+    .platform-row.done.alert-found .platform-status{color:#ff6b6b}
+    .platform-count{font-size:11px;color:rgba(255,255,255,.4);min-width:60px;text-align:right}
+    .platform-row.done .platform-count{color:rgba(255,255,255,.6)}
+    .platform-row.done.alert-found .platform-count{color:#ff6b6b;font-weight:600}
+    .scan-alert{display:none;margin-top:18px;padding:14px 18px;border-radius:12px;background:rgba(255,59,48,.08);border:1px solid rgba(255,59,48,.3);text-align:center}
+    .scan-alert.visible{display:block;animation:alertAppear .6s cubic-bezier(.22,1,.36,1)}
+    @keyframes alertAppear{0%{opacity:0;transform:translateY(15px) scale(.95)}100%{opacity:1;transform:translateY(0) scale(1)}}
+    .scan-alert-icon{font-size:22px;display:block;margin-bottom:6px;animation:alertBlink .6s ease-in-out infinite alternate}
+    @keyframes alertBlink{0%{opacity:.6}100%{opacity:1}}
+    .scan-alert-title{font-family:'DM Sans',sans-serif;font-weight:700;font-size:13px;color:#ff6b6b;margin-bottom:4px;letter-spacing:.5px}
+    .scan-alert-text{font-family:'DM Sans',sans-serif;font-size:11.5px;color:rgba(255,255,255,.55);line-height:1.5}
+    .scan-alert-text strong{color:#fff}
+    .page.hidden-content{opacity:0;pointer-events:none}
+    .page.reveal-content{animation:contentReveal .8s ease forwards}
+    @keyframes contentReveal{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
     </style>
 </head>
 <body>
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-container">
-            <div class="loading-icon">🔐</div>
-            <div class="loading-title">Setting Up Your Account</div>
-            <div class="loading-subtitle">Please wait while we configure your access...</div>
-            <div class="progress-wrapper"><div class="progress-bar" id="progressBar"></div></div>
-            <div class="progress-percent" id="progressPercent">0%</div>
-            <ul class="loading-steps" id="loadingSteps">
-                <li class="loading-step" data-step="0"><span class="step-icon pending"></span><span class="step-text">Confirming your payment<span class="step-dots"></span></span></li>
-                <li class="loading-step" data-step="1"><span class="step-icon pending"></span><span class="step-text">Activating ZapSpy license<span class="step-dots"></span></span></li>
-                <li class="loading-step" data-step="2"><span class="step-icon pending"></span><span class="step-text">Connecting to secure servers<span class="step-dots"></span></span></li>
-                <li class="loading-step" data-step="3"><span class="step-icon pending"></span><span class="step-text">Loading monitoring dashboard<span class="step-dots"></span></span></li>
-                <li class="loading-step" data-step="4"><span class="step-icon pending"></span><span class="step-text">Scanning available upgrades<span class="step-dots"></span></span></li>
-            </ul>
-            <div class="discovery-alert" id="discoveryAlert">
-                <span class="alert-icon">⚡</span>
-                <div class="alert-title">EXCLUSIVE UPGRADE UNLOCKED</div>
-                <div class="alert-text">As a new member, you've been selected for a <strong>one-time exclusive offer</strong> — available only for the next 15 minutes.</div>
+    <div class="scan-overlay" id="scanOverlay">
+        <div class="scan-container">
+            <div class="scan-header">
+                <div class="radar-icon">📡</div>
+                <h2 class="scan-title">Cross-Platform Scan in Progress</h2>
+                <p class="scan-subtitle">Analyzing target's digital footprint...</p>
+            </div>
+            
+            <div class="scan-progress-wrap">
+                <div class="scan-progress-bar" id="scanProgressBar"></div>
+            </div>
+            <div class="scan-percent" id="scanPercent">0%</div>
+
+            <div class="scan-platforms" id="scanPlatforms">
+                <div class="platform-row" data-platform="0">
+                    <span class="platform-icon-wrap"><span class="platform-emoji">💬</span></span>
+                    <span class="platform-name">WhatsApp</span>
+                    <span class="platform-status">—</span>
+                    <span class="platform-count"></span>
+                </div>
+                <div class="platform-row" data-platform="1">
+                    <span class="platform-icon-wrap"><span class="platform-emoji">📸</span></span>
+                    <span class="platform-name">Instagram</span>
+                    <span class="platform-status">—</span>
+                    <span class="platform-count"></span>
+                </div>
+                <div class="platform-row" data-platform="2">
+                    <span class="platform-icon-wrap"><span class="platform-emoji">🎵</span></span>
+                    <span class="platform-name">TikTok</span>
+                    <span class="platform-status">—</span>
+                    <span class="platform-count"></span>
+                </div>
+                <div class="platform-row" data-platform="3">
+                    <span class="platform-icon-wrap"><span class="platform-emoji">👻</span></span>
+                    <span class="platform-name">Snapchat</span>
+                    <span class="platform-status">—</span>
+                    <span class="platform-count"></span>
+                </div>
+                <div class="platform-row" data-platform="4">
+                    <span class="platform-icon-wrap"><span class="platform-emoji">📍</span></span>
+                    <span class="platform-name">GPS Location</span>
+                    <span class="platform-status">—</span>
+                    <span class="platform-count"></span>
+                </div>
+            </div>
+
+            <div class="scan-alert" id="scanAlert">
+                <span class="scan-alert-icon">🚨</span>
+                <div class="scan-alert-title">ACTIVITY DETECTED ON MULTIPLE PLATFORMS</div>
+                <div class="scan-alert-text">Hidden conversations found on <strong>3+ platforms</strong>. Upgrade now to see everything.</div>
             </div>
         </div>
     </div>
 
     <div class="page hidden-content" id="mainPage">
         <main class="content">
-            <div class="hero-icon" aria-hidden="true">
-                <div class="whatsapp-icon">📱</div>
-            </div>
-            
-            <!-- HEADLINE -->
-            <h1 class="headline">🔓 EXPOSED: See Every Message They Deleted (Even From 90 Days Ago)</h1>
-            <p class="subhead">In just 5 minutes, uncover the deleted texts, photos, and videos they thought were gone forever. Works on any phone — no technical skills needed.</p>
+            <div class="hero-section">
+                <div class="success-header">
+                    <span class="confetti-icon">⚠️</span>
+                    <h1 class="main-title">WAIT! You're Only Seeing 30% of the Truth...</h1>
+                    <p class="congratulations">They might be having secret conversations on Instagram, Snapchat, or TikTok RIGHT NOW — and you'd never know.</p>
+                </div>
 
-            <!-- CTA SECTION -->
-            <section class="final-cta-section">
-                <div class="final-cta-card">
-                    <h3 class="final-cta-title">Ready to See What They Deleted?</h3>
+            </div>
+
+            <section class="product-intro">
+                <div class="intro-card">
+                    <h2 class="product-name">🔓 COMPLETE UPGRADE: Monitor ALL Social Networks + GPS</h2>
+                    <p class="product-description">Monitor Instagram, Facebook, TikTok, Snapchat, Twitter + Real-time GPS location. See EVERYTHING they're hiding across ALL platforms.</p>
+                </div>
+            </section>
+
+            <section class="final-cta">
+                <div class="cta-card">
+                    <h3 class="cta-title">See The Complete Picture, Not Just WhatsApp</h3>
                     
-                    <p class="final-cta-subtitle">Deleted messages often hold the answers you're looking for. Once they're gone, they're gone forever — unless you act now.</p>
+                    <p class="price-tag" style="margin-bottom: 24px;">Regular price: <s>$375</s> → Today only: $45 (88% off)</p>
                     
-                    <p class="price-tag" style="margin-bottom: 24px;">Regular price: <s>$197</s> → Today only: $47 (76% off)</p>
-                    
-                    <a href='#monetizzeCompra' data-upsell='6599d38af770e81ae8bf496b1e50684d' class="btn btn-primary btn-large btn-pulse btn-mega" aria-label="Recover deleted WhatsApp conversations now" role="button">Yes! I Want to Recover Deleted Messages Now</a>
+                    <a href='#monetizzeCompra' data-upsell='3ddb6f07442fb683ac2cc90756de4e0b' class="btn btn-primary btn-upgrade btn-pulse btn-mega" aria-label="Unlock all social networks and GPS monitoring now" role="button">YES! Unlock ALL Social Networks + GPS Now</a>
                 </div>
             </section>
 
         </main>
 
         <footer class="footer">
-            <div class="smallprint">© <span id="year"></span> Secure Recovery Suite. All rights reserved.</div>
+            <div class="smallprint">© <span id="year"></span> ZappDetect. All rights reserved.</div>
         </footer>
     </div>
 
     <script src="../polyfills.js?v=8.0"></script>
-    <script src="upsell2-script.js?v=9.0"></script>
+    <script src="upsell3-script.js?v=9.0"></script>
+    <!-- geo-restriction.js removed - prices always visible -->
     <script src="../upsell-tracking.js?v=1.0"></script>
     <script>
-    (function(){var o=document.getElementById('loadingOverlay'),m=document.getElementById('mainPage'),pb=document.getElementById('progressBar'),pp=document.getElementById('progressPercent'),steps=document.querySelectorAll('.loading-step'),da=document.getElementById('discoveryAlert');if(!o||!m)return;var timeline=[{a:0,c:2500,p:20},{a:2500,c:5000,p:40},{a:5000,c:7500,p:60},{a:7500,c:10000,p:80},{a:10000,c:12500,p:95}],start=Date.now(),cp=0,as=false,sa=[],sc=[];for(var i=0;i<timeline.length;i++){sa.push(false);sc.push(false)}function up(t){if(t>cp){cp=t;pb.style.width=cp+'%';pp.textContent=cp+'%'}}function tick(){var e=Date.now()-start;for(var i=0;i<timeline.length;i++){if(!sa[i]&&e>=timeline[i].a){sa[i]=true;steps[i].classList.add('active')}if(!sc[i]&&e>=timeline[i].c){sc[i]=true;steps[i].classList.remove('active');steps[i].classList.add('done');var ic=steps[i].querySelector('.step-icon');if(ic){ic.classList.remove('pending');ic.classList.add('check');ic.innerHTML='✓'}up(timeline[i].p)}}if(e>=12500&&!as){as=true;da.classList.add('visible');if(navigator.vibrate)navigator.vibrate([100,50,100])}for(var j=0;j<timeline.length;j++){if(e>=timeline[j].a&&e<timeline[j].c){var sp=(e-timeline[j].a)/(timeline[j].c-timeline[j].a),pp2=j>0?timeline[j-1].p:0;up(Math.floor(pp2+(timeline[j].p-pp2)*sp));break}}if(e>=15000){up(100);pp.textContent='100%';setTimeout(function(){o.classList.add('fade-out');m.classList.remove('hidden-content');m.classList.add('reveal-content');setTimeout(function(){o.style.display='none'},800)},500);return}requestAnimationFrame(tick)}requestAnimationFrame(tick)})();
-    
-</script>
+    (function(){
+        var o=document.getElementById('scanOverlay'),m=document.getElementById('mainPage'),
+            pb=document.getElementById('scanProgressBar'),pp=document.getElementById('scanPercent'),
+            rows=document.querySelectorAll('.platform-row'),da=document.getElementById('scanAlert');
+        if(!o||!m)return;
+
+        var platforms=[
+            {a:0,c:2500,p:18,scanning:'Scanning...',done:'Connected',count:'Active',alert:false},
+            {a:2500,c:5500,p:40,scanning:'Detecting...',done:'⚠ Found',count:'47 DMs hidden',alert:true},
+            {a:5500,c:8500,p:60,scanning:'Analyzing...',done:'⚠ Found',count:'12 secret chats',alert:true},
+            {a:8500,c:11000,p:78,scanning:'Searching...',done:'⚠ Found',count:'8 disappearing msgs',alert:true},
+            {a:11000,c:13000,p:95,scanning:'Tracking...',done:'Located',count:'Real-time',alert:false}
+        ];
+
+        var TOTAL=15000,start=Date.now(),cp=0,alertShown=false,sa=[],sc=[];
+        for(var i=0;i<platforms.length;i++){sa.push(false);sc.push(false)}
+
+        function up(t){if(t>cp){cp=t;pb.style.width=cp+'%';pp.textContent=cp+'%'}}
+
+        function tick(){
+            var e=Date.now()-start;
+            for(var i=0;i<platforms.length;i++){
+                if(!sa[i]&&e>=platforms[i].a){
+                    sa[i]=true;
+                    rows[i].classList.add('scanning');
+                    rows[i].querySelector('.platform-status').textContent=platforms[i].scanning;
+                }
+                if(!sc[i]&&e>=platforms[i].c){
+                    sc[i]=true;
+                    rows[i].classList.remove('scanning');
+                    rows[i].classList.add('done');
+                    if(platforms[i].alert)rows[i].classList.add('alert-found');
+                    rows[i].querySelector('.platform-status').textContent=platforms[i].done;
+                    rows[i].querySelector('.platform-count').textContent=platforms[i].count;
+                    up(platforms[i].p);
+                }
+            }
+            if(e>=13000&&!alertShown){alertShown=true;da.classList.add('visible');if(navigator.vibrate)navigator.vibrate([100,50,100,50,200])}
+            for(var j=0;j<platforms.length;j++){
+                if(e>=platforms[j].a&&e<platforms[j].c){
+                    var sp=(e-platforms[j].a)/(platforms[j].c-platforms[j].a),prev=j>0?platforms[j-1].p:0;
+                    up(Math.floor(prev+(platforms[j].p-prev)*sp));break;
+                }
+            }
+            if(e>=TOTAL){up(100);pp.textContent='100%';setTimeout(function(){o.classList.add('fade-out');m.classList.remove('hidden-content');m.classList.add('reveal-content');setTimeout(function(){o.style.display='none'},800)},500);return}
+            requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+    })();
+    </script>
 </body>
-
 </html>
-
-
