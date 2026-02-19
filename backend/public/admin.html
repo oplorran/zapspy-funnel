@@ -12157,8 +12157,8 @@ Posso ajudar em algo mais? 😊`
         function finSetText(id, txt) { const el = document.getElementById(id); if (el) el.textContent = txt; }
         function finSetColor(id, value) { const el = document.getElementById(id); if (el) el.style.color = value >= 0 ? '#10b981' : '#ef4444'; }
         
-        let finData = null;
-        let finActivePeriod = 'today';
+        var finData = null;
+        var finActivePeriod = 'today';
         
         function switchFinPeriod(period) {
             finActivePeriod = period;
