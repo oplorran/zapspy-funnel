@@ -216,6 +216,49 @@ router.post('/api/admin/backfill-refunds', authenticateToken, requireAdmin, asyn
 // Get all refund requests (protected)
 router.get('/api/admin/refunds', authenticateToken, async (req, res) => {
     try {
+        // Auto-backfill: sync transactions with refunded/chargeback status to refund_requests
+        try {
+            const backfillResult = await pool.query(`
+                SELECT t.transaction_id, t.email, t.phone, t.name, t.product, t.value, 
+                       t.status, t.funnel_language, t.created_at
+                FROM transactions t
+                LEFT JOIN refund_requests rr ON rr.transaction_id = t.transaction_id
+                WHERE t.status IN ('refunded', 'chargeback')
+                  AND rr.id IS NULL
+            `);
+            
+            for (const tx of backfillResult.rows) {
+                const refundProtocol = `MON-${String(tx.transaction_id).substring(0, 12).toUpperCase()}`;
+                const refundType = tx.status === 'chargeback' ? 'chargeback' : 'refund';
+                await pool.query(`
+                    INSERT INTO refund_requests (
+                        protocol, full_name, email, phone, product, reason, 
+                        status, source, refund_type, transaction_id, value, funnel_language, created_at
+                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+                    ON CONFLICT (protocol) DO NOTHING
+                `, [
+                    refundProtocol,
+                    tx.name || 'N/A',
+                    tx.email,
+                    tx.phone || null,
+                    tx.product,
+                    refundType === 'chargeback' ? 'Chargeback - Disputa de cartão' : 'Reembolso via Monetizze',
+                    'approved',
+                    'monetizze',
+                    refundType,
+                    String(tx.transaction_id),
+                    parseFloat(tx.value) || 0,
+                    tx.funnel_language || 'en',
+                    tx.created_at || new Date()
+                ]);
+            }
+            if (backfillResult.rows.length > 0) {
+                console.log(`Auto-backfill: ${backfillResult.rows.length} refund_requests synced`);
+            }
+        } catch (bfErr) {
+            console.error('Auto-backfill error (non-blocking):', bfErr.message);
+        }
+        
         const { status, source, type, language, startDate, endDate } = req.query;
         
         let conditions = [];
@@ -246,10 +289,10 @@ router.get('/api/admin/refunds', authenticateToken, async (req, res) => {
         const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
         
         const result = await pool.query(`
-            SELECT DISTINCT ON (LOWER(email), COALESCE(source, 'form')) *
+            SELECT *
             FROM refund_requests 
             ${whereClause}
-            ORDER BY LOWER(email), COALESCE(source, 'form'), created_at DESC
+            ORDER BY created_at DESC
         `, params);
         
         let statsConditions = [];

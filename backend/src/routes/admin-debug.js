@@ -356,7 +356,7 @@ router.post('/api/admin/sync-monetizze', authenticateToken, requireAdmin, async 
         const params = new URLSearchParams();
         if (startDate) params.append('date_min', `${startDate} 00:00:00`);
         if (endDate) params.append('date_max', `${endDate} 23:59:59`);
-        ['1','2','3','4','5','6'].forEach(s => params.append('status[]', s));
+        ['1','2','3','4','5','6','8','9'].forEach(s => params.append('status[]', s));
         
         const validProductCodes = [
             '341972', '349241', '349242', '349243',

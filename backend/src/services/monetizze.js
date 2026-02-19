@@ -571,9 +571,9 @@ async function runDeepSync() {
         
         console.log(`✅ Phase 1 complete: ${totalSynced} synced, ${totalFetched} fetched across 7 days`);
         
-        // PHASE 2: Targeted refund sync for last 60 days
-        // Only fetch status 3 (cancelled) and 4 (refunded/devolvida) - much fewer results
-        console.log(`🔍 Deep sync PHASE 2: Targeted refund sync (last 60 days, only refunded/cancelled)...`);
+        // PHASE 2: Targeted refund/chargeback sync for last 60 days
+        // Fetch status 3 (cancelled), 4 (refunded), 8 (chargeback), 9 (chargeback alt)
+        console.log(`🔍 Deep sync PHASE 2: Targeted refund/chargeback sync (last 60 days)...`);
         let refundSynced = 0;
         let refundFetched = 0;
         
@@ -591,12 +591,11 @@ async function runDeepSync() {
             const startDate = sixtyDaysAgo.toISOString().split('T')[0];
             const endDate = today.toISOString().split('T')[0];
             
-            // Fetch ONLY refunded/cancelled transactions (status 3=cancelled, 4=refunded)
             const params = new URLSearchParams();
             params.append('date_min', `${startDate} 00:00:00`);
             params.append('date_max', `${endDate} 23:59:59`);
-            // Only refund-related statuses
-            ['3', '4'].forEach(s => params.append('status[]', s));
+            // 3=cancelled, 4=refunded, 8=chargeback, 9=chargeback alt
+            ['3', '4', '8', '9'].forEach(s => params.append('status[]', s));
             
             const validProductCodes = [
                 '341972', '349241', '349242', '349243',
@@ -607,7 +606,7 @@ async function runDeepSync() {
             validProductCodes.forEach(code => params.append('product[]', code));
             
             const txUrl = `https://api.monetizze.com.br/2.1/transactions?${params.toString()}`;
-            console.log(`🌐 Fetching refunded/cancelled transactions (${startDate} to ${endDate})...`);
+            console.log(`🌐 Fetching refunded/cancelled/chargeback transactions (${startDate} to ${endDate})...`);
             
             const response = await fetch(txUrl, {
                 method: 'GET',
@@ -719,12 +718,16 @@ async function runDeepSync() {
                             const refundProtocol = `MON-${String(transactionId).substring(0, 12).toUpperCase()}`;
                             const existingRefund = await pool.query('SELECT id FROM refund_requests WHERE transaction_id = $1', [transactionId]);
                             
+                            // Detect funnel language from product name
+                            const pLower = (productName || '').toLowerCase();
+                            const refundLang = (pLower.includes('espanhol') || pLower.includes('spanish') || pLower.includes('español')) ? 'es' : 'en';
+                            
                             if (existingRefund.rows.length === 0) {
                                 await pool.query(`
                                     INSERT INTO refund_requests (
                                         protocol, full_name, email, phone, product, reason,
-                                        status, source, refund_type, transaction_id, value, created_at
-                                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
+                                        status, source, refund_type, transaction_id, value, funnel_language, created_at
+                                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())
                                     ON CONFLICT (protocol) DO NOTHING
                                 `, [
                                     refundProtocol, buyerName || 'N/A', email, buyerPhone || null,
@@ -732,7 +735,7 @@ async function runDeepSync() {
                                     mappedStatus === 'chargeback' ? 'Chargeback - Disputa' : 'Reembolso via Monetizze',
                                     'approved', 'monetizze',
                                     mappedStatus === 'chargeback' ? 'chargeback' : 'refund',
-                                    transactionId, parseFloat(value) || 0
+                                    transactionId, parseFloat(value) || 0, refundLang
                                 ]);
                                 refundSynced++;
                                 console.log(`🔴 REFUND FOUND: ${transactionId} (${email}) → ${mappedStatus} - ${productName} - R$${value}`);
