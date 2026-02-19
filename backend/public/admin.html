@@ -3944,12 +3944,13 @@ Estou aqui para esclarecer tudo! 😊`
                 const checkoutClicked = salesData.checkoutClicked || 0;
                 
                 const upsellStats = salesData.upsellStats || {};
-                const totalSales = upsellStats.front || 0;
-                const totalRevenue = salesData.frontRevenue || 0;
+                const totalSales = salesData.approved || 0;
+                const frontSales = upsellStats.front || 0;
+                const frontRevenue = salesData.frontRevenue || 0;
                 const allTransactionsRevenue = salesData.revenue || 0;
                 const upsellRevenue = salesData.upsellRevenue || 0;
-                const avgTicket = totalSales > 0 ? totalRevenue / totalSales : 0;
-                const convRate = totalLeads > 0 ? ((totalSales / totalLeads) * 100) : 0;
+                const avgTicket = totalSales > 0 ? allTransactionsRevenue / totalSales : 0;
+                const convRate = totalLeads > 0 ? ((frontSales / totalLeads) * 100) : 0;
                 const abandonRate = checkoutClicked > 0 ? ((checkoutAbandoned / checkoutClicked) * 100) : 0;
                 const totalUpsells = (upsellStats.upsell1 || 0) + (upsellStats.upsell2 || 0) + (upsellStats.upsell3 || 0);
                 
@@ -3974,25 +3975,24 @@ Estou aqui para esclarecer tudo! 😊`
                 setEl('overviewAbandoned', checkoutAbandoned.toLocaleString('pt-BR'));
                 setEl('overviewAbandonedInfo', `sem tentativa de compra`);
                 
-                // 4. Taxa de Conversão do Checkout (vendas / initiate checkout)
-                const checkoutConvRate = checkoutClicked > 0 ? ((totalSales / checkoutClicked) * 100) : 0;
+                // 4. Taxa de Conversão do Checkout (vendas front / initiate checkout)
+                const checkoutConvRate = checkoutClicked > 0 ? ((frontSales / checkoutClicked) * 100) : 0;
                 setEl('overviewCheckoutRate', checkoutConvRate.toFixed(1) + '%');
-                setEl('overviewCheckoutRateInfo', `${totalSales} de ${checkoutClicked} checkouts`);
+                setEl('overviewCheckoutRateInfo', `${frontSales} de ${checkoutClicked} checkouts`);
                 
-                // 5. Vendas (compradores únicos do front-end)
+                // 5. Vendas (total aprovadas)
                 setEl('overviewSales', totalSales.toLocaleString('pt-BR'));
                 setEl('overviewSalesInfo', 'aprovadas');
                 
-                // 6. Faturamento (receita total: front + upsells)
-                const totalRevenueDisplay = totalRevenue + upsellRevenue;
-                setEl('overviewRevenue', 'R$ ' + totalRevenueDisplay.toLocaleString('pt-BR', { minimumFractionDigits: 2 }));
-                setEl('overviewRevenueInfo', `front: R$ ${totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} + upsells: R$ ${upsellRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
+                // 6. Faturamento Bruto (todas transações aprovadas)
+                setEl('overviewRevenue', 'R$ ' + allTransactionsRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 }));
+                setEl('overviewRevenueInfo', `front: R$ ${frontRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} + upsells: R$ ${upsellRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
                 
                 // Update main KPI cards - Row 2: Rates and Losses
                 
                 // 1. Taxa de Conversão dos Leads (vendas / leads)
                 setEl('overviewConvRate', convRate.toFixed(1) + '%');
-                setEl('overviewConvRateInfo', `${totalSales} de ${totalLeads} leads`);
+                setEl('overviewConvRateInfo', `${frontSales} de ${totalLeads} leads`);
                 
                 // 2. Taxa de Aprovação de Pagamento (approved attempts / total attempts)
                 const totalAttempts = salesData.totalAttempts || 0;
@@ -4024,7 +4024,7 @@ Estou aqui para esclarecer tudo! 😊`
                 // Update quick actions
                 setEl('quickRecoveryText', `${checkoutAbandoned} abandonos de checkout`);
                 setEl('quickLeadsText', `${totalLeads} leads no período`);
-                setEl('quickSalesText', 'R$ ' + totalRevenueDisplay.toLocaleString('pt-BR', { minimumFractionDigits: 2 }));
+                setEl('quickSalesText', 'R$ ' + allTransactionsRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 }));
                 
                 // Update nav badge
                 const navRecoveryEl = document.getElementById('navRecoveryCount');
