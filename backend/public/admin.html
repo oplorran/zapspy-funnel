@@ -709,168 +709,88 @@
                 
                 <!-- Tab: Financial -->
                 <div class="tab-content" id="tab-financial">
-                    <div class="funnel-page-header">
-                        <h2>Financeiro</h2>
-                        <span style="font-size: 12px; color: var(--text-muted);">Controle financeiro da operacao em R$ (BRL)</span>
-                    </div>
                     
-                    <!-- KPI Cards: HOJE -->
-                    <div style="margin-bottom: 6px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; padding-left: 4px;">Hoje</div>
-                    <div class="stats-grid" style="grid-template-columns: repeat(5, 1fr); margin-bottom: 16px;">
-                        <div class="stat-card">
-                            <div class="stat-header"><span class="stat-label">Faturamento</span><div class="stat-icon green">💵</div></div>
-                            <div class="stat-value green" id="finRevenueToday" style="line-height: 1.2; font-size: 20px;">R$ 0,00</div>
+                    <!-- Summary Panel with Period Tabs -->
+                    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 20px;">
+                        <!-- Period Tabs -->
+                        <div style="display: flex; border-bottom: 1px solid var(--border);">
+                            <button onclick="switchFinPeriod('today')" id="finTabToday" style="flex: 1; padding: 12px; border: none; cursor: pointer; font-weight: 600; font-size: 13px; background: rgba(99,102,241,0.1); color: #818cf8; border-bottom: 2px solid #818cf8; transition: all 0.2s;">Hoje</button>
+                            <button onclick="switchFinPeriod('month')" id="finTabMonth" style="flex: 1; padding: 12px; border: none; cursor: pointer; font-weight: 600; font-size: 13px; background: transparent; color: var(--text-muted); border-bottom: 2px solid transparent; transition: all 0.2s;">Este Mês</button>
+                            <button onclick="switchFinPeriod('year')" id="finTabYear" style="flex: 1; padding: 12px; border: none; cursor: pointer; font-weight: 600; font-size: 13px; background: transparent; color: var(--text-muted); border-bottom: 2px solid transparent; transition: all 0.2s;">Ano</button>
                         </div>
-                        <div class="stat-card">
-                            <div class="stat-header"><span class="stat-label">Vendas</span><div class="stat-icon blue">🛒</div></div>
-                            <div class="stat-value blue" id="finSalesToday">0</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-header"><span class="stat-label">Custos</span><div class="stat-icon orange">📉</div></div>
-                            <div class="stat-value orange" id="finCostsToday" style="line-height: 1.2; font-size: 20px;">R$ 0,00</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-header"><span class="stat-label">Reembolsos</span><div class="stat-icon" style="background: rgba(239,68,68,0.15); color: #ef4444;">🔄</div></div>
-                            <div class="stat-value" id="finRefundsToday" style="line-height: 1.2; font-size: 20px; color: #ef4444;">R$ 0,00</div>
-                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;" id="finRefundsCountToday">0 devoluções</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-header"><span class="stat-label">Lucro</span><div class="stat-icon purple">📊</div></div>
-                            <div class="stat-value" id="finProfitToday" style="line-height: 1.2; font-size: 20px;">R$ 0,00</div>
-                        </div>
-                    </div>
-                    
-                    <!-- KPI Cards: MES -->
-                    <div style="margin-bottom: 6px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; padding-left: 4px;">Este Mês</div>
-                    <div class="stats-grid" style="grid-template-columns: repeat(5, 1fr); margin-bottom: 16px;">
-                        <div class="stat-card">
-                            <div class="stat-header"><span class="stat-label">Faturamento</span><div class="stat-icon green">📅</div></div>
-                            <div class="stat-value green" id="finRevenueMonth" style="line-height: 1.2; font-size: 20px;">R$ 0,00</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-header"><span class="stat-label">Vendas</span><div class="stat-icon blue">📦</div></div>
-                            <div class="stat-value blue" id="finSalesMonth" style="font-size: 20px;">0</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-header"><span class="stat-label">Custos</span><div class="stat-icon orange">💸</div></div>
-                            <div class="stat-value orange" id="finCostsMonth" style="line-height: 1.2; font-size: 20px;">R$ 0,00</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-header"><span class="stat-label">Reembolsos</span><div class="stat-icon" style="background: rgba(239,68,68,0.15); color: #ef4444;">🔄</div></div>
-                            <div class="stat-value" id="finRefundsMonth" style="line-height: 1.2; font-size: 20px; color: #ef4444;">R$ 0,00</div>
-                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;" id="finRefundsCountMonth">0 devoluções</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-header"><span class="stat-label">Lucro</span><div class="stat-icon purple">🏆</div></div>
-                            <div class="stat-value" id="finProfitMonth" style="line-height: 1.2; font-size: 20px;">R$ 0,00</div>
+                        <!-- Summary Content -->
+                        <div style="padding: 24px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1px 1fr 1px 1fr 1px 1fr 1px 1fr; gap: 0; align-items: center;">
+                                <div style="text-align: center; padding: 0 12px;">
+                                    <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Faturamento</div>
+                                    <div style="font-size: 22px; font-weight: 700; color: #10b981;" id="finRevenue">R$ 0,00</div>
+                                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;" id="finSalesCount">0 vendas</div>
+                                </div>
+                                <div style="width: 1px; height: 50px; background: var(--border);"></div>
+                                <div style="text-align: center; padding: 0 12px;">
+                                    <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Custos</div>
+                                    <div style="font-size: 22px; font-weight: 700; color: #f59e0b;" id="finCosts">R$ 0,00</div>
+                                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;" id="finCPA">CPA: R$ 0,00</div>
+                                </div>
+                                <div style="width: 1px; height: 50px; background: var(--border);"></div>
+                                <div style="text-align: center; padding: 0 12px;">
+                                    <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Reembolsos</div>
+                                    <div style="font-size: 22px; font-weight: 700; color: #ef4444;" id="finRefunds">R$ 0,00</div>
+                                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;" id="finRefundsCount">0 devoluções</div>
+                                </div>
+                                <div style="width: 1px; height: 50px; background: var(--border);"></div>
+                                <div style="text-align: center; padding: 0 12px;">
+                                    <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Lucro</div>
+                                    <div style="font-size: 22px; font-weight: 700;" id="finProfit">R$ 0,00</div>
+                                    <div style="font-size: 12px; margin-top: 4px;" id="finMargin">Margem: 0%</div>
+                                </div>
+                                <div style="width: 1px; height: 50px; background: var(--border);"></div>
+                                <div style="text-align: center; padding: 0 12px;">
+                                    <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">ROI</div>
+                                    <div style="font-size: 22px; font-weight: 700;" id="finROI">0%</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
-                    <!-- KPI Cards: ANO -->
-                    <div style="margin-bottom: 6px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; padding-left: 4px;">Acumulado do Ano</div>
-                    <div class="stats-grid" style="grid-template-columns: repeat(5, 1fr); margin-bottom: 20px;">
-                        <div class="stat-card">
-                            <div class="stat-header"><span class="stat-label">Faturamento</span><div class="stat-icon green">📆</div></div>
-                            <div class="stat-value green" id="finRevenueYear" style="line-height: 1.2; font-size: 20px;">R$ 0,00</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-header"><span class="stat-label">Vendas</span><div class="stat-icon blue">🛍️</div></div>
-                            <div class="stat-value blue" id="finSalesYear" style="font-size: 20px;">0</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-header"><span class="stat-label">Custos</span><div class="stat-icon orange">💰</div></div>
-                            <div class="stat-value orange" id="finCostsYear" style="line-height: 1.2; font-size: 20px;">R$ 0,00</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-header"><span class="stat-label">Reembolsos</span><div class="stat-icon" style="background: rgba(239,68,68,0.15); color: #ef4444;">🔄</div></div>
-                            <div class="stat-value" id="finRefundsYear" style="line-height: 1.2; font-size: 20px; color: #ef4444;">R$ 0,00</div>
-                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;" id="finRefundsCountYear">0 devoluções</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-header"><span class="stat-label">Lucro</span><div class="stat-icon purple">🎯</div></div>
-                            <div class="stat-value" id="finProfitYear" style="line-height: 1.2; font-size: 20px;">R$ 0,00</div>
-                        </div>
-                    </div>
-                    
-                    <!-- ROI & Margin Bar -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px;">
-                        <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;">
-                            <div>
-                                <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">ROI Mês</div>
-                                <div style="font-size: 28px; font-weight: 700;" id="finROIMonth">0%</div>
+                    <!-- Add Cost Inline -->
+                    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; margin-bottom: 20px;">
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary); white-space: nowrap;">Registrar Custo</span>
+                            <input type="date" id="finCostDate" class="funnel-selector" style="width: 130px; padding: 7px 10px; font-size: 12px;">
+                            <input type="text" id="finCostDescription" placeholder="Descrição (ex: Meta Ads)" class="funnel-selector" style="flex: 1; min-width: 180px; padding: 7px 10px; font-size: 12px;">
+                            <select id="finCostCategory" class="funnel-selector" style="width: 160px; padding: 7px 10px; font-size: 12px;">
+                                <option value="advertising">📣 Publicidade/Ads</option>
+                                <option value="design">🎨 Design</option>
+                                <option value="tools">🔧 Ferramentas</option>
+                                <option value="salary">👤 Salário/Freelancer</option>
+                                <option value="platform_fees">🏦 Taxas Plataforma</option>
+                                <option value="taxes">📋 Impostos</option>
+                                <option value="hosting">☁️ Hospedagem</option>
+                                <option value="other">📦 Outros</option>
+                            </select>
+                            <div style="position: relative;">
+                                <span style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 12px; font-weight: 600;">R$</span>
+                                <input type="number" id="finCostAmount" placeholder="0,00" step="0.01" min="0" class="funnel-selector" style="width: 120px; padding: 7px 10px 7px 32px; font-size: 12px;">
                             </div>
-                            <div style="font-size: 32px;">📈</div>
-                        </div>
-                        <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;">
-                            <div>
-                                <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Margem de Lucro</div>
-                                <div style="font-size: 28px; font-weight: 700;" id="finMarginMonth">0%</div>
-                            </div>
-                            <div style="font-size: 32px;">🎯</div>
-                        </div>
-                        <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;">
-                            <div>
-                                <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">CPA Médio</div>
-                                <div style="font-size: 28px; font-weight: 700; line-height: 1.2;" id="finCPAMonth">R$ 0,00</div>
-                            </div>
-                            <div style="font-size: 32px;">💰</div>
-                        </div>
-                    </div>
-                    
-                    <!-- Add Cost Section -->
-                    <div class="data-panel" style="margin-bottom: 24px;">
-                        <div class="panel-header">
-                            <div class="panel-title">
-                                <h2>Registrar Custo</h2>
-                                <span class="panel-count">Adicione custos diarios da operacao (R$)</span>
-                            </div>
-                        </div>
-                        <div style="padding: 20px; display: grid; grid-template-columns: 130px 1fr 160px 140px auto; gap: 12px; align-items: end;">
-                            <div>
-                                <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Data</label>
-                                <input type="date" id="finCostDate" class="funnel-selector" style="width: 100%;">
-                            </div>
-                            <div>
-                                <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Descrição</label>
-                                <input type="text" id="finCostDescription" placeholder="Ex: Meta Ads - Campanha X" class="funnel-selector" style="width: 100%;">
-                            </div>
-                            <div>
-                                <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Categoria</label>
-                                <select id="finCostCategory" class="funnel-selector" style="width: 100%;">
-                                    <option value="advertising">📣 Publicidade/Ads</option>
-                                    <option value="design">🎨 Design</option>
-                                    <option value="tools">🔧 Ferramentas</option>
-                                    <option value="salary">👤 Salário/Freelancer</option>
-                                    <option value="platform_fees">🏦 Taxas Plataforma</option>
-                                    <option value="taxes">📋 Impostos</option>
-                                    <option value="hosting">☁️ Hospedagem</option>
-                                    <option value="other">📦 Outros</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px; text-transform: uppercase; font-weight: 600;">Valor (R$)</label>
-                                <input type="number" id="finCostAmount" placeholder="0,00" step="0.01" min="0" class="funnel-selector" style="width: 100%;">
-                            </div>
-                            <div>
-                                <button onclick="addFinancialCost()" style="padding: 10px 20px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='none'">+ Adicionar</button>
-                            </div>
+                            <button onclick="addFinancialCost()" style="padding: 7px 16px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 12px; white-space: nowrap;">+ Adicionar</button>
                         </div>
                     </div>
                     
                     <!-- Daily P&L Table -->
-                    <div class="data-panel" style="margin-bottom: 24px;">
+                    <div class="data-panel" style="margin-bottom: 20px;">
                         <div class="panel-header">
                             <div class="panel-title">
-                                <h2>Resultado Diário</h2>
+                                <h2 style="font-size: 15px;">Resultado Diário</h2>
                                 <span class="panel-count" id="finDailyPeriod">Últimos 30 dias</span>
                             </div>
-                            <div class="panel-actions" style="display: flex; gap: 12px; align-items: center;">
-                                <select class="funnel-selector" id="finDailyPeriodFilter" onchange="loadFinancialData()" style="min-width: 160px;">
-                                    <option value="7">Últimos 7 dias</option>
-                                    <option value="15">Últimos 15 dias</option>
-                                    <option value="30" selected>Últimos 30 dias</option>
-                                    <option value="60">Últimos 60 dias</option>
-                                    <option value="90">Últimos 90 dias</option>
+                            <div class="panel-actions">
+                                <select class="funnel-selector" id="finDailyPeriodFilter" onchange="loadFinancialData()" style="padding: 6px 10px; font-size: 12px;">
+                                    <option value="7">7 dias</option>
+                                    <option value="15">15 dias</option>
+                                    <option value="30" selected>30 dias</option>
+                                    <option value="60">60 dias</option>
+                                    <option value="90">90 dias</option>
                                 </select>
                             </div>
                         </div>
@@ -894,10 +814,10 @@
                     </div>
                     
                     <!-- Monthly P&L Table -->
-                    <div class="data-panel" style="margin-bottom: 24px;">
+                    <div class="data-panel" style="margin-bottom: 20px;">
                         <div class="panel-header">
                             <div class="panel-title">
-                                <h2>Resultado Mensal</h2>
+                                <h2 style="font-size: 15px;">Resultado Mensal</h2>
                                 <span class="panel-count">Últimos 12 meses</span>
                             </div>
                         </div>
@@ -924,17 +844,17 @@
                     <div class="data-panel">
                         <div class="panel-header">
                             <div class="panel-title">
-                                <h2>Custos Registrados</h2>
+                                <h2 style="font-size: 15px;">Custos Registrados</h2>
                                 <span class="panel-count" id="finCostCount">0 custos</span>
                             </div>
-                            <div class="panel-actions" style="display: flex; gap: 12px; align-items: center;">
-                                <select class="funnel-selector" id="finCostCategoryFilter" onchange="loadFinancialCosts()" style="min-width: 160px;">
+                            <div class="panel-actions">
+                                <select class="funnel-selector" id="finCostCategoryFilter" onchange="loadFinancialCosts()" style="padding: 6px 10px; font-size: 12px;">
                                     <option value="">Todas Categorias</option>
                                     <option value="advertising">📣 Publicidade/Ads</option>
                                     <option value="design">🎨 Design</option>
                                     <option value="tools">🔧 Ferramentas</option>
-                                    <option value="salary">👤 Salário/Freelancer</option>
-                                    <option value="platform_fees">🏦 Taxas Plataforma</option>
+                                    <option value="salary">👤 Salário</option>
+                                    <option value="platform_fees">🏦 Taxas</option>
                                     <option value="taxes">📋 Impostos</option>
                                     <option value="hosting">☁️ Hospedagem</option>
                                     <option value="other">📦 Outros</option>
@@ -12237,6 +12157,69 @@ Posso ajudar em algo mais? 😊`
         function finSetText(id, txt) { const el = document.getElementById(id); if (el) el.textContent = txt; }
         function finSetColor(id, value) { const el = document.getElementById(id); if (el) el.style.color = value >= 0 ? '#10b981' : '#ef4444'; }
         
+        let finData = null;
+        let finActivePeriod = 'today';
+        
+        function switchFinPeriod(period) {
+            finActivePeriod = period;
+            ['today', 'month', 'year'].forEach(p => {
+                const tab = document.getElementById('finTab' + p.charAt(0).toUpperCase() + p.slice(1));
+                if (tab) {
+                    tab.style.background = p === period ? 'rgba(99,102,241,0.1)' : 'transparent';
+                    tab.style.color = p === period ? '#818cf8' : 'var(--text-muted)';
+                    tab.style.borderBottomColor = p === period ? '#818cf8' : 'transparent';
+                }
+            });
+            if (finData) updateFinSummary();
+        }
+        
+        function updateFinSummary() {
+            const d = finData[finActivePeriod] || {};
+            const revenue = parseFloat(d.revenue || 0);
+            const costs = parseFloat(d.costs || 0);
+            const refunds = parseFloat(d.refunds || 0);
+            const profit = parseFloat(d.profit || 0);
+            const sales = parseInt(d.sales || 0);
+            const totalDeductions = costs + refunds;
+            const margin = revenue > 0 ? ((profit / revenue) * 100) : 0;
+            const roi = totalDeductions > 0 ? (((revenue - totalDeductions) / totalDeductions) * 100) : 0;
+            const cpa = sales > 0 ? costs / sales : 0;
+            
+            finSetText('finRevenue', finBRL(revenue));
+            finSetText('finSalesCount', `${sales} vendas`);
+            finSetText('finCosts', finBRL(costs));
+            finSetText('finCPA', `CPA: ${finBRL(cpa)}`);
+            finSetText('finRefunds', finBRL(refunds));
+            finSetText('finRefundsCount', `${d.refundCount || 0} devoluções`);
+            finSetText('finProfit', finBRL(profit));
+            finSetColor('finProfit', profit);
+            const marginEl = document.getElementById('finMargin');
+            if (marginEl) {
+                marginEl.textContent = `Margem: ${margin.toFixed(1)}%`;
+                marginEl.style.color = margin >= 0 ? '#10b981' : '#ef4444';
+            }
+            const roiEl = document.getElementById('finROI');
+            if (roiEl) {
+                roiEl.textContent = totalDeductions > 0 ? roi.toFixed(1) + '%' : (revenue > 0 ? '∞' : '0%');
+                roiEl.style.color = roi >= 0 ? '#10b981' : '#ef4444';
+            }
+        }
+        
+        function finFormatDate(dayStr) {
+            if (!dayStr) return '-';
+            const parts = dayStr.split('T')[0].split('-');
+            if (parts.length !== 3) return dayStr;
+            const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+            return d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' });
+        }
+        
+        function finIsToday(dayStr) {
+            if (!dayStr) return false;
+            const parts = dayStr.split('T')[0].split('-');
+            const today = new Date();
+            return parseInt(parts[0]) === today.getFullYear() && parseInt(parts[1]) === today.getMonth() + 1 && parseInt(parts[2]) === today.getDate();
+        }
+        
         async function loadFinancialData() {
             try {
                 initFinancialForm();
@@ -12257,49 +12240,11 @@ Posso ajudar em algo mais? 😊`
                     const errData = await response.json().catch(() => ({}));
                     throw new Error(errData.details || errData.error || 'Falha ao carregar dados financeiros');
                 }
-                const data = await response.json();
+                finData = await response.json();
                 
-                // Today
-                finSetText('finRevenueToday', finBRL(data.today.revenue));
-                finSetText('finSalesToday', data.today.sales.toLocaleString('pt-BR'));
-                finSetText('finCostsToday', finBRL(data.today.costs));
-                finSetText('finRefundsToday', finBRL(data.today.refunds));
-                finSetText('finRefundsCountToday', `${data.today.refundCount || 0} devoluções`);
-                finSetText('finProfitToday', finBRL(data.today.profit));
-                finSetColor('finProfitToday', data.today.profit);
+                updateFinSummary();
                 
-                // Month
-                finSetText('finRevenueMonth', finBRL(data.month.revenue));
-                finSetText('finSalesMonth', data.month.sales.toLocaleString('pt-BR'));
-                finSetText('finCostsMonth', finBRL(data.month.costs));
-                finSetText('finRefundsMonth', finBRL(data.month.refunds));
-                finSetText('finRefundsCountMonth', `${data.month.refundCount || 0} devoluções`);
-                finSetText('finProfitMonth', finBRL(data.month.profit));
-                finSetColor('finProfitMonth', data.month.profit);
-                
-                // Year
-                if (data.year) {
-                    finSetText('finRevenueYear', finBRL(data.year.revenue));
-                    finSetText('finSalesYear', data.year.sales.toLocaleString('pt-BR'));
-                    finSetText('finCostsYear', finBRL(data.year.costs));
-                    finSetText('finRefundsYear', finBRL(data.year.refunds));
-                    finSetText('finRefundsCountYear', `${data.year.refundCount || 0} devoluções`);
-                    finSetText('finProfitYear', finBRL(data.year.profit));
-                    finSetColor('finProfitYear', data.year.profit);
-                }
-                
-                // ROI, Margin, CPA
-                const roiEl = document.getElementById('finROIMonth');
-                if (roiEl) {
-                    roiEl.textContent = (data.month.roi || 0).toFixed(1) + '%';
-                    roiEl.style.color = data.month.roi >= 0 ? '#10b981' : '#ef4444';
-                }
-                const marginEl = document.getElementById('finMarginMonth');
-                if (marginEl) {
-                    marginEl.textContent = (data.month.margin || 0).toFixed(1) + '%';
-                    marginEl.style.color = data.month.margin >= 0 ? '#10b981' : '#ef4444';
-                }
-                finSetText('finCPAMonth', finBRL(data.month.cpa));
+                const data = finData;
                 
                 // Daily P&L table
                 const tbody = document.getElementById('finDailyTableBody');
@@ -12319,8 +12264,8 @@ Posso ajudar em algo mais? 😊`
                             const totalDeductions = costs + refunds;
                             const margin = revenue > 0 ? ((profit / revenue) * 100).toFixed(1) : '0.0';
                             const roi = totalDeductions > 0 ? (((revenue - totalDeductions) / totalDeductions) * 100).toFixed(1) : (revenue > 0 ? '∞' : '0.0');
-                            const date = new Date(row.day + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' });
-                            const isToday = new Date(row.day + 'T12:00:00').toDateString() === new Date().toDateString();
+                            const date = finFormatDate(row.day);
+                            const isToday = finIsToday(row.day);
                             const rowStyle = isToday ? 'background: rgba(99, 102, 241, 0.05); font-weight: 600;' : '';
                             
                             return `<tr style="${rowStyle}">
@@ -12352,9 +12297,14 @@ Posso ajudar em algo mais? 😊`
                             const totalDeductions = costs + refunds;
                             const margin = revenue > 0 ? ((profit / revenue) * 100).toFixed(1) : '0.0';
                             const roi = totalDeductions > 0 ? (((revenue - totalDeductions) / totalDeductions) * 100).toFixed(1) : (revenue > 0 ? '∞' : '0.0');
-                            const monthDate = new Date(row.month + 'T12:00:00');
-                            const monthName = monthDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-                            const isCurrentMonth = monthDate.getMonth() === new Date().getMonth() && monthDate.getFullYear() === new Date().getFullYear();
+                            const mParts = (row.month || '').split('T')[0].split('-');
+                            let monthName = row.month;
+                            let isCurrentMonth = false;
+                            if (mParts.length >= 2) {
+                                const mDate = new Date(parseInt(mParts[0]), parseInt(mParts[1]) - 1, 1);
+                                monthName = mDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+                                isCurrentMonth = mDate.getMonth() === new Date().getMonth() && mDate.getFullYear() === new Date().getFullYear();
+                            }
                             const rowStyle = isCurrentMonth ? 'background: rgba(99, 102, 241, 0.05); font-weight: 600;' : '';
                             
                             return `<tr style="${rowStyle}">
