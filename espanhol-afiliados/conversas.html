@@ -290,6 +290,27 @@
             display: none;
         }
 
+        .filter-notice {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            margin: 0 16px 8px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 8px;
+            border-left: 3px solid #8a8d91;
+            font-size: 11.5px;
+            color: #8a8d91;
+            line-height: 1.4;
+        }
+        .filter-notice svg {
+            flex-shrink: 0;
+            opacity: 0.7;
+        }
+        .filter-notice strong {
+            color: #adb5bd;
+        }
+
         .filter-btn {
             padding: 8px 16px;
             border-radius: 20px;
@@ -2017,6 +2038,12 @@
         <button class="filter-btn">+</button>
     </div>
 
+    <!-- Filter Notice -->
+    <div class="filter-notice" id="filterNotice">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8a8d91" stroke-width="2"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+        <span>Mostrando solo conversaciones con <strong>actividad sospechosa</strong> detectada. <span id="filteredOutCount">312</span> conversaciones normales fueron filtradas.</span>
+    </div>
+
     <!-- Conversations List -->
     <div class="conversations-list" id="conversationsList"></div>
 
@@ -3058,6 +3085,8 @@
             if (alertEl) alertEl.textContent = deletedCount + ' ¡mensajes eliminados recuperados!';
             var hiddenEl = document.getElementById('hiddenConvCount');
             if (hiddenEl) hiddenEl.textContent = conversations.filter(function(c){return c.deleted || (c.tags && c.tags.indexOf('suspicious')!==-1)}).length + ' ¡conversaciones ocultas encontradas!';
+            var filteredEl = document.getElementById('filteredOutCount');
+            if (filteredEl) filteredEl.textContent = 280 + Math.floor(Math.random() * 120);
             setInterval(() => {
                 if (Math.random() > 0.6) {
                     deletedCount += Math.floor(Math.random() * 3) + 1;
