@@ -11,6 +11,51 @@ const { recentPostbacks } = require('./postbacks');
 
 // ==================== DEBUG ENDPOINTS ====================
 
+router.get('/api/admin/debug/refund-check', authenticateToken, async (req, res) => {
+    try {
+        const txRefunded = await pool.query(`
+            SELECT transaction_id, email, name, product, value, status, monetizze_status, 
+                   (created_at AT TIME ZONE 'America/Sao_Paulo')::date as date
+            FROM transactions 
+            WHERE status IN ('refunded', 'chargeback')
+            ORDER BY created_at DESC
+        `);
+        
+        const rrAll = await pool.query(`
+            SELECT id, protocol, email, product, value, source, refund_type, transaction_id, funnel_language,
+                   (created_at AT TIME ZONE 'America/Sao_Paulo')::date as date
+            FROM refund_requests 
+            WHERE source = 'monetizze'
+            ORDER BY created_at DESC
+        `);
+        
+        const missingEmails = ['keniachang85@gmail.com', 'solounalmaviviendo@gmail.com', 
+                               'jennmccue71@gmail.com', 'rob.griffiths1_78@bigpond.com'];
+        const checkMissing = await pool.query(`
+            SELECT transaction_id, email, name, product, value, status, monetizze_status
+            FROM transactions 
+            WHERE LOWER(email) = ANY($1)
+            ORDER BY created_at DESC
+        `, [missingEmails]);
+        
+        const missingTxIds = ['55851833', '55844643', '55838428', '55838017', '55834038', '55834036'];
+        const checkTxIds = await pool.query(`
+            SELECT transaction_id, email, name, product, value, status, monetizze_status
+            FROM transactions 
+            WHERE transaction_id = ANY($1)
+        `, [missingTxIds]);
+        
+        res.json({
+            transactions_refunded_chargeback: txRefunded.rows,
+            refund_requests_monetizze: rrAll.rows,
+            missing_by_email: checkMissing.rows,
+            missing_by_txid: checkTxIds.rows
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 router.get('/api/admin/debug/sales-count', authenticateToken, async (req, res) => {
     try {
         const total = await pool.query(`SELECT COUNT(*) as count FROM transactions`);
