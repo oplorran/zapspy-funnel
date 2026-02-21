@@ -26,6 +26,7 @@ const ALLOWED_ORIGINS = [
     'https://ingles.zappdetect.com',
     'https://espanhol.zappdetect.com',
     'https://perfect.zappdetect.com',
+    'https://monetizze.zappdetect.com',
     'https://afiliado.whatstalker.com',
     'https://www.afiliado.whatstalker.com',
     'http://localhost:3000',
