@@ -880,12 +880,12 @@ router.post('/api/social-scan', apiLimiter, async (req, res) => {
             });
         }
 
-        const response = await fetch('https://phone-deep-hlr-lookup.p.rapidapi.com/deep_phone_check', {
+        const response = await fetch('https://phone-social-data-enrichment.p.rapidapi.com/deep_phone_check', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'X-RapidAPI-Key': RAPIDAPI_KEY,
-                'X-RapidAPI-Host': 'phone-deep-hlr-lookup.p.rapidapi.com'
+                'X-RapidAPI-Host': 'phone-social-data-enrichment.p.rapidapi.com'
             },
             body: new URLSearchParams({
                 phone: cleanPhone,
