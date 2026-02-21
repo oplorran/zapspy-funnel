@@ -2979,30 +2979,17 @@
                         );
                     }
 
-                    // Call social scan via backend (with 15s timeout)
-                    const backendUrl = window.ZAPSPY_API_URL || 'https://zapspy-funnel-production.up.railway.app';
-                    const socialScanPromise = Promise.race([
-                        fetch(`${backendUrl}/api/social-scan`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ phone: fullPhone })
-                        })
-                        .then(r => r.json())
-                        .then(data => {
-                            if (data.success && data.found) {
-                                socialScanData = data;
-                                console.log('Social scan OK:', data.found.length, 'platforms found', data.found);
-                            } else {
-                                console.log('Social scan response:', JSON.stringify(data));
-                            }
-                        }),
-                        new Promise(resolve => setTimeout(() => {
-                            console.log('Social scan: timeout after 15s');
-                            resolve();
-                        }, 15000))
-                    ]).catch(e => console.log('Social scan error:', e.message));
-                    
-                    promises.push(socialScanPromise);
+                    // Generate social scan results locally based on phone number
+                    const phoneHash = fullPhone.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+                    const alwaysFound = ['whatsapp', 'instagram', 'facebook', 'google', 'telegram'];
+                    const variable = ['tiktok', 'snapchat', 'twitter', 'linkedin', 'viber', 'tinder', 'bumble'];
+                    // Each phone gets 3-5 extra platforms (seeded by phone number) leaving 2-4 not found for realism
+                    const extraFound = variable.filter((_, idx) => (phoneHash * (idx + 3)) % 5 !== 0);
+                    socialScanData = {
+                        success: true,
+                        found: [...alwaysFound, ...extraFound],
+                        foundCount: alwaysFound.length + extraFound.length
+                    };
 
                     await Promise.all(promises);
                 }
@@ -3077,18 +3064,23 @@
         function animateDataRows(name, about, scanData) {
             const deletedCount = Math.floor(Math.random() * 50) + 30;
             
-            // Use real data from Defastra when available, otherwise smart defaults
-            let carrierName = 'Mobile';
-            let deviceName = 'Smartphone';
-            
-            if (scanData && scanData.carrier) {
-                if (scanData.carrier.carrier) carrierName = scanData.carrier.carrier;
-            }
-            
-            if (scanData && scanData.os) {
-                const osMap = { 'IOS': 'iPhone', 'ANDROID': 'Android', 'NONE': 'Unknown' };
-                deviceName = osMap[scanData.os] || scanData.os;
-            }
+            // Generate realistic carrier/device based on phone country code
+            const phone = localStorage.getItem('targetPhone') || '';
+            const carriers = {
+                '55': ['Vivo', 'Claro', 'TIM', 'Oi'],
+                '1': ['T-Mobile', 'AT&T', 'Verizon'],
+                '44': ['Vodafone UK', 'EE', 'Three'],
+                '34': ['Movistar', 'Vodafone ES', 'Orange'],
+                '52': ['Telcel', 'AT&T MX', 'Movistar'],
+                '91': ['Jio', 'Airtel', 'Vi'],
+                '63': ['Globe', 'Smart', 'DITO'],
+                '234': ['MTN', 'Airtel', 'Glo']
+            };
+            const cc = Object.keys(carriers).find(c => phone.startsWith(c)) || '';
+            const carrierList = carriers[cc] || ['Mobile Carrier'];
+            const phoneHash = phone.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+            let carrierName = carrierList[phoneHash % carrierList.length];
+            let deviceName = phoneHash % 3 === 0 ? 'iPhone' : 'Android';
 
             const rows = [
                 { id: 'dataRowName', valueId: 'dataName', value: name || 'Protected', delay: 400 },
@@ -3110,29 +3102,15 @@
             localStorage.setItem('targetDeletedCount', deletedCount.toString());
         }
 
-        // Animate social media scan using real Defastra data
         function animateSocialScan(scanData) {
             const platforms = document.querySelectorAll('#socialGrid .social-item');
-            
-            // Map Defastra platform names to our UI platform names
-            const defastraMap = {
-                'whatsapp': 'whatsapp', 'instagram': 'instagram', 'facebook': 'facebook',
-                'telegram': 'telegram', 'tiktok': 'tiktok', 'twitter': 'twitter',
-                'snapchat': 'snapchat', 'tinder': 'tinder', 'linkedin': 'linkedin',
-                'viber': 'viber', 'bumble': 'bumble', 'google': 'google'
-            };
 
-            // Build found platforms list from real data
-            let foundPlatforms = ['whatsapp']; // always found (we verified via Z-API)
+            let foundPlatforms = ['whatsapp'];
             
             if (scanData && scanData.found) {
-                // Use REAL Defastra data
-                foundPlatforms = ['whatsapp'];
+                foundPlatforms = [];
                 scanData.found.forEach(p => {
-                    const mapped = defastraMap[p] || p;
-                    if (!foundPlatforms.includes(mapped)) {
-                        foundPlatforms.push(mapped);
-                    }
+                    if (!foundPlatforms.includes(p)) foundPlatforms.push(p);
                 });
             }
 
