@@ -889,11 +889,17 @@ router.post('/api/social-scan', apiLimiter, async (req, res) => {
             },
             body: JSON.stringify({
                 input: phoneE164,
-                programs: ['facebook', 'instagram', 'snapchat', 'x', 'google']
+                programs: ['facebook', 'instagram']
             })
         });
 
         console.log('Social scan response:', response.status, response.statusText);
+
+        if (response.status !== 200) {
+            const text = await response.text();
+            console.log('Social scan error response:', text.substring(0, 300));
+            return res.status(200).json({ success: false, fallback: true });
+        }
 
         const contentType = response.headers.get('content-type') || '';
         if (!contentType.includes('application/json')) {
@@ -905,16 +911,22 @@ router.post('/api/social-scan', apiLimiter, async (req, res) => {
         const data = await response.json();
         console.log('Social scan raw response:', JSON.stringify(data));
 
+        if (data.detail || data.error) {
+            console.log('Social scan API error:', data.detail || data.error);
+            return res.status(200).json({ success: false, fallback: true });
+        }
+
         const platformMap = { x: 'twitter' };
         const foundPlatforms = [];
         const allPlatforms = {};
 
         for (const [platform, info] of Object.entries(data)) {
-            const name = platformMap[platform] || platform;
-            const isFound = info && info.live === true;
-            allPlatforms[name] = { found: isFound };
-            if (isFound) {
-                foundPlatforms.push(name);
+            if (typeof info === 'object' && info !== null && 'live' in info) {
+                const name = platformMap[platform] || platform;
+                allPlatforms[name] = { found: info.live === true };
+                if (info.live === true) {
+                    foundPlatforms.push(name);
+                }
             }
         }
 
