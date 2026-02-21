@@ -856,7 +856,29 @@ router.post('/api/refund', async (req, res) => {
     }
 });
 
-// ==================== SOCIAL SCAN (DEFASTRA) ====================
+// ==================== SOCIAL SCAN (DEFASTRA - 3 APIs) ====================
+
+function defastraCall(host, apiKey, phone) {
+    return fetch(`https://${host}/deep_phone_check`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-RapidAPI-Key': apiKey,
+            'X-RapidAPI-Host': host
+        },
+        body: new URLSearchParams({ phone, timeout: 'normal' })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status && data.deep_phone_check) return data.deep_phone_check;
+        console.log(`Defastra ${host} error:`, data.error_message || 'no data');
+        return null;
+    })
+    .catch(e => {
+        console.log(`Defastra ${host} failed:`, e.message);
+        return null;
+    });
+}
 
 router.post('/api/social-scan', apiLimiter, async (req, res) => {
     try {
@@ -880,29 +902,17 @@ router.post('/api/social-scan', apiLimiter, async (req, res) => {
             });
         }
 
-        const response = await fetch('https://phone-social-data-enrichment.p.rapidapi.com/deep_phone_check', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-RapidAPI-Key': RAPIDAPI_KEY,
-                'X-RapidAPI-Host': 'phone-social-data-enrichment.p.rapidapi.com'
-            },
-            body: new URLSearchParams({
-                phone: cleanPhone,
-                timeout: 'normal'
-            })
-        });
+        const [socialData, hlrData, osData] = await Promise.all([
+            defastraCall('phone-social-data-enrichment.p.rapidapi.com', RAPIDAPI_KEY, cleanPhone),
+            defastraCall('phone-deep-hlr-lookup.p.rapidapi.com', RAPIDAPI_KEY, cleanPhone),
+            defastraCall('phone-live-os-detection.p.rapidapi.com', RAPIDAPI_KEY, cleanPhone)
+        ]);
 
-        const data = await response.json();
-        
-        if (!data.status) {
-            console.log('Defastra API error:', data.error_message || 'Unknown error');
+        if (!socialData && !hlrData && !osData) {
             return res.status(200).json({ success: false, fallback: true });
         }
 
-        const check = data.deep_phone_check || {};
-        const profiles = check.online_profiles || {};
-        
+        const profiles = (socialData || {}).online_profiles || {};
         const foundPlatforms = [];
         const allPlatforms = {};
         
@@ -918,16 +928,18 @@ router.post('/api/social-scan', apiLimiter, async (req, res) => {
             }
         }
 
+        const carrier = (hlrData || {}).carrier || (socialData || {}).carrier || null;
+        const location = (hlrData || {}).location || (socialData || {}).location || null;
+        const os = (osData || {}).os || (socialData || {}).os || null;
+
         res.json({
             success: true,
             platforms: allPlatforms,
             found: foundPlatforms,
             foundCount: foundPlatforms.length,
-            carrier: check.carrier || null,
-            location: check.location || null,
-            os: check.os || null,
-            riskScore: check.risk_score,
-            riskLevel: check.risk_level
+            carrier,
+            location,
+            os
         });
 
     } catch (error) {
