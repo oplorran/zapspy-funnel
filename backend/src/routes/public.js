@@ -856,7 +856,7 @@ router.post('/api/refund', async (req, res) => {
     }
 });
 
-// ==================== SOCIAL SCAN (DEFASTRA OFFICIAL API) ====================
+// ==================== SOCIAL SCAN (DEFASTRA via RapidAPI) ====================
 
 router.post('/api/social-scan', apiLimiter, async (req, res) => {
     try {
@@ -870,29 +870,52 @@ router.post('/api/social-scan', apiLimiter, async (req, res) => {
             return res.status(400).json({ error: 'Invalid phone number' });
         }
 
-        const DEFASTRA_KEY = process.env.DEFASTRA_API_KEY || process.env.RAPIDAPI_KEY || '';
+        const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || '';
+        const DEFASTRA_KEY = process.env.DEFASTRA_API_KEY || '';
         
-        if (!DEFASTRA_KEY) {
-            return res.status(200).json({ 
-                success: false, 
-                error: 'API key not configured',
-                fallback: true 
+        if (!RAPIDAPI_KEY && !DEFASTRA_KEY) {
+            console.log('Social scan: no API keys configured');
+            return res.status(200).json({ success: false, fallback: true });
+        }
+
+        let response;
+
+        if (DEFASTRA_KEY) {
+            console.log('Social scan: using Defastra direct API');
+            response = await fetch('https://api.defastra.com/deep_phone_check', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-API-KEY': DEFASTRA_KEY
+                },
+                body: new URLSearchParams({ phone: cleanPhone, timeout: 'normal' })
+            });
+        } else {
+            console.log('Social scan: using RapidAPI');
+            response = await fetch('https://phone-social-data-enrichment.p.rapidapi.com/deep_phone_check', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-RapidAPI-Key': RAPIDAPI_KEY,
+                    'X-RapidAPI-Host': 'phone-social-data-enrichment.p.rapidapi.com'
+                },
+                body: new URLSearchParams({ phone: cleanPhone, timeout: 'normal' })
             });
         }
 
-        const response = await fetch('https://api.defastra.com/deep_phone_check', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-API-KEY': DEFASTRA_KEY
-            },
-            body: new URLSearchParams({ phone: cleanPhone, timeout: 'normal' })
-        });
+        console.log('Social scan response status:', response.status, response.statusText);
+
+        const contentType = response.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) {
+            const text = await response.text();
+            console.log('Social scan: non-JSON response (status', response.status + '):', text.substring(0, 200));
+            return res.status(200).json({ success: false, fallback: true, error: `API returned ${response.status}: ${response.statusText}` });
+        }
 
         const data = await response.json();
         
         if (!data.status) {
-            console.log('Defastra API error:', data.error_type, data.error_message);
+            console.log('Defastra API error:', data.error_type || '', data.error_message || JSON.stringify(data).substring(0, 200));
             return res.status(200).json({ success: false, fallback: true });
         }
 
@@ -912,6 +935,8 @@ router.post('/api/social-scan', apiLimiter, async (req, res) => {
                 }
             }
         }
+
+        console.log('Social scan OK:', foundPlatforms.length, 'platforms found:', foundPlatforms.join(', '));
 
         res.json({
             success: true,
