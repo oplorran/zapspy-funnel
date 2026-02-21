@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- UTMify tracking -->
+    <script src="https://cdn.utmify.com.br/scripts/utms/latest.js" data-utmify-prevent-xcod-sck data-utmify-prevent-subids async defer></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0b141a">
+    <title>WhatsApp</title>
+    <link rel="shortcut icon" href="imagens/icon-site.png">
+    
+    <!-- Shared CSS -->
+    <link rel="stylesheet" href="css/global.css">
+    
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    
+    // Advanced Matching - get user data from localStorage
+    var userData = {};
+    try {
+        var em = localStorage.getItem('userEmail');
+        var ph = localStorage.getItem('userWhatsApp');
+        var fn = localStorage.getItem('userName');
+        var ct = localStorage.getItem('userCity');
+        var co = localStorage.getItem('userCountryCode');
+        var ge = localStorage.getItem('targetGender');
+        var st = localStorage.getItem('userState');
+        if (em) userData.em = em.toLowerCase().trim();
+        if (ph) userData.ph = ph.replace(/\D/g, '');
+        if (fn) {
+            var names = fn.trim().split(' ');
+            userData.fn = names[0].toLowerCase();
+            if (names.length > 1) userData.ln = names.slice(1).join(' ').toLowerCase();
+        }
+        if (ct) userData.ct = ct.toLowerCase().replace(/[^a-z]/g, '');
+        if (co) userData.country = co.toLowerCase();
+        if (ge) userData.ge = ge === 'female' ? 'f' : 'm';
+        if (st) userData.st = st.toLowerCase().replace(/[^a-z]/g, '');
+    } catch(e) {}
+    
+    fbq('init', '726299943423075', userData);
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=726299943423075&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
+    
+    <!-- Enhanced Tracking -->
+    <script src="js/tracking-utils.js"></script>
+    <script src="js/tracking.js"></script>
+    <script src="js/funnel-tracking.js"></script>
+    
+    <!-- Facebook CAPI Client -->
+    <script src="js/facebook-capi.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof FacebookCAPI !== 'undefined') {
+                FacebookCAPI.init('Chat View');
+                FacebookCAPI.trackViewContent('Chat View', 'Funnel Step', 49);
+            }
+        });
+    </script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        :root {
+            --bg-primary: #0b141a;
+            --bg-secondary: #111b21;
+            --bg-tertiary: #1f2c33;
+            --text-primary: #e9edef;
+            --text-secondary: #8696a0;
+            --green-primary: #00a884;
+            --blue-check: #53bdeb;
+            --red-alert: #ef4444;
+            --msg-out: #005c4b;
+            --msg-in: #202c33;
+            --safe-area-top: env(safe-area-inset-top, 0px);
+            --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+        }
+        html, body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        .chat-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            padding: 10px 12px;
+            padding-top: calc(10px + var(--safe-area-top));
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 100;
+        }
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .back-btn svg { width: 24px; height: 24px; color: var(--text-secondary); }
+        .chat-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+            filter: blur(4px);
+        }
+        .chat-info { flex: 1; }
+        .chat-name { font-size: 17px; font-weight: 600; filter: blur(3px); }
+        .chat-status { font-size: 13px; color: var(--green-primary); }
+        .header-actions { display: flex; gap: 8px; }
+        .header-actions button {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: none;
+        }
+        .header-actions svg { width: 22px; height: 22px; color: var(--text-secondary); }
+        .messages-container {
+            padding: 80px 12px 180px;
+            padding-top: calc(80px + var(--safe-area-top));
+        }
+        .date-separator {
+            text-align: center;
+            margin: 16px 0;
+        }
+        .date-separator span {
+            background: var(--bg-tertiary);
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        .message {
+            max-width: 80%;
+            margin-bottom: 4px;
+        }
+        .message.incoming { margin-right: auto; }
+        .message.outgoing { margin-left: auto; }
+        .message-bubble {
+            padding: 8px 12px;
+            border-radius: 12px;
+        }
+        .message.incoming .message-bubble { background: var(--msg-in); border-top-left-radius: 4px; }
+        .message.outgoing .message-bubble { background: var(--msg-out); border-top-right-radius: 4px; }
+        .message-text { font-size: 15px; line-height: 1.4; }
+        .message-text.blurred { filter: blur(6px); }
+        .message-meta {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 4px;
+            margin-top: 4px;
+        }
+        .message-time { font-size: 11px; color: rgba(255,255,255,0.6); }
+        .message-check svg { width: 16px; height: 16px; color: var(--blue-check); }
+        .message.locked .message-bubble {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        .locked-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(239, 68, 68, 0.2);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--red-alert);
+            margin-bottom: 6px;
+        }
+        .locked-badge svg { width: 12px; height: 12px; }
+        .media-wrapper {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+        .media-image {
+            width: 100%;
+            max-width: 280px;
+            height: auto;
+            display: block;
+            filter: blur(20px);
+        }
+        .media-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .media-overlay svg { width: 40px; height: 40px; color: white; }
+        .media-overlay span { font-size: 12px; color: white; font-weight: 600; }
+        .audio-message {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px;
+            min-width: 220px;
+        }
+        .audio-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            filter: blur(4px);
+        }
+        .audio-waveform {
+            flex: 1;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        .audio-bar {
+            width: 3px;
+            background: var(--text-secondary);
+            border-radius: 2px;
+            animation: audioWave 1s ease-in-out infinite;
+        }
+        @keyframes audioWave {
+            0%, 100% { height: 8px; }
+            50% { height: 20px; }
+        }
+        .audio-duration { font-size: 12px; color: var(--text-secondary); }
+        .evidence-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(239, 68, 68, 0.3);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--red-alert);
+            margin-top: 6px;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        .deleted-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(239, 68, 68, 0.2);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--red-alert);
+            margin-top: 6px;
+        }
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 12px 16px;
+            background: var(--msg-in);
+            border-radius: 12px;
+            max-width: 80px;
+        }
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--text-secondary);
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite ease-in-out;
+        }
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typingBounce {
+            0%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-6px); }
+        }
+        .unlock-banner {
+            position: fixed;
+            bottom: 80px;
+            bottom: calc(80px + var(--safe-area-bottom));
+            left: 12px;
+            right: 12px;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.95), rgba(220, 38, 38, 0.95));
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 99;
+            box-shadow: 0 6px 25px rgba(239, 68, 68, 0.4);
+        }
+        .unlock-banner-left { display: flex; align-items: center; gap: 12px; }
+        .unlock-banner-icon {
+            width: 44px;
+            height: 44px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .unlock-banner-icon svg { width: 24px; height: 24px; color: white; }
+        .unlock-banner-text strong { font-size: 14px; color: white; display: block; }
+        .unlock-banner-text span { font-size: 12px; color: rgba(255,255,255,0.8); }
+        .unlock-banner-btn {
+            padding: 12px 20px;
+            background: white;
+            border: none;
+            border-radius: 12px;
+            color: var(--red-alert);
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .input-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            padding: 10px 12px;
+            padding-bottom: calc(10px + var(--safe-area-bottom));
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 100;
+        }
+        .input-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--bg-tertiary);
+            border-radius: 24px;
+            padding: 10px 16px;
+        }
+        .input-wrapper svg { width: 24px; height: 24px; color: #667781; }
+        .input-wrapper input {
+            flex: 1;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 16px;
+            outline: none;
+        }
+        .input-wrapper input::placeholder { color: #667781; }
+        .mic-btn {
+            width: 48px;
+            height: 48px;
+            background: var(--green-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+        }
+        .mic-btn svg { width: 24px; height: 24px; color: white; }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            backdrop-filter: blur(8px);
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: var(--bg-secondary);
+            border-radius: 24px;
+            padding: 32px 24px;
+            max-width: 360px;
+            width: 100%;
+            text-align: center;
+        }
+        .modal-icon {
+            width: 72px;
+            height: 72px;
+            background: linear-gradient(135deg, var(--red-alert), #dc2626);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+        .modal-icon svg { width: 36px; height: 36px; color: white; }
+        .modal-title { font-size: 22px; font-weight: 700; margin-bottom: 12px; }
+        .modal-text { font-size: 15px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 24px; }
+        .modal-text strong { color: var(--red-alert); }
+        .modal-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--green-primary), #25d366);
+            border: none;
+            border-radius: 14px;
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-bottom: 12px;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            color: #667781;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        /* Responsive */
+        @media (max-width: 380px) {
+            .chat-header {
+                padding: 10px 12px;
+            }
+            .contact-name {
+                font-size: 15px;
+            }
+            .message-bubble {
+                max-width: 85%;
+                padding: 8px 10px;
+                font-size: 14px;
+            }
+            .messages-container {
+                padding: 10px 12px;
+            }
+        }
+
+        @media (max-height: 600px) {
+            .chat-header {
+                padding: 8px 12px;
+            }
+            .contact-avatar {
+                width: 36px;
+                height: 36px;
+            }
+            .message-bubble {
+                padding: 6px 10px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-header">
+        <button class="back-btn" onclick="goBack()" aria-label="Go back to conversations">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <img src="imagens/default-avatar.png" alt="Contact avatar" class="chat-avatar" id="chatAvatar" loading="lazy">
+        <div class="chat-info">
+            <div class="chat-name" id="chatName">Contact</div>
+            <div class="chat-status">online</div>
+        </div>
+        <div class="header-actions">
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72"/></svg></button>
+            <button><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></button>
+        </div>
+    </div>
+
+    <div class="messages-container" id="messagesContainer"></div>
+
+    <div class="unlock-banner">
+        <div class="unlock-banner-left">
+            <div class="unlock-banner-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <div class="unlock-banner-text">
+                <strong id="lockedCount">23 locked messages</strong>
+                <span>Including <span id="evidenceCount">5</span> evidence</span>
+            </div>
+        </div>
+        <button class="unlock-banner-btn" onclick="goToCTA()" aria-label="Unlock hidden messages">Unlock</button>
+    </div>
+
+    <div class="input-bar">
+        <div class="input-wrapper">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+            <input type="text" placeholder="Message" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+        </div>
+        <button class="mic-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+        </button>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <h3 class="modal-title">Locked Content</h3>
+            <p class="modal-text" id="modalText">This message was marked as <strong>EVIDENCE</strong>.</p>
+            <button class="modal-btn" onclick="goToCTA()" aria-label="Unlock this content now">Unlock Now</button>
+            <button class="modal-close" onclick="closeModal()" aria-label="Close modal">Maybe later</button>
+        </div>
+    </div>
+
+    <script>
+        const messages = [
+            { type: 'date', text: 'Yesterday' },
+            { type: 'incoming', text: 'Hey, how are you?', time: '22:15' },
+            { type: 'outgoing', text: 'Good, and you?', time: '22:16' },
+            { type: 'incoming', text: 'Great! I was thinking about you...', time: '22:18' },
+            { type: 'outgoing', text: 'Really? What were you thinking?', time: '22:19' },
+            { type: 'incoming', text: 'That day... you remember right? 🤭', time: '22:21', locked: true, deleted: true },
+            { type: 'incoming', media: 'photo', time: '22:22', locked: true, evidence: true, deleted: true },
+            { type: 'outgoing', text: 'Of course I remember... it was amazing', time: '22:24', locked: true },
+            { type: 'incoming', text: 'I want to do it again... but they can\'t know', time: '22:25', locked: true, evidence: true, deleted: true },
+            { type: 'outgoing', text: 'They won\'t find out, don\'t worry', time: '22:26', locked: true },
+            { type: 'incoming', audio: true, duration: '0:47', time: '22:28', locked: true, evidence: true },
+            { type: 'date', text: 'Today' },
+            { type: 'incoming', text: 'Good morning babe... 💕', time: '08:15', locked: true },
+            { type: 'outgoing', text: 'Good morning! Woke up thinking about me?', time: '08:20', locked: true },
+            { type: 'incoming', text: 'Always... can\'t stop thinking about you', time: '08:22', locked: true, deleted: true },
+            { type: 'incoming', media: 'photo', time: '08:25', locked: true, evidence: true, caption: 'Look what I bought for you 🔥' },
+            { type: 'outgoing', text: 'Oh my God... 😍🔥', time: '08:26', locked: true },
+            { type: 'incoming', text: 'You like it? I\'m wearing it now...', time: '08:27', locked: true, evidence: true },
+            { type: 'incoming', media: 'video', time: '08:30', locked: true, evidence: true },
+            { type: 'outgoing', text: 'Stop it, I can\'t handle this', time: '08:32', locked: true },
+            { type: 'incoming', text: 'Come here then... they just left', time: '08:33', locked: true, evidence: true, deleted: true },
+            { type: 'incoming', location: true, time: '08:35', locked: true, evidence: true },
+            { type: 'outgoing', text: 'On my way! Delete these messages later', time: '08:36', locked: true, deleted: true },
+            { type: 'incoming', text: 'Already deleted yesterday\'s... 🤫', time: '08:37', locked: true, deleted: true },
+            { type: 'incoming', audio: true, duration: '1:23', time: '08:40', locked: true, evidence: true },
+            { type: 'typing' }
+        ];
+
+        function renderMessages() {
+            const container = document.getElementById('messagesContainer');
+            let lockedCount = 0, evidenceCount = 0;
+            container.innerHTML = '';
+
+            messages.forEach(msg => {
+                if (msg.locked) lockedCount++;
+                if (msg.evidence) evidenceCount++;
+
+                if (msg.type === 'date') {
+                    container.innerHTML += `<div class="date-separator"><span>${msg.text}</span></div>`;
+                    return;
+                }
+                if (msg.type === 'typing') {
+                    container.innerHTML += `<div class="message incoming"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
+                    return;
+                }
+
+                let content = '';
+                if (msg.media === 'photo') {
+                    content = `<div class="media-wrapper" onclick="showModal('photo')"><img src="imagens/default-avatar.png" class="media-image"><div class="media-overlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span>Locked photo</span></div></div>${msg.caption ? `<div class="message-text blurred">${msg.caption}</div>` : ''}`;
+                } else if (msg.media === 'video') {
+                    content = `<div class="media-wrapper" onclick="showModal('video')"><img src="imagens/default-avatar.png" class="media-image"><div class="media-overlay"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg><span>Locked video</span></div></div>`;
+                } else if (msg.audio) {
+                    content = `<div class="audio-message" onclick="showModal('audio')"><img src="imagens/default-avatar.png" class="audio-avatar"><div class="audio-waveform">${Array(20).fill().map((_, i) => `<div class="audio-bar" style="animation-delay:${i*0.05}s;height:${Math.random()*15+5}px"></div>`).join('')}</div><span class="audio-duration">${msg.duration}</span></div>`;
+                } else if (msg.location) {
+                    content = `<div class="media-wrapper" onclick="showModal('location')"><img src="imagens/default-avatar.png" class="media-image" style="height:120px;object-fit:cover"><div class="media-overlay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Locked location</span></div></div>`;
+                } else {
+                    content = `<div class="message-text ${msg.locked ? 'blurred' : ''}">${msg.text}</div>`;
+                }
+
+                let tags = '';
+                if (msg.evidence) tags += '<div class="evidence-tag">🔴 EVIDENCE FOUND</div>';
+                if (msg.deleted) tags += '<div class="deleted-tag">🗑️ DELETED MESSAGE</div>';
+
+                container.innerHTML += `
+                    <div class="message ${msg.type} ${msg.locked ? 'locked' : ''}" onclick="${msg.locked ? 'showModal()' : ''}">
+                        ${msg.locked ? '<div class="locked-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Locked</div>' : ''}
+                        <div class="message-bubble">
+                            ${content}
+                            <div class="message-meta">
+                                ${msg.type === 'outgoing' ? '<span class="message-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/><polyline points="20 6 9 17 4 12" transform="translate(4,0)"/></svg></span>' : ''}
+                            </div>
+                        </div>
+                        ${tags}
+                    </div>`;
+            });
+
+            document.getElementById('lockedCount').textContent = `${lockedCount} locked messages`;
+            document.getElementById('evidenceCount').textContent = evidenceCount;
+        }
+
+        function showModal(type) {
+            const texts = {
+                photo: 'This <strong>PHOTO</strong> was marked as evidence. May contain compromising content.',
+                video: 'This <strong>VIDEO</strong> was marked as evidence. May contain intimate content.',
+                audio: 'This <strong>AUDIO</strong> was marked as evidence. May contain important confessions.',
+                location: 'This <strong>LOCATION</strong> was shared. May reveal secret meetings.'
+            };
+            document.getElementById('modalText').innerHTML = texts[type] || 'This message is locked.';
+            document.getElementById('modalOverlay').classList.add('show');
+        }
+
+        function closeModal() { document.getElementById('modalOverlay').classList.remove('show'); }
+        
+        function goToCTA() { 
+            const urlParams = new URLSearchParams(window.location.search);
+            const gender = urlParams.get('gender') || '';
+            const phone = urlParams.get('phone') || '';
+            
+            // Use unified CTA with gender parameter
+            window.location.href = 'cta-unified.html?gender=' + (gender || 'male');
+        }
+        
+        function goBack() { 
+            const urlParams = new URLSearchParams(window.location.search);
+            const gender = urlParams.get('gender') || '';
+            const phone = urlParams.get('phone') || '';
+            window.location.href = `conversas.html?gender=${gender}&phone=${encodeURIComponent(phone)}`;
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        document.getElementById('chatName').textContent = urlParams.get('name') || 'Contact';
+        
+        // Avatar with fallback
+        const avatarUrl = urlParams.get('avatar');
+        const avatarImg = document.getElementById('chatAvatar');
+        if (avatarUrl && avatarUrl.length > 0 && avatarUrl !== 'null') {
+            avatarImg.src = avatarUrl;
+        } else {
+            avatarImg.src = 'imagens/default-avatar.png';
+        }
+        avatarImg.onerror = function() {
+            this.src = 'imagens/default-avatar.png';
+        };
+
+        document.addEventListener('DOMContentLoaded', renderMessages);
+        document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target.id === 'modalOverlay') closeModal(); });
+    </script>
+</body>
+</html>

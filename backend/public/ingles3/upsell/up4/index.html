@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- UTMify tracking -->
+    <script src="https://cdn.utmify.com.br/scripts/utms/latest.js" data-utmify-prevent-xcod-sck data-utmify-prevent-subids async defer></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Invisibility Cloak - Undetectable Monitoring</title>
+    
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    
+    var userData = {};
+    try {
+        var em = localStorage.getItem('userEmail');
+        var ph = localStorage.getItem('userWhatsApp');
+        var fn = localStorage.getItem('userName');
+        var ct = localStorage.getItem('userCity');
+        var co = localStorage.getItem('userCountryCode');
+        var ge = localStorage.getItem('targetGender');
+        var st = localStorage.getItem('userState');
+        if (em) userData.em = em.toLowerCase().trim();
+        if (ph) userData.ph = ph.replace(/\D/g, '');
+        if (fn) {
+            var names = fn.trim().split(' ');
+            userData.fn = names[0].toLowerCase();
+            if (names.length > 1) userData.ln = names.slice(1).join(' ').toLowerCase();
+        }
+        if (ct) userData.ct = ct.toLowerCase().replace(/[^a-z]/g, '');
+        if (co) userData.country = co.toLowerCase();
+        if (ge) userData.ge = ge === 'female' ? 'f' : 'm';
+        if (st) userData.st = st.toLowerCase().replace(/[^a-z]/g, '');
+    } catch(e) {}
+    
+    fbq('init', '726299943423075', userData);
+    var pvId = 'PageView_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    fbq('track', 'PageView', {}, { eventID: pvId });
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=726299943423075&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
+    
+    <!-- Facebook CAPI Client -->
+    <script src="../../js/facebook-capi.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof FacebookCAPI !== 'undefined') {
+                FacebookCAPI.init('Upsell 4 - Invisibility Cloak');
+                FacebookCAPI.trackViewContent('Upsell Page', 'Funnel - Upsell', 41);
+            }
+        });
+    </script>
+    
+    <meta name="description" content="Make your monitoring completely undetectable with military-grade stealth technology.">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👻</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../vip-overlay-styles.css?v=8.0">
+    <link rel="stylesheet" href="upsell1-styles.css?v=9.0">
+    <!-- MONETIZZE: Replace hash below with your Invisibility Cloak product hash -->
+    <script type="text/javascript" src="https://app.monetizze.com.br/1buyclick.php?u=bd97710b0721d28c219ebdc1010eb0af"></script>
+    <style>
+    .stealth-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;background:linear-gradient(135deg,#0a0a0a 0%,#0d1117 40%,#0f1a2e 100%);display:flex;align-items:center;justify-content:center;transition:opacity .8s ease,transform .8s ease;overflow:hidden}
+    .stealth-overlay.fade-out{opacity:0;transform:scale(1.05);pointer-events:none}
+    .stealth-container{position:relative;z-index:2;width:90%;max-width:420px;text-align:center}
+    .stealth-icon{font-size:44px;margin-bottom:10px;animation:ghostPulse 1.5s ease-in-out infinite}
+    @keyframes ghostPulse{0%,100%{transform:scale(1);filter:drop-shadow(0 0 8px rgba(99,102,241,.4))}50%{transform:scale(1.1);filter:drop-shadow(0 0 20px rgba(99,102,241,.8))}}
+    .stealth-title{font-family:'DM Sans',sans-serif;font-size:19px;font-weight:700;color:#fff;margin-bottom:5px}
+    .stealth-subtitle{font-family:'DM Sans',sans-serif;font-size:12.5px;color:rgba(255,255,255,.4);margin-bottom:22px}
+    .stealth-steps{background:rgba(255,255,255,.04);border:1px solid rgba(99,102,241,.15);border-radius:14px;padding:18px;margin-bottom:16px;text-align:left}
+    .stealth-step{display:flex;align-items:center;gap:10px;padding:8px 0;font-family:'DM Sans',sans-serif;font-size:13px;color:rgba(255,255,255,.3);transition:all .5s ease}
+    .stealth-step.active{color:rgba(255,255,255,.7)}
+    .stealth-step.done{color:#4ade80}
+    .stealth-step.warning{color:#f87171;font-weight:600}
+    .step-indicator{width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;transition:all .4s ease}
+    .stealth-step.active .step-indicator{border-color:rgba(99,102,241,.6);background:rgba(99,102,241,.15)}
+    .stealth-step.done .step-indicator{border-color:#4ade80;background:rgba(74,222,128,.15)}
+    .stealth-step.warning .step-indicator{border-color:#f87171;background:rgba(248,113,113,.15)}
+    .stealth-progress{width:100%;height:4px;background:rgba(255,255,255,.06);border-radius:20px;overflow:hidden;margin-top:12px}
+    .stealth-progress-bar{height:100%;width:0%;border-radius:20px;background:linear-gradient(90deg,#6366f1,#818cf8);transition:width .3s ease}
+    .stealth-result{display:none;margin-top:16px;padding:16px 18px;border-radius:12px;background:linear-gradient(135deg,rgba(239,68,68,.06),rgba(239,68,68,.12));border:1px solid rgba(239,68,68,.3)}
+    .stealth-result.visible{display:block;animation:resultAppear .7s cubic-bezier(.22,1,.36,1)}
+    @keyframes resultAppear{0%{opacity:0;transform:translateY(20px) scale(.95)}100%{opacity:1;transform:translateY(0) scale(1)}}
+    .stealth-result-icon{font-size:26px;display:block;margin-bottom:6px;animation:shieldBounce .6s ease-in-out infinite alternate}
+    @keyframes shieldBounce{0%{transform:translateY(0)}100%{transform:translateY(-5px)}}
+    .stealth-result-title{font-family:'DM Sans',sans-serif;font-weight:700;font-size:14px;color:#f87171;margin-bottom:4px;letter-spacing:.5px}
+    .stealth-result-text{font-family:'DM Sans',sans-serif;font-size:11.5px;color:rgba(255,255,255,.5);line-height:1.5}
+    .stealth-result-text strong{color:#fff}
+    .page.hidden-content{opacity:0;pointer-events:none}
+    .page.reveal-content{animation:contentReveal .8s ease forwards}
+    @keyframes contentReveal{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
+    </style>
+</head>
+<body>
+    <div class="stealth-overlay" id="stealthOverlay">
+        <div class="stealth-container">
+            <div class="stealth-icon">👻</div>
+            <h2 class="stealth-title">Activating Stealth Mode...</h2>
+            <p class="stealth-subtitle">Securing your monitoring activity to be 100% undetectable.</p>
+
+            <div class="stealth-steps">
+                <div class="stealth-step" id="step1">
+                    <span class="step-indicator" id="ind1"></span>
+                    <span>Applying military-grade encryption layer</span>
+                </div>
+                <div class="stealth-step" id="step2">
+                    <span class="step-indicator" id="ind2"></span>
+                    <span>Masking your IP address and device ID</span>
+                </div>
+                <div class="stealth-step" id="step3">
+                    <span class="step-indicator" id="ind3"></span>
+                    <span>Erasing all digital footprints</span>
+                </div>
+                <div class="stealth-step" id="step4">
+                    <span class="step-indicator" id="ind4"></span>
+                    <span>Activating anti-detection shield</span>
+                </div>
+                <div class="stealth-step" id="step5">
+                    <span class="step-indicator" id="ind5"></span>
+                    <span>⚠️ WARNING: Vulnerability detected — your activity may be visible</span>
+                </div>
+                <div class="stealth-progress">
+                    <div class="stealth-progress-bar" id="stealthProgressBar"></div>
+                </div>
+            </div>
+
+            <div class="stealth-result" id="stealthResult">
+                <span class="stealth-result-icon">🛡️</span>
+                <div class="stealth-result-title">CRITICAL SECURITY UPGRADE AVAILABLE</div>
+                <div class="stealth-result-text"><strong>Your current setup leaves traces that could expose your monitoring.</strong> This one-time upgrade makes you completely invisible.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page hidden-content" id="mainPage">
+        <main class="content">
+            <section class="hero">
+                <h1 class="main-title">⚠️ WARNING: They Can See You're Monitoring Them</h1>
+                
+                <div class="intro-section">
+                    <p class="problem-text">😰 <strong>Without the Invisibility Cloak, your monitoring activity leaves digital traces.</strong> If they check their phone's battery usage, data consumption, or active connections — they'll know. Don't let months of evidence gathering be ruined because you got caught.</p>
+                    
+                    <p class="solution-text">👻 <strong>With the Invisibility Cloak:</strong> Your monitoring becomes <strong>100% undetectable</strong>. Zero traces in battery stats, invisible data routing, complete notification suppression. They will never know you're watching.</p>
+                </div>
+            </section>
+
+            <section class="ai-features-section">
+                <div class="ai-features-card">
+                    <h2 class="ai-features-title">👻 Stealth Protection Features</h2>
+                    <div class="ai-features-grid">
+                        <div class="ai-feature-item">
+                            <span class="ai-feature-icon">🛡️</span>
+                            <span class="ai-feature-name">Zero-Trace Technology</span>
+                            <span class="ai-feature-desc">Removes all signs of monitoring from battery stats, data usage, and active processes.</span>
+                        </div>
+                        <div class="ai-feature-item">
+                            <span class="ai-feature-icon">👻</span>
+                            <span class="ai-feature-name">Ghost Mode</span>
+                            <span class="ai-feature-desc">Your monitoring runs in a completely invisible background process.</span>
+                        </div>
+                        <div class="ai-feature-item">
+                            <span class="ai-feature-icon">🔒</span>
+                            <span class="ai-feature-name">Anti-Detection Shield</span>
+                            <span class="ai-feature-desc">Blocks all attempts to detect monitoring software on their device.</span>
+                        </div>
+                        <div class="ai-feature-item">
+                            <span class="ai-feature-icon">📱</span>
+                            <span class="ai-feature-name">Notification Masking</span>
+                            <span class="ai-feature-desc">Prevents any suspicious notifications from appearing on their device.</span>
+                        </div>
+                        <div class="ai-feature-item">
+                            <span class="ai-feature-icon">🌐</span>
+                            <span class="ai-feature-name">IP Cloaking</span>
+                            <span class="ai-feature-desc">Routes all data through encrypted tunnels so it can't be traced back to you.</span>
+                        </div>
+                        <div class="ai-feature-item">
+                            <span class="ai-feature-icon">⏰</span>
+                            <span class="ai-feature-name">Smart Scheduling</span>
+                            <span class="ai-feature-desc">Automatically pauses monitoring during high-risk detection windows.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="comparison-section">
+                <div class="comparison-card">
+                    <h2 class="comparison-title">🛡️ Without vs With Invisibility Cloak</h2>
+                    <div class="comparison-grid">
+                        <div class="comparison-item manual">
+                            <span class="comparison-icon">😰</span>
+                            <div class="comparison-text">
+                                <strong>Without Invisibility Cloak:</strong>
+                                <p>• Activity visible in battery stats<br>• Data usage spikes detectable<br>• Risk of notification leaks<br>• Digital footprints everywhere</p>
+                            </div>
+                        </div>
+                        <div class="comparison-item ai">
+                            <span class="comparison-icon">👻</span>
+                            <div class="comparison-text">
+                                <strong>With Invisibility Cloak:</strong>
+                                <p>• Zero battery impact<br>• Invisible data routing<br>• Complete notification suppression<br>• No traces whatsoever</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="benefits">
+                <div class="benefits-card">
+                    <h2 class="benefits-title">🛡️ What's Included in the Invisibility Cloak:</h2>
+                    <div class="benefits-grid">
+                        <div class="benefit-item">
+                            <span class="benefit-icon">🛡️</span>
+                            <span class="benefit-text"><strong>Zero-Trace Tech:</strong> Invisible in battery, data, and processes</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">👻</span>
+                            <span class="benefit-text"><strong>Ghost Mode:</strong> Completely invisible background operation</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">🔒</span>
+                            <span class="benefit-text"><strong>Anti-Detection:</strong> Blocks all detection attempts</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">📱</span>
+                            <span class="benefit-text"><strong>Notification Masking:</strong> No suspicious alerts on their phone</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">🌐</span>
+                            <span class="benefit-text"><strong>IP Cloaking:</strong> Encrypted tunnels, untraceable data</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">⏰</span>
+                            <span class="benefit-text"><strong>Smart Scheduling:</strong> Auto-pauses during risky detection windows</span>
+                        </div>
+                    </div>
+                    
+                    <p class="benefits-summary">👻 Don't let all your evidence gathering be ruined because they caught you watching.</p>
+                </div>
+            </section>
+
+            <section class="final-cta">
+                <div class="cta-section">
+                    <h2 class="cta-title">One Mistake and Months of Evidence Are Gone</h2>
+                    <p class="cta-text">You've invested in monitoring tools. Now make sure they never find out. The Invisibility Cloak is your insurance policy against detection.</p>
+                    
+                    <div class="cta-buttons">
+                        <p class="price-tag" style="margin-bottom: 24px;">Regular price: <s>$297</s> → Today only: $41 (86% off)</p>
+                        
+                        <!-- MONETIZZE: Replace hash below with your Invisibility Cloak product hash -->
+                        <a href='#monetizzeCompra' data-upsell='bd97710b0721d28c219ebdc1010eb0af' class="btn btn-primary btn-large btn-pulse btn-mega" aria-label="Activate Invisibility Cloak now" role="button">YES! Activate Invisibility Cloak Now</a>
+                        
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="footer">
+            <div class="smallprint">© <span id="year"></span> Stealth Security Suite. All rights reserved.</div>
+        </footer>
+    </div>
+
+    <script src="../polyfills.js?v=8.0"></script>
+    <script src="upsell1-script.js?v=9.0"></script>
+    <script src="../upsell-tracking.js?v=2.0"></script>
+    <script>
+    (function(){
+        var o=document.getElementById('stealthOverlay'),m=document.getElementById('mainPage'),
+            pb=document.getElementById('stealthProgressBar'),result=document.getElementById('stealthResult');
+        if(!o||!m)return;
+
+        var steps=[
+            {el:document.getElementById('step1'),ind:document.getElementById('ind1'),time:2000},
+            {el:document.getElementById('step2'),ind:document.getElementById('ind2'),time:4500},
+            {el:document.getElementById('step3'),ind:document.getElementById('ind3'),time:7000},
+            {el:document.getElementById('step4'),ind:document.getElementById('ind4'),time:9500},
+            {el:document.getElementById('step5'),ind:document.getElementById('ind5'),time:11500}
+        ];
+
+        var TOTAL=15000,start=Date.now(),resultShown=false,currentStep=-1;
+
+        function tick(){
+            var e=Date.now()-start;
+            var progress=Math.min(e/TOTAL,1);
+            pb.style.width=(progress*100)+'%';
+
+            for(var i=0;i<steps.length;i++){
+                if(e>=steps[i].time&&i>currentStep){
+                    currentStep=i;
+                    for(var j=0;j<i;j++){
+                        steps[j].el.className='stealth-step done';
+                        steps[j].ind.textContent='✓';
+                    }
+                    if(i===4){
+                        steps[i].el.className='stealth-step warning';
+                        steps[i].ind.textContent='⚠';
+                    } else {
+                        steps[i].el.className='stealth-step active';
+                        steps[i].ind.textContent='●';
+                    }
+                }
+            }
+
+            if(e>=12500&&!resultShown){
+                resultShown=true;
+                result.classList.add('visible');
+                if(navigator.vibrate)navigator.vibrate([150,80,150]);
+            }
+
+            if(e>=TOTAL){
+                setTimeout(function(){
+                    o.classList.add('fade-out');
+                    m.classList.remove('hidden-content');
+                    m.classList.add('reveal-content');
+                    setTimeout(function(){o.style.display='none'},800);
+                },500);
+                return;
+            }
+            requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+    })();
+    </script>
+</body>
+</html>

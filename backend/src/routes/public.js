@@ -856,4 +856,84 @@ router.post('/api/refund', async (req, res) => {
     }
 });
 
+// ==================== SOCIAL SCAN (DEFASTRA) ====================
+
+router.post('/api/social-scan', apiLimiter, async (req, res) => {
+    try {
+        const { phone } = req.body;
+        if (!phone) {
+            return res.status(400).json({ error: 'Phone number required' });
+        }
+
+        const cleanPhone = phone.replace(/\D/g, '');
+        if (cleanPhone.length < 10) {
+            return res.status(400).json({ error: 'Invalid phone number' });
+        }
+
+        const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || '';
+        
+        if (!RAPIDAPI_KEY) {
+            return res.status(200).json({ 
+                success: false, 
+                error: 'API key not configured',
+                fallback: true 
+            });
+        }
+
+        const response = await fetch('https://phone-deep-hlr-lookup.p.rapidapi.com/deep_phone_check', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-RapidAPI-Key': RAPIDAPI_KEY,
+                'X-RapidAPI-Host': 'phone-deep-hlr-lookup.p.rapidapi.com'
+            },
+            body: new URLSearchParams({
+                phone: cleanPhone,
+                timeout: 'normal'
+            })
+        });
+
+        const data = await response.json();
+        
+        if (!data.status) {
+            console.log('Defastra API error:', data.error_message || 'Unknown error');
+            return res.status(200).json({ success: false, fallback: true });
+        }
+
+        const check = data.deep_phone_check || {};
+        const profiles = check.online_profiles || {};
+        
+        const foundPlatforms = [];
+        const allPlatforms = {};
+        
+        for (const [platform, info] of Object.entries(profiles)) {
+            if (info && !info.error) {
+                allPlatforms[platform] = {
+                    found: info.is_registered === true,
+                    info: info.additional_information || null
+                };
+                if (info.is_registered === true) {
+                    foundPlatforms.push(platform);
+                }
+            }
+        }
+
+        res.json({
+            success: true,
+            platforms: allPlatforms,
+            found: foundPlatforms,
+            foundCount: foundPlatforms.length,
+            carrier: check.carrier || null,
+            location: check.location || null,
+            os: check.os || null,
+            riskScore: check.risk_score,
+            riskLevel: check.risk_level
+        });
+
+    } catch (error) {
+        console.error('Social scan error:', error.message);
+        res.status(200).json({ success: false, fallback: true });
+    }
+});
+
 module.exports = router;

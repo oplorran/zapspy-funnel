@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- UTMify tracking -->
+    <script src="https://cdn.utmify.com.br/scripts/utms/latest.js" data-utmify-prevent-xcod-sck data-utmify-prevent-subids async defer></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Multi-Device License - Monitor Up to 3 Devices</title>
+    
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    
+    var userData = {};
+    try {
+        var em = localStorage.getItem('userEmail');
+        var ph = localStorage.getItem('userWhatsApp');
+        var fn = localStorage.getItem('userName');
+        var ct = localStorage.getItem('userCity');
+        var co = localStorage.getItem('userCountryCode');
+        var ge = localStorage.getItem('targetGender');
+        var st = localStorage.getItem('userState');
+        if (em) userData.em = em.toLowerCase().trim();
+        if (ph) userData.ph = ph.replace(/\D/g, '');
+        if (fn) {
+            var names = fn.trim().split(' ');
+            userData.fn = names[0].toLowerCase();
+            if (names.length > 1) userData.ln = names.slice(1).join(' ').toLowerCase();
+        }
+        if (ct) userData.ct = ct.toLowerCase().replace(/[^a-z]/g, '');
+        if (co) userData.country = co.toLowerCase();
+        if (ge) userData.ge = ge === 'female' ? 'f' : 'm';
+        if (st) userData.st = st.toLowerCase().replace(/[^a-z]/g, '');
+    } catch(e) {}
+    
+    fbq('init', '726299943423075', userData);
+    var pvId = 'PageView_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    fbq('track', 'PageView', {}, { eventID: pvId });
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=726299943423075&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
+    
+    <!-- Facebook CAPI Client -->
+    <script src="../../js/facebook-capi.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof FacebookCAPI !== 'undefined') {
+                FacebookCAPI.init('Upsell 6 - Multi-Device License');
+                FacebookCAPI.trackViewContent('Upsell Page', 'Funnel - Upsell', 37);
+            }
+        });
+    </script>
+    
+    <meta name="description" content="Expand your monitoring to 3 devices. Monitor multiple phones and tablets from one dashboard.">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📱</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../vip-overlay-styles.css?v=8.0">
+    <link rel="stylesheet" href="upsell1-styles.css?v=9.0">
+    <!-- MONETIZZE: Replace hash below with your Multi-Device product hash -->
+    <script type="text/javascript" src="https://app.monetizze.com.br/1buyclick.php?u=421c58cc98dc78deba74f3ffbf537064"></script>
+    <style>
+    .device-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;background:linear-gradient(135deg,#0a0a0a 0%,#0a1628 40%,#0f1a2e 100%);display:flex;align-items:center;justify-content:center;transition:opacity .8s ease,transform .8s ease;overflow:hidden}
+    .device-overlay.fade-out{opacity:0;transform:scale(1.05);pointer-events:none}
+    .device-container{position:relative;z-index:2;width:90%;max-width:420px;text-align:center}
+    .device-icon{font-size:38px;margin-bottom:10px;animation:devicePulse 1.5s ease-in-out infinite;letter-spacing:4px}
+    @keyframes devicePulse{0%,100%{transform:scale(1);filter:drop-shadow(0 0 8px rgba(59,130,246,.4))}50%{transform:scale(1.05);filter:drop-shadow(0 0 20px rgba(59,130,246,.8))}}
+    .device-title{font-family:'DM Sans',sans-serif;font-size:19px;font-weight:700;color:#fff;margin-bottom:5px}
+    .device-subtitle{font-family:'DM Sans',sans-serif;font-size:12.5px;color:rgba(255,255,255,.4);margin-bottom:22px}
+    .device-steps{background:rgba(255,255,255,.04);border:1px solid rgba(59,130,246,.15);border-radius:14px;padding:18px;margin-bottom:16px;text-align:left}
+    .device-step{display:flex;align-items:center;gap:10px;padding:8px 0;font-family:'DM Sans',sans-serif;font-size:13px;color:rgba(255,255,255,.3);transition:all .5s ease}
+    .device-step.active{color:rgba(255,255,255,.7)}
+    .device-step.done{color:#4ade80}
+    .device-step.success{color:#4ade80;font-weight:600}
+    .dstep-indicator{width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;transition:all .4s ease}
+    .device-step.active .dstep-indicator{border-color:rgba(59,130,246,.6);background:rgba(59,130,246,.15)}
+    .device-step.done .dstep-indicator{border-color:#4ade80;background:rgba(74,222,128,.15)}
+    .device-step.success .dstep-indicator{border-color:#4ade80;background:rgba(74,222,128,.15)}
+    .device-progress{width:100%;height:4px;background:rgba(255,255,255,.06);border-radius:20px;overflow:hidden;margin-top:12px}
+    .device-progress-bar{height:100%;width:0%;border-radius:20px;background:linear-gradient(90deg,#3b82f6,#60a5fa);transition:width .3s ease}
+    .device-result{display:none;margin-top:16px;padding:16px 18px;border-radius:12px;background:linear-gradient(135deg,rgba(59,130,246,.06),rgba(59,130,246,.12));border:1px solid rgba(59,130,246,.3)}
+    .device-result.visible{display:block;animation:resultAppear .7s cubic-bezier(.22,1,.36,1)}
+    @keyframes resultAppear{0%{opacity:0;transform:translateY(20px) scale(.95)}100%{opacity:1;transform:translateY(0) scale(1)}}
+    .device-result-icon{font-size:26px;display:block;margin-bottom:6px;animation:deviceBounce .6s ease-in-out infinite alternate}
+    @keyframes deviceBounce{0%{transform:translateY(0)}100%{transform:translateY(-5px)}}
+    .device-result-title{font-family:'DM Sans',sans-serif;font-weight:700;font-size:14px;color:#60a5fa;margin-bottom:4px;letter-spacing:.5px}
+    .device-result-text{font-family:'DM Sans',sans-serif;font-size:11.5px;color:rgba(255,255,255,.5);line-height:1.5}
+    .device-result-text strong{color:#fff}
+    .page.hidden-content{opacity:0;pointer-events:none}
+    .page.reveal-content{animation:contentReveal .8s ease forwards}
+    @keyframes contentReveal{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
+    </style>
+</head>
+<body>
+    <div class="device-overlay" id="deviceOverlay">
+        <div class="device-container">
+            <div class="device-icon">📱📱📱</div>
+            <h2 class="device-title">Expanding Your License...</h2>
+            <p class="device-subtitle">Upgrading your account to support multiple device monitoring.</p>
+
+            <div class="device-steps">
+                <div class="device-step" id="dstep1">
+                    <span class="dstep-indicator" id="dind1"></span>
+                    <span>Validating your primary device license</span>
+                </div>
+                <div class="device-step" id="dstep2">
+                    <span class="dstep-indicator" id="dind2"></span>
+                    <span>Generating License Key #2</span>
+                </div>
+                <div class="device-step" id="dstep3">
+                    <span class="dstep-indicator" id="dind3"></span>
+                    <span>Generating License Key #3</span>
+                </div>
+                <div class="device-step" id="dstep4">
+                    <span class="dstep-indicator" id="dind4"></span>
+                    <span>Syncing all licenses to your account</span>
+                </div>
+                <div class="device-step" id="dstep5">
+                    <span class="dstep-indicator" id="dind5"></span>
+                    <span>✅ Multi-device access authorized</span>
+                </div>
+                <div class="device-progress">
+                    <div class="device-progress-bar" id="deviceProgressBar"></div>
+                </div>
+            </div>
+
+            <div class="device-result" id="deviceResult">
+                <span class="device-result-icon">📱</span>
+                <div class="device-result-title">LICENSE EXPANSION AVAILABLE</div>
+                <div class="device-result-text"><strong>Your current plan covers only 1 device.</strong> Most users monitor 2-3 devices. Expand now at a fraction of the cost.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page hidden-content" id="mainPage">
+        <main class="content">
+            <section class="hero">
+                <h1 class="main-title">📱 What If They Have a Second Phone?</h1>
+                
+                <div class="intro-section">
+                    <p class="problem-text">🔍 <strong>You're monitoring one device. But what if they use a second phone for their secrets?</strong> What about their tablet? Or what if you need to monitor someone else too? Don't leave blind spots.</p>
+                    
+                    <p class="solution-text">📱 <strong>With Multi-Device License:</strong> Monitor up to <strong>3 devices</strong> — all from one dashboard. Cover their main phone, backup phone, and tablet. Or monitor multiple people. <strong>No blind spots.</strong></p>
+                </div>
+            </section>
+
+            <section class="ai-features-section">
+                <div class="ai-features-card">
+                    <h2 class="ai-features-title">📱 Multi-Device Features</h2>
+                    <div class="ai-features-grid">
+                        <div class="ai-feature-item">
+                            <span class="ai-feature-icon">📱</span>
+                            <span class="ai-feature-name">3 Device Slots</span>
+                            <span class="ai-feature-desc">Monitor up to 3 different phones or tablets simultaneously.</span>
+                        </div>
+                        <div class="ai-feature-item">
+                            <span class="ai-feature-icon">🔄</span>
+                            <span class="ai-feature-name">Unified Dashboard</span>
+                            <span class="ai-feature-desc">See all devices in one place, switch between them instantly.</span>
+                        </div>
+                        <div class="ai-feature-item">
+                            <span class="ai-feature-icon">💰</span>
+                            <span class="ai-feature-name">Save 67%</span>
+                            <span class="ai-feature-desc">Individual licenses cost $49 each. Get 3 for the price of 1.</span>
+                        </div>
+                        <div class="ai-feature-item">
+                            <span class="ai-feature-icon">🔀</span>
+                            <span class="ai-feature-name">Swap Anytime</span>
+                            <span class="ai-feature-desc">Change which devices you monitor whenever you want.</span>
+                        </div>
+                        <div class="ai-feature-item">
+                            <span class="ai-feature-icon">👨‍👩‍👧</span>
+                            <span class="ai-feature-name">Multi-Target</span>
+                            <span class="ai-feature-desc">Monitor different people if needed (partner, child, employee).</span>
+                        </div>
+                        <div class="ai-feature-item">
+                            <span class="ai-feature-icon">⚡</span>
+                            <span class="ai-feature-name">Instant Activation</span>
+                            <span class="ai-feature-desc">New devices are ready to monitor in under 2 minutes.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="comparison-section">
+                <div class="comparison-card">
+                    <h2 class="comparison-title">📱 Single License vs Multi-Device</h2>
+                    <div class="comparison-grid">
+                        <div class="comparison-item manual">
+                            <span class="comparison-icon">1️⃣</span>
+                            <div class="comparison-text">
+                                <strong>Single License:</strong>
+                                <p>• 1 device only<br>• Blind spots on other devices<br>• Pay full price per device<br>• Limited monitoring scope</p>
+                            </div>
+                        </div>
+                        <div class="comparison-item ai">
+                            <span class="comparison-icon">📱</span>
+                            <div class="comparison-text">
+                                <strong>Multi-Device License:</strong>
+                                <p>• Up to 3 devices<br>• Complete coverage<br>• 67% savings<br>• Full monitoring scope</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="benefits">
+                <div class="benefits-card">
+                    <h2 class="benefits-title">📱 What's Included in the Multi-Device License:</h2>
+                    <div class="benefits-grid">
+                        <div class="benefit-item">
+                            <span class="benefit-icon">📱</span>
+                            <span class="benefit-text"><strong>3 Device Slots:</strong> Phones and tablets, any combination</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">🔄</span>
+                            <span class="benefit-text"><strong>Unified Dashboard:</strong> All devices in one place</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">💰</span>
+                            <span class="benefit-text"><strong>67% Savings:</strong> 3 licenses for the price of 1</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">🔀</span>
+                            <span class="benefit-text"><strong>Swap Anytime:</strong> Change devices whenever needed</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">👨‍👩‍👧</span>
+                            <span class="benefit-text"><strong>Multi-Target:</strong> Monitor different people</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">⚡</span>
+                            <span class="benefit-text"><strong>Instant Setup:</strong> New devices ready in under 2 minutes</span>
+                        </div>
+                    </div>
+                    
+                    <p class="benefits-summary">📱 Don't leave blind spots. Cover all their devices from one dashboard.</p>
+                </div>
+            </section>
+
+            <section class="final-cta">
+                <div class="cta-section">
+                    <h2 class="cta-title">What If Their Secrets Are on Another Device?</h2>
+                    <p class="cta-text">You're only seeing one phone. But most people have multiple devices. The Multi-Device License ensures you have complete coverage — no blind spots, no secrets hidden away.</p>
+                    
+                    <div class="cta-buttons">
+                        <p class="price-tag" style="margin-bottom: 24px;">Regular price: <s>$147</s> (3x $49) → Today only: $37 (75% off)</p>
+                        
+                        <!-- MONETIZZE: Replace hash below with your Multi-Device product hash -->
+                        <a href='#monetizzeCompra' data-upsell='421c58cc98dc78deba74f3ffbf537064' class="btn btn-primary btn-large btn-pulse btn-mega" aria-label="Upgrade to Multi-Device License" role="button">YES! Upgrade to Multi-Device License</a>
+                        
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="footer">
+            <div class="smallprint">© <span id="year"></span> Device Management Systems. All rights reserved.</div>
+        </footer>
+    </div>
+
+    <script src="../polyfills.js?v=8.0"></script>
+    <script src="upsell1-script.js?v=9.0"></script>
+    <script src="../upsell-tracking.js?v=2.0"></script>
+    <script>
+    (function(){
+        var o=document.getElementById('deviceOverlay'),m=document.getElementById('mainPage'),
+            pb=document.getElementById('deviceProgressBar'),result=document.getElementById('deviceResult');
+        if(!o||!m)return;
+
+        var steps=[
+            {el:document.getElementById('dstep1'),ind:document.getElementById('dind1'),time:2000},
+            {el:document.getElementById('dstep2'),ind:document.getElementById('dind2'),time:4500},
+            {el:document.getElementById('dstep3'),ind:document.getElementById('dind3'),time:7000},
+            {el:document.getElementById('dstep4'),ind:document.getElementById('dind4'),time:9500},
+            {el:document.getElementById('dstep5'),ind:document.getElementById('dind5'),time:11500}
+        ];
+
+        var TOTAL=15000,start=Date.now(),resultShown=false,currentStep=-1;
+
+        function tick(){
+            var e=Date.now()-start;
+            var progress=Math.min(e/TOTAL,1);
+            pb.style.width=(progress*100)+'%';
+
+            for(var i=0;i<steps.length;i++){
+                if(e>=steps[i].time&&i>currentStep){
+                    currentStep=i;
+                    for(var j=0;j<i;j++){
+                        steps[j].el.className='device-step done';
+                        steps[j].ind.textContent='✓';
+                    }
+                    if(i===4){
+                        steps[i].el.className='device-step success';
+                        steps[i].ind.textContent='✓';
+                    } else {
+                        steps[i].el.className='device-step active';
+                        steps[i].ind.textContent='●';
+                    }
+                }
+            }
+
+            if(e>=12500&&!resultShown){
+                resultShown=true;
+                result.classList.add('visible');
+                if(navigator.vibrate)navigator.vibrate([150,80,150]);
+            }
+
+            if(e>=TOTAL){
+                setTimeout(function(){
+                    o.classList.add('fade-out');
+                    m.classList.remove('hidden-content');
+                    m.classList.add('reveal-content');
+                    setTimeout(function(){o.style.display='none'},800);
+                },500);
+                return;
+            }
+            requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+    })();
+    </script>
+</body>
+</html>

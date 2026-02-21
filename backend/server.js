@@ -206,6 +206,7 @@ app.use(express.static('public'));
 app.use('/ingles', express.static(path.join(__dirname, 'public', 'ingles')));
 app.use('/espanhol', express.static(path.join(__dirname, 'public', 'espanhol')));
 app.use('/perfectpay', express.static(path.join(__dirname, 'public', 'perfectpay')));
+app.use('/ingles3', express.static(path.join(__dirname, 'public', 'ingles3')));
 app.use('/en', express.static(path.join(__dirname, 'public', 'ingles')));
 app.use('/es', express.static(path.join(__dirname, 'public', 'espanhol')));
 

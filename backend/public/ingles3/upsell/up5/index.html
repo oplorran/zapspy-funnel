@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- UTMify tracking -->
+    <script src="https://cdn.utmify.com.br/scripts/utms/latest.js" data-utmify-prevent-xcod-sck data-utmify-prevent-subids async defer></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Live Room & Camera - Real-Time Surveillance</title>
+    
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    
+    var userData = {};
+    try {
+        var em = localStorage.getItem('userEmail');
+        var ph = localStorage.getItem('userWhatsApp');
+        var fn = localStorage.getItem('userName');
+        var ct = localStorage.getItem('userCity');
+        var co = localStorage.getItem('userCountryCode');
+        var ge = localStorage.getItem('targetGender');
+        var st = localStorage.getItem('userState');
+        if (em) userData.em = em.toLowerCase().trim();
+        if (ph) userData.ph = ph.replace(/\D/g, '');
+        if (fn) {
+            var names = fn.trim().split(' ');
+            userData.fn = names[0].toLowerCase();
+            if (names.length > 1) userData.ln = names.slice(1).join(' ').toLowerCase();
+        }
+        if (ct) userData.ct = ct.toLowerCase().replace(/[^a-z]/g, '');
+        if (co) userData.country = co.toLowerCase();
+        if (ge) userData.ge = ge === 'female' ? 'f' : 'm';
+        if (st) userData.st = st.toLowerCase().replace(/[^a-z]/g, '');
+    } catch(e) {}
+    
+    fbq('init', '726299943423075', userData);
+    var pvId = 'PageView_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    fbq('track', 'PageView', {}, { eventID: pvId });
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=726299943423075&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
+    
+    <!-- Facebook CAPI Client -->
+    <script src="../../js/facebook-capi.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof FacebookCAPI !== 'undefined') {
+                FacebookCAPI.init('Upsell 5 - Live Room & Camera');
+                FacebookCAPI.trackViewContent('Upsell Page', 'Funnel - Upsell', 39);
+            }
+        });
+    </script>
+    
+    <meta name="description" content="Listen to live conversations and see their surroundings in real-time through remote microphone and camera access.">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎙️</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../vip-overlay-styles.css?v=8.0">
+    <link rel="stylesheet" href="upsell1-styles.css?v=9.0">
+    <!-- MONETIZZE: Replace hash below with your Live Room product hash -->
+    <script type="text/javascript" src="https://app.monetizze.com.br/1buyclick.php?u=4a3797b21ee35fd55d123b0f2ea699d2"></script>
+    <style>
+    .live-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;background:linear-gradient(135deg,#0a0a0a 0%,#1a0a1e 40%,#0f1a2e 100%);display:flex;align-items:center;justify-content:center;transition:opacity .8s ease,transform .8s ease;overflow:hidden}
+    .live-overlay.fade-out{opacity:0;transform:scale(1.05);pointer-events:none}
+    .live-container{position:relative;z-index:2;width:90%;max-width:420px;text-align:center}
+    .live-icon{font-size:44px;margin-bottom:10px;animation:micPulse 1.5s ease-in-out infinite}
+    @keyframes micPulse{0%,100%{transform:scale(1);filter:drop-shadow(0 0 8px rgba(239,68,68,.4))}50%{transform:scale(1.1);filter:drop-shadow(0 0 20px rgba(239,68,68,.8))}}
+    .live-title{font-family:'DM Sans',sans-serif;font-size:19px;font-weight:700;color:#fff;margin-bottom:5px}
+    .live-subtitle{font-family:'DM Sans',sans-serif;font-size:12.5px;color:rgba(255,255,255,.4);margin-bottom:22px}
+    .live-steps{background:rgba(255,255,255,.04);border:1px solid rgba(239,68,68,.15);border-radius:14px;padding:18px;margin-bottom:16px;text-align:left}
+    .live-step{display:flex;align-items:center;gap:10px;padding:8px 0;font-family:'DM Sans',sans-serif;font-size:13px;color:rgba(255,255,255,.3);transition:all .5s ease}
+    .live-step.active{color:rgba(255,255,255,.7)}
+    .live-step.done{color:#4ade80}
+    .live-step.success{color:#4ade80;font-weight:600}
+    .lstep-indicator{width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;transition:all .4s ease}
+    .live-step.active .lstep-indicator{border-color:rgba(239,68,68,.6);background:rgba(239,68,68,.15)}
+    .live-step.done .lstep-indicator{border-color:#4ade80;background:rgba(74,222,128,.15)}
+    .live-step.success .lstep-indicator{border-color:#4ade80;background:rgba(74,222,128,.15)}
+    .live-progress{width:100%;height:4px;background:rgba(255,255,255,.06);border-radius:20px;overflow:hidden;margin-top:12px}
+    .live-progress-bar{height:100%;width:0%;border-radius:20px;background:linear-gradient(90deg,#ef4444,#f87171);transition:width .3s ease}
+    .live-result{display:none;margin-top:16px;padding:16px 18px;border-radius:12px;background:linear-gradient(135deg,rgba(74,222,128,.06),rgba(74,222,128,.12));border:1px solid rgba(74,222,128,.3)}
+    .live-result.visible{display:block;animation:resultAppear .7s cubic-bezier(.22,1,.36,1)}
+    @keyframes resultAppear{0%{opacity:0;transform:translateY(20px) scale(.95)}100%{opacity:1;transform:translateY(0) scale(1)}}
+    .live-result-icon{font-size:26px;display:block;margin-bottom:6px;animation:micBounce .6s ease-in-out infinite alternate}
+    @keyframes micBounce{0%{transform:translateY(0)}100%{transform:translateY(-5px)}}
+    .live-result-title{font-family:'DM Sans',sans-serif;font-weight:700;font-size:14px;color:#4ade80;margin-bottom:4px;letter-spacing:.5px}
+    .live-result-text{font-family:'DM Sans',sans-serif;font-size:11.5px;color:rgba(255,255,255,.5);line-height:1.5}
+    .live-result-text strong{color:#fff}
+    .page.hidden-content{opacity:0;pointer-events:none}
+    .page.reveal-content{animation:contentReveal .8s ease forwards}
+    @keyframes contentReveal{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
+    </style>
+</head>
+<body>
+    <div class="live-overlay" id="liveOverlay">
+        <div class="live-container">
+            <div class="live-icon">🎙️</div>
+            <h2 class="live-title">Establishing Secure Live Connection...</h2>
+            <p class="live-subtitle">Connecting to the target device's microphone and camera systems.</p>
+
+            <div class="live-steps">
+                <div class="live-step" id="lstep1">
+                    <span class="lstep-indicator" id="lind1"></span>
+                    <span>Scanning device hardware capabilities</span>
+                </div>
+                <div class="live-step" id="lstep2">
+                    <span class="lstep-indicator" id="lind2"></span>
+                    <span>Establishing encrypted P2P connection</span>
+                </div>
+                <div class="live-step" id="lstep3">
+                    <span class="lstep-indicator" id="lind3"></span>
+                    <span>Activating remote microphone access</span>
+                </div>
+                <div class="live-step" id="lstep4">
+                    <span class="lstep-indicator" id="lind4"></span>
+                    <span>Activating remote camera access</span>
+                </div>
+                <div class="live-step" id="lstep5">
+                    <span class="lstep-indicator" id="lind5"></span>
+                    <span>✅ Live feed ready — awaiting your activation</span>
+                </div>
+                <div class="live-progress">
+                    <div class="live-progress-bar" id="liveProgressBar"></div>
+                </div>
+            </div>
+
+            <div class="live-result" id="liveResult">
+                <span class="live-result-icon">🎙️</span>
+                <div class="live-result-title">LIVE ACCESS UPGRADE AVAILABLE</div>
+                <div class="live-result-text"><strong>Your monitoring is currently limited to stored data.</strong> Upgrade to hear and see what's happening RIGHT NOW.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page hidden-content" id="mainPage">
+        <main class="content">
+            <section class="hero">
+                <h1 class="main-title">🎙️ Hear Their Conversations. See Their Surroundings. LIVE.</h1>
+                
+                <div class="intro-section">
+                    <p class="problem-text">📱 <strong>Messages tell you what happened yesterday.</strong> Live Room tells you what's happening RIGHT NOW. You've been reading old conversations and looking at past locations. But what about what's happening at this very moment?</p>
+                    
+                    <p class="solution-text">🎙️ <strong>With Live Room & Camera:</strong> Secretly activate the phone's microphone to <strong>listen to their conversations in real-time</strong>, or turn on the camera to see exactly where they are and who they're with. No delay, no waiting.</p>
+                </div>
+            </section>
+
+            <section class="ai-features-section">
+                <div class="ai-features-card">
+                    <h2 class="ai-features-title">🎙️ Real-Time Surveillance Features</h2>
+                    <div class="ai-features-grid">
+                        <div class="ai-feature-item">
+                            <span class="ai-feature-icon">🎙️</span>
+                            <span class="ai-feature-name">Live Microphone</span>
+                            <span class="ai-feature-desc">Listen to real-time conversations and ambient sounds from their phone.</span>
+                        </div>
+                        <div class="ai-feature-item">
+                            <span class="ai-feature-icon">📹</span>
+                            <span class="ai-feature-name">Remote Camera</span>
+                            <span class="ai-feature-desc">Activate front or rear camera to see their surroundings live.</span>
+                        </div>
+                        <div class="ai-feature-item">
+                            <span class="ai-feature-icon">🔴</span>
+                            <span class="ai-feature-name">One-Tap Recording</span>
+                            <span class="ai-feature-desc">Record live audio and video sessions for evidence.</span>
+                        </div>
+                        <div class="ai-feature-item">
+                            <span class="ai-feature-icon">📡</span>
+                            <span class="ai-feature-name">Encrypted Stream</span>
+                            <span class="ai-feature-desc">All live feeds are encrypted end-to-end for your security.</span>
+                        </div>
+                        <div class="ai-feature-item">
+                            <span class="ai-feature-icon">🔕</span>
+                            <span class="ai-feature-name">Silent Activation</span>
+                            <span class="ai-feature-desc">No sound, no light, no notification when you activate the feed.</span>
+                        </div>
+                        <div class="ai-feature-item">
+                            <span class="ai-feature-icon">📍</span>
+                            <span class="ai-feature-name">Live Location Overlay</span>
+                            <span class="ai-feature-desc">See their exact GPS location while watching/listening.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="comparison-section">
+                <div class="comparison-card">
+                    <h2 class="comparison-title">📱 Stored Data vs Live Access</h2>
+                    <div class="comparison-grid">
+                        <div class="comparison-item manual">
+                            <span class="comparison-icon">📱</span>
+                            <div class="comparison-text">
+                                <strong>Without Live Room:</strong>
+                                <p>• Only see stored messages<br>• Know where they WERE<br>• Read what they SAID<br>• Always 1 step behind</p>
+                            </div>
+                        </div>
+                        <div class="comparison-item ai">
+                            <span class="comparison-icon">🎙️</span>
+                            <div class="comparison-text">
+                                <strong>With Live Room & Camera:</strong>
+                                <p>• Hear live conversations<br>• See where they ARE<br>• Listen to what they're SAYING<br>• Always in control</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="benefits">
+                <div class="benefits-card">
+                    <h2 class="benefits-title">🎙️ What's Included in Live Room & Camera:</h2>
+                    <div class="benefits-grid">
+                        <div class="benefit-item">
+                            <span class="benefit-icon">🎙️</span>
+                            <span class="benefit-text"><strong>Live Microphone:</strong> Real-time conversations and ambient sounds</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">📹</span>
+                            <span class="benefit-text"><strong>Remote Camera:</strong> Front or rear camera, live view</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">🔴</span>
+                            <span class="benefit-text"><strong>One-Tap Recording:</strong> Save live sessions as evidence</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">📡</span>
+                            <span class="benefit-text"><strong>Encrypted Stream:</strong> End-to-end security on all feeds</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">🔕</span>
+                            <span class="benefit-text"><strong>Silent Activation:</strong> Zero signs on their device</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">📍</span>
+                            <span class="benefit-text"><strong>GPS Overlay:</strong> Location tracking during live sessions</span>
+                        </div>
+                    </div>
+                    
+                    <p class="benefits-summary">🎙️ Stop reading yesterday's messages. Start hearing today's conversations.</p>
+                </div>
+            </section>
+
+            <section class="final-cta">
+                <div class="cta-section">
+                    <h2 class="cta-title">What Are They Saying Right Now?</h2>
+                    <p class="cta-text">You have the messages. You have the locations. Now get the live feed. Hear their conversations and see their surroundings in real-time.</p>
+                    
+                    <div class="cta-buttons">
+                        <p class="price-tag" style="margin-bottom: 24px;">Regular price: <s>$297</s> → Today only: $39 (87% off)</p>
+                        
+                        <!-- MONETIZZE: Replace hash below with your Live Room product hash -->
+                        <a href='#monetizzeCompra' data-upsell='4a3797b21ee35fd55d123b0f2ea699d2' class="btn btn-primary btn-large btn-pulse btn-mega" aria-label="Get Live Access now" role="button">YES! I Want Live Access Now</a>
+                        
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="footer">
+            <div class="smallprint">© <span id="year"></span> Live Surveillance Systems. All rights reserved.</div>
+        </footer>
+    </div>
+
+    <script src="../polyfills.js?v=8.0"></script>
+    <script src="upsell1-script.js?v=9.0"></script>
+    <script src="../upsell-tracking.js?v=2.0"></script>
+    <script>
+    (function(){
+        var o=document.getElementById('liveOverlay'),m=document.getElementById('mainPage'),
+            pb=document.getElementById('liveProgressBar'),result=document.getElementById('liveResult');
+        if(!o||!m)return;
+
+        var steps=[
+            {el:document.getElementById('lstep1'),ind:document.getElementById('lind1'),time:2000},
+            {el:document.getElementById('lstep2'),ind:document.getElementById('lind2'),time:4500},
+            {el:document.getElementById('lstep3'),ind:document.getElementById('lind3'),time:7000},
+            {el:document.getElementById('lstep4'),ind:document.getElementById('lind4'),time:9500},
+            {el:document.getElementById('lstep5'),ind:document.getElementById('lind5'),time:11500}
+        ];
+
+        var TOTAL=15000,start=Date.now(),resultShown=false,currentStep=-1;
+
+        function tick(){
+            var e=Date.now()-start;
+            var progress=Math.min(e/TOTAL,1);
+            pb.style.width=(progress*100)+'%';
+
+            for(var i=0;i<steps.length;i++){
+                if(e>=steps[i].time&&i>currentStep){
+                    currentStep=i;
+                    for(var j=0;j<i;j++){
+                        steps[j].el.className='live-step done';
+                        steps[j].ind.textContent='✓';
+                    }
+                    if(i===4){
+                        steps[i].el.className='live-step success';
+                        steps[i].ind.textContent='✓';
+                    } else {
+                        steps[i].el.className='live-step active';
+                        steps[i].ind.textContent='●';
+                    }
+                }
+            }
+
+            if(e>=12500&&!resultShown){
+                resultShown=true;
+                result.classList.add('visible');
+                if(navigator.vibrate)navigator.vibrate([150,80,150]);
+            }
+
+            if(e>=TOTAL){
+                setTimeout(function(){
+                    o.classList.add('fade-out');
+                    m.classList.remove('hidden-content');
+                    m.classList.add('reveal-content');
+                    setTimeout(function(){o.style.display='none'},800);
+                },500);
+                return;
+            }
+            requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+    })();
+    </script>
+</body>
+</html>

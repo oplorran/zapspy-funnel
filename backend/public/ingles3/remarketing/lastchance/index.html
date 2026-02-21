@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>ZapSpy.ai - Final Warning</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="shortcut icon" href="../../imagens/icon-site.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/remarketing.css">
+
+    <!-- Meta Pixel -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+
+    var userData = {};
+    try {
+        var em = localStorage.getItem('userEmail');
+        var ph = localStorage.getItem('userWhatsApp');
+        if (em) userData.em = em.toLowerCase().trim();
+        if (ph) userData.ph = ph.replace(/\D/g, '');
+    } catch(e) {}
+    fbq('init', '726299943423075', userData);
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=726299943423075&ev=PageView&noscript=1"/></noscript>
+
+    <style>
+        .lc-warning-header {
+            background: linear-gradient(135deg, rgba(255,59,48,0.15), rgba(255,59,48,0.05));
+            border: 1px solid rgba(255,59,48,0.3);
+            border-radius: 16px;
+            padding: 24px 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .lc-warning-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            animation: alertPulse 1.5s ease-in-out infinite;
+        }
+        .lc-warning-title {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--red-alert);
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+        .lc-warning-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        .lc-big-timer {
+            background: linear-gradient(135deg, #1a0000, #0a0a0a);
+            border: 2px solid rgba(255,59,48,0.4);
+            border-radius: 20px;
+            padding: 28px 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .lc-big-timer-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--red-alert);
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .lc-big-timer-value {
+            font-size: 52px;
+            font-weight: 800;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 6px;
+            text-shadow: 0 0 20px rgba(255,59,48,0.5);
+        }
+        .lc-big-timer-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+        .lc-flash-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,59,48,0.15);
+            border: 1px solid rgba(255,59,48,0.3);
+            color: var(--red-alert);
+            font-size: 12px;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 20px;
+            margin-bottom: 16px;
+            animation: ctaPulse 2s ease-in-out infinite;
+        }
+        .lc-notifications {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="rmk-container">
+    <!-- Header -->
+    <div class="rmk-header">
+        <div class="rmk-logo">Zap<span>Spy</span>.ai</div>
+    </div>
+
+    <!-- Warning Header -->
+    <div class="lc-warning-header">
+        <div class="lc-warning-icon">&#9888;&#65039;</div>
+        <div class="lc-warning-title">FINAL WARNING</div>
+        <div class="lc-warning-text">
+            Your investigation data will be <strong style="color:var(--red-alert)">permanently deleted</strong> when the timer reaches zero. This is your last chance to access it.
+        </div>
+    </div>
+
+    <!-- WhatsApp-style Notifications -->
+    <div class="lc-notifications" id="notifications">
+        <div class="rmk-whatsapp-notif">
+            <div class="rmk-notif-icon">
+                <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+            </div>
+            <div class="rmk-notif-content">
+                <div class="rmk-notif-title">3 new deleted messages detected</div>
+                <div class="rmk-notif-text" id="notifTarget">From: Target number</div>
+            </div>
+            <div class="rmk-notif-time">now</div>
+        </div>
+    </div>
+
+    <!-- Blurred Messages Preview -->
+    <div class="rmk-blurred-messages">
+        <div class="rmk-msg-row">
+            <div class="rmk-msg-avatar">&#128100;</div>
+            <div class="rmk-msg-content">
+                <div class="rmk-msg-name">Unknown Contact</div>
+                <div class="rmk-msg-preview">hey are you coming tonight? I miss you so much baby...</div>
+            </div>
+            <div class="rmk-msg-deleted">DELETED</div>
+        </div>
+        <div class="rmk-msg-row">
+            <div class="rmk-msg-avatar">&#128247;</div>
+            <div class="rmk-msg-content">
+                <div class="rmk-msg-name">Photo received</div>
+                <div class="rmk-msg-preview">IMG_20250216_023847.jpg - private photo attachment</div>
+            </div>
+            <div class="rmk-msg-badge">NEW</div>
+        </div>
+        <div class="rmk-msg-row">
+            <div class="rmk-msg-avatar">&#128100;</div>
+            <div class="rmk-msg-content">
+                <div class="rmk-msg-name">Frequent Contact</div>
+                <div class="rmk-msg-preview">don't text me on whatsapp, only call ok? it's safer...</div>
+            </div>
+            <div class="rmk-msg-deleted">DELETED</div>
+        </div>
+        <div class="rmk-msg-row">
+            <div class="rmk-msg-avatar">&#128205;</div>
+            <div class="rmk-msg-content">
+                <div class="rmk-msg-name">Location shared</div>
+                <div class="rmk-msg-preview">Real-time location: Hotel Marriott, Room 412...</div>
+            </div>
+            <div class="rmk-msg-deleted">DELETED</div>
+        </div>
+    </div>
+
+    <!-- Big Timer -->
+    <div class="lc-big-timer">
+        <div class="lc-big-timer-label">Data permanently erased in</div>
+        <div class="lc-big-timer-value" id="countdown">10:00</div>
+        <div class="lc-big-timer-sub">After this timer expires, all evidence will be destroyed</div>
+    </div>
+
+    <!-- Stats of what's at risk -->
+    <div class="rmk-stats-row">
+        <div class="rmk-stat">
+            <div class="rmk-stat-value" style="color:var(--red-alert);">23</div>
+            <div class="rmk-stat-label">Secret Chats</div>
+        </div>
+        <div class="rmk-stat">
+            <div class="rmk-stat-value" style="color:var(--red-alert);">147</div>
+            <div class="rmk-stat-label">Deleted Msgs</div>
+        </div>
+        <div class="rmk-stat">
+            <div class="rmk-stat-value" style="color:var(--red-alert);">38</div>
+            <div class="rmk-stat-label">Hidden Photos</div>
+        </div>
+    </div>
+
+    <!-- Flash Offer -->
+    <div class="text-center">
+        <div class="lc-flash-badge">&#9889; FINAL FLASH OFFER - 50% OFF</div>
+    </div>
+
+    <!-- Comparison -->
+    <div class="rmk-comparison">
+        <div class="rmk-compare-col dimmed">
+            <div class="rmk-compare-label">Regular</div>
+            <div class="rmk-compare-price">$49</div>
+            <div class="rmk-compare-note">Not available</div>
+        </div>
+        <div class="rmk-compare-col highlight">
+            <div class="rmk-compare-label">Final Price</div>
+            <div class="rmk-compare-price">$24.50</div>
+            <div class="rmk-compare-note">Last chance ever</div>
+        </div>
+    </div>
+
+    <p style="text-align:center;font-size:13px;color:var(--red-alert);font-weight:600;margin-bottom:16px;">This offer will NOT be available again.</p>
+
+    <!-- CTA -->
+    <button class="rmk-cta danger" onclick="handleCheckout()">
+        UNLOCK NOW BEFORE IT'S TOO LATE
+        <span class="rmk-cta-subtitle">Save all evidence - Only $24.50</span>
+    </button>
+
+    <!-- Trust Badges -->
+    <div class="rmk-trust-badges">
+        <div class="rmk-trust-badge">
+            <div class="rmk-trust-badge-icon">&#128274;</div>
+            <div class="rmk-trust-badge-text">Encrypted</div>
+        </div>
+        <div class="rmk-trust-badge">
+            <div class="rmk-trust-badge-icon">&#128737;</div>
+            <div class="rmk-trust-badge-text">30-Day Refund</div>
+        </div>
+        <div class="rmk-trust-badge">
+            <div class="rmk-trust-badge-icon">&#128065;</div>
+            <div class="rmk-trust-badge-text">Undetectable</div>
+        </div>
+    </div>
+
+    <!-- What's at stake -->
+    <div class="rmk-card mt-24">
+        <div class="rmk-card-header">
+            <div class="rmk-card-icon red">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+            </div>
+            <div>
+                <div class="rmk-card-title">What You'll Lose Forever</div>
+                <div class="rmk-card-subtitle">Data queued for permanent deletion</div>
+            </div>
+        </div>
+        <ul class="rmk-features" style="--check-color:var(--red-alert);">
+            <li>23 hidden conversations with suspicious contacts</li>
+            <li>147 deleted messages (including late-night texts)</li>
+            <li>38 photos and videos exchanged secretly</li>
+            <li>Complete GPS location history</li>
+            <li>Evidence of suspicious behavior patterns</li>
+        </ul>
+    </div>
+
+    <!-- Social proof -->
+    <div class="rmk-social-proof" style="padding:16px 0;">
+        <span class="rmk-live-dot"></span>
+        <span id="liveCount">2,847</span> people unlocked full access today
+    </div>
+
+    <!-- Guarantee -->
+    <div class="rmk-guarantee">
+        <div class="rmk-guarantee-icon">&#128737;</div>
+        <div class="rmk-guarantee-text">
+            <strong>30-Day Money-Back Guarantee.</strong> Full refund if not satisfied. Zero risk.
+        </div>
+    </div>
+
+    <div class="rmk-footer">
+        ZapSpy.ai - Secure Intelligence Platform<br>
+        After this timer expires, all data will be erased<br>and this offer will not be available again.<br>
+        &copy; 2025 ZapSpy.ai. All rights reserved.
+    </div>
+
+    <!-- Bottom spacer for sticky footer -->
+    <div style="height:80px;"></div>
+</div>
+
+<!-- Sticky Footer CTA -->
+<div class="rmk-sticky-footer">
+    <button class="rmk-cta danger" onclick="handleCheckout()">
+        &#128274; LAST CHANCE - $24.50 (50% OFF)
+    </button>
+</div>
+
+<script src="../js/remarketing-tracking.js"></script>
+<script>
+(function() {
+    RmkTracking.init('Remarketing - Last Chance', 'remarketing_lastchance', 24.50);
+
+    // Load target data
+    var target = RmkTracking.getTargetData();
+    if (target.phone) {
+        document.getElementById('notifTarget').textContent = 'From: ' + target.phone;
+    }
+
+    // Big countdown - 10 minutes with shake every minute
+    var timerEl = document.getElementById('countdown');
+    startTimer('countdown', 600, function() {
+        timerEl.textContent = '00:00';
+        timerEl.style.color = 'var(--red-alert)';
+    });
+    setInterval(function() {
+        var timerBox = timerEl.closest('.lc-big-timer');
+        if (timerBox) {
+            timerBox.classList.add('shake');
+            setTimeout(function() { timerBox.classList.remove('shake'); }, 600);
+        }
+    }, 30000);
+
+    // Countdown animation in timer
+    timerEl.style.animation = 'countdownPulse 2s ease-in-out infinite';
+
+    // Live counter
+    var liveEl = document.getElementById('liveCount');
+    setInterval(function() {
+        var n = 2600 + Math.floor(Math.random() * 500);
+        liveEl.textContent = n.toLocaleString();
+    }, 5000);
+
+    // Dynamic notifications - keep adding suspicious alerts
+    var notifMessages = [
+        { title: 'Suspicious activity detected', text: 'Late-night message exchange at 2:47 AM' },
+        { title: 'New photo recovered', text: 'Deleted photo from private conversation' },
+        { title: 'Location alert', text: 'Visited unknown location 3 times this week' },
+        { title: 'Call log found', text: '14 minute call at 11:32 PM to unknown contact' },
+        { title: 'New deleted message', text: '"delete this conversation before they see it..."' },
+        { title: 'Media recovered', text: 'Video file sent via WhatsApp, then deleted' },
+        { title: 'Pattern detected', text: 'Phone goes offline daily from 1-3 AM' }
+    ];
+    var notifIdx = 0;
+    function addNotification() {
+        if (notifIdx >= notifMessages.length) return;
+        var n = notifMessages[notifIdx];
+        var container = document.getElementById('notifications');
+        var notif = document.createElement('div');
+        notif.className = 'rmk-whatsapp-notif';
+        notif.innerHTML = '<div class="rmk-notif-icon" style="background:var(--red-alert);"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" fill="none" stroke="#fff" stroke-width="2"/><line x1="12" y1="9" x2="12" y2="13" stroke="#fff" stroke-width="2"/><circle cx="12" cy="17" r="1" fill="#fff"/></svg></div>' +
+            '<div class="rmk-notif-content"><div class="rmk-notif-title">' + n.title + '</div><div class="rmk-notif-text">' + n.text + '</div></div>' +
+            '<div class="rmk-notif-time">now</div>';
+        container.appendChild(notif);
+        notifIdx++;
+    }
+    setTimeout(addNotification, 5000);
+    setTimeout(addNotification, 12000);
+    setTimeout(addNotification, 22000);
+    setTimeout(addNotification, 35000);
+    setTimeout(addNotification, 50000);
+    setTimeout(addNotification, 70000);
+    setTimeout(addNotification, 95000);
+
+    // Activity Feed
+    startActivityFeed([
+        { emoji: '\uD83D\uDD12', name: 'Jennifer from Texas', action: 'unlocked access just in time', time: 'now' },
+        { emoji: '\uD83D\uDD12', name: 'Mark from Florida', action: 'saved evidence before deletion', time: '2 min ago' },
+        { emoji: '\uD83D\uDD12', name: 'Ashley from NY', action: 'found all deleted messages', time: '3 min ago' },
+        { emoji: '\uD83D\uDD12', name: 'Chris from California', action: 'discovered hidden conversations', time: '5 min ago' },
+        { emoji: '\uD83D\uDD12', name: 'Diana from Ohio', action: 'used the last chance offer', time: '4 min ago' }
+    ], 8000);
+
+    // Tab title - dramatic
+    initTabTitle('\uD83D\uDEA8 FINAL WARNING - Data being erased!');
+
+    // Exit intent - dramatic
+    initExitIntent({
+        icon: '\uD83D\uDEA8',
+        title: 'ALL EVIDENCE WILL BE DESTROYED!',
+        text: '23 hidden conversations, 147 deleted messages, and 38 secret photos will be permanently erased. This is your absolute last chance.',
+        ctaLabel: '\uD83D\uDD12 SAVE EVIDENCE NOW - $24.50',
+        ctaClass: 'danger',
+        ctaAction: 'handleCheckout()'
+    });
+})();
+
+function handleCheckout() {
+    RmkTracking.trackInitiateCheckout(24.50, 'ZapSpy VIP - Last Chance 50% OFF');
+    var url = RmkTracking.buildCheckoutUrl('KGQ455954', 24.50);
+    window.location.href = url;
+}
+</script>
+
+</body>
+</html>
