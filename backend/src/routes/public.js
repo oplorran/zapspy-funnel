@@ -856,7 +856,7 @@ router.post('/api/refund', async (req, res) => {
     }
 });
 
-// ==================== SOCIAL SCAN (DEFASTRA via RapidAPI) ====================
+// ==================== SOCIAL SCAN (OSINT Trace - Social Media Scanner) ====================
 
 router.post('/api/social-scan', apiLimiter, async (req, res) => {
     try {
@@ -871,68 +871,50 @@ router.post('/api/social-scan', apiLimiter, async (req, res) => {
         }
 
         const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || '';
-        const DEFASTRA_KEY = process.env.DEFASTRA_API_KEY || '';
         
-        if (!RAPIDAPI_KEY && !DEFASTRA_KEY) {
-            console.log('Social scan: no API keys configured');
+        if (!RAPIDAPI_KEY) {
+            console.log('Social scan: RAPIDAPI_KEY not configured');
             return res.status(200).json({ success: false, fallback: true });
         }
 
-        let response;
+        const phoneE164 = '+' + cleanPhone;
+        console.log('Social scan: checking', phoneE164);
 
-        if (DEFASTRA_KEY) {
-            console.log('Social scan: using Defastra direct API');
-            response = await fetch('https://api.defastra.com/deep_phone_check', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-API-KEY': DEFASTRA_KEY
-                },
-                body: new URLSearchParams({ phone: cleanPhone, timeout: 'normal' })
-            });
-        } else {
-            console.log('Social scan: using RapidAPI');
-            response = await fetch('https://phone-social-data-enrichment.p.rapidapi.com/deep_phone_check', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-RapidAPI-Key': RAPIDAPI_KEY,
-                    'X-RapidAPI-Host': 'phone-social-data-enrichment.p.rapidapi.com'
-                },
-                body: new URLSearchParams({ phone: cleanPhone, timeout: 'normal' })
-            });
-        }
+        const response = await fetch('https://social-media-scanner1.p.rapidapi.com/check', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-RapidAPI-Key': RAPIDAPI_KEY,
+                'X-RapidAPI-Host': 'social-media-scanner1.p.rapidapi.com'
+            },
+            body: JSON.stringify({
+                input: phoneE164,
+                programs: ['facebook', 'instagram', 'snapchat', 'x', 'google']
+            })
+        });
 
-        console.log('Social scan response status:', response.status, response.statusText);
+        console.log('Social scan response:', response.status, response.statusText);
 
         const contentType = response.headers.get('content-type') || '';
         if (!contentType.includes('application/json')) {
             const text = await response.text();
-            console.log('Social scan: non-JSON response (status', response.status + '):', text.substring(0, 200));
-            return res.status(200).json({ success: false, fallback: true, error: `API returned ${response.status}: ${response.statusText}` });
-        }
-
-        const data = await response.json();
-        
-        if (!data.status) {
-            console.log('Defastra API error:', data.error_type || '', data.error_message || JSON.stringify(data).substring(0, 200));
+            console.log('Social scan: non-JSON response:', text.substring(0, 300));
             return res.status(200).json({ success: false, fallback: true });
         }
 
-        const check = data.deep_phone_check || {};
-        const profiles = check.online_profiles || {};
+        const data = await response.json();
+        console.log('Social scan raw response:', JSON.stringify(data));
+
+        const platformMap = { x: 'twitter' };
         const foundPlatforms = [];
         const allPlatforms = {};
-        
-        for (const [platform, info] of Object.entries(profiles)) {
-            if (info && !info.error) {
-                allPlatforms[platform] = {
-                    found: info.is_registered === true,
-                    info: info.additional_information || null
-                };
-                if (info.is_registered === true) {
-                    foundPlatforms.push(platform);
-                }
+
+        for (const [platform, info] of Object.entries(data)) {
+            const name = platformMap[platform] || platform;
+            const isFound = info && info.live === true;
+            allPlatforms[name] = { found: isFound };
+            if (isFound) {
+                foundPlatforms.push(name);
             }
         }
 
@@ -943,12 +925,9 @@ router.post('/api/social-scan', apiLimiter, async (req, res) => {
             platforms: allPlatforms,
             found: foundPlatforms,
             foundCount: foundPlatforms.length,
-            carrier: check.carrier || null,
-            location: check.location || null,
-            os: check.os || null,
-            dataBreaches: check.data_breaches || null,
-            riskScore: check.risk_score,
-            riskLevel: check.risk_level
+            carrier: null,
+            location: null,
+            os: null
         });
 
     } catch (error) {
