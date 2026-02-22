@@ -913,6 +913,9 @@ router.get('/api/admin/stats', authenticateToken, async (req, res) => {
 // Get period comparison stats (current week vs previous week)
 router.get('/api/admin/stats/comparison', authenticateToken, async (req, res) => {
     try {
+        const usdToBrl = 1 / parseFloat(process.env.CONVERSION_BRL_TO_USD || '0.18');
+        const revBRL = `CASE WHEN funnel_source = 'perfectpay' THEN CAST(value AS DECIMAL) * ${usdToBrl.toFixed(2)} ELSE CAST(value AS DECIMAL) END`;
+        
         // Current week stats (using Brazil timezone)
         const currentWeekLeads = await pool.query(`
             SELECT COUNT(*) FROM leads 
@@ -920,7 +923,7 @@ router.get('/api/admin/stats/comparison', authenticateToken, async (req, res) =>
         `);
         
         const currentWeekSales = await pool.query(`
-            SELECT COUNT(DISTINCT email) as count, COALESCE(SUM(CAST(value AS DECIMAL)), 0) as revenue
+            SELECT COUNT(DISTINCT email) as count, COALESCE(SUM(${revBRL}), 0) as revenue
             FROM transactions 
             WHERE status = 'approved' AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '7 days')::date
         `);
@@ -933,7 +936,7 @@ router.get('/api/admin/stats/comparison', authenticateToken, async (req, res) =>
         `);
         
         const previousWeekSales = await pool.query(`
-            SELECT COUNT(DISTINCT email) as count, COALESCE(SUM(CAST(value AS DECIMAL)), 0) as revenue
+            SELECT COUNT(DISTINCT email) as count, COALESCE(SUM(${revBRL}), 0) as revenue
             FROM transactions 
             WHERE status = 'approved' 
             AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '14 days')::date
@@ -976,38 +979,36 @@ router.get('/api/admin/stats/comparison', authenticateToken, async (req, res) =>
 router.get('/api/admin/stats/period-comparison', authenticateToken, async (req, res) => {
     try {
         const { type = 'week' } = req.query;
+        const usdToBrl = 1 / parseFloat(process.env.CONVERSION_BRL_TO_USD || '0.18');
+        const revBRL = `CASE WHEN funnel_source = 'perfectpay' THEN CAST(value AS DECIMAL) * ${usdToBrl.toFixed(2)} ELSE CAST(value AS DECIMAL) END`;
         
         let currentLeads, currentSales, previousLeads, previousSales;
         
         if (type === 'day') {
-            // Today vs Yesterday - use specific dates
-            // Today: from start of today until now
             currentLeads = await pool.query(`
                 SELECT COUNT(*) FROM leads 
                 WHERE (created_at AT TIME ZONE 'America/Sao_Paulo')::date = (NOW() AT TIME ZONE 'America/Sao_Paulo')::date
             `);
             
             currentSales = await pool.query(`
-                SELECT COUNT(DISTINCT email) as count, COALESCE(SUM(CAST(value AS DECIMAL)), 0) as revenue
+                SELECT COUNT(DISTINCT email) as count, COALESCE(SUM(${revBRL}), 0) as revenue
                 FROM transactions 
                 WHERE status = 'approved' 
                 AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date = (NOW() AT TIME ZONE 'America/Sao_Paulo')::date
             `);
             
-            // Yesterday: full day
             previousLeads = await pool.query(`
                 SELECT COUNT(*) FROM leads 
                 WHERE (created_at AT TIME ZONE 'America/Sao_Paulo')::date = ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '1 day')::date
             `);
             
             previousSales = await pool.query(`
-                SELECT COUNT(DISTINCT email) as count, COALESCE(SUM(CAST(value AS DECIMAL)), 0) as revenue
+                SELECT COUNT(DISTINCT email) as count, COALESCE(SUM(${revBRL}), 0) as revenue
                 FROM transactions 
                 WHERE status = 'approved' 
                 AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date = ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '1 day')::date
             `);
         } else {
-            // Week, month, quarter - use intervals
             let currentInterval, previousInterval;
             switch (type) {
                 case 'month':
@@ -1025,20 +1026,18 @@ router.get('/api/admin/stats/period-comparison', authenticateToken, async (req, 
                     break;
             }
             
-            // Current period stats
             currentLeads = await pool.query(`
                 SELECT COUNT(*) FROM leads 
                 WHERE (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '${currentInterval}')::date
             `);
             
             currentSales = await pool.query(`
-                SELECT COUNT(DISTINCT email) as count, COALESCE(SUM(CAST(value AS DECIMAL)), 0) as revenue
+                SELECT COUNT(DISTINCT email) as count, COALESCE(SUM(${revBRL}), 0) as revenue
                 FROM transactions 
                 WHERE status = 'approved' 
                 AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '${currentInterval}')::date
             `);
             
-            // Previous period stats
             previousLeads = await pool.query(`
                 SELECT COUNT(*) FROM leads 
                 WHERE (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '${previousInterval}')::date 
@@ -1046,7 +1045,7 @@ router.get('/api/admin/stats/period-comparison', authenticateToken, async (req, 
             `);
             
             previousSales = await pool.query(`
-                SELECT COUNT(DISTINCT email) as count, COALESCE(SUM(CAST(value AS DECIMAL)), 0) as revenue
+                SELECT COUNT(DISTINCT email) as count, COALESCE(SUM(${revBRL}), 0) as revenue
                 FROM transactions 
                 WHERE status = 'approved' 
                 AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date >= ((NOW() AT TIME ZONE 'America/Sao_Paulo') - INTERVAL '${previousInterval}')::date
@@ -1104,11 +1103,13 @@ router.get('/api/admin/stats/heatmap', authenticateToken, async (req, res) => {
                 ORDER BY day_of_week, hour
             `;
         } else if (type === 'revenue') {
+            const usdToBrl = 1 / parseFloat(process.env.CONVERSION_BRL_TO_USD || '0.18');
+            const revBRL = `CASE WHEN funnel_source = 'perfectpay' THEN CAST(value AS DECIMAL) * ${usdToBrl.toFixed(2)} ELSE CAST(value AS DECIMAL) END`;
             query = `
                 SELECT 
                     EXTRACT(HOUR FROM created_at AT TIME ZONE 'America/Sao_Paulo') as hour,
                     EXTRACT(DOW FROM created_at AT TIME ZONE 'America/Sao_Paulo') as day_of_week,
-                    COALESCE(SUM(CAST(value AS DECIMAL)), 0) as value,
+                    COALESCE(SUM(${revBRL}), 0) as value,
                     COUNT(*) as count
                 FROM transactions
                 WHERE status = 'approved' 
@@ -1354,7 +1355,19 @@ router.get('/api/admin/funnel', authenticateToken, async (req, res) => {
                     WHEN 'upsell_3_view' THEN 14
                     WHEN 'upsell_3_accepted' THEN 15
                     WHEN 'upsell_3_declined' THEN 16
-                    WHEN 'thankyou_view' THEN 17
+                    WHEN 'upsell_4_view' THEN 17
+                    WHEN 'upsell_4_accepted' THEN 18
+                    WHEN 'upsell_4_declined' THEN 19
+                    WHEN 'upsell_5_view' THEN 20
+                    WHEN 'upsell_5_accepted' THEN 21
+                    WHEN 'upsell_5_declined' THEN 22
+                    WHEN 'upsell_6_view' THEN 23
+                    WHEN 'upsell_6_accepted' THEN 24
+                    WHEN 'upsell_6_declined' THEN 25
+                    WHEN 'upsell_7_view' THEN 26
+                    WHEN 'upsell_7_accepted' THEN 27
+                    WHEN 'upsell_7_declined' THEN 28
+                    WHEN 'thankyou_view' THEN 29
                     ELSE 99
                 END
         `);
@@ -1654,7 +1667,15 @@ router.get('/api/debug/funnel/search', authenticateToken, async (req, res) => {
                 hasUpsell2View: events.some(e => e.event === 'upsell_2_view'),
                 hasUpsell2Accept: events.some(e => e.event === 'upsell_2_accepted'),
                 hasUpsell3View: events.some(e => e.event === 'upsell_3_view'),
-                hasUpsell3Accept: events.some(e => e.event === 'upsell_3_accepted')
+                hasUpsell3Accept: events.some(e => e.event === 'upsell_3_accepted'),
+                hasUpsell4View: events.some(e => e.event === 'upsell_4_view'),
+                hasUpsell4Accept: events.some(e => e.event === 'upsell_4_accepted'),
+                hasUpsell5View: events.some(e => e.event === 'upsell_5_view'),
+                hasUpsell5Accept: events.some(e => e.event === 'upsell_5_accepted'),
+                hasUpsell6View: events.some(e => e.event === 'upsell_6_view'),
+                hasUpsell6Accept: events.some(e => e.event === 'upsell_6_accepted'),
+                hasUpsell7View: events.some(e => e.event === 'upsell_7_view'),
+                hasUpsell7Accept: events.some(e => e.event === 'upsell_7_accepted')
             }
         });
         
@@ -1782,32 +1803,56 @@ router.get('/api/admin/customer/:leadId/journey', authenticateToken, async (req,
                 'upsell_1_view': '👀 Visualizou Upsell 1',
                 'upsell_2_view': '👀 Visualizou Upsell 2',
                 'upsell_3_view': '👀 Visualizou Upsell 3',
+                'upsell_4_view': '👀 Visualizou Upsell 4',
+                'upsell_5_view': '👀 Visualizou Upsell 5',
+                'upsell_6_view': '👀 Visualizou Upsell 6',
+                'upsell_7_view': '👀 Visualizou Upsell 7',
                 'thankyou_view': '🎉 Página de obrigado',
                 
                 // Upsell page ready
                 'upsell_1_ready': '✅ Upsell 1 carregado',
                 'upsell_2_ready': '✅ Upsell 2 carregado',
                 'upsell_3_ready': '✅ Upsell 3 carregado',
+                'upsell_4_ready': '✅ Upsell 4 carregado',
+                'upsell_5_ready': '✅ Upsell 5 carregado',
+                'upsell_6_ready': '✅ Upsell 6 carregado',
+                'upsell_7_ready': '✅ Upsell 7 carregado',
                 
                 // Upsell accepts
                 'upsell_1_accepted': '💰 ACEITOU Upsell 1',
                 'upsell_2_accepted': '💰 ACEITOU Upsell 2',
                 'upsell_3_accepted': '💰 ACEITOU Upsell 3',
+                'upsell_4_accepted': '💰 ACEITOU Upsell 4',
+                'upsell_5_accepted': '💰 ACEITOU Upsell 5',
+                'upsell_6_accepted': '💰 ACEITOU Upsell 6',
+                'upsell_7_accepted': '💰 ACEITOU Upsell 7',
                 
                 // Upsell declines
                 'upsell_1_declined': '❌ Recusou Upsell 1',
                 'upsell_2_declined': '❌ Recusou Upsell 2',
                 'upsell_3_declined': '❌ Recusou Upsell 3',
+                'upsell_4_declined': '❌ Recusou Upsell 4',
+                'upsell_5_declined': '❌ Recusou Upsell 5',
+                'upsell_6_declined': '❌ Recusou Upsell 6',
+                'upsell_7_declined': '❌ Recusou Upsell 7',
                 
                 // Upsell CTA visibility
                 'upsell_1_cta_visible': '👁️ CTA visível Up1',
                 'upsell_2_cta_visible': '👁️ CTA visível Up2',
                 'upsell_3_cta_visible': '👁️ CTA visível Up3',
+                'upsell_4_cta_visible': '👁️ CTA visível Up4',
+                'upsell_5_cta_visible': '👁️ CTA visível Up5',
+                'upsell_6_cta_visible': '👁️ CTA visível Up6',
+                'upsell_7_cta_visible': '👁️ CTA visível Up7',
                 
                 // Upsell exits
                 'upsell_1_exit': '🚪 Saiu do Upsell 1',
                 'upsell_2_exit': '🚪 Saiu do Upsell 2',
                 'upsell_3_exit': '🚪 Saiu do Upsell 3',
+                'upsell_4_exit': '🚪 Saiu do Upsell 4',
+                'upsell_5_exit': '🚪 Saiu do Upsell 5',
+                'upsell_6_exit': '🚪 Saiu do Upsell 6',
+                'upsell_7_exit': '🚪 Saiu do Upsell 7',
                 
                 // Engagement milestones
                 'engaged_10s': '⏱️ Engajado 10s',

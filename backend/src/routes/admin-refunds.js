@@ -799,11 +799,16 @@ router.get('/api/admin/sales', authenticateToken, async (req, res) => {
             langParams.push(startDate, endDate);
         }
         
+        // PerfectPay stores values in USD; convert to BRL for dashboard display
+        const usdToBrl = 1 / parseFloat(process.env.CONVERSION_BRL_TO_USD || '0.18');
+        const valueBRL = `CASE WHEN funnel_source = 'perfectpay' THEN CAST(value AS DECIMAL) * ${usdToBrl.toFixed(2)} ELSE CAST(value AS DECIMAL) END`;
+        const valueBRL_t = `CASE WHEN t.funnel_source = 'perfectpay' THEN CAST(t.value AS DECIMAL) * ${usdToBrl.toFixed(2)} ELSE CAST(t.value AS DECIMAL) END`;
+        
         const [totalResult, approvedResult, refundedResult, revenueResult, cancelledResult, lostRevenueResult, upsellRevenueResult, totalAttemptsResult, approvedAttemptsResult] = await Promise.all([
             pool.query(`SELECT COUNT(*) FROM transactions WHERE 1=1 ${langCondition}${sourceCondition}${dateCondition}`, langParams),
             pool.query(`SELECT COUNT(*) FROM transactions WHERE status = 'approved' ${langCondition}${sourceCondition}${dateCondition}`, langParams),
             pool.query(`SELECT COUNT(*) FROM transactions WHERE status IN ('refunded', 'chargeback') ${langCondition}${sourceCondition}${dateCondition}`, langParams),
-            pool.query(`SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total FROM transactions WHERE status = 'approved' ${langCondition}${sourceCondition}${dateCondition}`, langParams),
+            pool.query(`SELECT COALESCE(SUM(${valueBRL}), 0) as total FROM transactions WHERE status = 'approved' ${langCondition}${sourceCondition}${dateCondition}`, langParams),
             pool.query(`
                 SELECT COUNT(DISTINCT email) 
                 FROM transactions t 
@@ -818,7 +823,7 @@ router.get('/api/admin/sales', authenticateToken, async (req, res) => {
             pool.query(`
                 SELECT COALESCE(SUM(max_value), 0) as total
                 FROM (
-                    SELECT email, MAX(CAST(value AS DECIMAL)) as max_value
+                    SELECT email, MAX(${valueBRL_t}) as max_value
                     FROM transactions t
                     WHERE t.status = 'cancelled'
                     ${langCondition}${sourceCondition}${dateCondition}
@@ -830,7 +835,7 @@ router.get('/api/admin/sales', authenticateToken, async (req, res) => {
                     GROUP BY email
                 ) unique_customers
             `, langParams),
-            pool.query(`SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total FROM transactions WHERE status = 'approved' AND (product ILIKE '%Message Vault%' OR product ILIKE '%Vault%' OR product ILIKE '%360%' OR product ILIKE '%Tracker%' OR product ILIKE '%Instant%' OR product ILIKE '%RecuperaciÃ³n%' OR product ILIKE '%VisiÃ³n%' OR product ILIKE '%VIP%') ${langCondition}${sourceCondition}${dateCondition}`, langParams),
+            pool.query(`SELECT COALESCE(SUM(${valueBRL}), 0) as total FROM transactions WHERE status = 'approved' AND (product ILIKE '%Message Vault%' OR product ILIKE '%Vault%' OR product ILIKE '%360%' OR product ILIKE '%Tracker%' OR product ILIKE '%Instant%' OR product ILIKE '%RecuperaciÃ³n%' OR product ILIKE '%VisiÃ³n%' OR product ILIKE '%VIP%') ${langCondition}${sourceCondition}${dateCondition}`, langParams),
             pool.query(`SELECT COUNT(DISTINCT email) FROM transactions WHERE 1=1 ${langCondition}${sourceCondition}${dateCondition}`, langParams),
             pool.query(`SELECT COUNT(DISTINCT email) FROM transactions WHERE status = 'approved' ${langCondition}${sourceCondition}${dateCondition}`, langParams)
         ]);
@@ -909,7 +914,7 @@ router.get('/api/admin/sales', authenticateToken, async (req, res) => {
                 product,
                 COUNT(*) FILTER (WHERE status = 'approved') as approved,
                 COUNT(*) FILTER (WHERE status IN ('refunded', 'chargeback')) as refunded,
-                COALESCE(SUM(CAST(value AS DECIMAL)) FILTER (WHERE status = 'approved'), 0) as revenue,
+                COALESCE(SUM(${valueBRL}) FILTER (WHERE status = 'approved'), 0) as revenue,
                 COUNT(*) as total
             FROM transactions
             WHERE product IS NOT NULL ${langCondition}${sourceCondition}${dateCondition}
@@ -950,10 +955,10 @@ router.get('/api/admin/sales', authenticateToken, async (req, res) => {
             pool.query(`SELECT COUNT(DISTINCT email) as count FROM transactions WHERE status = 'approved' AND (${up1Keywords}) ${langCondition}${sourceCondition}${dateCondition}`, langParams),
             pool.query(`SELECT COUNT(DISTINCT email) as count FROM transactions WHERE status = 'approved' AND (${up2Keywords}) ${langCondition}${sourceCondition}${dateCondition}`, langParams),
             pool.query(`SELECT COUNT(DISTINCT email) as count FROM transactions WHERE status = 'approved' AND (${up3Keywords}) ${langCondition}${sourceCondition}${dateCondition}`, langParams),
-            pool.query(`SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total FROM transactions WHERE status = 'approved' AND (${frontKeywords}) ${langCondition}${sourceCondition}${dateCondition}`, langParams),
-            pool.query(`SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total FROM transactions WHERE status = 'approved' AND (${up1Keywords}) ${langCondition}${sourceCondition}${dateCondition}`, langParams),
-            pool.query(`SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total FROM transactions WHERE status = 'approved' AND (${up2Keywords}) ${langCondition}${sourceCondition}${dateCondition}`, langParams),
-            pool.query(`SELECT COALESCE(SUM(CAST(value AS DECIMAL)), 0) as total FROM transactions WHERE status = 'approved' AND (${up3Keywords}) ${langCondition}${sourceCondition}${dateCondition}`, langParams)
+            pool.query(`SELECT COALESCE(SUM(${valueBRL}), 0) as total FROM transactions WHERE status = 'approved' AND (${frontKeywords}) ${langCondition}${sourceCondition}${dateCondition}`, langParams),
+            pool.query(`SELECT COALESCE(SUM(${valueBRL}), 0) as total FROM transactions WHERE status = 'approved' AND (${up1Keywords}) ${langCondition}${sourceCondition}${dateCondition}`, langParams),
+            pool.query(`SELECT COALESCE(SUM(${valueBRL}), 0) as total FROM transactions WHERE status = 'approved' AND (${up2Keywords}) ${langCondition}${sourceCondition}${dateCondition}`, langParams),
+            pool.query(`SELECT COALESCE(SUM(${valueBRL}), 0) as total FROM transactions WHERE status = 'approved' AND (${up3Keywords}) ${langCondition}${sourceCondition}${dateCondition}`, langParams)
         ]);
         
         const frontCount = parseInt(frontSales.rows[0].count) || 0;
