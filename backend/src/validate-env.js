@@ -28,7 +28,9 @@ function validateEnv() {
         { name: 'FB_PIXEL_TOKEN_ES', desc: 'Facebook Pixel token for Spanish funnel' },
         { name: 'ZAPI_INSTANCE_ID', desc: 'Z-API instance for WhatsApp (using fallback)' },
         { name: 'ZAPI_TOKEN', desc: 'Z-API token (using fallback)' },
-        { name: 'FRONTEND_URL', desc: 'Allowed CORS origins (using defaults)' }
+        { name: 'FRONTEND_URL', desc: 'Allowed CORS origins (using defaults)' },
+        { name: 'AC_API_URL', desc: 'ActiveCampaign API URL (recovery automations disabled without it)' },
+        { name: 'AC_API_KEY', desc: 'ActiveCampaign API Key (recovery automations disabled without it)' }
     ];
 
     for (const { name, desc } of optional) {

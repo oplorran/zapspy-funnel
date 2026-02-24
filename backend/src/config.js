@@ -57,6 +57,10 @@ const ZAPI_TOKEN = process.env.ZAPI_TOKEN || '448359FB9C302BCE9D09F8D0';
 const ZAPI_CLIENT_TOKEN = process.env.ZAPI_CLIENT_TOKEN || 'F221fdbff74cc4d998046c12b9e0a65ddS';
 const ZAPI_BASE_URL = `https://api.z-api.io/instances/${ZAPI_INSTANCE}/token/${ZAPI_TOKEN}`;
 
+// ActiveCampaign Configuration
+const AC_API_URL = process.env.AC_API_URL || 'https://matheus0597.api-us1.com';
+const AC_API_KEY = process.env.AC_API_KEY || '';
+
 const VALID_PRODUCT_CODES = [
     '341972', '349241', '349242', '349243',
     '330254', '341443', '341444', '341448',
@@ -74,5 +78,7 @@ module.exports = {
     ZAPI_TOKEN,
     ZAPI_CLIENT_TOKEN,
     ZAPI_BASE_URL,
-    VALID_PRODUCT_CODES
+    VALID_PRODUCT_CODES,
+    AC_API_URL,
+    AC_API_KEY
 };

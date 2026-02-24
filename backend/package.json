@@ -11,7 +11,8 @@
     "lint": "eslint src/ server.js",
     "lint:fix": "eslint src/ server.js --fix",
     "format": "prettier --write \"src/**/*.js\" server.js",
-    "format:check": "prettier --check \"src/**/*.js\" server.js"
+    "format:check": "prettier --check \"src/**/*.js\" server.js",
+    "setup:ac": "node src/scripts/setup-activecampaign.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

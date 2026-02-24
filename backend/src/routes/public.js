@@ -5,6 +5,7 @@ const { authenticateToken, requireAdmin, leadLimiter, apiLimiter, invalidateCach
 const { sendToFacebookCAPI, hashData, sendMissingCAPIPurchases, backfillTransactionFbcFbp } = require('../services/facebook-capi');
 const { getCountryFromIP } = require('../services/geolocation');
 const { ZAPI_BASE_URL, ZAPI_CLIENT_TOKEN } = require('../config');
+const activeCampaign = require('../services/activecampaign');
 
 // ==================== PUBLIC API ROUTES ====================
 
@@ -280,6 +281,24 @@ router.post('/api/leads', leadLimiter, async (req, res) => {
             }
         }
         
+        // ==================== ACTIVECAMPAIGN: Lead Captured ====================
+        // Send lead to ActiveCampaign (async, non-blocking)
+        if (isNewLead) {
+            setImmediate(async () => {
+                try {
+                    await activeCampaign.processEvent('lead_captured', language, {
+                        email,
+                        name: name || '',
+                        phone: whatsapp || '',
+                        targetPhone: targetPhone || '',
+                        whatsapp: whatsapp || ''
+                    });
+                } catch (acError) {
+                    console.error('ActiveCampaign lead_captured error (non-blocking):', acError.message);
+                }
+            });
+        }
+
         res.status(201).json({
             success: true,
             message: 'Lead captured successfully',

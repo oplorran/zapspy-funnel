@@ -5,6 +5,7 @@ const { authenticateToken, requireAdmin, invalidateCache } = require('../middlew
 const { sendToFacebookCAPI, hashData, normalizePhone, normalizeGender, sendMissingCAPIPurchases } = require('../services/facebook-capi');
 const { parseMonetizzeDate } = require('../helpers');
 const { ZAPI_BASE_URL, ZAPI_CLIENT_TOKEN } = require('../config');
+const activeCampaign = require('../services/activecampaign');
 
 // ==================== MONETIZZE POSTBACK API ====================
 
@@ -928,6 +929,35 @@ router.all('/api/postback/monetizze', async (req, res) => {
         // Summary log for easy tracking in Railway
         console.log(`📋 POSTBACK SUMMARY: tx=${chave_unica} | email=${finalEmail || 'none'} | status=${statusStr} (${mappedStatus}) | product=${productName} | value=R$${transactionValue} | lang=${funnelLanguage} | source=${funnelSource} | match=${matchMethod} | CAPI_Purchase=${statusStr === '2' || statusStr === '6' ? 'YES' : 'NO'} | CAPI_IC=${statusStr === '1' || statusStr === '7' ? 'YES' : 'NO'}`);
         
+        // ==================== ACTIVECAMPAIGN: Transaction Event ====================
+        // Send transaction event to ActiveCampaign (async, non-blocking)
+        if (finalEmail && mappedStatus) {
+            setImmediate(async () => {
+                try {
+                    const acEventMap = {
+                        'abandoned_checkout': 'checkout_abandoned',
+                        'cancelled': 'sale_cancelled',
+                        'refunded': 'sale_cancelled',
+                        'chargeback': 'sale_cancelled',
+                        'approved': 'sale_approved'
+                    };
+                    const acEvent = acEventMap[mappedStatus];
+                    if (acEvent) {
+                        await activeCampaign.processEvent(acEvent, funnelLanguage || 'en', {
+                            email: finalEmail,
+                            name: buyerName || '',
+                            phone: buyerPhone || '',
+                            productName: productName || '',
+                            transactionValue: transactionValue || '0'
+                        });
+                        console.log(`📧 ActiveCampaign: ${acEvent} event sent for ${finalEmail} (${funnelLanguage})`);
+                    }
+                } catch (acError) {
+                    console.error('ActiveCampaign Monetizze event error (non-blocking):', acError.message);
+                }
+            });
+        }
+        
         // Return success (Monetizze expects 200 OK)
         res.status(200).send('OK');
         
@@ -1475,6 +1505,35 @@ router.all('/api/postback/perfectpay', async (req, res) => {
         
         // Summary log
         console.log(`📋 PERFECTPAY SUMMARY: tx=${transactionId} | email=${buyerEmail || 'none'} | status=${statusEnum} (${mappedStatus}) | detail=${statusDetail} | product=${productName} | value=$${saleAmount} | lang=${funnelLanguage} | type=${productType}`);
+        
+        // ==================== ACTIVECAMPAIGN: PerfectPay Transaction Event ====================
+        // Send transaction event to ActiveCampaign (async, non-blocking)
+        if (buyerEmail && mappedStatus) {
+            setImmediate(async () => {
+                try {
+                    const acEventMap = {
+                        'abandoned_checkout': 'checkout_abandoned',
+                        'cancelled': 'sale_cancelled',
+                        'refunded': 'sale_cancelled',
+                        'chargeback': 'sale_cancelled',
+                        'approved': 'sale_approved'
+                    };
+                    const acEvent = acEventMap[mappedStatus];
+                    if (acEvent) {
+                        await activeCampaign.processEvent(acEvent, funnelLanguage || 'en', {
+                            email: buyerEmail,
+                            name: buyerName || '',
+                            phone: buyerPhone || '',
+                            productName: productName || '',
+                            transactionValue: saleAmount || '0'
+                        });
+                        console.log(`📧 ActiveCampaign: ${acEvent} event sent for ${buyerEmail} (${funnelLanguage}) [PerfectPay]`);
+                    }
+                } catch (acError) {
+                    console.error('ActiveCampaign PerfectPay event error (non-blocking):', acError.message);
+                }
+            });
+        }
         
         // Return success (PerfectPay expects 200 OK)
         res.status(200).json({ status: 'ok' });
