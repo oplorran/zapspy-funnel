@@ -99,6 +99,36 @@ router.post('/api/admin/dispatch/process-scheduled', authenticateToken, async (r
     }
 });
 
+// ==================== TEST EMAIL ====================
+
+// POST /api/admin/dispatch/test - Send test emails to a specific email address
+router.post('/api/admin/dispatch/test', authenticateToken, async (req, res) => {
+    try {
+        const { email, category, language, emailNumbers } = req.body;
+
+        if (!email || !category || !language) {
+            return res.status(400).json({ error: 'email, category and language are required' });
+        }
+
+        const validCategories = ['checkout_abandon', 'sale_cancelled', 'funnel_abandon'];
+        if (!validCategories.includes(category)) {
+            return res.status(400).json({ error: `Invalid category. Must be one of: ${validCategories.join(', ')}` });
+        }
+
+        const validLanguages = ['en', 'es'];
+        if (!validLanguages.includes(language)) {
+            return res.status(400).json({ error: 'Invalid language. Must be en or es' });
+        }
+
+        const nums = emailNumbers || [1, 2, 3, 4];
+        const result = await dispatchService.sendTestEmails(email, category, language, nums);
+        res.json({ success: true, ...result });
+    } catch (error) {
+        console.error('Error sending test emails:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // ==================== CLEANUP ====================
 
 // POST /api/admin/dispatch/cleanup - Run cleanup of completed contacts

@@ -674,6 +674,70 @@ async function getDispatchStats() {
   }
 }
 
+// ==================== TEST EMAIL ====================
+
+async function sendTestEmails(testEmail, category, language, emailNumbers = [1, 2, 3, 4]) {
+  const results = [];
+
+  for (const emailNum of emailNumbers) {
+    const key = `${category}_${language}_${emailNum}`;
+    const campaign = CAMPAIGN_MAP[key];
+
+    if (!campaign) {
+      results.push({ emailNum, success: false, error: `No campaign found for key: ${key}` });
+      continue;
+    }
+
+    try {
+      // First ensure the contact exists in AC
+      const contactId = await acService.syncContact(testEmail, 'Test User', '');
+
+      // Send the email
+      const result = await acApiV1Post('campaign_send', {
+        email: testEmail,
+        campaignid: campaign.campaignId,
+        messageid: campaign.messageId,
+        type: 'mime',
+        action: 'send',
+      });
+
+      if (result.result_code === 1) {
+        results.push({ 
+          emailNum, 
+          success: true, 
+          campaignId: campaign.campaignId,
+          message: `Email ${emailNum} sent successfully` 
+        });
+      } else {
+        results.push({ 
+          emailNum, 
+          success: false, 
+          campaignId: campaign.campaignId,
+          error: result.result_message || 'Unknown error' 
+        });
+      }
+    } catch (error) {
+      results.push({ 
+        emailNum, 
+        success: false, 
+        error: error.message 
+      });
+    }
+
+    // Small delay between sends
+    await new Promise(r => setTimeout(r, 1000));
+  }
+
+  return {
+    testEmail,
+    category,
+    language,
+    results,
+    totalSent: results.filter(r => r.success).length,
+    totalFailed: results.filter(r => !r.success).length
+  };
+}
+
 module.exports = {
   getLeadCounts,
   getLeadsForDispatch,
@@ -684,6 +748,7 @@ module.exports = {
   processScheduledEmails,
   cleanupCompletedContacts,
   ensureDispatchTable,
+  sendTestEmails,
   CAMPAIGN_MAP,
   EMAIL_SCHEDULE,
 };

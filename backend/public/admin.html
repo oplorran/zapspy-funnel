@@ -1313,6 +1313,57 @@
                             </div>
                         </div>
 
+                        <!-- Test Email Section -->
+                        <div class="ac-section" style="border: 2px solid #10b981; background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(59, 130, 246, 0.05)); margin-bottom: 20px;">
+                            <div class="ac-section-header">
+                                <h3 style="display: flex; align-items: center; gap: 8px;">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                                    Teste de Emails
+                                </h3>
+                            </div>
+                            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Envie todos os 4 emails de uma sequência para um email de teste para verificar conteúdo, links e UTMs antes do disparo em massa.</p>
+
+                            <!-- Test Email Input -->
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding: 12px; background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border);">
+                                <label style="font-size: 13px; color: var(--text-muted); white-space: nowrap;">Email de teste:</label>
+                                <input type="email" id="testEmailAddress" value="opablolorran@gmail.com" placeholder="seu@email.com" style="flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px;">
+                            </div>
+
+                            <!-- Test Buttons Grid -->
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
+                                <!-- Checkout Abandon Test -->
+                                <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px;">
+                                    <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Checkout Abandonado</div>
+                                    <div style="display: flex; gap: 6px;">
+                                        <button onclick="sendTestEmails_ac('checkout_abandon','en')" style="flex:1; padding: 8px; border: none; border-radius: 8px; background: #10b981; color: white; cursor: pointer; font-size: 12px; font-weight: 600;">Testar EN</button>
+                                        <button onclick="sendTestEmails_ac('checkout_abandon','es')" style="flex:1; padding: 8px; border: none; border-radius: 8px; background: #10b981; color: white; cursor: pointer; font-size: 12px; font-weight: 600;">Testar ES</button>
+                                    </div>
+                                </div>
+                                <!-- Sale Cancelled Test -->
+                                <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px;">
+                                    <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Venda Cancelada</div>
+                                    <div style="display: flex; gap: 6px;">
+                                        <button onclick="sendTestEmails_ac('sale_cancelled','en')" style="flex:1; padding: 8px; border: none; border-radius: 8px; background: #10b981; color: white; cursor: pointer; font-size: 12px; font-weight: 600;">Testar EN</button>
+                                        <button onclick="sendTestEmails_ac('sale_cancelled','es')" style="flex:1; padding: 8px; border: none; border-radius: 8px; background: #10b981; color: white; cursor: pointer; font-size: 12px; font-weight: 600;">Testar ES</button>
+                                    </div>
+                                </div>
+                                <!-- Funnel Abandon Test -->
+                                <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px;">
+                                    <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Abandono de Funil</div>
+                                    <div style="display: flex; gap: 6px;">
+                                        <button onclick="sendTestEmails_ac('funnel_abandon','en')" style="flex:1; padding: 8px; border: none; border-radius: 8px; background: #10b981; color: white; cursor: pointer; font-size: 12px; font-weight: 600;">Testar EN</button>
+                                        <button onclick="sendTestEmails_ac('funnel_abandon','es')" style="flex:1; padding: 8px; border: none; border-radius: 8px; background: #10b981; color: white; cursor: pointer; font-size: 12px; font-weight: 600;">Testar ES</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Test Results -->
+                            <div id="testEmailResults" style="display: none; padding: 16px; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border);">
+                                <h4 style="font-size: 14px; margin-bottom: 12px;">Resultado do Teste</h4>
+                                <div id="testEmailResultsBody" style="font-size: 13px;"></div>
+                            </div>
+                        </div>
+
                         <!-- Batch Dispatch Section -->
                         <div class="ac-section" style="border: 2px solid var(--primary); background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), rgba(59, 130, 246, 0.05));">
                             <div class="ac-section-header">
@@ -16190,6 +16241,76 @@ Posso ajudar em algo mais? 😊`
                 _acShowToast('Erro', 'Erro na limpeza: ' + (data.error || 'Desconhecido'), 'error');
             }
         } catch (err) {
+            _acShowToast('Erro', err.message, 'error');
+        }
+    }
+
+    // ==================== TEST EMAIL FUNCTION ====================
+
+    async function sendTestEmails_ac(category, language) {
+        const testEmail = document.getElementById('testEmailAddress').value.trim();
+        if (!testEmail) {
+            _acShowToast('Erro', 'Digite um email de teste válido', 'error');
+            return;
+        }
+
+        const categoryNames = {
+            'checkout_abandon': 'Checkout Abandonado',
+            'sale_cancelled': 'Venda Cancelada',
+            'funnel_abandon': 'Abandono de Funil'
+        };
+        const langNames = { 'en': 'Inglês', 'es': 'Espanhol' };
+
+        if (!confirm(`Enviar os 4 emails de teste da sequência "${categoryNames[category]} (${langNames[language]})" para ${testEmail}?\n\nTodos os 4 emails serão enviados imediatamente (sem delay de dias).`)) {
+            return;
+        }
+
+        // Show results section with loading
+        const resultsDiv = document.getElementById('testEmailResults');
+        const resultsBody = document.getElementById('testEmailResultsBody');
+        resultsDiv.style.display = 'block';
+        resultsBody.innerHTML = '<div style="display: flex; align-items: center; gap: 8px;"><div class="spinner" style="width: 16px; height: 16px;"></div> Enviando emails de teste... (pode levar até 20 segundos)</div>';
+
+        try {
+            const token = _acGetToken();
+            const resp = await fetch(`${_acGetApiUrl()}/api/admin/dispatch/test`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email: testEmail, category, language })
+            });
+            const data = await resp.json();
+
+            if (data.success) {
+                let html = `<div style="margin-bottom: 12px;"><strong>${categoryNames[category]} (${language.toUpperCase()})</strong> → ${testEmail}</div>`;
+                html += '<div style="display: grid; gap: 8px;">';
+                for (const r of data.results) {
+                    const icon = r.success ? '✅' : '❌';
+                    const color = r.success ? '#10b981' : '#ef4444';
+                    const msg = r.success ? r.message : r.error;
+                    html += `<div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--bg); border-radius: 6px; border-left: 3px solid ${color};">`;
+                    html += `<span>${icon}</span>`;
+                    html += `<span><strong>Email ${r.emailNum}</strong>: ${msg}</span>`;
+                    if (r.campaignId) html += `<span style="font-size: 11px; color: var(--text-muted);">(Campaign #${r.campaignId})</span>`;
+                    html += '</div>';
+                }
+                html += '</div>';
+                html += `<div style="margin-top: 12px; padding: 8px 12px; background: var(--bg); border-radius: 6px; font-size: 13px;">Enviados: <strong style="color: #10b981;">${data.totalSent}</strong> | Falhas: <strong style="color: #ef4444;">${data.totalFailed}</strong></div>`;
+                resultsBody.innerHTML = html;
+
+                if (data.totalFailed === 0) {
+                    _acShowToast('Teste OK', `Todos os ${data.totalSent} emails enviados com sucesso para ${testEmail}!`, 'success');
+                } else {
+                    _acShowToast('Teste Parcial', `${data.totalSent} enviados, ${data.totalFailed} falharam. Verifique os detalhes.`, 'warning');
+                }
+            } else {
+                resultsBody.innerHTML = `<div style="color: #ef4444;">Erro: ${data.error || 'Erro desconhecido'}</div>`;
+                _acShowToast('Erro', data.error || 'Erro ao enviar teste', 'error');
+            }
+        } catch (err) {
+            resultsBody.innerHTML = `<div style="color: #ef4444;">Erro de conexão: ${err.message}</div>`;
             _acShowToast('Erro', err.message, 'error');
         }
     }
