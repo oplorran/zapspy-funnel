@@ -69,28 +69,23 @@ let dispatchStatus = {
   batchId: null
 };
 
-// ==================== AC API v1 (POST) ====================
+// ==================== AC API v1 (GET) ====================
 
-async function acApiV1Post(action, params = {}) {
+async function acApiV1Get(action, params = {}) {
   if (!AC_API_URL || !AC_API_KEY) {
     throw new Error('AC_API_URL or AC_API_KEY not configured');
   }
 
-  const url = `${AC_API_URL}/admin/api.php`;
-  
-  const formData = new URLSearchParams({
+  const queryParams = new URLSearchParams({
     api_key: AC_API_KEY,
     api_action: action,
     api_output: 'json',
     ...params
   });
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: formData.toString()
-  });
+  const url = `${AC_API_URL}/admin/api.php?${queryParams.toString()}`;
 
+  const response = await fetch(url, { method: 'GET' });
   const data = await response.json();
   return data;
 }
@@ -105,10 +100,12 @@ async function sendCampaignEmail(email, category, language, emailNum) {
     throw new Error(`No campaign found for key: ${key}`);
   }
 
-  const result = await acApiV1Post('campaign_send', {
+  // Use messageid=0 to send the campaign's default message
+  // Using GET method as per AC API v1 documentation
+  const result = await acApiV1Get('campaign_send', {
     email: email,
     campaignid: campaign.campaignId,
-    messageid: campaign.messageId,
+    messageid: 0,
     type: 'mime',
     action: 'send',
   });
@@ -692,11 +689,11 @@ async function sendTestEmails(testEmail, category, language, emailNumbers = [1, 
       // First ensure the contact exists in AC
       const contactId = await acService.syncContact(testEmail, 'Test User', '');
 
-      // Send the email
-      const result = await acApiV1Post('campaign_send', {
+      // Send the email using GET method with messageid=0 (default message)
+      const result = await acApiV1Get('campaign_send', {
         email: testEmail,
         campaignid: campaign.campaignId,
-        messageid: campaign.messageId,
+        messageid: 0,
         type: 'mime',
         action: 'send',
       });
