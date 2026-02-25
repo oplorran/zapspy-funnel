@@ -1537,6 +1537,72 @@
                                 </div>
                             </div>
 
+                            <!-- Recovery Sales KPIs -->
+                            <div style="margin-bottom: 16px; padding: 16px; background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(59,130,246,0.08)); border: 1px solid rgba(16,185,129,0.2); border-radius: 12px;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                                    <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: #10b981; display: flex; align-items: center; gap: 6px;">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                                        Vendas Recovery (via E-mail)
+                                    </h4>
+                                    <button onclick="loadRecoverySales()" style="background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #10b981; padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: 600;">
+                                        Atualizar
+                                    </button>
+                                </div>
+                                <div id="recoverySalesKPIs" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px;">
+                                    <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center;">
+                                        <div style="font-size: 28px; font-weight: 800; color: #10b981;" id="recSalesToday">-</div>
+                                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Vendas Hoje</div>
+                                    </div>
+                                    <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center;">
+                                        <div style="font-size: 28px; font-weight: 800; color: #f59e0b;" id="recRevenueToday">-</div>
+                                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Receita Hoje</div>
+                                    </div>
+                                    <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center;">
+                                        <div style="font-size: 28px; font-weight: 800; color: #3b82f6;" id="recSalesTotal">-</div>
+                                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Total Aprovadas</div>
+                                    </div>
+                                    <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center;">
+                                        <div style="font-size: 28px; font-weight: 800; color: #8b5cf6;" id="recRevenueTotal">-</div>
+                                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Receita Total</div>
+                                    </div>
+                                    <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center;">
+                                        <div style="font-size: 28px; font-weight: 800; color: #ef4444;" id="recConvRate">-</div>
+                                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Taxa Conversão</div>
+                                    </div>
+                                    <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center;">
+                                        <div style="font-size: 28px; font-weight: 800; color: #6366f1;" id="recPending">-</div>
+                                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Pendentes</div>
+                                    </div>
+                                </div>
+                                <!-- Category Breakdown -->
+                                <div id="recCategoryBreakdown" style="margin-top: 12px; display: none;">
+                                    <h5 style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-weight: 600;">Por Categoria</h5>
+                                    <div id="recCategoryCards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px;"></div>
+                                </div>
+                                <!-- Recent Recovery Sales Table -->
+                                <div id="recRecentSalesWrap" style="margin-top: 12px; display: none;">
+                                    <h5 style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-weight: 600;">Vendas Recentes (Recovery)</h5>
+                                    <div class="ac-table-wrap" style="max-height: 250px; overflow-y: auto;">
+                                        <table class="ac-data-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Email</th>
+                                                    <th>Valor</th>
+                                                    <th>Campanha</th>
+                                                    <th>Data</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="recRecentSalesBody">
+                                                <tr><td colspan="4" style="text-align: center; padding: 12px; color: var(--text-muted);">Carregando...</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 8px; font-size: 10px; color: var(--text-muted); opacity: 0.7;">
+                                    Dados de conversão rastreados via PerfectPay/Monetizze webhooks (UTM tracking). Cliques do AC não são confiáveis com messageid=0.
+                                </div>
+                            </div>
+
                             <!-- Detailed Metrics Table -->
                             <div class="ac-table-wrap">
                                 <table class="ac-data-table">
@@ -16469,6 +16535,99 @@ Posso ajudar em algo mais? 😊`
         }
     }
 
+    // ==================== RECOVERY SALES LOADER ====================
+    async function loadRecoverySales() {
+        try {
+            const token = _acGetToken();
+            const apiUrl = _acGetApiUrl();
+            const resp = await fetch(`${apiUrl}/api/admin/tracking/recovery-sales`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await resp.json();
+            if (!data.success) {
+                console.error('Recovery sales error:', data.error);
+                return;
+            }
+            const s = data.summary || {};
+            
+            // Update KPI cards
+            document.getElementById('recSalesToday').textContent = s.todaySales || 0;
+            document.getElementById('recRevenueToday').textContent = '$' + (s.todayRevenue || 0).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+            document.getElementById('recSalesTotal').textContent = s.totalApproved || 0;
+            document.getElementById('recRevenueTotal').textContent = '$' + (s.totalRevenue || 0).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+            document.getElementById('recConvRate').textContent = (s.conversionRate || '0.00') + '%';
+            document.getElementById('recPending').textContent = s.totalPending || 0;
+            
+            // Category breakdown
+            const catBreakdown = data.categoryBreakdown || {};
+            const catKeys = Object.keys(catBreakdown);
+            if (catKeys.length > 0) {
+                document.getElementById('recCategoryBreakdown').style.display = 'block';
+                const catLabels = {
+                    'checkout_abandon': 'Checkout Abandonado',
+                    'sale_cancelled': 'Venda Cancelada',
+                    'funnel_abandon': 'Funil Abandonado',
+                    'remarketing': 'Remarketing',
+                    'unknown': 'Outros'
+                };
+                const catColors = {
+                    'checkout_abandon': '#f59e0b',
+                    'sale_cancelled': '#ef4444',
+                    'funnel_abandon': '#3b82f6',
+                    'remarketing': '#8b5cf6',
+                    'unknown': '#6b7280'
+                };
+                document.getElementById('recCategoryCards').innerHTML = catKeys.map(k => {
+                    const cat = catBreakdown[k];
+                    const label = catLabels[k] || k;
+                    const color = catColors[k] || '#6b7280';
+                    return `<div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-size: 12px; font-weight: 600; color: ${color};">${label}</div>
+                            <div style="font-size: 10px; color: var(--text-muted);">${cat.count} venda${cat.count !== 1 ? 's' : ''}</div>
+                        </div>
+                        <div style="font-size: 16px; font-weight: 800; color: ${color};">$${Math.round(cat.revenue)}</div>
+                    </div>`;
+                }).join('');
+            }
+            
+            // Recent sales table
+            const recent = data.recentSales || [];
+            if (recent.length > 0) {
+                document.getElementById('recRecentSalesWrap').style.display = 'block';
+                document.getElementById('recRecentSalesBody').innerHTML = recent.map(sale => {
+                    const d = new Date(sale.created_at);
+                    const dateStr = d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'});
+                    const campLabel = (sale.campaign || '').replace('recovery_', '').replace(/_/g, ' ');
+                    return `<tr>
+                        <td style="font-size: 12px;">${sale.email || '-'}</td>
+                        <td style="font-weight: 700; color: #10b981;">$${sale.value}</td>
+                        <td style="font-size: 11px; color: var(--text-muted);">${campLabel}</td>
+                        <td style="font-size: 11px; color: var(--text-muted);">${dateStr}</td>
+                    </tr>`;
+                }).join('');
+            }
+            
+            // Show cross-ref info if available
+            if (s.crossRefSales > 0) {
+                const infoDiv = document.querySelector('#recCategoryBreakdown');
+                if (infoDiv) {
+                    const existingNote = document.getElementById('recCrossRefNote');
+                    if (!existingNote) {
+                        const note = document.createElement('div');
+                        note.id = 'recCrossRefNote';
+                        note.style.cssText = 'margin-top: 8px; font-size: 10px; color: #6366f1; opacity: 0.8;';
+                        note.textContent = `+ ${s.crossRefSales} vendas atribu\u00eddas por cross-reference (email enviado \u2192 compra posterior) = $${Math.round(s.crossRefRevenue)}`;
+                        infoDiv.appendChild(note);
+                    }
+                }
+            }
+            
+        } catch (error) {
+            console.error('Error loading recovery sales:', error);
+        }
+    }
+
     // Load dispatch data when AC tab is opened
     const _origLoadACDashboard = loadACDashboard;
     loadACDashboard = async function() {
@@ -16476,6 +16635,7 @@ Posso ajudar em algo mais? 😊`
         loadDispatchCounts_ac();
         loadDispatchHistory_ac();
         loadTrackingMetrics();
+        loadRecoverySales();
         // Check if a dispatch is running
         try {
             const token = _acGetToken();
