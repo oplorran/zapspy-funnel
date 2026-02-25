@@ -12,6 +12,7 @@ const express = require('express');
 const router = express.Router();
 const { authenticateToken } = require('../middleware');
 const trackingService = require('../services/email-tracking');
+const { AC_API_URL, AC_API_KEY } = require('../config');
 
 // GET /api/admin/tracking/metrics — Detailed metrics by category/language/emailNum
 router.get('/api/admin/tracking/metrics', authenticateToken, async (req, res) => {
@@ -70,6 +71,142 @@ router.get('/api/admin/tracking/daily', authenticateToken, async (req, res) => {
     res.json({ success: true, data: daily });
   } catch (error) {
     console.error('Error getting daily metrics:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ==================== INJECT TRACKING INTO AC CAMPAIGNS ====================
+
+const CAMPAIGNS_TO_TRACK = [
+  { key: 'checkout_abandon_en_1', messageId: 256, category: 'checkout_abandon', language: 'en', emailNum: 1 },
+  { key: 'checkout_abandon_en_2', messageId: 257, category: 'checkout_abandon', language: 'en', emailNum: 2 },
+  { key: 'checkout_abandon_en_3', messageId: 258, category: 'checkout_abandon', language: 'en', emailNum: 3 },
+  { key: 'checkout_abandon_en_4', messageId: 259, category: 'checkout_abandon', language: 'en', emailNum: 4 },
+  { key: 'checkout_abandon_es_1', messageId: 260, category: 'checkout_abandon', language: 'es', emailNum: 1 },
+  { key: 'checkout_abandon_es_2', messageId: 261, category: 'checkout_abandon', language: 'es', emailNum: 2 },
+  { key: 'checkout_abandon_es_3', messageId: 262, category: 'checkout_abandon', language: 'es', emailNum: 3 },
+  { key: 'checkout_abandon_es_4', messageId: 263, category: 'checkout_abandon', language: 'es', emailNum: 4 },
+  { key: 'sale_cancelled_en_1', messageId: 264, category: 'sale_cancelled', language: 'en', emailNum: 1 },
+  { key: 'sale_cancelled_en_2', messageId: 265, category: 'sale_cancelled', language: 'en', emailNum: 2 },
+  { key: 'sale_cancelled_en_3', messageId: 266, category: 'sale_cancelled', language: 'en', emailNum: 3 },
+  { key: 'sale_cancelled_en_4', messageId: 267, category: 'sale_cancelled', language: 'en', emailNum: 4 },
+  { key: 'sale_cancelled_es_1', messageId: 268, category: 'sale_cancelled', language: 'es', emailNum: 1 },
+  { key: 'sale_cancelled_es_2', messageId: 269, category: 'sale_cancelled', language: 'es', emailNum: 2 },
+  { key: 'sale_cancelled_es_3', messageId: 270, category: 'sale_cancelled', language: 'es', emailNum: 3 },
+  { key: 'sale_cancelled_es_4', messageId: 271, category: 'sale_cancelled', language: 'es', emailNum: 4 },
+  { key: 'funnel_abandon_en_1', messageId: 272, category: 'funnel_abandon', language: 'en', emailNum: 1 },
+  { key: 'funnel_abandon_en_2', messageId: 273, category: 'funnel_abandon', language: 'en', emailNum: 2 },
+  { key: 'funnel_abandon_en_3', messageId: 274, category: 'funnel_abandon', language: 'en', emailNum: 3 },
+  { key: 'funnel_abandon_en_4', messageId: 275, category: 'funnel_abandon', language: 'en', emailNum: 4 },
+  { key: 'funnel_abandon_es_1', messageId: 276, category: 'funnel_abandon', language: 'es', emailNum: 1 },
+  { key: 'funnel_abandon_es_2', messageId: 277, category: 'funnel_abandon', language: 'es', emailNum: 2 },
+  { key: 'funnel_abandon_es_3', messageId: 278, category: 'funnel_abandon', language: 'es', emailNum: 3 },
+  { key: 'funnel_abandon_es_4', messageId: 279, category: 'funnel_abandon', language: 'es', emailNum: 4 },
+];
+
+const TRACKING_BASE = 'https://zapspy-funnel-production.up.railway.app';
+
+async function acApiV1Get(action, params = {}) {
+  const queryParams = new URLSearchParams({ api_key: AC_API_KEY, api_action: action, api_output: 'json', ...params });
+  const url = `${AC_API_URL}/admin/api.php?${queryParams.toString()}`;
+  const response = await fetch(url, { method: 'GET' });
+  return await response.json();
+}
+
+async function acApiV1Post(action, formData) {
+  const url = `${AC_API_URL}/admin/api.php?api_action=${action}&api_output=json`;
+  const body = new URLSearchParams({ api_key: AC_API_KEY, ...formData });
+  const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString() });
+  return await response.json();
+}
+
+function injectTrackingIntoHtml(html, category, language, emailNum) {
+  if (html.includes('/t/open?') || html.includes('zapspy-funnel-production.up.railway.app/t/')) {
+    return { html, modified: false, reason: 'Already has tracking' };
+  }
+
+  let modified = html;
+
+  // 1. Inject pixel before </body>
+  const pixel = `<img src="${TRACKING_BASE}/t/open?e=%EMAIL%&c=${category}&l=${language}&n=${emailNum}" width="1" height="1" style="display:none;border:0;height:1px;width:1px;" alt="" />`;
+  if (modified.includes('</body>')) {
+    modified = modified.replace('</body>', `${pixel}\n</body>`);
+  } else {
+    modified += `\n${pixel}`;
+  }
+
+  // 2. Wrap CTA links with click tracking
+  const linkRegex = /<a\s+([^>]*?)href="(https?:\/\/[^"]+)"([^>]*?)>/gi;
+  modified = modified.replace(linkRegex, (match, before, url, after) => {
+    if (url.includes('%UNSUBSCRIBELINK%') || url.startsWith('mailto:') || url.includes('/privacy') || url.includes('/t/click') || url.includes('zapspy-funnel-production')) {
+      return match;
+    }
+    const trackedUrl = `${TRACKING_BASE}/t/click?e=%EMAIL%&c=${category}&l=${language}&n=${emailNum}&url=${encodeURIComponent(url)}`;
+    return `<a ${before}href="${trackedUrl}"${after}>`;
+  });
+
+  return { html: modified, modified: true, reason: 'Tracking injected' };
+}
+
+// POST /api/admin/tracking/inject — Inject tracking into all AC campaign templates
+router.post('/api/admin/tracking/inject', authenticateToken, async (req, res) => {
+  const dryRun = req.query.dry_run === 'true';
+  const results = [];
+
+  try {
+    for (const campaign of CAMPAIGNS_TO_TRACK) {
+      const { key, messageId, category, language, emailNum } = campaign;
+      try {
+        // 1. Get current HTML
+        const msgData = await acApiV1Get('message_view', { id: messageId });
+        const currentHtml = msgData.html || msgData.htmlcontent || msgData.text || '';
+
+        if (!currentHtml || currentHtml.length < 50) {
+          results.push({ key, status: 'skipped', reason: 'No HTML content', htmlLength: currentHtml?.length || 0 });
+          continue;
+        }
+
+        // 2. Inject tracking
+        const { html: updatedHtml, modified, reason } = injectTrackingIntoHtml(currentHtml, category, language, emailNum);
+
+        if (!modified) {
+          results.push({ key, status: 'skipped', reason });
+          continue;
+        }
+
+        if (dryRun) {
+          results.push({ key, status: 'dry-run', reason: `Would update (${currentHtml.length} -> ${updatedHtml.length} chars)` });
+          continue;
+        }
+
+        // 3. Save updated HTML
+        const editResult = await acApiV1Post('message_edit', { id: messageId, html: updatedHtml, htmlconstructor: 'editor' });
+        
+        if (editResult.result_code === 0) {
+          results.push({ key, status: 'error', reason: editResult.result_message || 'message_edit failed' });
+        } else {
+          results.push({ key, status: 'updated', reason: `Tracking injected (${currentHtml.length} -> ${updatedHtml.length} chars)` });
+        }
+
+      } catch (error) {
+        results.push({ key, status: 'error', reason: error.message });
+      }
+
+      // Rate limiting
+      await new Promise(resolve => setTimeout(resolve, 300));
+    }
+
+    const summary = {
+      total: results.length,
+      updated: results.filter(r => r.status === 'updated').length,
+      skipped: results.filter(r => r.status === 'skipped').length,
+      errors: results.filter(r => r.status === 'error').length,
+      dryRun: results.filter(r => r.status === 'dry-run').length,
+    };
+
+    res.json({ success: true, dryRun, summary, results });
+  } catch (error) {
+    console.error('Error injecting tracking:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
