@@ -148,6 +148,18 @@ function injectTrackingIntoHtml(html, category, language, emailNum) {
   return { html: modified, modified: true, reason: 'Tracking injected' };
 }
 
+// GET /api/admin/tracking/debug-message/:id — Debug: view raw message_view response
+router.get('/api/admin/tracking/debug-message/:id', authenticateToken, async (req, res) => {
+  try {
+    const msgData = await acApiV1Get('message_view', { id: req.params.id });
+    // Remove HTML to keep response small
+    const { html, htmlcontent, text, ...meta } = msgData;
+    res.json({ success: true, meta, htmlLength: (html||'').length });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // POST /api/admin/tracking/inject — Inject tracking into all AC campaign templates
 router.post('/api/admin/tracking/inject', authenticateToken, async (req, res) => {
   const dryRun = req.query.dry_run === 'true';
@@ -179,8 +191,30 @@ router.post('/api/admin/tracking/inject', authenticateToken, async (req, res) =>
           continue;
         }
 
-        // 3. Save updated HTML
-        const editResult = await acApiV1Post('message_edit', { id: messageId, html: updatedHtml, htmlconstructor: 'editor' });
+        // 3. Save updated HTML - must include required fields from original message
+        const editParams = {
+          id: messageId,
+          html: updatedHtml,
+          htmlconstructor: 'editor',
+          format: 'html',
+        };
+        // Include list IDs from original message data
+        if (msgData.listslist) {
+          // listslist can be comma-separated list IDs
+          const listIds = String(msgData.listslist).split(',');
+          listIds.forEach((lid, idx) => { editParams[`p[${lid.trim()}]`] = lid.trim(); });
+        } else {
+          // Fallback: determine list from campaign key
+          const listMap = {
+            'checkout_abandon_en': '7', 'checkout_abandon_es': '8',
+            'sale_cancelled_en': '9', 'sale_cancelled_es': '10',
+            'funnel_abandon_en': '5', 'funnel_abandon_es': '6',
+          };
+          const listKey = `${category}_${language}`;
+          const listId = listMap[listKey];
+          if (listId) editParams[`p[${listId}]`] = listId;
+        }
+        const editResult = await acApiV1Post('message_edit', editParams);
         
         if (editResult.result_code === 0) {
           results.push({ key, status: 'error', reason: editResult.result_message || 'message_edit failed' });
