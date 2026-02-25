@@ -382,4 +382,151 @@ router.get('/api/admin/tracking/verify-html/:messageId', authenticateToken, asyn
   }
 });
 
+// ==================== UPDATE CHECKOUT LINKS ====================
+
+// Link mapping: progressive discounts for all categories
+const CHECKOUT_LINKS = {
+  en: {
+    1: 'https://go.centerpag.com/PPU38CQ848P', // $47
+    2: 'https://go.centerpag.com/PPU38CQ848Q', // $37
+    3: 'https://go.centerpag.com/PPU38CQ848R', // $27
+    4: 'https://go.centerpag.com/PPU38CQ85IH', // $17
+  },
+  es: {
+    1: 'https://go.centerpag.com/PPU38CQ848S', // $37
+    2: 'https://go.centerpag.com/PPU38CQ848T', // $27
+    3: 'https://go.centerpag.com/PPU38CQ848U', // $18
+    4: 'https://go.centerpag.com/PPU38CQ85II', // $9
+  }
+};
+
+// POST /api/admin/tracking/update-links — Update all campaign templates with correct checkout links
+router.post('/api/admin/tracking/update-links', authenticateToken, async (req, res) => {
+  const dryRun = req.query.dry_run === 'true';
+  const results = [];
+
+  try {
+    for (const campaign of CAMPAIGNS_TO_TRACK) {
+      const { key, messageId, category, language, emailNum } = campaign;
+      try {
+        // 1. Get current HTML
+        const msgData = await acApiV1Get('message_view', { id: messageId });
+        const currentHtml = msgData.html || msgData.htmlcontent || msgData.text || '';
+
+        if (!currentHtml || currentHtml.length < 50) {
+          results.push({ key, messageId, status: 'skipped', reason: 'No HTML content' });
+          continue;
+        }
+
+        const correctLink = CHECKOUT_LINKS[language][emailNum];
+        let updatedHtml = currentHtml;
+        let changes = [];
+
+        // Replace broken placeholders {{checkout_link_30off}} and {{checkout_link_50off}}
+        if (updatedHtml.includes('{{checkout_link_30off}}')) {
+          updatedHtml = updatedHtml.replace(/\{\{checkout_link_30off\}\}/g, correctLink);
+          changes.push('Replaced {{checkout_link_30off}}');
+        }
+        if (updatedHtml.includes('{{checkout_link_50off}}')) {
+          updatedHtml = updatedHtml.replace(/\{\{checkout_link_50off\}\}/g, correctLink);
+          changes.push('Replaced {{checkout_link_50off}}');
+        }
+
+        // Replace wrong checkout links with correct ones for this email number
+        // For E2: replace full-price links with discount links
+        if (emailNum === 2) {
+          const fullPriceLink = CHECKOUT_LINKS[language][1]; // full price link
+          if (updatedHtml.includes(fullPriceLink) && fullPriceLink !== correctLink) {
+            updatedHtml = updatedHtml.split(fullPriceLink).join(correctLink);
+            changes.push(`Replaced full-price link with discount link`);
+          }
+          // Also check inside tracked URLs (encoded)
+          const encodedFull = encodeURIComponent(fullPriceLink);
+          const encodedCorrect = encodeURIComponent(correctLink);
+          if (updatedHtml.includes(encodedFull) && encodedFull !== encodedCorrect) {
+            updatedHtml = updatedHtml.split(encodedFull).join(encodedCorrect);
+            changes.push(`Replaced encoded full-price link with discount link`);
+          }
+        }
+
+        // Also inject tracking pixel if not present
+        if (!updatedHtml.includes('/t/open?')) {
+          const pixel = `<img src="${TRACKING_BASE}/t/open?e=%EMAIL%&c=${category}&l=${language}&n=${emailNum}" width="1" height="1" style="display:none;border:0;" alt="" />`;
+          if (updatedHtml.includes('</body>')) {
+            updatedHtml = updatedHtml.replace('</body>', `${pixel}\n</body>`);
+          } else {
+            updatedHtml += `\n${pixel}`;
+          }
+          changes.push('Injected tracking pixel');
+        }
+
+        // Wrap CTA links with click tracking if not already tracked
+        if (!updatedHtml.includes('/t/click?')) {
+          const linkRegex = /<a\s+([^>]*?)href="(https?:\/\/go\.centerpag\.com[^"]+)"([^>]*?)>/gi;
+          updatedHtml = updatedHtml.replace(linkRegex, (match, before, url, after) => {
+            const trackedUrl = `${TRACKING_BASE}/t/click?e=%EMAIL%&c=${category}&l=${language}&n=${emailNum}&url=${encodeURIComponent(url)}`;
+            return `<a ${before}href="${trackedUrl}"${after}>`;
+          });
+          changes.push('Wrapped CTA links with click tracking');
+        }
+
+        if (changes.length === 0) {
+          results.push({ key, messageId, status: 'skipped', reason: 'No changes needed', correctLink });
+          continue;
+        }
+
+        if (dryRun) {
+          results.push({ key, messageId, status: 'dry-run', changes, correctLink });
+          continue;
+        }
+
+        // 2. Save updated HTML
+        const editParams = {
+          id: messageId,
+          html: updatedHtml,
+          htmlconstructor: 'editor',
+          format: msgData.format || 'mime',
+          charset: msgData.charset || 'utf-8',
+          encoding: msgData.encoding || 'quoted-printable',
+          subject: msgData.subject || '',
+          fromemail: msgData.fromemail || 'noreply@zapspy.ai',
+          fromname: msgData.fromname || 'ZapSpy.ai',
+          reply2: msgData.reply2 || 'support@zapspy.ai',
+          priority: msgData.priority || '3',
+          textcopy: msgData.textcopy || '',
+        };
+        if (msgData.listslist) {
+          const listIds = String(msgData.listslist).split(',');
+          listIds.forEach((lid) => { editParams[`p[${lid.trim()}]`] = lid.trim(); });
+        }
+        const editResult = await acApiV1Post('message_edit', editParams);
+
+        if (editResult.result_code === 0) {
+          results.push({ key, messageId, status: 'error', reason: editResult.result_message, changes });
+        } else {
+          results.push({ key, messageId, status: 'updated', changes, correctLink });
+        }
+
+      } catch (error) {
+        results.push({ key, messageId, status: 'error', reason: error.message });
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 300));
+    }
+
+    const summary = {
+      total: results.length,
+      updated: results.filter(r => r.status === 'updated').length,
+      skipped: results.filter(r => r.status === 'skipped').length,
+      errors: results.filter(r => r.status === 'error').length,
+      dryRun: results.filter(r => r.status === 'dry-run').length,
+    };
+
+    res.json({ success: true, dryRun, summary, results });
+  } catch (error) {
+    console.error('Error updating links:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 module.exports = router;
