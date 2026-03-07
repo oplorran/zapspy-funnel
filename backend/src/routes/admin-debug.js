@@ -1609,4 +1609,52 @@ router.get('/api/admin/debug/journey-by-email/:email', authenticateToken, async 
     }
 });
 
+// Analytics endpoint for monthly breakdown by funnel
+router.get('/api/admin/analytics/monthly-breakdown', authenticateToken, async (req, res) => {
+    try {
+        const leadsQuery = await pool.query(`
+            SELECT 
+                TO_CHAR(created_at AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM') as month,
+                COALESCE(funnel_source, 'main') as funnel_source,
+                COUNT(*) as total_leads
+            FROM leads
+            GROUP BY month, funnel_source
+            ORDER BY month, funnel_source
+        `);
+        
+        const txQuery = await pool.query(`
+            SELECT 
+                TO_CHAR(created_at AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM') as month,
+                COALESCE(funnel_source, 'main') as funnel_source,
+                status,
+                COUNT(*) as total,
+                COALESCE(SUM(CAST(value AS NUMERIC)), 0) as total_value
+            FROM transactions
+            GROUP BY month, funnel_source, status
+            ORDER BY month, funnel_source, status
+        `);
+        
+        const eventsQuery = await pool.query(`
+            SELECT 
+                TO_CHAR(created_at AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM') as month,
+                COALESCE(metadata->>'funnelSource', 'main') as funnel_source,
+                event,
+                COUNT(*) as total
+            FROM funnel_events
+            WHERE event IN ('checkout_redirect', 'initiate_checkout', 'page_view')
+            GROUP BY month, funnel_source, event
+            ORDER BY month, funnel_source, event
+        `);
+        
+        res.json({
+            leads: leadsQuery.rows,
+            transactions: txQuery.rows,
+            funnelEvents: eventsQuery.rows
+        });
+    } catch (error) {
+        console.error('Analytics error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 module.exports = router;
