@@ -1641,15 +1641,37 @@ router.get('/api/admin/analytics/monthly-breakdown', authenticateToken, async (r
                 event,
                 COUNT(*) as total
             FROM funnel_events
-            WHERE event IN ('checkout_redirect', 'initiate_checkout', 'page_view')
+            WHERE event IS NOT NULL
             GROUP BY month, funnel_source, event
             ORDER BY month, funnel_source, event
+        `);
+        
+        const postbackLogsQuery = await pool.query(`
+            SELECT 
+                TO_CHAR(created_at AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM') as month,
+                COUNT(*) as total
+            FROM postback_logs
+            GROUP BY month
+            ORDER BY month
+        `);
+        
+        const capiLogsQuery = await pool.query(`
+            SELECT 
+                TO_CHAR(created_at AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM') as month,
+                COALESCE(funnel_source, 'unknown') as funnel_source,
+                COUNT(*) as total,
+                COALESCE(SUM(value), 0) as total_value
+            FROM capi_purchase_logs
+            GROUP BY month, funnel_source
+            ORDER BY month, funnel_source
         `);
         
         res.json({
             leads: leadsQuery.rows,
             transactions: txQuery.rows,
-            funnelEvents: eventsQuery.rows
+            funnelEvents: eventsQuery.rows,
+            postbackLogs: postbackLogsQuery.rows,
+            capiPurchaseLogs: capiLogsQuery.rows
         });
     } catch (error) {
         console.error('Analytics error:', error);
